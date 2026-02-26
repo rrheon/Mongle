@@ -65,7 +65,7 @@ struct HomeView: View {
                                             memberAnswerStatus: store.memberAnswerStatus,
                                             hasActiveQuestion: store.todayQuestion != nil,
                                             gardenSize: CGSize(
-                                                width: geometry.size.width - FTSpacing.md,
+                                                width: 350,
                                                 height: 280
                                             )
                                         )
@@ -651,4 +651,3 @@ struct FamilyMembersSection: View {
         }
     )
 }
-
