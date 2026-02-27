@@ -9,10 +9,59 @@ import Foundation
 import ComposableArchitecture
 import Domain
 
+// MARK: - Mood Color
+public enum MoodColor: String, CaseIterable, Sendable, Equatable {
+    case red
+    case orange
+    case yellow
+    case green
+    case teal
+    case blue
+    case purple
+    case pink
+
+    public var label: String {
+        switch self {
+        case .red:    return "활발한"
+        case .orange: return "행복한"
+        case .yellow: return "기쁜"
+        case .green:  return "편안한"
+        case .teal:   return "평화로운"
+        case .blue:   return "차분한"
+        case .purple: return "그리운"
+        case .pink:   return "사랑스러운"
+        }
+    }
+
+    /// 헥스 색상 문자열 (SwiftUI Color(hex:) 사용)
+    public var hexString: String {
+        switch self {
+        case .red:    return "FF6B6B"
+        case .orange: return "FF9F43"
+        case .yellow: return "FECA57"
+        case .green:  return "1DD1A1"
+        case .teal:   return "48DBFB"
+        case .blue:   return "54A0FF"
+        case .purple: return "A29BFE"
+        case .pink:   return "FD79A8"
+        }
+    }
+
+    /// 색상이 선택되지 않았을 때 적용할 기본 헥스
+    public static let defaultHex = "4CAF50"
+}
+
 @Reducer
 public struct JoinFamilyFeature {
     @ObservableState
     public struct State: Equatable {
+        public enum Step: Equatable {
+            case search   // 초대 코드 검색
+            case profile  // 프로필 만들기 (이름 + 기분 색상)
+        }
+
+        // MARK: Search Step
+        public var step: Step = .search
         public var inviteCode: String = ""
         public var selectedRole: FamilyRole = .son
         public var isLoading: Bool = false
@@ -20,12 +69,20 @@ public struct JoinFamilyFeature {
         public var foundFamily: Family?
         public var errorMessage: String?
 
+        // MARK: Profile Step
+        public var profileName: String = ""
+        public var selectedMoodColor: MoodColor? = nil
+
         public var isValidCode: Bool {
             inviteCode.trimmingCharacters(in: .whitespacesAndNewlines).count >= 6
         }
 
         public var canJoin: Bool {
             foundFamily != nil && !isLoading
+        }
+
+        public var canConfirmProfile: Bool {
+            !profileName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isLoading
         }
 
         public init(
@@ -46,7 +103,7 @@ public struct JoinFamilyFeature {
     }
 
     public enum Action: Sendable, Equatable {
-        // MARK: - View Actions
+        // MARK: - Search Step Actions
         case inviteCodeChanged(String)
         case roleSelected(FamilyRole)
         case searchButtonTapped
@@ -54,6 +111,12 @@ public struct JoinFamilyFeature {
         case dismissErrorTapped
         case cancelTapped
         case clearFoundFamily
+
+        // MARK: - Profile Step Actions
+        case profileNameChanged(String)
+        case moodColorSelected(MoodColor?)
+        case confirmProfileTapped
+        case backToSearch
 
         // MARK: - Internal Actions
         case searchFamilyResponse(Result<Family?, JoinFamilyError>)
@@ -96,11 +159,10 @@ public struct JoinFamilyFeature {
     public var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
-            // MARK: - View Actions
+            // MARK: - Search Step
             case .inviteCodeChanged(let code):
                 state.inviteCode = code.uppercased()
                 state.errorMessage = nil
-                // 코드가 변경되면 찾은 가족 초기화
                 if state.foundFamily != nil {
                     state.foundFamily = nil
                 }
@@ -126,7 +188,6 @@ public struct JoinFamilyFeature {
                     // TODO: 실제 API 호출로 교체
                     try await Task.sleep(nanoseconds: 1_000_000_000)
 
-                    // Mock 응답 - 코드가 "TESTCODE" 또는 8자면 성공
                     if code == "TESTCODE" || code.count == 8 {
                         let family = Family(
                             id: UUID(),
@@ -144,20 +205,11 @@ public struct JoinFamilyFeature {
                 }
 
             case .joinButtonTapped:
-                guard let family = state.foundFamily else { return .none }
-
-                state.isLoading = true
+                guard state.foundFamily != nil else { return .none }
+                // 검색 완료 → 프로필 만들기 단계로 전환
+                state.step = .profile
                 state.errorMessage = nil
-
-                let role = state.selectedRole
-
-                return .run { send in
-                    // TODO: 실제 API 호출로 교체
-                    try await Task.sleep(nanoseconds: 1_000_000_000)
-
-                    // Mock 성공 응답
-                    await send(.joinFamilyResponse(.success(family)))
-                }
+                return .none
 
             case .dismissErrorTapped:
                 state.errorMessage = nil
@@ -168,6 +220,36 @@ public struct JoinFamilyFeature {
 
             case .clearFoundFamily:
                 state.foundFamily = nil
+                return .none
+
+            // MARK: - Profile Step
+            case .profileNameChanged(let name):
+                state.profileName = name
+                return .none
+
+            case .moodColorSelected(let color):
+                // 같은 색상 탭하면 선택 해제
+                state.selectedMoodColor = color
+                return .none
+
+            case .confirmProfileTapped:
+                guard let family = state.foundFamily,
+                      state.canConfirmProfile else { return .none }
+
+                state.isLoading = true
+                state.errorMessage = nil
+
+                return .run { send in
+                    // TODO: 실제 API 호출로 교체 (프로필 이름, 색상, 역할 포함)
+                    try await Task.sleep(nanoseconds: 1_000_000_000)
+                    await send(.joinFamilyResponse(.success(family)))
+                }
+
+            case .backToSearch:
+                state.step = .search
+                state.profileName = ""
+                state.selectedMoodColor = nil
+                state.errorMessage = nil
                 return .none
 
             // MARK: - Internal Actions
