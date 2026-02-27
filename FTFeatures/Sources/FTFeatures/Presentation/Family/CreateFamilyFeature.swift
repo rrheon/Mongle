@@ -13,10 +13,17 @@ import Domain
 public struct CreateFamilyFeature {
     @ObservableState
     public struct State: Equatable {
+        public enum Step: Equatable {
+            case form    // 가족 이름 + 역할 입력
+            case invite  // 생성 완료 + 초대 코드 공유
+        }
+
+        public var step: Step = .form
         public var familyName: String = ""
         public var selectedRole: FamilyRole = .father
         public var isLoading: Bool = false
         public var errorMessage: String?
+        public var createdFamily: Family?
 
         public var isValid: Bool {
             !familyName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -42,6 +49,7 @@ public struct CreateFamilyFeature {
         case createButtonTapped
         case dismissErrorTapped
         case cancelTapped
+        case doneTapped   // 초대 화면에서 "시작하기" 탭
 
         // MARK: - Internal Actions
         case createFamilyResponse(Result<Family, FamilyCreationError>)
@@ -97,13 +105,11 @@ public struct CreateFamilyFeature {
                 state.errorMessage = nil
 
                 let familyName = state.familyName.trimmingCharacters(in: .whitespacesAndNewlines)
-                let role = state.selectedRole
 
                 return .run { send in
                     // TODO: 실제 API 호출로 교체
                     try await Task.sleep(nanoseconds: 1_000_000_000)
 
-                    // Mock 응답
                     let newFamily = Family(
                         id: UUID(),
                         name: familyName,
@@ -124,10 +130,17 @@ public struct CreateFamilyFeature {
             case .cancelTapped:
                 return .send(.delegate(.cancelled))
 
+            case .doneTapped:
+                guard let family = state.createdFamily else { return .none }
+                return .send(.delegate(.familyCreated(family)))
+
             // MARK: - Internal Actions
             case .createFamilyResponse(.success(let family)):
                 state.isLoading = false
-                return .send(.delegate(.familyCreated(family)))
+                state.createdFamily = family
+                state.step = .invite  // 초대 화면으로 전환
+
+            return .none
 
             case .createFamilyResponse(.failure(let error)):
                 state.isLoading = false
