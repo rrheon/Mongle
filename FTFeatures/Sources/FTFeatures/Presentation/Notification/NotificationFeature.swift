@@ -118,7 +118,7 @@ public struct NotificationFeature {
 
                 // 타입에 따라 네비게이션
                 switch notification.type {
-                case .newQuestion, .answerRequest, .allAnswered:
+                case .newQuestion, .answerRequest, .allAnswered, .memberAnswered:
                     return .send(.delegate(.navigateToQuestion))
                 case .treeGrowth, .badgeEarned:
                     return .send(.delegate(.navigateToTree))
@@ -206,6 +206,15 @@ private func generateMockNotifications() -> [FTNotification] {
             body: "오늘 가장 감사했던 순간은 언제인가요?",
             isRead: false,
             createdAt: Date()
+        ),
+        FTNotification(
+            id: UUID(),
+            userId: userId,
+            type: .memberAnswered,
+            title: "엄마가 답변했어요",
+            body: "엄마가 오늘의 질문에 답변을 남겼어요. 확인해보세요!",
+            isRead: false,
+            createdAt: calendar.date(byAdding: .hour, value: -1, to: Date()) ?? Date()
         ),
         FTNotification(
             id: UUID(),

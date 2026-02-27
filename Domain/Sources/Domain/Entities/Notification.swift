@@ -37,8 +37,9 @@ public struct Notification: Equatable, Sendable {
 
 public enum NotificationType: Sendable, Equatable {
     case newQuestion
-    case allAnswered
-    case answerRequest
+    case memberAnswered  // 구성원 중 누군가 답변했을 때
+    case allAnswered     // 모든 구성원이 답변 완료했을 때
+    case answerRequest   // 누군가 나에게 답변 요청할 때
     case treeGrowth
     case badgeEarned
 }

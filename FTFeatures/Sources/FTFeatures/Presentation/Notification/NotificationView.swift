@@ -206,6 +206,8 @@ struct NotificationRow: View {
         switch notification.type {
         case .newQuestion:
             return "questionmark.bubble.fill"
+        case .memberAnswered:
+            return "person.fill.checkmark"
         case .allAnswered:
             return "checkmark.circle.fill"
         case .answerRequest:
@@ -221,6 +223,8 @@ struct NotificationRow: View {
         switch notification.type {
         case .newQuestion:
             return FTColor.info
+        case .memberAnswered:
+            return FTColor.primary
         case .allAnswered:
             return FTColor.success
         case .answerRequest:
