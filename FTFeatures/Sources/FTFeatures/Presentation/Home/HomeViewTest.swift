@@ -7,7 +7,50 @@
 
 import SwiftUI
 
-// MARK: - Data Model
+// MARK: - TopBar State Models
+
+struct HomeTopBarState {
+    var streakDays: Int
+    var groupName: String
+    var level: Int
+    var currentXP: Int
+    var maxXP: Int
+    var hasNotification: Bool
+    var todayQuestion: TopBarQuestion?
+
+    var levelName: String {
+        switch level {
+        case 1: return "Tiny Hedgehogs"
+        case 2: return "Growing Meadow"
+        case 3: return "Cozy Forest"
+        case 4: return "Warm Woodland"
+        case 5: return "Golden Meadow"
+        default: return "Legendary Meadow"
+        }
+    }
+
+    static let preview = HomeTopBarState(
+        streakDays: 5,
+        groupName: "Kim Family",
+        level: 3,
+        currentXP: 420,
+        maxXP: 500,
+        hasNotification: true,
+        todayQuestion: TopBarQuestion(
+            id: UUID(),
+            text: "What made you smile today?",
+            isAnswered: false
+        )
+    )
+}
+
+struct TopBarQuestion: Identifiable {
+    let id: UUID
+    let text: String
+    let isAnswered: Bool
+}
+
+// MARK: - Meadow Hedgehog Data Model
 
 private struct MeadowHedgehog: Identifiable {
     let id = UUID()
@@ -21,88 +64,278 @@ private struct MeadowHedgehog: Identifiable {
 }
 
 // MARK: - Main View
+
 struct MeadowHomeView: View {
-  var body: some View {
-    ZStack {
-      // 🌿 Background Meadow
-      LinearGradient(
-        colors: [
-          Color(red: 0.90, green: 0.98, blue: 0.90),
-          Color(red: 0.80, green: 0.93, blue: 0.82)
-        ],
-        startPoint: .top,
-        endPoint: .bottom
-      )
-      .ignoresSafeArea()
+    @State private var topBarState = HomeTopBarState.preview
 
-      VStack(spacing: 0) {
+    var body: some View {
+        ZStack {
+            // 🌿 Background Meadow
+            LinearGradient(
+                colors: [
+                    Color(red: 0.90, green: 0.98, blue: 0.90),
+                    Color(red: 0.80, green: 0.93, blue: 0.82)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
 
-        // Top Bar
-        TopBarView()
+            VStack(spacing: 0) {
+                // HUD TopBar
+                TopBarView(state: topBarState)
 
-        Spacer(minLength: 16)
+                Spacer(minLength: 12)
 
-        // Title
-        HeaderView()
+                // Meadow Scene
+                MeadowSceneView()
 
-        // Meadow Scene
-        MeadowSceneView()
+                Spacer()
 
-        Spacer()
-
-        // Bottom CTA
-        FooterButtonView()
-      }
-      .padding(.bottom, 20)
+                // Bottom CTA
+                FooterButtonView()
+            }
+            .padding(.bottom, 20)
+        }
     }
-  }
 }
 
-// MARK: - Top Bar
+// MARK: - TopBar View (HUD 3단 구조)
+
 struct TopBarView: View {
-  var body: some View {
-    HStack {
-      Circle()
-        .fill(Color.green.opacity(0.25))
-        .frame(width: 36, height: 36)
-        .overlay(
-          Image(systemName: "leaf.fill")
-            .foregroundColor(.green)
-        )
+    let state: HomeTopBarState
+    var onQuestionTap: () -> Void = { print("질문 카드 탭") }
+    var onNotificationTap: () -> Void = { print("알림 탭") }
 
-      Spacer()
+    var body: some View {
+        VStack(spacing: 10) {
+            // 1단: Streak | 그룹명 | 알림
+            StatusHUDView(
+                streakDays: state.streakDays,
+                groupName: state.groupName,
+                hasNotification: state.hasNotification,
+                onNotificationTap: onNotificationTap
+            )
 
-      Text("EVERYONE ANSWERED")
-        .font(.caption.bold())
-        .padding(.horizontal, 14)
-        .padding(.vertical, 6)
-        .background(.ultraThinMaterial)
-        .clipShape(Capsule())
+            // 2단: XP Bar
+            XPBarView(
+                level: state.level,
+                levelName: state.levelName,
+                currentXP: state.currentXP,
+                maxXP: state.maxXP
+            )
 
-      Spacer()
-
-      Image(systemName: "bell")
-        .frame(width: 36, height: 36)
-        .background(.ultraThinMaterial)
-        .clipShape(Circle())
+            // 3단: 오늘의 질문 카드
+            if let question = state.todayQuestion {
+                TodayQuestionCard(question: question, onTap: onQuestionTap)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 52)
+        .padding(.bottom, 8)
     }
-    .padding(.horizontal)
-    .padding(.top, 44)
-  }
 }
 
-// MARK: - Header
-struct HeaderView: View {
-  var body: some View {
-    VStack(spacing: 6) {
-      Text("Our family is together")
-        .font(.title3.bold())
+// MARK: - 1단: Status HUD
 
-      Text("5 hedgehogs in the meadow")
-        .font(.caption)
-        .foregroundColor(.green)
+private struct StatusHUDView: View {
+    let streakDays: Int
+    let groupName: String
+    let hasNotification: Bool
+    var onNotificationTap: () -> Void
+
+    var body: some View {
+        HStack {
+            StreakBadgeView(days: streakDays)
+            Spacer()
+            Text(groupName)
+                .font(.headline.bold())
+            Spacer()
+            NotificationButtonView(hasNotification: hasNotification, onTap: onNotificationTap)
+        }
     }
-  }
+}
+
+private struct StreakBadgeView: View {
+    let days: Int
+
+    @State private var scale: CGFloat = 1.0
+
+    // 7일 미만: 주황, 7일 이상: 오렌지, 30일 이상: 골드
+    private var badgeColor: Color {
+        if days >= 30 { return Color(red: 1.0, green: 0.75, blue: 0.0) }
+        if days >= 7  { return .orange }
+        return Color(red: 0.95, green: 0.5, blue: 0.2)
+    }
+
+    var body: some View {
+        HStack(spacing: 5) {
+            Text("🔥")
+                .font(.system(size: 16))
+            VStack(alignment: .leading, spacing: 1) {
+                Text("\(days) Days")
+                    .font(.caption.bold())
+                    .foregroundColor(badgeColor)
+                Text("Streak")
+                    .font(.system(size: 9))
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(
+            Capsule()
+                .fill(badgeColor.opacity(0.15))
+                .overlay(Capsule().stroke(badgeColor.opacity(0.35), lineWidth: 1))
+        )
+        .scaleEffect(scale)
+        .onAppear {
+            withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) {
+                scale = 1.06
+            }
+        }
+    }
+}
+
+private struct NotificationButtonView: View {
+    let hasNotification: Bool
+    var onTap: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            ZStack(alignment: .topTrailing) {
+                Image(systemName: "bell")
+                    .frame(width: 36, height: 36)
+                    .background(.ultraThinMaterial)
+                    .clipShape(Circle())
+
+                if hasNotification {
+                    Circle()
+                        .fill(.red)
+                        .frame(width: 8, height: 8)
+                        .offset(x: 2, y: -2)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - 2단: XP Bar
+
+private struct XPBarView: View {
+    let level: Int
+    let levelName: String
+    let currentXP: Int
+    let maxXP: Int
+
+    @State private var progress: CGFloat = 0
+
+    private var xpRatio: CGFloat {
+        guard maxXP > 0 else { return 0 }
+        return min(CGFloat(currentXP) / CGFloat(maxXP), 1.0)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                HStack(spacing: 6) {
+                    Text("Lv.\(level)")
+                        .font(.caption.bold())
+                        .foregroundColor(.green)
+                    Text(levelName)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+                Text("\(currentXP) / \(maxXP) XP")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.green.opacity(0.15))
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(
+                            LinearGradient(
+                                colors: [.green, Color(red: 0.2, green: 0.75, blue: 0.4)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .frame(width: geo.size.width * progress)
+                }
+            }
+            .frame(height: 8)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(.ultraThinMaterial)
+        )
+        .onAppear {
+            withAnimation(.spring(duration: 1.0, bounce: 0.25)) {
+                progress = xpRatio
+            }
+        }
+    }
+}
+
+// MARK: - 3단: 오늘의 질문 카드
+
+private struct TodayQuestionCard: View {
+    let question: TopBarQuestion
+    var onTap: () -> Void
+
+    @State private var isPressed = false
+
+    var body: some View {
+        Button { onTap() } label: {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 4) {
+                        Text("🌿")
+                            .font(.caption)
+                        Text("Today's Question")
+                            .font(.caption.bold())
+                            .foregroundColor(.green)
+                        if question.isAnswered {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.caption)
+                                .foregroundColor(.green)
+                        }
+                    }
+                    Text(question.text)
+                        .font(.subheadline.bold())
+                        .foregroundColor(.primary)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption.bold())
+                    .foregroundColor(.secondary)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color.white.opacity(0.85))
+                    .shadow(color: .black.opacity(0.07), radius: 6, x: 0, y: 2)
+            )
+        }
+        .buttonStyle(.plain)
+        .scaleEffect(isPressed ? 0.97 : 1.0)
+        .animation(.easeInOut(duration: 0.12), value: isPressed)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in isPressed = true }
+                .onEnded { _ in isPressed = false }
+        )
+    }
 }
 
 // MARK: - Meadow Scene (구역 내 이동 + 충돌 감지)
@@ -166,7 +399,7 @@ struct MeadowSceneView: View {
                 timer = nil
             }
         }
-        .frame(height: 320)
+        .frame(height: 300)
     }
 
     private func initHedgehogs(size: CGSize) {

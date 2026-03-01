@@ -96,6 +96,13 @@ private struct FamilyMainContent: View {
                 .padding(.horizontal, FTSpacing.lg)
                 .padding(.top, FTSpacing.sm)
 
+                // Hedgehog Grid
+                FamilyHedgehogGridSection(
+                    members: store.members,
+                    onCopyTapped: { store.send(.copyInviteCodeTapped) }
+                )
+                .padding(.horizontal, FTSpacing.lg)
+
                 // Invite Section
                 InviteCodeCard(
                     inviteCode: store.inviteCode,
@@ -388,6 +395,138 @@ private struct FamilyMemberRow: View {
         case .daughter: return "figure.and.child.holdinghands"
         case .other: return "person.fill"
         }
+    }
+}
+
+// MARK: - Family Hedgehog Grid Section
+private struct FamilyHedgehogGridSection: View {
+    let members: [User]
+    let onCopyTapped: () -> Void
+
+    private let columns = [
+        GridItem(.flexible(), spacing: FTSpacing.md),
+        GridItem(.flexible(), spacing: FTSpacing.md)
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: FTSpacing.md) {
+            FTSectionHeader(
+                title: "우리 가족 고슴도치",
+                subtitle: "\(members.count)마리"
+            )
+
+            LazyVGrid(columns: columns, spacing: FTSpacing.md) {
+                ForEach(Array(members.enumerated()), id: \.element.id) { index, member in
+                    FamilyHedgehogCard(member: member, animationDelay: Double(index) * 0.3)
+                }
+
+                FamilyInviteCard(onTapped: onCopyTapped)
+            }
+        }
+    }
+}
+
+// MARK: - Family Hedgehog Card
+private struct FamilyHedgehogCard: View {
+    let member: User
+    let animationDelay: Double
+
+    @State private var floatOffset: CGFloat = 0
+    @State private var isPressed: Bool = false
+
+    var body: some View {
+        HedgehogView(
+            name: member.name,
+            color: roleColor(for: member.role),
+            hasAnswered: false,
+            hasCurrentUserAnswered: false,
+            onViewAnswer: {},
+            onAnswerQuestion: {}
+        )
+        .padding(.vertical, FTSpacing.md)
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: FTRadius.xl)
+                .fill(FTColor.cardBackground)
+                .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 2)
+        )
+        .offset(y: floatOffset)
+        .scaleEffect(isPressed ? 0.94 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isPressed)
+        .onAppear {
+            withAnimation(
+                .easeInOut(duration: 1.8)
+                .delay(animationDelay)
+                .repeatForever(autoreverses: true)
+            ) {
+                floatOffset = -5
+            }
+        }
+        .onTapGesture {
+            isPressed = true
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 150_000_000)
+                isPressed = false
+            }
+        }
+    }
+
+    private func roleColor(for role: FamilyRole) -> Color {
+        switch role {
+        case .father: return FTColor.primary
+        case .mother: return Color.pink
+        case .son: return Color.blue.opacity(0.8)
+        case .daughter: return Color.purple.opacity(0.8)
+        case .other: return FTColor.textSecondary
+        }
+    }
+}
+
+// MARK: - Family Invite Card
+private struct FamilyInviteCard: View {
+    let onTapped: () -> Void
+
+    @State private var isPressed: Bool = false
+
+    var body: some View {
+        Button(action: onTapped) {
+            VStack(spacing: FTSpacing.sm) {
+                ZStack {
+                    Circle()
+                        .fill(FTColor.primaryLight)
+                        .frame(width: 48, height: 48)
+
+                    Image(systemName: "plus")
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundColor(FTColor.primary)
+                }
+                .padding(.top, FTSpacing.md)
+
+                Text("초대하기")
+                    .font(FTFont.body1())
+                    .foregroundColor(FTColor.textSecondary)
+            }
+            .padding(.vertical, FTSpacing.md)
+            .frame(maxWidth: .infinity)
+            .background(
+                RoundedRectangle(cornerRadius: FTRadius.xl)
+                    .fill(FTColor.surface.opacity(0.6))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: FTRadius.xl)
+                            .strokeBorder(
+                                style: StrokeStyle(lineWidth: 2, dash: [6, 4])
+                            )
+                            .foregroundColor(FTColor.divider)
+                    )
+            )
+        }
+        .scaleEffect(isPressed ? 0.96 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isPressed)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in isPressed = true }
+                .onEnded { _ in isPressed = false }
+        )
     }
 }
 
