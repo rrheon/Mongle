@@ -6,11 +6,16 @@
 //
 
 import SwiftUI
+import AuthenticationServices
 import ComposableArchitecture
 
 // MARK: - Login View
+
 struct LoginView: View {
+    @Bindable var store: StoreOf<LoginFeature>
+
     @State private var isAnimating = false
+    @State private var appleProvider = AppleLoginProvider()
 
     var body: some View {
         ZStack {
@@ -27,7 +32,6 @@ struct LoginView: View {
 
                 // Logo Section
                 VStack(spacing: FTSpacing.lg) {
-                    // Animated Logo
                     ZStack {
                         Circle()
                             .fill(FTColor.primaryLight)
@@ -41,7 +45,6 @@ struct LoginView: View {
                         value: isAnimating
                     )
 
-                    // Title
                     VStack(spacing: FTSpacing.xs) {
                         Text("FamTree")
                             .font(FTFont.heading1())
@@ -55,9 +58,17 @@ struct LoginView: View {
 
                 Spacer()
 
+                // Error Banner
+                if let errorMessage = store.errorMessage {
+                    FTErrorBanner(message: errorMessage) {
+                        store.send(.dismissError)
+                    }
+                    .padding(.horizontal, FTSpacing.lg)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                }
+
                 // Social Login Section
                 VStack(spacing: FTSpacing.lg) {
-                    // Divider with text
                     HStack(spacing: FTSpacing.md) {
                         Rectangle()
                             .fill(FTColor.divider)
@@ -70,14 +81,13 @@ struct LoginView: View {
                             .frame(height: 1)
                     }
 
-                    // Social Login Buttons - Horizontal
                     HStack(spacing: FTSpacing.md) {
                         SocialLoginCircleButton(
                             icon: "kakao_icon",
                             backgroundColor: FTColor.kakao,
                             label: "카카오"
                         ) {
-                            // Kakao login
+                            // TODO: KakaoLoginProvider 구현 후 연결
                         }
 
                         SocialLoginCircleButton(
@@ -85,31 +95,48 @@ struct LoginView: View {
                             backgroundColor: FTColor.naver,
                             label: "네이버"
                         ) {
-                            // Naver login
+                            // TODO: NaverLoginProvider 구현 후 연결
                         }
 
+                        // Apple 로그인 - AppleLoginProvider 연결
                         SocialLoginCircleButton(
                             systemIcon: "apple.logo",
                             backgroundColor: FTColor.apple,
                             iconColor: FTColor.appleText,
                             label: "Apple"
                         ) {
-                            // Apple login
+                            store.send(.socialLoginTapped(.apple))
+                            Task { @MainActor in
+                                do {
+                                    let credential = try await appleProvider.authenticate()
+                                    store.send(.socialCredentialReceived(credential))
+                                } catch {
+                                    let nsError = error as NSError
+                                    // 사용자가 직접 취소한 경우(1001)는 에러 표시 안 함
+                                    guard nsError.domain != ASAuthorizationError.errorDomain
+                                            || nsError.code != ASAuthorizationError.canceled.rawValue
+                                    else { return }
+                                    store.send(.socialLoginFailed(error.localizedDescription))
+                                }
+                            }
                         }
                     }
+                    .disabled(store.isLoading)
+                    .opacity(store.isLoading ? 0.5 : 1.0)
                 }
 
                 // Primary Actions
                 VStack(spacing: FTSpacing.md) {
                     FTButton("이메일로 로그인", style: .primary) {
-                        // Email login
+                        store.send(.emailLoginTapped)
                     }
 
                     FTButton("회원가입", style: .secondary) {
-                        // Sign up
+                        store.send(.emailSignupTapped)
                     }
                 }
                 .padding(.horizontal, FTSpacing.lg)
+                .disabled(store.isLoading)
 
                 // Guest mode
                 Button {
@@ -126,7 +153,20 @@ struct LoginView: View {
                     .frame(height: FTSpacing.lg)
             }
             .padding(.horizontal, FTSpacing.lg)
+
+            // Loading Overlay
+            if store.isLoading {
+                Color.black.opacity(0.15)
+                    .ignoresSafeArea()
+
+                ProgressView()
+                    .progressViewStyle(.circular)
+                    .scaleEffect(1.4)
+                    .tint(FTColor.primary)
+            }
         }
+        .animation(.easeInOut(duration: 0.2), value: store.isLoading)
+        .animation(.easeInOut(duration: 0.2), value: store.errorMessage)
         .onAppear {
             isAnimating = true
         }
@@ -134,6 +174,7 @@ struct LoginView: View {
 }
 
 // MARK: - Social Login Circle Button
+
 private struct SocialLoginCircleButton: View {
     var icon: String? = nil
     var systemIcon: String? = nil
@@ -172,7 +213,8 @@ private struct SocialLoginCircleButton: View {
     }
 }
 
-// MARK: - Onboarding Page View (Optional - for future)
+// MARK: - Onboarding Page View
+
 struct OnboardingPageView: View {
     let icon: String
     let title: String
@@ -207,7 +249,27 @@ struct OnboardingPageView: View {
 }
 
 #Preview("Login") {
-    LoginView()
+    LoginView(
+        store: Store(initialState: LoginFeature.State()) {
+            LoginFeature()
+        }
+    )
+}
+
+#Preview("Login - Loading") {
+    LoginView(
+        store: Store(initialState: LoginFeature.State(isLoading: true)) {
+            LoginFeature()
+        }
+    )
+}
+
+#Preview("Login - Error") {
+    LoginView(
+        store: Store(initialState: LoginFeature.State(errorMessage: "Apple 로그인에 실패했습니다.")) {
+            LoginFeature()
+        }
+    )
 }
 
 #Preview("Onboarding Page") {
