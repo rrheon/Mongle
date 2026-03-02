@@ -1,6 +1,6 @@
 //
 //  TreeProgress.swift
-//  FamTree
+//  Mongle
 //
 //  Created by 최용헌 on 12/10/25.
 //
@@ -45,5 +45,3 @@ public enum TreeStage: Int, Sendable, Equatable {
     case bound = 6
 }
 
-/// 앱 호환성을 위한 typealias
-public typealias FamilyTree = TreeProgress

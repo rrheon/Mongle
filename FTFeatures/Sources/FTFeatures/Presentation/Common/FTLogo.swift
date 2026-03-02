@@ -1,6 +1,6 @@
 //
 //  FTLogo.swift
-//  FamTree
+//  Mongle
 //
 //  Created by 최용헌 on 12/11/25.
 //
@@ -9,8 +9,8 @@ import SwiftUI
 
 struct FTLogo: View {
   enum FTLogoType: String {
-    case FamTreeIcon
-    case FamTreeImg
+    case MongleIcon
+    case MongleImg
   }
   
   enum Size {
@@ -30,7 +30,7 @@ struct FTLogo: View {
   let size: Size
   let logo: FTLogoType
   
-  init(size: Size = .medium, type: FTLogoType = .FamTreeIcon) {
+  init(size: Size = .medium, type: FTLogoType = .MongleIcon) {
     self.size = size
     self.logo = type
   }
@@ -52,9 +52,9 @@ struct FTLogo: View {
   }
   
   VStack(spacing: 20) {
-    FTLogo(size: .small, type: .FamTreeImg)
-    FTLogo(size: .medium, type: .FamTreeImg)
-    FTLogo(size: .large, type: .FamTreeImg)
+    FTLogo(size: .small, type: .MongleImg)
+    FTLogo(size: .medium, type: .MongleImg)
+    FTLogo(size: .large, type: .MongleImg)
       .foregroundStyle(Color.blue)
   }
 }

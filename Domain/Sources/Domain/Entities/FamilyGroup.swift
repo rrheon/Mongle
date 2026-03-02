@@ -1,20 +1,20 @@
 //
 //  Family.swift
-//  FamTree
+//  Mongle
 //
 //  Created by 최용헌 on 12/10/25.
 //
 
 import Foundation
 
-public struct Family: Equatable, Sendable {
+public struct MongleGroup: Equatable, Sendable {
     public let id: UUID
     public let name: String
     public let memberIds: [UUID]
     public let createdBy: UUID
     public let createdAt: Date
     public let inviteCode: String
-    public let treeProgressId: UUID
+    public let groupProgressID: UUID
 
     public init(
         id: UUID,
@@ -31,6 +31,6 @@ public struct Family: Equatable, Sendable {
         self.createdBy = createdBy
         self.createdAt = createdAt
         self.inviteCode = inviteCode
-        self.treeProgressId = treeProgressId
+        self.groupProgressID = treeProgressId
     }
 }

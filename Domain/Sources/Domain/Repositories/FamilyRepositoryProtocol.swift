@@ -1,26 +1,28 @@
 //
 //  FamilyRepositoryProtocol.swift
-//  FamTree
+//  Mongle
 //
 //  Created by 최용헌 on 12/11/25.
 //
 
 import Foundation
 
-public protocol FamilyRepositoryInterface: Sendable {
-    func create(_ family: Family) async throws -> Family
-    func get(id: UUID) async throws -> Family
-    func findByInviteCode(_ inviteCode: String) async throws -> Family?
-    func getFamiliesByUserId(_ userId: UUID) async throws -> [Family]
-    func update(_ family: Family) async throws -> Family
+public protocol MongleRepositoryInterface: Sendable {
+    func create(_ family: MongleGroup) async throws -> MongleGroup
+    func get(id: UUID) async throws -> MongleGroup
+    func findByInviteCode(_ inviteCode: String) async throws -> MongleGroup?
+    func getFamiliesByUserId(_ userId: UUID) async throws -> [MongleGroup]
+    func update(_ family: MongleGroup) async throws -> MongleGroup
     func delete(id: UUID) async throws
     func addMember(_ member: Member) async throws
     func removeMember(userId: UUID, familyId: UUID) async throws
     func getMembers(familyId: UUID) async throws -> [Member]
     func isMember(userId: UUID, familyId: UUID) async throws -> Bool
+    /// 현재 인증된 유저의 가족을 구성원 목록과 함께 조회. 가족이 없으면 nil.
+    func getMyFamily() async throws -> (MongleGroup, [User])?
 }
 
-public enum FamilyError: Error, Equatable, Sendable {
+public enum MongleError: Error, Equatable, Sendable {
     case familyNotFound
     case invalidInviteCode
     case alreadyMember

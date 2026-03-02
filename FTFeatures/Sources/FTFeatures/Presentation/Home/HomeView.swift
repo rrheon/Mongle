@@ -1,6 +1,6 @@
 //
 //  HomeView.swift
-//  FamTree
+//  Mongle
 //
 //  Created by 최용헌 on 12/11/25.
 //
@@ -351,7 +351,7 @@ struct NoQuestionCard: View {
 
 // MARK: - Quick Stats Section
 struct QuickStatsSection: View {
-    let tree: FamilyTree
+    let tree: TreeProgress
 
     var body: some View {
         HStack(spacing: FTSpacing.md) {
@@ -421,7 +421,7 @@ struct QuickStatItem: View {
 
 // MARK: - Tree Preview Card
 struct TreePreviewCard: View {
-    let tree: FamilyTree
+    let tree: TreeProgress
     @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
@@ -562,12 +562,12 @@ struct FamilyMembersSection: View {
                 category: .gratitude,
                 order: 1
             ),
-            familyTree: FamilyTree(
+            familyTree: TreeProgress(
                 stage: .youngTree,
                 totalAnswers: 42,
                 consecutiveDays: 7
             ),
-            family: Family(
+            family: MongleGroup(
                 id: UUID(),
                 name: "우리 가족",
                 memberIds: [dadId, momId, meId, sisId],
@@ -604,12 +604,12 @@ struct FamilyMembersSection: View {
                 category: .memory,
                 order: 1
             ),
-            familyTree: FamilyTree(
+            familyTree: TreeProgress(
                 stage: .matureTree,
                 totalAnswers: 65,
                 consecutiveDays: 14
             ),
-            family: Family(
+            family: MongleGroup(
                 id: UUID(),
                 name: "행복한 우리집",
                 memberIds: [dadId, momId, meId],

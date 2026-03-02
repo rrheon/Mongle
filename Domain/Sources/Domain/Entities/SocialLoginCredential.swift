@@ -1,6 +1,6 @@
 //
 //  SocialLoginCredential.swift
-//  FamTree
+//  Mongle
 //
 
 import Foundation

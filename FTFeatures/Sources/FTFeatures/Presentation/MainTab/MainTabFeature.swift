@@ -1,6 +1,6 @@
 //
 //  MainTabFeature.swift
-//  FamTree
+//  Mongle
 //
 //  Created by 최용헌 on 12/11/25.
 //
@@ -121,6 +121,10 @@ public struct MainTabFeature {
 
             // MARK: - Settings Delegate Actions
             case .settings(.delegate(.logout)):
+                return .send(.logout)
+
+            case .settings(.delegate(.accountDeleted)):
+                // 회원탈퇴 후 로그아웃과 동일하게 처리 (RootFeature에서 미인증 상태로 전환)
                 return .send(.logout)
 
             case .settings(.delegate(.openURL)):

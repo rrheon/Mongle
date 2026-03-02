@@ -1,6 +1,6 @@
 //
 //  JoinFamilyView.swift
-//  FamTree
+//  Mongle
 //
 //  Created by Claude on 2025-01-06.
 //
@@ -366,7 +366,7 @@ struct MoodColorButton: View {
 
 // MARK: - Found Family Card
 struct FoundFamilyCard: View {
-    let family: Family
+    let family: MongleGroup
 
     var body: some View {
         VStack(spacing: FTSpacing.md) {
@@ -424,7 +424,7 @@ struct FoundFamilyCard: View {
     JoinFamilyView(
         store: Store(initialState: JoinFamilyFeature.State(
             inviteCode: "TESTCODE",
-            foundFamily: Family(
+            foundFamily: MongleGroup(
                 id: UUID(),
                 name: "행복한 가족",
                 memberIds: [UUID(), UUID(), UUID()],
@@ -442,7 +442,7 @@ struct FoundFamilyCard: View {
 #Preview("Profile Creation") {
     let state = JoinFamilyFeature.State(
         inviteCode: "TESTCODE",
-        foundFamily: Family(
+        foundFamily: MongleGroup(
             id: UUID(),
             name: "행복한 가족",
             memberIds: [UUID(), UUID()],

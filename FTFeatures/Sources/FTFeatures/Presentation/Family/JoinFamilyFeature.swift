@@ -1,6 +1,6 @@
 //
 //  JoinFamilyFeature.swift
-//  FamTree
+//  Mongle
 //
 //  Created by Claude on 2025-01-06.
 //
@@ -66,7 +66,7 @@ public struct JoinFamilyFeature {
         public var selectedRole: FamilyRole = .son
         public var isLoading: Bool = false
         public var isSearching: Bool = false
-        public var foundFamily: Family?
+        public var foundFamily: MongleGroup?
         public var errorMessage: String?
 
         // MARK: Profile Step
@@ -90,7 +90,7 @@ public struct JoinFamilyFeature {
             selectedRole: FamilyRole = .son,
             isLoading: Bool = false,
             isSearching: Bool = false,
-            foundFamily: Family? = nil,
+            foundFamily: MongleGroup? = nil,
             errorMessage: String? = nil
         ) {
             self.inviteCode = inviteCode
@@ -119,14 +119,14 @@ public struct JoinFamilyFeature {
         case backToSearch
 
         // MARK: - Internal Actions
-        case searchFamilyResponse(Result<Family?, JoinFamilyError>)
-        case joinFamilyResponse(Result<Family, JoinFamilyError>)
+        case searchFamilyResponse(Result<MongleGroup?, JoinFamilyError>)
+        case joinFamilyResponse(Result<MongleGroup, JoinFamilyError>)
 
         // MARK: - Delegate Actions
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
-            case familyJoined(Family)
+            case familyJoined(MongleGroup)
             case cancelled
         }
     }
@@ -189,7 +189,7 @@ public struct JoinFamilyFeature {
                     try await Task.sleep(nanoseconds: 1_000_000_000)
 
                     if code == "TESTCODE" || code.count == 8 {
-                        let family = Family(
+                        let family = MongleGroup(
                             id: UUID(),
                             name: "행복한 가족",
                             memberIds: [UUID(), UUID()],

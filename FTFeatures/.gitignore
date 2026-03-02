@@ -6,3 +6,6 @@ DerivedData/
 .swiftpm/configuration/registries.json
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .netrc
+
+# 민감 정보 — 절대 커밋하지 말 것
+Sources/FTFeatures/Secrets.swift

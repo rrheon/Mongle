@@ -1,6 +1,6 @@
 //
 //  DailyQuestion.swift
-//  FamTree
+//  Mongle
 //
 //  Created by 최용헌 on 12/10/25.
 //

@@ -1,6 +1,6 @@
 //
 //  EmailLoginView.swift
-//  FamTree
+//  Mongle
 //
 //  Created by 최용헌 on 12/13/25.
 //

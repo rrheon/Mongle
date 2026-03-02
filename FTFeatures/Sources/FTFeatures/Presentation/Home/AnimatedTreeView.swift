@@ -1,6 +1,6 @@
 //
 //  AnimatedTreeView.swift
-//  FamTree
+//  Mongle
 //
 //  Created by 최용헌 on 12/14/25.
 //

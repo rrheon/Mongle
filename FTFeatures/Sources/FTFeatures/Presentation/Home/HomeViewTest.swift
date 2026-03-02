@@ -464,7 +464,7 @@ struct MeadowSceneView: View {
                 hedgehogs[i].targetPosition = randomPos(size: size)
             }
 
-            // 다른 고슴도치와 충돌 → overlapLimit 프레임 초과 시 새 목표 설정
+            // 다른 몽글와 충돌 → overlapLimit 프레임 초과 시 새 목표 설정
             let collides = hedgehogs.indices.contains { j in
                 guard j != i else { return false }
                 return hypot(pos.x - hedgehogs[j].position.x,
@@ -500,7 +500,7 @@ struct HedgehogView: View {
         VStack(spacing: 4) {
             // 상단 버튼: 답변 여부에 따라 다른 스타일
             if hasAnswered {
-                // 이 고슴도치가 답변한 경우
+                // 이 몽글가 답변한 경우
                 // 1) 본인도 답변한 경우 → 답변 보기
                 // 2) 본인이 답변하지 않은 경우 → 답변하기
                 Button(action: hasCurrentUserAnswered ? onViewAnswer : onAnswerQuestion) {
@@ -517,7 +517,7 @@ struct HedgehogView: View {
                     .clipShape(Capsule())
                 }
             } else {
-                // 이 고슴도치가 아직 답변하지 않은 경우
+                // 이 몽글캐릭터가 아직 답변하지 않은 경우
                 HStack(spacing: 4) {
                     Image(systemName: "clock")
                         .font(.system(size: 10))
@@ -531,7 +531,7 @@ struct HedgehogView: View {
                 .clipShape(Capsule())
             }
 
-            // 고슴도치 캐릭터
+            // 몽글 캐릭터
             Circle()
                 .fill(color)
                 .frame(width: 56, height: 56)
@@ -540,9 +540,25 @@ struct HedgehogView: View {
                         .stroke(Color.white.opacity(0.5), lineWidth: 2)
                 )
                 .overlay(
-                    Text("• •")
-                        .font(.caption)
-                        .offset(y: -2)
+                    HStack(spacing: 6) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.white)
+                                .frame(width: 13, height: 13)
+                            Circle()
+                                .fill(Color.black)
+                                .frame(width: 10, height: 10)
+                        }
+                        ZStack {
+                            Circle()
+                                .fill(Color.white)
+                                .frame(width: 13, height: 13)
+                            Circle()
+                                .fill(Color.black)
+                                .frame(width: 10, height: 10)
+                        }
+                    }
+                    .offset(y: -2)
                 )
                 .shadow(radius: 4)
 

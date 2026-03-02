@@ -1,6 +1,6 @@
 //
 //  FTButton.swift
-//  FamTree
+//  Mongle
 //
 //  Created by 최용헌 on 12/11/25.
 //

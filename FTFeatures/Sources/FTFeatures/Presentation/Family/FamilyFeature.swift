@@ -1,6 +1,6 @@
 //
 //  FamilyFeature.swift
-//  FamTree
+//  Mongle
 //
 //  Created by Claude on 2025-01-06.
 //
@@ -16,7 +16,7 @@ import UIKit
 public struct FamilyFeature {
     @ObservableState
     public struct State: Equatable {
-        public var family: Family?
+        public var family: MongleGroup?
         public var members: [User] = []
         public var currentUser: User?
         public var isLoading: Bool = false
@@ -37,7 +37,7 @@ public struct FamilyFeature {
         }
 
         public init(
-            family: Family? = nil,
+            family: MongleGroup? = nil,
             members: [User] = [],
             currentUser: User? = nil,
             isLoading: Bool = false,
@@ -81,11 +81,11 @@ public struct FamilyFeature {
     }
 
     public struct LoadedData: Equatable, Sendable {
-        public let family: Family?
+        public let family: MongleGroup?
         public let members: [User]
         public let currentUser: User?
 
-        public init(family: Family?, members: [User], currentUser: User?) {
+        public init(family: MongleGroup?, members: [User], currentUser: User?) {
             self.family = family
             self.members = members
             self.currentUser = currentUser
@@ -136,7 +136,7 @@ public struct FamilyFeature {
                         mockCurrentUser
                     ]
 
-                    let mockFamily = Family(
+                    let mockFamily = MongleGroup(
                         id: UUID(),
                         name: "우리 가족",
                         memberIds: mockMembers.map { $0.id },
@@ -174,7 +174,7 @@ public struct FamilyFeature {
                         mockCurrentUser
                     ]
 
-                    let mockFamily = Family(
+                    let mockFamily = MongleGroup(
                         id: UUID(),
                         name: "우리 가족",
                         memberIds: mockMembers.map { $0.id },

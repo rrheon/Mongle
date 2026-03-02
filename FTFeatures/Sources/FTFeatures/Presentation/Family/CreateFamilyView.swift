@@ -1,6 +1,6 @@
 //
 //  CreateFamilyView.swift
-//  FamTree
+//  Mongle
 //
 //  Created by Claude on 2025-01-06.
 //
@@ -150,7 +150,7 @@ struct CreateFamilyView: View {
 
 // MARK: - Family Invite Success View
 struct FamilyInviteSuccessView: View {
-    let family: Family
+    let family: MongleGroup
     let onDone: () -> Void
 
     @State private var showShareSheet = false
@@ -246,7 +246,7 @@ struct FamilyInviteSuccessView: View {
         }
         .sheet(isPresented: $showShareSheet) {
             ShareSheet(items: [
-                "가족 앱 FamTree에 참여해요! 🌳\n초대 코드: \(family.inviteCode)"
+                "몽글에 참여해요! 🦔\n초대 코드: \(family.inviteCode)"
             ])
         }
         .onAppear {
@@ -347,7 +347,7 @@ extension FamilyRole: CaseIterable {
 
 #Preview("Invite Success") {
     FamilyInviteSuccessView(
-        family: Family(
+        family: MongleGroup(
             id: UUID(),
             name: "행복한 우리집",
             memberIds: [UUID()],

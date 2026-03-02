@@ -1,6 +1,6 @@
 //
 //  CreateFamilyFeature.swift
-//  FamTree
+//  Mongle
 //
 //  Created by Claude on 2025-01-06.
 //
@@ -23,7 +23,7 @@ public struct CreateFamilyFeature {
         public var selectedRole: FamilyRole = .father
         public var isLoading: Bool = false
         public var errorMessage: String?
-        public var createdFamily: Family?
+        public var createdFamily: MongleGroup?
 
         public var isValid: Bool {
             !familyName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -52,13 +52,13 @@ public struct CreateFamilyFeature {
         case doneTapped   // 초대 화면에서 "시작하기" 탭
 
         // MARK: - Internal Actions
-        case createFamilyResponse(Result<Family, FamilyCreationError>)
+        case createFamilyResponse(Result<MongleGroup, FamilyCreationError>)
 
         // MARK: - Delegate Actions
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
-            case familyCreated(Family)
+            case familyCreated(MongleGroup)
             case cancelled
         }
     }
@@ -110,7 +110,7 @@ public struct CreateFamilyFeature {
                     // TODO: 실제 API 호출로 교체
                     try await Task.sleep(nanoseconds: 1_000_000_000)
 
-                    let newFamily = Family(
+                    let newFamily = MongleGroup(
                         id: UUID(),
                         name: familyName,
                         memberIds: [UUID()],

@@ -1,6 +1,6 @@
 //
 //  FamilyTabView.swift
-//  FamTree
+//  Mongle
 //
 //  Created by Claude on 2025-01-06.
 //
@@ -584,7 +584,7 @@ private struct FamilyOnboardingView: View {
 #Preview("Family Tab - With Family") {
     FamilyTabView(
         store: Store(initialState: FamilyFeature.State(
-            family: Family(
+            family: MongleGroup(
                 id: UUID(),
                 name: "우리 가족",
                 memberIds: [UUID(), UUID(), UUID()],

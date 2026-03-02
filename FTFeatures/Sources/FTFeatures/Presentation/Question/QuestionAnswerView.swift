@@ -63,7 +63,7 @@ struct TopBar: View {
 
       Spacer()
 
-      Text("FamilyTree")
+      Text("Mongle")
         .font(.caption.bold())
         .foregroundColor(Color(red: 0.55, green: 0.43, blue: 0.38))
         .tracking(2)
