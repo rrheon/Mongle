@@ -1,6 +1,6 @@
 //
 //  RootFeature.swift
-//  FamTree
+//  Mongle
 //
 //  Created by 최용헌 on 12/11/25.
 //
@@ -14,8 +14,10 @@ public struct RootFeature {
     @ObservableState
     public struct State: Equatable {
         public var appState: AppState = .loading
+        public var login: LoginFeature.State
         public var mainTab: MainTabFeature.State?
         public var currentUser: User?
+        public var loginProviderType: SocialProviderType?
         public var selectedQuestion: Question?
 
         // Child Feature States
@@ -31,16 +33,20 @@ public struct RootFeature {
 
         public init(
             appState: AppState = .loading,
+            login: LoginFeature.State = LoginFeature.State(),
             mainTab: MainTabFeature.State? = nil,
             currentUser: User? = nil,
+            loginProviderType: SocialProviderType? = nil,
             selectedQuestion: Question? = nil,
             createFamily: CreateFamilyFeature.State? = nil,
             joinFamily: JoinFamilyFeature.State? = nil,
             questionDetail: QuestionDetailFeature.State? = nil
         ) {
             self.appState = appState
+            self.login = login
             self.mainTab = mainTab
             self.currentUser = currentUser
+            self.loginProviderType = loginProviderType
             self.selectedQuestion = selectedQuestion
             self.createFamily = createFamily
             self.joinFamily = joinFamily
@@ -52,6 +58,7 @@ public struct RootFeature {
         case onAppear
         case checkAuthResponse(User?)
         case loadDataResponse(Result<RootData, Error>)
+        case login(LoginFeature.Action)
         case mainTab(MainTabFeature.Action)
         case logout
 
@@ -70,16 +77,16 @@ public struct RootFeature {
     public struct RootData: Equatable, Sendable {
         public let user: User?
         public let question: Question?
-        public let tree: FamilyTree
-        public let family: Family?
+        public let tree: TreeProgress
+        public let family: MongleGroup?
         public let familyMembers: [User]
         public let hasAnsweredToday: Bool
 
         public init(
             user: User?,
             question: Question?,
-            tree: FamilyTree,
-            family: Family?,
+            tree: TreeProgress,
+            family: MongleGroup?,
             familyMembers: [User],
             hasAnsweredToday: Bool = false
         ) {
@@ -92,75 +99,60 @@ public struct RootFeature {
         }
     }
 
+    @Dependency(\.authRepository) var authRepository
+    @Dependency(\.familyRepository) var familyRepository
+    @Dependency(\.questionRepository) var questionRepository
+    @Dependency(\.treeRepository) var treeRepository
+
     public init() {}
 
     public var body: some Reducer<State, Action> {
+        Scope(state: \.login, action: \.login) {
+            LoginFeature()
+        }
+
         Reduce { state, action in
             switch action {
             case .onAppear:
                 state.appState = .loading
                 return .run { send in
-                    await send(.refreshHomeData)
+                    let user = try? await authRepository.getCurrentUser()
+                    await send(.checkAuthResponse(user))
                 }
 
             case .refreshHomeData:
-                return .run { send in
-                    // TODO: 실제 API 호출로 교체
-                    try await Task.sleep(nanoseconds: 500_000_000)
+                return .run { [currentUser = state.currentUser] send in
+                    do {
+                        let familyResult = try await familyRepository.getMyFamily()
+                        let family = familyResult?.0
+                        let familyMembers = familyResult?.1 ?? []
 
-                    // 임시 mock 데이터
-                    let mockUser = User(
-                        id: UUID(),
-                        email: "me@example.com",
-                        name: "나",
-                        profileImageURL: nil,
-                        role: .son,
-                        createdAt: .now
-                    )
+                        let todayQuestion = try await questionRepository.getTodayQuestion()
+                        let tree = try await treeRepository.getMyTreeProgress() ?? TreeProgress()
 
-                    let mockMembers = [
-                        User(id: UUID(), email: "dad@example.com", name: "아빠", profileImageURL: nil, role: .father, createdAt: .now),
-                        User(id: UUID(), email: "mom@example.com", name: "엄마", profileImageURL: nil, role: .mother, createdAt: .now),
-                        mockUser
-                    ]
-
-                    let mockData = RootData(
-                        user: mockUser,
-                        question: Question(
-                            id: UUID(),
-                            content: "오늘 가장 감사했던 순간은 언제인가요?",
-                            category: .gratitude,
-                            order: 1
-                        ),
-                        tree: FamilyTree(
-                            stage: .youngTree,
-                            totalAnswers: 12,
-                            consecutiveDays: 5
-                        ),
-                        family: Family(
-                            id: UUID(),
-                            name: "우리 가족",
-                            memberIds: mockMembers.map { $0.id },
-                            createdBy: UUID(),
-                            createdAt: .now,
-                            inviteCode: "ABCD1234",
-                            treeProgressId: UUID()
-                        ),
-                        familyMembers: mockMembers,
-                        hasAnsweredToday: false
-                    )
-
-                    await send(.loadDataResponse(.success(mockData)))
+                        let data = RootData(
+                            user: currentUser,
+                            question: todayQuestion,
+                            tree: tree,
+                            family: family,
+                            familyMembers: familyMembers,
+                            hasAnsweredToday: false
+                        )
+                        await send(.loadDataResponse(.success(data)))
+                    } catch {
+                        await send(.loadDataResponse(.failure(error)))
+                    }
                 }
 
             case .checkAuthResponse(let user):
                 if let user = user {
                     state.currentUser = user
-                    state.appState = .authenticated
+                    state.appState = .loading
+                    return .send(.refreshHomeData)
                 } else {
                     state.appState = .unauthenticated
+                    return .none
                 }
-                return .none
 
             case .loadDataResponse(.success(let data)):
                 state.currentUser = data.user
@@ -179,10 +171,15 @@ public struct RootFeature {
                 )
 
                 // 기존 MainTab이 있으면 home만 업데이트, 없으면 새로 생성
+                let providerType = state.loginProviderType
                 if state.mainTab != nil {
                     state.mainTab?.home = homeState
+                    state.mainTab?.settings.loginProviderType = providerType
                 } else {
-                    state.mainTab = MainTabFeature.State(home: homeState)
+                    state.mainTab = MainTabFeature.State(
+                        home: homeState,
+                        settings: SettingsFeature.State(loginProviderType: providerType)
+                    )
                 }
                 state.appState = .authenticated
                 return .none
@@ -227,10 +224,20 @@ public struct RootFeature {
             case .mainTab:
                 return .none
 
+            // MARK: - Login Delegate Actions
+            case .login(.delegate(.loggedIn(let user, let providerType))):
+                state.loginProviderType = providerType
+                return .send(.checkAuthResponse(user))
+
+            case .login:
+                return .none
+
             case .logout:
                 state.appState = .unauthenticated
                 state.mainTab = nil
                 state.currentUser = nil
+                state.loginProviderType = nil
+                state.login = LoginFeature.State()
                 return .none
 
             // MARK: - Navigation Dismiss Actions

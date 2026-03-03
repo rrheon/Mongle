@@ -1,6 +1,6 @@
 //
 //  RootView.swift
-//  FamTree
+//  Mongle
 //
 //  Created by 최용헌 on 12/10/25.
 //
@@ -23,7 +23,7 @@ public struct RootView: View {
                 LoadingView()
 
             case .unauthenticated:
-                LoginView()
+                LoginView(store: store.scope(state: \.login, action: \.login))
 
             case .authenticated:
                 if let mainTabStore = store.scope(state: \.mainTab, action: \.mainTab) {
@@ -90,7 +90,7 @@ struct LoadingView: View {
 //                            category: .gratitude,
 //                            order: 1
 //                        ),
-//                        familyTree: FamilyTree(
+//                        familyTree: TreeProgress(
 //                            stage: .youngTree,
 //                            totalAnswers: 12,
 //                            consecutiveDays: 5
