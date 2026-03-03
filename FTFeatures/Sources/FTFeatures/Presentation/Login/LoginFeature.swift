@@ -1,6 +1,6 @@
 //
 //  LoginFeature.swift
-//  FamTree
+//  Mongle
 //
 //  Created by 최용헌 on 12/12/25.
 //
@@ -15,8 +15,17 @@ public struct LoginFeature {
     public struct State: Equatable {
         public var isLoading: Bool = false
         public var errorMessage: String?
+        public var lastUsedProviderType: SocialProviderType?
 
-        public init() {}
+        public init(
+            isLoading: Bool = false,
+            errorMessage: String? = nil,
+            lastUsedProviderType: SocialProviderType? = nil
+        ) {
+            self.isLoading = isLoading
+            self.errorMessage = errorMessage
+            self.lastUsedProviderType = lastUsedProviderType
+        }
     }
 
     public enum Action: Sendable {
@@ -44,9 +53,11 @@ public struct LoginFeature {
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
-            case loggedIn(User)
+            case loggedIn(User, SocialProviderType?)
         }
     }
+
+    @Dependency(\.authRepository) var authRepository
 
     public init() {}
 
@@ -60,19 +71,14 @@ public struct LoginFeature {
 
             case .socialCredentialReceived(let credential):
                 state.isLoading = true
-                return .run { send in
-                    // TODO: FastAPI 연동 후 아래 mock을 실제 호출로 교체
-                    // let user = try await authRepository.socialLogin(with: credential)
-                    try await Task.sleep(nanoseconds: 800_000_000)
-                    let mockUser = User(
-                        id: UUID(),
-                        email: credential.fields["email"] ?? "\(credential.providerType.rawValue)@example.com",
-                        name: credential.fields["name"] ?? "\(credential.providerType.rawValue) 사용자",
-                        profileImageURL: nil,
-                        role: .other,
-                        createdAt: .now
-                    )
-                    await send(.loginResponse(.success(mockUser)))
+                state.lastUsedProviderType = credential.providerType
+                return .run { [credential] send in
+                    do {
+                        let user = try await authRepository.socialLogin(with: credential)
+                        await send(.loginResponse(.success(user)))
+                    } catch {
+                        await send(.loginResponse(.failure(.socialLoginFailed(credential.providerType))))
+                    }
                 }
 
             case .socialLoginFailed(let message):
@@ -82,7 +88,7 @@ public struct LoginFeature {
 
             case .loginResponse(.success(let user)):
                 state.isLoading = false
-                return .send(.delegate(.loggedIn(user)))
+                return .send(.delegate(.loggedIn(user, state.lastUsedProviderType)))
 
             case .loginResponse(.failure(let error)):
                 state.isLoading = false
