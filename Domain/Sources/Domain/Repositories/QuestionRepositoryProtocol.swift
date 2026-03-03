@@ -1,6 +1,6 @@
 //
 //  QuestionRepositoryProtocol.swift
-//  FamTree
+//  Mongle
 //
 //  Created by 최용헌 on 12/11/25.
 //
@@ -15,6 +15,8 @@ public protocol QuestionRepositoryInterface: Sendable {
     func getAll() async throws -> [Question]
     func update(_ question: Question) async throws -> Question
     func delete(id: UUID) async throws
+    /// 오늘의 질문을 조회. 질문이 없으면 nil.
+    func getTodayQuestion() async throws -> Question?
 }
 
 public enum QuestionError: Error, Equatable, Sendable {

@@ -1,6 +1,6 @@
 //
 //  TreeRepositoryProtocol.swift
-//  FamTree
+//  Mongle
 //
 //  Created by 최용헌 on 12/11/25.
 //
@@ -14,6 +14,8 @@ public protocol TreeRepositoryInterface: Sendable {
     func update(_ treeProgress: TreeProgress) async throws -> TreeProgress
     func delete(id: UUID) async throws
     func countByStage(_ stage: TreeStage) async throws -> Int
+    /// 현재 인증된 유저의 가족 나무 진행도 조회. 없으면 nil.
+    func getMyTreeProgress() async throws -> TreeProgress?
 }
 
 public enum TreeError: Error, Equatable, Sendable {

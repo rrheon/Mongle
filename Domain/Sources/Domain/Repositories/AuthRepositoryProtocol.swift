@@ -1,6 +1,6 @@
 //
 //  AuthRepositoryProtocol.swift
-//  FamTree
+//  Mongle
 //
 //  Created by 최용헌 on 12/11/25.
 //
@@ -17,6 +17,12 @@ public protocol AuthRepositoryInterface: Sendable {
     func socialLogin(with credential: any SocialLoginCredential) async throws -> User
 
     func logout() async throws
+
+    /// 계정 완전 삭제.
+    /// - Apple: 서버가 저장된 refresh_token으로 Apple 토큰 revoke 처리
+    /// - Kakao/Google: 클라이언트에서 unlink/disconnect 후 이 메서드 호출
+    func deleteAccount() async throws
+
     func getCurrentUser() async throws -> User?
 }
 
@@ -27,6 +33,7 @@ public enum AuthError: Error, Equatable, Sendable {
     case networkError
     case userNotFound
     case socialLoginFailed(SocialProviderType)
+    case accountDeletionFailed
     case unknown(String)
 
     public var localizedDescription: String {
@@ -43,6 +50,8 @@ public enum AuthError: Error, Equatable, Sendable {
             return "사용자를 찾을 수 없습니다."
         case .socialLoginFailed(let provider):
             return "\(provider.rawValue) 로그인에 실패했습니다."
+        case .accountDeletionFailed:
+            return "계정 삭제에 실패했습니다. 다시 시도해주세요."
         case .unknown(let message):
             return message
         }
