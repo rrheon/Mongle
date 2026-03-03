@@ -1,6 +1,6 @@
 //
 //  FamTreeApp.swift
-//  FamTree
+//  Mongle
 //
 //  Created by 최용헌 on 12/10/25.
 //
@@ -10,14 +10,21 @@ import ComposableArchitecture
 import FTFeatures
 
 @main
-struct FamTreeApp: App {
+struct MongleApp: App {
   let store = Store(initialState: RootFeature.State()) {
     RootFeature()
   }
-  
-    var body: some Scene {
-        WindowGroup {
-          RootView(store: store)
+
+  init() {
+    SocialSDK.initialize()
+  }
+
+  var body: some Scene {
+    WindowGroup {
+      RootView(store: store)
+        .onOpenURL { url in
+          SocialSDK.handle(url: url)
         }
     }
+  }
 }

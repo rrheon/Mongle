@@ -13,14 +13,41 @@
 		EEF772042F07D3780049EBB9 /* FTFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = EEF772032F07D3780049EBB9 /* FTFeatures */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXBuildRule section */
+		EEA021C82F540B52007CCD3A /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			fileType = pattern.proxy;
+			inputFiles = (
+			);
+			isEditable = 1;
+			outputFiles = (
+			);
+			script = "# Type a script or drag a script file from your workspace to insert its path.\n";
+		};
+/* End PBXBuildRule section */
+
 /* Begin PBXFileReference section */
-		EE964B902EE97EF000AD2760 /* FamTree.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FamTree.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		EE964B902EE97EF000AD2760 /* Mongle.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Mongle.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		EE964BA02EE97EF200AD2760 /* Exceptions for "Mongle" folder in "Mongle" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = EE964B8F2EE97EF000AD2760 /* Mongle */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		EE964B922EE97EF000AD2760 /* FamTree */ = {
+		EE964B922EE97EF000AD2760 /* Mongle */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = FamTree;
+			exceptions = (
+				EE964BA02EE97EF200AD2760 /* Exceptions for "Mongle" folder in "Mongle" target */,
+			);
+			path = Mongle;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -43,7 +70,7 @@
 		EE964B872EE97EF000AD2760 = {
 			isa = PBXGroup;
 			children = (
-				EE964B922EE97EF000AD2760 /* FamTree */,
+				EE964B922EE97EF000AD2760 /* Mongle */,
 				EE964B912EE97EF000AD2760 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -51,7 +78,7 @@
 		EE964B912EE97EF000AD2760 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				EE964B902EE97EF000AD2760 /* FamTree.app */,
+				EE964B902EE97EF000AD2760 /* Mongle.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -59,22 +86,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		EE964B8F2EE97EF000AD2760 /* FamTree */ = {
+		EE964B8F2EE97EF000AD2760 /* Mongle */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = EE964B9B2EE97EF200AD2760 /* Build configuration list for PBXNativeTarget "FamTree" */;
+			buildConfigurationList = EE964B9B2EE97EF200AD2760 /* Build configuration list for PBXNativeTarget "Mongle" */;
 			buildPhases = (
 				EE964B8C2EE97EF000AD2760 /* Sources */,
 				EE964B8D2EE97EF000AD2760 /* Frameworks */,
 				EE964B8E2EE97EF000AD2760 /* Resources */,
 			);
 			buildRules = (
+				EEA021C82F540B52007CCD3A /* PBXBuildRule */,
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				EE964B922EE97EF000AD2760 /* FamTree */,
+				EE964B922EE97EF000AD2760 /* Mongle */,
 			);
-			name = FamTree;
+			name = Mongle;
 			packageProductDependencies = (
 				EE964C942EEAA86D00AD2760 /* ComposableArchitecture */,
 				EEF770AB2F0508AA0049EBB9 /* Domain */,
@@ -82,7 +110,7 @@
 				EEF772032F07D3780049EBB9 /* FTFeatures */,
 			);
 			productName = FamTree;
-			productReference = EE964B902EE97EF000AD2760 /* FamTree.app */;
+			productReference = EE964B902EE97EF000AD2760 /* Mongle.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -100,7 +128,7 @@
 					};
 				};
 			};
-			buildConfigurationList = EE964B8B2EE97EF000AD2760 /* Build configuration list for PBXProject "FamTree" */;
+			buildConfigurationList = EE964B8B2EE97EF000AD2760 /* Build configuration list for PBXProject "Mongle" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -120,7 +148,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				EE964B8F2EE97EF000AD2760 /* FamTree */,
+				EE964B8F2EE97EF000AD2760 /* Mongle */,
 			);
 		};
 /* End PBXProject section */
@@ -276,19 +304,15 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = YQC68LN7U3;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Mongle/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.yongheon.FamTree;
+				PRODUCT_BUNDLE_IDENTIFIER = con.yongheon.Mongle;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -313,19 +337,15 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = YQC68LN7U3;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Mongle/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.yongheon.FamTree;
+				PRODUCT_BUNDLE_IDENTIFIER = con.yongheon.Mongle;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -344,7 +364,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		EE964B8B2EE97EF000AD2760 /* Build configuration list for PBXProject "FamTree" */ = {
+		EE964B8B2EE97EF000AD2760 /* Build configuration list for PBXProject "Mongle" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				EE964B992EE97EF200AD2760 /* Debug */,
@@ -353,7 +373,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		EE964B9B2EE97EF200AD2760 /* Build configuration list for PBXNativeTarget "FamTree" */ = {
+		EE964B9B2EE97EF200AD2760 /* Build configuration list for PBXNativeTarget "Mongle" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				EE964B9C2EE97EF200AD2760 /* Debug */,
