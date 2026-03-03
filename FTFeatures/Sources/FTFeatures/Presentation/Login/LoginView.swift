@@ -1,6 +1,6 @@
 //
 //  LoginView.swift
-//  FamTree
+//  Mongle
 //
 //  Created by 최용헌 on 12/12/25.
 //
@@ -16,6 +16,8 @@ struct LoginView: View {
 
     @State private var isAnimating = false
     @State private var appleProvider = AppleLoginProvider()
+    @State private var kakaoProvider = KakaoLoginProvider()
+    @State private var googleProvider = GoogleLoginProvider()
 
     var body: some View {
         ZStack {
@@ -38,7 +40,7 @@ struct LoginView: View {
                             .frame(width: 120, height: 120)
                             .scaleEffect(isAnimating ? 1.05 : 1.0)
 
-                        FTLogo(size: .large, type: .FamTreeImg)
+                        FTLogo(size: .large, type: .MongleImg)
                     }
                     .animation(
                         .easeInOut(duration: 2.0).repeatForever(autoreverses: true),
@@ -46,7 +48,7 @@ struct LoginView: View {
                     )
 
                     VStack(spacing: FTSpacing.xs) {
-                        Text("FamTree")
+                        Text("Mongle")
                             .font(FTFont.heading1())
                             .foregroundColor(FTColor.textPrimary)
 
@@ -87,7 +89,15 @@ struct LoginView: View {
                             backgroundColor: FTColor.kakao,
                             label: "카카오"
                         ) {
-                            // TODO: KakaoLoginProvider 구현 후 연결
+                            store.send(.socialLoginTapped(.kakao))
+                            Task { @MainActor in
+                                do {
+                                    let credential = try await kakaoProvider.authenticate()
+                                    store.send(.socialCredentialReceived(credential))
+                                } catch {
+                                    store.send(.socialLoginFailed(error.localizedDescription))
+                                }
+                            }
                         }
 
                         SocialLoginCircleButton(
@@ -96,6 +106,23 @@ struct LoginView: View {
                             label: "네이버"
                         ) {
                             // TODO: NaverLoginProvider 구현 후 연결
+                        }
+
+                        // Google 로그인 - GoogleLoginProvider 연결
+                        SocialLoginCircleButton(
+                            icon: "google_icon",
+                            backgroundColor: FTColor.surface,
+                            label: "구글"
+                        ) {
+                            store.send(.socialLoginTapped(.google))
+                            Task { @MainActor in
+                                do {
+                                    let credential = try await googleProvider.authenticate()
+                                    store.send(.socialCredentialReceived(credential))
+                                } catch {
+                                    store.send(.socialLoginFailed(error.localizedDescription))
+                                }
+                            }
                         }
 
                         // Apple 로그인 - AppleLoginProvider 연결

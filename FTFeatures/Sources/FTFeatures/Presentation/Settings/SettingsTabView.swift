@@ -1,6 +1,6 @@
 //
 //  SettingsTabView.swift
-//  FamTree
+//  Mongle
 //
 //  Created by Claude on 2025-01-06.
 //
@@ -44,7 +44,8 @@ struct SettingsTabView: View {
 
                         // Account Actions
                         SettingsAccountCard(
-                            onLogoutTapped: { store.send(.logoutTapped) }
+                            onLogoutTapped: { store.send(.logoutTapped) },
+                            onDeleteAccountTapped: { store.send(.deleteAccountTapped) }
                         )
                         .padding(.horizontal, FTSpacing.lg)
 
@@ -70,6 +71,22 @@ struct SettingsTabView: View {
                 }
             } message: {
                 Text("정말 로그아웃 하시겠습니까?")
+            }
+            .alert(
+                "회원탈퇴",
+                isPresented: Binding(
+                    get: { store.showDeleteAccountConfirmation },
+                    set: { _ in store.send(.deleteAccountCancelled) }
+                )
+            ) {
+                Button("취소", role: .cancel) {
+                    store.send(.deleteAccountCancelled)
+                }
+                Button("탈퇴하기", role: .destructive) {
+                    store.send(.deleteAccountConfirmed)
+                }
+            } message: {
+                Text("계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.\n정말 탈퇴하시겠습니까?")
             }
             .onAppear {
                 store.send(.onAppear)
@@ -256,6 +273,7 @@ private struct SettingsAppInfoCard: View {
 // MARK: - Settings Account Card
 private struct SettingsAccountCard: View {
     let onLogoutTapped: () -> Void
+    let onDeleteAccountTapped: () -> Void
 
     var body: some View {
         FTCard(cornerRadius: FTRadius.xl) {
@@ -269,6 +287,18 @@ private struct SettingsAccountCard: View {
                     titleColor: FTColor.error,
                     trailing: .none,
                     action: onLogoutTapped
+                )
+
+                Divider()
+                    .padding(.leading, 52)
+
+                SettingsRow(
+                    icon: "trash.fill",
+                    iconColor: FTColor.error,
+                    title: "회원탈퇴",
+                    titleColor: FTColor.error,
+                    trailing: .none,
+                    action: onDeleteAccountTapped
                 )
             }
         }
