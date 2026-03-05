@@ -59,8 +59,6 @@ public struct HomeFeature {
         case onAppear
         case questionTapped
         case refreshData
-        case createFamilyTapped
-        case joinFamilyTapped
         case dismissError
 
         // MARK: - Internal Actions
@@ -73,8 +71,6 @@ public struct HomeFeature {
 
         public enum Delegate: Sendable, Equatable {
             case navigateToQuestionDetail(Question)
-            case navigateToCreateFamily
-            case navigateToJoinFamily
             case requestRefresh
         }
     }
@@ -102,12 +98,6 @@ public struct HomeFeature {
                 state.isRefreshing = true
                 state.errorMessage = nil
                 return .send(.delegate(.requestRefresh))
-
-            case .createFamilyTapped:
-                return .send(.delegate(.navigateToCreateFamily))
-
-            case .joinFamilyTapped:
-                return .send(.delegate(.navigateToJoinFamily))
 
             case .dismissError:
                 state.errorMessage = nil

@@ -34,12 +34,6 @@ public struct RootView: View {
         .onAppear {
             store.send(.onAppear)
         }
-        .sheet(item: $store.scope(state: \.createFamily, action: \.createFamily)) { createFamilyStore in
-            CreateFamilyView(store: createFamilyStore)
-        }
-        .sheet(item: $store.scope(state: \.joinFamily, action: \.joinFamily)) { joinFamilyStore in
-            JoinFamilyView(store: joinFamilyStore)
-        }
         .sheet(item: $store.scope(state: \.questionDetail, action: \.questionDetail)) { questionDetailStore in
             QuestionDetailView(store: questionDetailStore)
         }
@@ -49,13 +43,13 @@ public struct RootView: View {
 // MARK: - Loading View
 struct LoadingView: View {
     var body: some View {
-        VStack(spacing: FTSpacing.lg) {
-            FTLogo(size: .large)
+        VStack(spacing: MongleSpacing.lg) {
+            MongleLogo(size: .large)
             ProgressView()
-                .tint(FTColor.primary)
+                .tint(MongleColor.primary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(FTColor.surface)
+        .background(MongleColor.surface)
     }
 }
 

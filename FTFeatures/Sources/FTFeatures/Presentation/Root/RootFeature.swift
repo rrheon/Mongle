@@ -21,8 +21,6 @@ public struct RootFeature {
         public var selectedQuestion: Question?
 
         // Child Feature States
-        @Presents public var createFamily: CreateFamilyFeature.State?
-        @Presents public var joinFamily: JoinFamilyFeature.State?
         @Presents public var questionDetail: QuestionDetailFeature.State?
 
         public enum AppState: Equatable {
@@ -38,8 +36,6 @@ public struct RootFeature {
             currentUser: User? = nil,
             loginProviderType: SocialProviderType? = nil,
             selectedQuestion: Question? = nil,
-            createFamily: CreateFamilyFeature.State? = nil,
-            joinFamily: JoinFamilyFeature.State? = nil,
             questionDetail: QuestionDetailFeature.State? = nil
         ) {
             self.appState = appState
@@ -48,8 +44,6 @@ public struct RootFeature {
             self.currentUser = currentUser
             self.loginProviderType = loginProviderType
             self.selectedQuestion = selectedQuestion
-            self.createFamily = createFamily
-            self.joinFamily = joinFamily
             self.questionDetail = questionDetail
         }
     }
@@ -66,8 +60,6 @@ public struct RootFeature {
         case dismissQuestionDetail
 
         // Child Feature Actions
-        case createFamily(PresentationAction<CreateFamilyFeature.Action>)
-        case joinFamily(PresentationAction<JoinFamilyFeature.Action>)
         case questionDetail(PresentationAction<QuestionDetailFeature.Action>)
 
         // Data Refresh
@@ -204,14 +196,6 @@ public struct RootFeature {
                 )
                 return .none
 
-            case .mainTab(.delegate(.navigateToCreateFamily)):
-                state.createFamily = CreateFamilyFeature.State()
-                return .none
-
-            case .mainTab(.delegate(.navigateToJoinFamily)):
-                state.joinFamily = JoinFamilyFeature.State()
-                return .none
-
             case .mainTab(.delegate(.requestRefresh)):
                 return .send(.refreshHomeData)
 
@@ -245,38 +229,6 @@ public struct RootFeature {
                 state.selectedQuestion = nil
                 return .none
 
-            // MARK: - CreateFamily Delegate Actions
-            case .createFamily(.presented(.delegate(.familyCreated(let family)))):
-                state.createFamily = nil
-                // 가족 생성 후 홈 데이터 새로고침
-                if state.mainTab != nil {
-                    state.mainTab?.home.family = family
-                }
-                return .send(.refreshHomeData)
-
-            case .createFamily(.presented(.delegate(.cancelled))):
-                state.createFamily = nil
-                return .none
-
-            case .createFamily:
-                return .none
-
-            // MARK: - JoinFamily Delegate Actions
-            case .joinFamily(.presented(.delegate(.familyJoined(let family)))):
-                state.joinFamily = nil
-                // 가족 참여 후 홈 데이터 새로고침
-                if state.mainTab != nil {
-                    state.mainTab?.home.family = family
-                }
-                return .send(.refreshHomeData)
-
-            case .joinFamily(.presented(.delegate(.cancelled))):
-                state.joinFamily = nil
-                return .none
-
-            case .joinFamily:
-                return .none
-
             // MARK: - QuestionDetail Delegate Actions
             case .questionDetail(.presented(.delegate(.answerSubmitted(_)))):
                 // 답변 제출 후 홈 데이터 새로고침 (답변 완료 상태 업데이트)
@@ -294,12 +246,6 @@ public struct RootFeature {
         }
         .ifLet(\.mainTab, action: \.mainTab) {
             MainTabFeature()
-        }
-        .ifLet(\.$createFamily, action: \.createFamily) {
-            CreateFamilyFeature()
-        }
-        .ifLet(\.$joinFamily, action: \.joinFamily) {
-            JoinFamilyFeature()
         }
         .ifLet(\.$questionDetail, action: \.questionDetail) {
             QuestionDetailFeature()

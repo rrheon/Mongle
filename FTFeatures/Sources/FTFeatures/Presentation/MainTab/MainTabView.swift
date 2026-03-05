@@ -17,31 +17,24 @@ struct MainTabView: View {
             HomeView(store: store.scope(state: \.home, action: \.home))
                 .tabItem {
                     Image(systemName: "house.fill")
-                    Text("홈")
+                    Text("HOME")
                 }
                 .tag(MainTabFeature.State.Tab.home)
 
-            TreeTabView(store: store.scope(state: \.tree, action: \.tree))
+            HistoryView(store: store.scope(state: \.history, action: \.history))
                 .tabItem {
-                    Image(systemName: "leaf.fill")
-                    Text("나무")
+                    Image(systemName: "list.bullet.rectangle.portrait.fill")
+                    Text("HISTORY")
                 }
-                .tag(MainTabFeature.State.Tab.tree)
-
-            FamilyTabView(store: store.scope(state: \.family, action: \.family))
-                .tabItem {
-                    Image(systemName: "person.3.fill")
-                    Text("가족")
-                }
-                .tag(MainTabFeature.State.Tab.family)
+                .tag(MainTabFeature.State.Tab.history)
 
             SettingsTabView(store: store.scope(state: \.settings, action: \.settings))
                 .tabItem {
-                    Image(systemName: "gearshape.fill")
-                    Text("설정")
+                    Image(systemName: "person.fill")
+                    Text("MY")
                 }
                 .tag(MainTabFeature.State.Tab.settings)
         }
-        .tint(FTColor.primary)
+        .tint(MongleColor.primary)
     }
 }
