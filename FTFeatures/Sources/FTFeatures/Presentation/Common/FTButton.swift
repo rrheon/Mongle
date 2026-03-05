@@ -1,5 +1,5 @@
 //
-//  FTButton.swift
+//  MongleButton.swift
 //  Mongle
 //
 //  Created by 최용헌 on 12/11/25.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct FTButton: View {
+struct MongleButton: View {
     enum Style {
         case primary
         case secondary
@@ -49,7 +49,7 @@ struct FTButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: FTSpacing.xs) {
+            HStack(spacing: MongleSpacing.xs) {
                 if isLoading {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(tint: textColor))
@@ -102,9 +102,9 @@ struct FTButton: View {
 
     private var buttonFont: Font {
         switch size {
-        case .large: return FTFont.button()
-        case .medium: return FTFont.button()
-        case .small: return FTFont.buttonSmall()
+        case .large: return MongleFont.button()
+        case .medium: return MongleFont.button()
+        case .small: return MongleFont.buttonSmall()
         }
     }
 
@@ -118,41 +118,41 @@ struct FTButton: View {
 
     private var cornerRadius: CGFloat {
         switch size {
-        case .large: return FTRadius.large
-        case .medium: return FTRadius.medium
-        case .small: return FTRadius.small
+        case .large: return MongleRadius.large
+        case .medium: return MongleRadius.medium
+        case .small: return MongleRadius.small
         }
     }
 
     // MARK: - Style Properties
     private var backgroundColor: Color {
         switch style {
-        case .primary: return FTColor.primary
-        case .secondary: return FTColor.primaryLight
+        case .primary: return MongleColor.primary
+        case .secondary: return MongleColor.primaryLight
         case .tertiary: return .clear
-        case .kakao: return FTColor.kakao
-        case .naver: return FTColor.naver
-        case .google: return FTColor.background
-        case .apple: return FTColor.apple
+        case .kakao: return MongleColor.kakao
+        case .naver: return MongleColor.naver
+        case .google: return MongleColor.background
+        case .apple: return MongleColor.apple
         }
     }
 
     private var textColor: Color {
         switch style {
         case .primary: return .white
-        case .secondary: return FTColor.primary
-        case .tertiary: return FTColor.primary
-        case .kakao: return FTColor.kakaoText
-        case .naver: return FTColor.naverText
-        case .google: return FTColor.textPrimary
-        case .apple: return FTColor.appleText
+        case .secondary: return MongleColor.primary
+        case .tertiary: return MongleColor.primary
+        case .kakao: return MongleColor.kakaoText
+        case .naver: return MongleColor.naverText
+        case .google: return MongleColor.textPrimary
+        case .apple: return MongleColor.appleText
         }
     }
 
     private var borderColor: Color {
         switch style {
-        case .google: return FTColor.border
-        case .secondary: return FTColor.primary.opacity(0.3)
+        case .google: return MongleColor.border
+        case .secondary: return MongleColor.primary.opacity(0.3)
         default: return .clear
         }
     }
@@ -166,7 +166,7 @@ struct FTButton: View {
     }
 
     private var shadowColor: Color {
-        FTColor.primary.opacity(0.25)
+        MongleColor.primary.opacity(0.25)
     }
 
     private var socialIconName: String? {
@@ -181,7 +181,7 @@ struct FTButton: View {
 }
 
 // MARK: - Pill Button (작은 태그형 버튼)
-struct FTPillButton: View {
+struct MonglePillButton: View {
     let title: String
     let isSelected: Bool
     let action: () -> Void
@@ -189,18 +189,18 @@ struct FTPillButton: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(FTFont.captionBold())
-                .foregroundColor(isSelected ? .white : FTColor.primary)
-                .padding(.horizontal, FTSpacing.md)
-                .padding(.vertical, FTSpacing.xs)
-                .background(isSelected ? FTColor.primary : FTColor.primaryLight)
-                .cornerRadius(FTRadius.full)
+                .font(MongleFont.captionBold())
+                .foregroundColor(isSelected ? .white : MongleColor.primary)
+                .padding(.horizontal, MongleSpacing.md)
+                .padding(.vertical, MongleSpacing.xs)
+                .background(isSelected ? MongleColor.primary : MongleColor.primaryLight)
+                .cornerRadius(MongleRadius.full)
         }
     }
 }
 
 // MARK: - Icon Button (원형 아이콘 버튼)
-struct FTIconButton: View {
+struct MongleIconButton: View {
     let icon: String
     let size: CGFloat
     let action: () -> Void
@@ -215,9 +215,9 @@ struct FTIconButton: View {
         Button(action: action) {
             Image(systemName: icon)
                 .font(.system(size: size * 0.4))
-                .foregroundColor(FTColor.textSecondary)
+                .foregroundColor(MongleColor.textSecondary)
                 .frame(width: size, height: size)
-                .background(FTColor.surface)
+                .background(MongleColor.surface)
                 .clipShape(Circle())
         }
     }
@@ -227,46 +227,46 @@ struct FTIconButton: View {
     ScrollView {
         VStack(spacing: 16) {
             Text("Primary Buttons")
-                .font(FTFont.heading3())
+                .font(MongleFont.heading3())
 
-            FTButton("회원가입", style: .primary) {}
-            FTButton("중간 크기", style: .primary, size: .medium) {}
-            FTButton("작은 버튼", style: .primary, size: .small) {}
+            MongleButton("회원가입", style: .primary) {}
+            MongleButton("중간 크기", style: .primary, size: .medium) {}
+            MongleButton("작은 버튼", style: .primary, size: .small) {}
 
             Text("Secondary Buttons")
-                .font(FTFont.heading3())
+                .font(MongleFont.heading3())
 
-            FTButton("둘러보기", style: .secondary) {}
+            MongleButton("둘러보기", style: .secondary) {}
 
             Text("Tertiary Buttons")
-                .font(FTFont.heading3())
+                .font(MongleFont.heading3())
 
-            FTButton("건너뛰기", style: .tertiary) {}
+            MongleButton("건너뛰기", style: .tertiary) {}
 
             Text("Social Buttons")
-                .font(FTFont.heading3())
+                .font(MongleFont.heading3())
 
-            FTButton("카카오로 시작하기", style: .kakao) {}
-            FTButton("네이버로 시작하기", style: .naver) {}
-            FTButton("Google로 시작하기", style: .google) {}
-            FTButton("Apple로 시작하기", style: .apple) {}
+            MongleButton("카카오로 시작하기", style: .kakao) {}
+            MongleButton("네이버로 시작하기", style: .naver) {}
+            MongleButton("Google로 시작하기", style: .google) {}
+            MongleButton("Apple로 시작하기", style: .apple) {}
 
             Text("Pill Buttons")
-                .font(FTFont.heading3())
+                .font(MongleFont.heading3())
 
             HStack {
-                FTPillButton(title: "전체", isSelected: true) {}
-                FTPillButton(title: "일상", isSelected: false) {}
-                FTPillButton(title: "추억", isSelected: false) {}
+                MonglePillButton(title: "전체", isSelected: true) {}
+                MonglePillButton(title: "일상", isSelected: false) {}
+                MonglePillButton(title: "추억", isSelected: false) {}
             }
 
             Text("Icon Buttons")
-                .font(FTFont.heading3())
+                .font(MongleFont.heading3())
 
             HStack {
-                FTIconButton(icon: "bell") {}
-                FTIconButton(icon: "gearshape") {}
-                FTIconButton(icon: "person") {}
+                MongleIconButton(icon: "bell") {}
+                MongleIconButton(icon: "gearshape") {}
+                MongleIconButton(icon: "person") {}
             }
         }
         .padding()

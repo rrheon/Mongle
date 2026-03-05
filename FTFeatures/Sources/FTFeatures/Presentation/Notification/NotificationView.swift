@@ -29,7 +29,7 @@ public struct NotificationView: View {
                 notificationList
             }
         }
-        .background(FTColor.background)
+        .background(MongleColor.background)
         .onAppear {
             store.send(.onAppear)
         }
@@ -39,16 +39,16 @@ public struct NotificationView: View {
     private var headerView: some View {
         HStack {
             Text("알림")
-                .font(FTFont.heading2())
-                .foregroundColor(FTColor.textPrimary)
+                .font(MongleFont.heading2())
+                .foregroundColor(MongleColor.textPrimary)
 
             if store.hasUnread {
                 Text("\(store.unreadCount)")
-                    .font(FTFont.captionBold())
+                    .font(MongleFont.captionBold())
                     .foregroundColor(.white)
-                    .padding(.horizontal, FTSpacing.xs)
+                    .padding(.horizontal, MongleSpacing.xs)
                     .padding(.vertical, 2)
-                    .background(FTColor.error)
+                    .background(MongleColor.error)
                     .clipShape(Capsule())
             }
 
@@ -59,14 +59,14 @@ public struct NotificationView: View {
                     store.send(.markAllAsRead)
                 } label: {
                     Text("모두 읽음")
-                        .font(FTFont.buttonSmall())
-                        .foregroundColor(FTColor.primary)
+                        .font(MongleFont.buttonSmall())
+                        .foregroundColor(MongleColor.primary)
                 }
             }
         }
-        .padding(.horizontal, FTSpacing.md)
-        .padding(.vertical, FTSpacing.md)
-        .background(FTColor.background)
+        .padding(.horizontal, MongleSpacing.md)
+        .padding(.vertical, MongleSpacing.md)
+        .background(MongleColor.background)
     }
 
     // MARK: - Notification List
@@ -87,7 +87,7 @@ public struct NotificationView: View {
                     }
                 }
             }
-            .padding(.bottom, FTSpacing.xl)
+            .padding(.bottom, MongleSpacing.xl)
         }
         .refreshable {
             store.send(.refresh)
@@ -97,43 +97,43 @@ public struct NotificationView: View {
     private func sectionHeader(_ title: String) -> some View {
         HStack {
             Text(title)
-                .font(FTFont.captionBold())
-                .foregroundColor(FTColor.textSecondary)
+                .font(MongleFont.captionBold())
+                .foregroundColor(MongleColor.textSecondary)
 
             Spacer()
         }
-        .padding(.horizontal, FTSpacing.md)
-        .padding(.vertical, FTSpacing.xs)
-        .background(FTColor.background)
+        .padding(.horizontal, MongleSpacing.md)
+        .padding(.vertical, MongleSpacing.xs)
+        .background(MongleColor.background)
     }
 
     // MARK: - Loading View
     private var loadingView: some View {
-        VStack(spacing: FTSpacing.md) {
+        VStack(spacing: MongleSpacing.md) {
             ProgressView()
                 .scaleEffect(1.2)
 
             Text("알림을 불러오는 중...")
-                .font(FTFont.body2())
-                .foregroundColor(FTColor.textSecondary)
+                .font(MongleFont.body2())
+                .foregroundColor(MongleColor.textSecondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     // MARK: - Empty View
     private var emptyView: some View {
-        VStack(spacing: FTSpacing.md) {
+        VStack(spacing: MongleSpacing.md) {
             Image(systemName: "bell.slash")
                 .font(.system(size: 56))
-                .foregroundColor(FTColor.textHint)
+                .foregroundColor(MongleColor.textHint)
 
             Text("알림이 없어요")
-                .font(FTFont.heading3())
-                .foregroundColor(FTColor.textPrimary)
+                .font(MongleFont.heading3())
+                .foregroundColor(MongleColor.textPrimary)
 
             Text("새로운 소식이 오면 알려드릴게요")
-                .font(FTFont.body2())
-                .foregroundColor(FTColor.textSecondary)
+                .font(MongleFont.body2())
+                .foregroundColor(MongleColor.textSecondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -141,13 +141,13 @@ public struct NotificationView: View {
 
 // MARK: - Notification Row
 struct NotificationRow: View {
-    let notification: FTNotification
+    let notification: MongleNotification
     let onTap: () -> Void
     let onDelete: () -> Void
 
     var body: some View {
         Button(action: onTap) {
-            HStack(alignment: .top, spacing: FTSpacing.sm) {
+            HStack(alignment: .top, spacing: MongleSpacing.sm) {
                 // 아이콘
                 notificationIcon
                     .frame(width: 40, height: 40)
@@ -155,23 +155,23 @@ struct NotificationRow: View {
                     .clipShape(Circle())
 
                 // 내용
-                VStack(alignment: .leading, spacing: FTSpacing.xxs) {
+                VStack(alignment: .leading, spacing: MongleSpacing.xxs) {
                     HStack {
                         Text(notification.title)
-                            .font(notification.isRead ? FTFont.body2() : FTFont.body1Bold())
-                            .foregroundColor(FTColor.textPrimary)
+                            .font(notification.isRead ? MongleFont.body2() : MongleFont.body1Bold())
+                            .foregroundColor(MongleColor.textPrimary)
                             .lineLimit(1)
 
                         Spacer()
 
                         Text(timeAgo)
-                            .font(FTFont.caption())
-                            .foregroundColor(FTColor.textHint)
+                            .font(MongleFont.caption())
+                            .foregroundColor(MongleColor.textHint)
                     }
 
                     Text(notification.body)
-                        .font(FTFont.caption())
-                        .foregroundColor(FTColor.textSecondary)
+                        .font(MongleFont.caption())
+                        .foregroundColor(MongleColor.textSecondary)
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
                 }
@@ -179,13 +179,13 @@ struct NotificationRow: View {
                 // 읽지 않음 표시
                 if !notification.isRead {
                     Circle()
-                        .fill(FTColor.primary)
+                        .fill(MongleColor.primary)
                         .frame(width: 8, height: 8)
                 }
             }
-            .padding(.horizontal, FTSpacing.md)
-            .padding(.vertical, FTSpacing.sm)
-            .background(notification.isRead ? FTColor.background : FTColor.primaryLight.opacity(0.3))
+            .padding(.horizontal, MongleSpacing.md)
+            .padding(.vertical, MongleSpacing.sm)
+            .background(notification.isRead ? MongleColor.background : MongleColor.primaryLight.opacity(0.3))
         }
         .buttonStyle(.plain)
         .swipeActions(edge: .trailing) {
@@ -222,15 +222,15 @@ struct NotificationRow: View {
     private var iconBackgroundColor: Color {
         switch notification.type {
         case .newQuestion:
-            return FTColor.info
+            return MongleColor.info
         case .memberAnswered:
-            return FTColor.primary
+            return MongleColor.primary
         case .allAnswered:
-            return FTColor.success
+            return MongleColor.success
         case .answerRequest:
-            return FTColor.warning
+            return MongleColor.warning
         case .treeGrowth:
-            return FTColor.primary
+            return MongleColor.primary
         case .badgeEarned:
             return Color.orange
         }

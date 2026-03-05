@@ -16,18 +16,18 @@ struct QuestionDetailView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                FTColor.surface
+                MongleColor.surface
                     .ignoresSafeArea()
 
                 if store.isLoading {
                     ProgressView()
                 } else {
                     ScrollView {
-                        VStack(spacing: FTSpacing.lg) {
+                        VStack(spacing: MongleSpacing.lg) {
                             // Question Card
                             QuestionCard(question: store.question)
-                                .padding(.horizontal, FTSpacing.lg)
-                                .padding(.top, FTSpacing.md)
+                                .padding(.horizontal, MongleSpacing.lg)
+                                .padding(.top, MongleSpacing.md)
 
                             // My Answer Section
                             MyAnswerSection(
@@ -41,24 +41,24 @@ struct QuestionDetailView: View {
                                 isFocused: $isAnswerFocused,
                                 onSubmit: { store.send(.submitAnswerTapped) }
                             )
-                            .padding(.horizontal, FTSpacing.lg)
+                            .padding(.horizontal, MongleSpacing.lg)
 
                             // Error Message
                             if let errorMessage = store.errorMessage {
                                 ErrorMessageView(message: errorMessage) {
                                     store.send(.dismissErrorTapped)
                                 }
-                                .padding(.horizontal, FTSpacing.lg)
+                                .padding(.horizontal, MongleSpacing.lg)
                             }
 
                             // Family Answers Section
                             if !store.familyAnswers.isEmpty {
                                 FamilyAnswersSection(answers: store.familyAnswers)
-                                    .padding(.horizontal, FTSpacing.lg)
+                                    .padding(.horizontal, MongleSpacing.lg)
                             }
 
                             Spacer()
-                                .frame(height: FTSpacing.xxl)
+                                .frame(height: MongleSpacing.xxl)
                         }
                     }
                 }
@@ -71,7 +71,7 @@ struct QuestionDetailView: View {
                         store.send(.closeTapped)
                     } label: {
                         Image(systemName: "xmark")
-                            .foregroundColor(FTColor.textSecondary)
+                            .foregroundColor(MongleColor.textSecondary)
                     }
                 }
             }
@@ -87,31 +87,31 @@ private struct QuestionCard: View {
     let question: Question
 
     var body: some View {
-        VStack(alignment: .leading, spacing: FTSpacing.md) {
+        VStack(alignment: .leading, spacing: MongleSpacing.md) {
             HStack {
                 Text(question.category.rawValue)
-                    .font(FTFont.caption())
-                    .foregroundColor(FTColor.primary)
-                    .padding(.horizontal, FTSpacing.sm)
-                    .padding(.vertical, FTSpacing.xxs)
-                    .background(FTColor.primaryLight.opacity(0.3))
-                    .cornerRadius(FTRadius.small)
+                    .font(MongleFont.caption())
+                    .foregroundColor(MongleColor.primary)
+                    .padding(.horizontal, MongleSpacing.sm)
+                    .padding(.vertical, MongleSpacing.xxs)
+                    .background(MongleColor.primaryLight.opacity(0.3))
+                    .cornerRadius(MongleRadius.small)
 
                 Spacer()
 
                 Text("오늘의 질문")
-                    .font(FTFont.caption())
-                    .foregroundColor(FTColor.textHint)
+                    .font(MongleFont.caption())
+                    .foregroundColor(MongleColor.textHint)
             }
 
             Text(question.content)
-                .font(FTFont.heading2())
-                .foregroundColor(FTColor.textPrimary)
+                .font(MongleFont.heading2())
+                .foregroundColor(MongleColor.textPrimary)
                 .lineSpacing(4)
         }
-        .padding(FTSpacing.lg)
-        .background(FTColor.background)
-        .cornerRadius(FTRadius.large)
+        .padding(MongleSpacing.lg)
+        .background(MongleColor.background)
+        .cornerRadius(MongleRadius.large)
         .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 4)
     }
 }
@@ -126,44 +126,44 @@ private struct MyAnswerSection: View {
     let onSubmit: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: FTSpacing.md) {
+        VStack(alignment: .leading, spacing: MongleSpacing.md) {
             HStack {
                 Text("나의 답변")
-                    .font(FTFont.body1())
+                    .font(MongleFont.body1())
                     .fontWeight(.semibold)
-                    .foregroundColor(FTColor.textPrimary)
+                    .foregroundColor(MongleColor.textPrimary)
 
                 if hasExistingAnswer {
                     Text("수정")
-                        .font(FTFont.caption())
-                        .foregroundColor(FTColor.textHint)
+                        .font(MongleFont.caption())
+                        .foregroundColor(MongleColor.textHint)
                 }
 
                 Spacer()
             }
 
             TextEditor(text: $answerText)
-                .font(FTFont.body1())
+                .font(MongleFont.body1())
                 .frame(minHeight: 120)
-                .padding(FTSpacing.md)
-                .background(FTColor.background)
-                .cornerRadius(FTRadius.medium)
+                .padding(MongleSpacing.md)
+                .background(MongleColor.background)
+                .cornerRadius(MongleRadius.medium)
                 .overlay(
-                    RoundedRectangle(cornerRadius: FTRadius.medium)
-                        .stroke(isFocused.wrappedValue ? FTColor.primary : FTColor.border, lineWidth: isFocused.wrappedValue ? 2 : 1)
+                    RoundedRectangle(cornerRadius: MongleRadius.medium)
+                        .stroke(isFocused.wrappedValue ? MongleColor.primary : MongleColor.border, lineWidth: isFocused.wrappedValue ? 2 : 1)
                 )
                 .focused(isFocused)
 
             if answerText.isEmpty {
                 Text("가족과 나누고 싶은 이야기를 적어주세요")
-                    .font(FTFont.body2())
-                    .foregroundColor(FTColor.textHint)
-                    .padding(.horizontal, FTSpacing.md)
+                    .font(MongleFont.body2())
+                    .foregroundColor(MongleColor.textHint)
+                    .padding(.horizontal, MongleSpacing.md)
                     .offset(y: -100)
                     .allowsHitTesting(false)
             }
 
-            FTButton(
+            MongleButton(
                 hasExistingAnswer ? "답변 수정하기" : "답변 등록하기",
                 style: .primary,
                 isLoading: isSubmitting
@@ -173,9 +173,9 @@ private struct MyAnswerSection: View {
             .disabled(!isValid || isSubmitting)
             .opacity(isValid ? 1 : 0.6)
         }
-        .padding(FTSpacing.lg)
-        .background(FTColor.background)
-        .cornerRadius(FTRadius.large)
+        .padding(MongleSpacing.lg)
+        .background(MongleColor.background)
+        .cornerRadius(MongleRadius.large)
         .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 4)
     }
 }
@@ -188,22 +188,22 @@ private struct ErrorMessageView: View {
     var body: some View {
         HStack {
             Image(systemName: "exclamationmark.circle.fill")
-                .foregroundColor(FTColor.error)
+                .foregroundColor(MongleColor.error)
 
             Text(message)
-                .font(FTFont.body2())
-                .foregroundColor(FTColor.error)
+                .font(MongleFont.body2())
+                .foregroundColor(MongleColor.error)
 
             Spacer()
 
             Button(action: onDismiss) {
                 Image(systemName: "xmark")
-                    .foregroundColor(FTColor.textSecondary)
+                    .foregroundColor(MongleColor.textSecondary)
             }
         }
-        .padding(FTSpacing.md)
-        .background(FTColor.error.opacity(0.1))
-        .cornerRadius(FTRadius.medium)
+        .padding(MongleSpacing.md)
+        .background(MongleColor.error.opacity(0.1))
+        .cornerRadius(MongleRadius.medium)
     }
 }
 
@@ -212,20 +212,20 @@ private struct FamilyAnswersSection: View {
     let answers: [QuestionDetailFeature.State.FamilyAnswer]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: FTSpacing.md) {
+        VStack(alignment: .leading, spacing: MongleSpacing.md) {
             HStack {
                 Text("가족의 답변")
-                    .font(FTFont.body1())
+                    .font(MongleFont.body1())
                     .fontWeight(.semibold)
-                    .foregroundColor(FTColor.textPrimary)
+                    .foregroundColor(MongleColor.textPrimary)
 
                 Text("\(answers.count)")
-                    .font(FTFont.caption())
+                    .font(MongleFont.caption())
                     .foregroundColor(.white)
-                    .padding(.horizontal, FTSpacing.xs)
+                    .padding(.horizontal, MongleSpacing.xs)
                     .padding(.vertical, 2)
-                    .background(FTColor.primary)
-                    .cornerRadius(FTRadius.full)
+                    .background(MongleColor.primary)
+                    .cornerRadius(MongleRadius.full)
 
                 Spacer()
             }
@@ -246,45 +246,45 @@ private struct FamilyAnswerCard: View {
     let answer: Answer
 
     var body: some View {
-        VStack(alignment: .leading, spacing: FTSpacing.sm) {
+        VStack(alignment: .leading, spacing: MongleSpacing.sm) {
             // User Info
-            HStack(spacing: FTSpacing.sm) {
+            HStack(spacing: MongleSpacing.sm) {
                 Circle()
-                    .fill(FTColor.primaryLight)
+                    .fill(MongleColor.primaryLight)
                     .frame(width: 36, height: 36)
                     .overlay(
                         Text(String(user.name.prefix(1)))
-                            .font(FTFont.body2())
-                            .foregroundColor(FTColor.primaryDark)
+                            .font(MongleFont.body2())
+                            .foregroundColor(MongleColor.primaryDark)
                     )
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(user.name)
-                        .font(FTFont.body2())
+                        .font(MongleFont.body2())
                         .fontWeight(.medium)
-                        .foregroundColor(FTColor.textPrimary)
+                        .foregroundColor(MongleColor.textPrimary)
 
                     Text(user.role.rawValue)
-                        .font(FTFont.caption())
-                        .foregroundColor(FTColor.textHint)
+                        .font(MongleFont.caption())
+                        .foregroundColor(MongleColor.textHint)
                 }
 
                 Spacer()
 
                 Text(timeAgoString(from: answer.createdAt))
-                    .font(FTFont.caption())
-                    .foregroundColor(FTColor.textHint)
+                    .font(MongleFont.caption())
+                    .foregroundColor(MongleColor.textHint)
             }
 
             // Answer Content
             Text(answer.content)
-                .font(FTFont.body1())
-                .foregroundColor(FTColor.textPrimary)
+                .font(MongleFont.body1())
+                .foregroundColor(MongleColor.textPrimary)
                 .lineSpacing(4)
         }
-        .padding(FTSpacing.md)
-        .background(FTColor.background)
-        .cornerRadius(FTRadius.medium)
+        .padding(MongleSpacing.md)
+        .background(MongleColor.background)
+        .cornerRadius(MongleRadius.medium)
         .shadow(color: .black.opacity(0.03), radius: 5, x: 0, y: 2)
     }
 

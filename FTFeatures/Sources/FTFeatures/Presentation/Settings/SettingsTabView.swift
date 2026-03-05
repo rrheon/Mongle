@@ -11,46 +11,86 @@ import Domain
 
 struct SettingsTabView: View {
     @Bindable var store: StoreOf<SettingsFeature>
-    @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
         NavigationStack {
             ZStack {
-                FTColor.surface
+                Color(hex: "F5F4F1")
                     .ignoresSafeArea()
 
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: FTSpacing.lg) {
+                    VStack(spacing: MongleSpacing.lg) {
                         // Profile Card
-                        SettingsProfileCard(user: store.currentUser)
-                            .padding(.horizontal, FTSpacing.lg)
-                            .padding(.top, FTSpacing.sm)
-
-                        // Notification Settings
-                        SettingsNotificationCard(
-                            notificationsEnabled: store.notificationsEnabled,
-                            onToggle: { store.send(.notificationsToggled($0)) }
+                        SettingsProfileCard(
+                            user: store.currentUser,
+                            onEditTapped: {}
                         )
-                        .padding(.horizontal, FTSpacing.lg)
+                        .padding(.horizontal, MongleSpacing.lg)
+                        .padding(.top, MongleSpacing.sm)
 
-                        // App Info
-                        SettingsAppInfoCard(
-                            version: store.appVersion,
-                            onTermsTapped: { store.send(.termsOfServiceTapped) },
-                            onPrivacyTapped: { store.send(.privacyPolicyTapped) },
-                            onContactTapped: { store.send(.contactUsTapped) }
-                        )
-                        .padding(.horizontal, FTSpacing.lg)
+                        // 모늘의 기분 섹션
+                        SettingsSectionCard(title: "모늘의 기분") {
+                            SettingsRow(
+                                icon: "face.smiling",
+                                iconColor: Color(hex: "FFD54F"),
+                                iconBg: Color(hex: "FFF3C4"),
+                                title: "오늘의 기분 설정",
+                                subtitle: "기분에 따라 몽글 색이 변해요",
+                                trailing: .chevron
+                            )
+                            Divider().padding(.leading, 60)
+                            SettingsRow(
+                                icon: "clock.arrow.circlepath",
+                                iconColor: Color(hex: "A8DFBC"),
+                                iconBg: Color(hex: "D4F0E0"),
+                                title: "기분 히스토리",
+                                subtitle: "나의 감정 기록 돌아보기",
+                                trailing: .chevron
+                            )
+                        }
+                        .padding(.horizontal, MongleSpacing.lg)
 
-                        // Account Actions
-                        SettingsAccountCard(
-                            onLogoutTapped: { store.send(.logoutTapped) },
-                            onDeleteAccountTapped: { store.send(.deleteAccountTapped) }
-                        )
-                        .padding(.horizontal, FTSpacing.lg)
+                        // 그룹 관리 섹션
+                        SettingsSectionCard(title: "그룹 관리") {
+                            SettingsRow(
+                                icon: "bell.fill",
+                                iconColor: Color(hex: "A8DFBC"),
+                                iconBg: Color(hex: "D4F0E0"),
+                                title: "알림 설정",
+                                subtitle: "답변 알림, 리마인더",
+                                trailing: .chevron
+                            )
+                            Divider().padding(.leading, 60)
+                            SettingsRow(
+                                icon: "person.3.fill",
+                                iconColor: Color(hex: "A8DFBC"),
+                                iconBg: Color(hex: "D4F0E0"),
+                                title: "그룹 관리",
+                                subtitle: "멤버 초대, 그룹 설정",
+                                trailing: .chevron
+                            )
+                            Divider().padding(.leading, 60)
+                            SettingsRow(
+                                icon: "person.crop.circle.fill",
+                                iconColor: Color(hex: "A8DFBC"),
+                                iconBg: Color(hex: "D4F0E0"),
+                                title: "계정 관리",
+                                subtitle: "로그아웃, 탈퇴",
+                                trailing: .chevron,
+                                action: { store.send(.logoutTapped) }
+                            )
+                        }
+                        .padding(.horizontal, MongleSpacing.lg)
+
+                        // Footer
+                        Text("몽글 v\(store.appVersion)")
+                            .font(MongleFont.caption())
+                            .foregroundColor(MongleColor.textHint)
+                            .frame(maxWidth: .infinity)
+                            .padding(.top, MongleSpacing.sm)
 
                         Spacer()
-                            .frame(height: FTSpacing.xxl)
+                            .frame(height: MongleSpacing.xxl)
                     }
                 }
             }
@@ -63,12 +103,8 @@ struct SettingsTabView: View {
                     set: { _ in store.send(.logoutCancelled) }
                 )
             ) {
-                Button("취소", role: .cancel) {
-                    store.send(.logoutCancelled)
-                }
-                Button("로그아웃", role: .destructive) {
-                    store.send(.logoutConfirmed)
-                }
+                Button("취소", role: .cancel) { store.send(.logoutCancelled) }
+                Button("로그아웃", role: .destructive) { store.send(.logoutConfirmed) }
             } message: {
                 Text("정말 로그아웃 하시겠습니까?")
             }
@@ -79,18 +115,12 @@ struct SettingsTabView: View {
                     set: { _ in store.send(.deleteAccountCancelled) }
                 )
             ) {
-                Button("취소", role: .cancel) {
-                    store.send(.deleteAccountCancelled)
-                }
-                Button("탈퇴하기", role: .destructive) {
-                    store.send(.deleteAccountConfirmed)
-                }
+                Button("취소", role: .cancel) { store.send(.deleteAccountCancelled) }
+                Button("탈퇴하기", role: .destructive) { store.send(.deleteAccountConfirmed) }
             } message: {
-                Text("계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.\n정말 탈퇴하시겠습니까?")
+                Text("계정을 삭제하면 모든 데이터가 영구적으로 삭제됩니다.\n정말 탈퇴하시겠습니까?")
             }
-            .onAppear {
-                store.send(.onAppear)
-            }
+            .onAppear { store.send(.onAppear) }
         }
     }
 }
@@ -98,209 +128,79 @@ struct SettingsTabView: View {
 // MARK: - Settings Profile Card
 private struct SettingsProfileCard: View {
     let user: User?
+    let onEditTapped: () -> Void
+
+    private let monggleColors: [Color] = [
+        Color(hex: "A8DFBC"), Color(hex: "F5978E"),
+        Color(hex: "FFD54F"), Color(hex: "42A5F5")
+    ]
+
+    private var monggleColor: Color {
+        let name = user?.name ?? ""
+        return monggleColors[abs(name.hashValue) % monggleColors.count]
+    }
 
     var body: some View {
-        FTCard(cornerRadius: FTRadius.xl) {
-            HStack(spacing: FTSpacing.md) {
-                // Avatar
+        MongleCard(cornerRadius: MongleRadius.xl) {
+            HStack(spacing: MongleSpacing.md) {
+                // Monggle Avatar
                 ZStack {
                     Circle()
-                        .fill(FTColor.primaryLight)
-                        .frame(width: 72, height: 72)
+                        .fill(monggleColor)
+                        .frame(width: 64, height: 64)
 
-                    Text(String(user?.name.prefix(1) ?? "?"))
-                        .font(FTFont.heading2())
-                        .foregroundColor(FTColor.primary)
+                    HStack(spacing: 8) {
+                        Circle().fill(Color(hex: "1A1A1A")).frame(width: 7, height: 8)
+                        Circle().fill(Color(hex: "1A1A1A")).frame(width: 7, height: 8)
+                    }
+                    .offset(y: 3)
                 }
 
-                VStack(alignment: .leading, spacing: FTSpacing.xs) {
+                VStack(alignment: .leading, spacing: MongleSpacing.xxs) {
                     Text(user?.name ?? "-")
-                        .font(FTFont.heading3())
-                        .foregroundColor(FTColor.textPrimary)
+                        .font(MongleFont.heading3())
+                        .foregroundColor(MongleColor.textPrimary)
 
-                    Text(user?.email ?? "-")
-                        .font(FTFont.body2())
-                        .foregroundColor(FTColor.textSecondary)
-
-                    if let role = user?.role {
-                        HStack(spacing: FTSpacing.xxs) {
-                            Image(systemName: roleIcon(role))
-                                .font(.system(size: 10))
-                            Text(role.rawValue)
-                                .font(FTFont.captionBold())
-                        }
-                        .foregroundColor(.white)
-                        .padding(.horizontal, FTSpacing.sm)
-                        .padding(.vertical, FTSpacing.xxs)
-                        .background(FTColor.primary)
-                        .cornerRadius(FTRadius.full)
+                    HStack(spacing: MongleSpacing.xxs) {
+                        Text("오늘의 기분:")
+                            .font(MongleFont.caption())
+                            .foregroundColor(MongleColor.textSecondary)
+                        Text("😊 사랑")
+                            .font(MongleFont.caption())
+                            .foregroundColor(MongleColor.textPrimary)
                     }
                 }
 
                 Spacer()
 
-                // Edit Button
-                Button {
-                    // TODO: Edit profile
-                } label: {
-                    Image(systemName: "pencil.circle.fill")
-                        .font(.system(size: 28))
-                        .foregroundColor(FTColor.textHint)
-                }
-            }
-        }
-    }
-
-    private func roleIcon(_ role: FamilyRole) -> String {
-        switch role {
-        case .father: return "figure.stand"
-        case .mother: return "figure.stand.dress"
-        case .son, .daughter: return "figure.and.child.holdinghands"
-        case .other: return "person.fill"
-        }
-    }
-}
-
-// MARK: - Settings Notification Card
-private struct SettingsNotificationCard: View {
-    let notificationsEnabled: Bool
-    let onToggle: (Bool) -> Void
-
-    var body: some View {
-        FTCard(cornerRadius: FTRadius.xl) {
-            VStack(alignment: .leading, spacing: FTSpacing.md) {
-                FTSectionHeader(title: "알림 설정")
-
-                HStack {
-                    HStack(spacing: FTSpacing.sm) {
-                        ZStack {
-                            Circle()
-                                .fill(FTColor.primaryLight)
-                                .frame(width: 40, height: 40)
-
-                            Image(systemName: "bell.fill")
-                                .font(.system(size: 18))
-                                .foregroundColor(FTColor.primary)
-                        }
-
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("푸시 알림")
-                                .font(FTFont.body1())
-                                .foregroundColor(FTColor.textPrimary)
-
-                            Text("매일 새로운 질문 알림을 받아요")
-                                .font(FTFont.caption())
-                                .foregroundColor(FTColor.textSecondary)
-                        }
-                    }
-
-                    Spacer()
-
-                    Toggle("", isOn: Binding(
-                        get: { notificationsEnabled },
-                        set: { onToggle($0) }
-                    ))
-                    .tint(FTColor.primary)
-                    .labelsHidden()
+                Button(action: onEditTapped) {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(MongleColor.textHint)
                 }
             }
         }
     }
 }
 
-// MARK: - Settings App Info Card
-private struct SettingsAppInfoCard: View {
-    let version: String
-    let onTermsTapped: () -> Void
-    let onPrivacyTapped: () -> Void
-    let onContactTapped: () -> Void
+// MARK: - Settings Section Card
+private struct SettingsSectionCard<Content: View>: View {
+    let title: String
+    @ViewBuilder let content: Content
 
     var body: some View {
-        FTCard(cornerRadius: FTRadius.xl) {
-            VStack(alignment: .leading, spacing: FTSpacing.sm) {
-                FTSectionHeader(title: "앱 정보")
+        VStack(alignment: .leading, spacing: MongleSpacing.sm) {
+            Text(title)
+                .font(MongleFont.captionBold())
+                .foregroundColor(MongleColor.textSecondary)
+                .padding(.horizontal, MongleSpacing.xxs)
 
-                VStack(spacing: 0) {
-                    // Version
-                    SettingsRow(
-                        icon: "info.circle.fill",
-                        iconColor: FTColor.info,
-                        title: "버전",
-                        trailing: .text(version)
-                    )
-
-                    Divider()
-                        .padding(.leading, 52)
-
-                    // Terms
-                    SettingsRow(
-                        icon: "doc.text.fill",
-                        iconColor: FTColor.textHint,
-                        title: "이용약관",
-                        trailing: .chevron,
-                        action: onTermsTapped
-                    )
-
-                    Divider()
-                        .padding(.leading, 52)
-
-                    // Privacy
-                    SettingsRow(
-                        icon: "hand.raised.fill",
-                        iconColor: FTColor.textHint,
-                        title: "개인정보처리방침",
-                        trailing: .chevron,
-                        action: onPrivacyTapped
-                    )
-
-                    Divider()
-                        .padding(.leading, 52)
-
-                    // Contact
-                    SettingsRow(
-                        icon: "envelope.fill",
-                        iconColor: FTColor.textHint,
-                        title: "문의하기",
-                        trailing: .chevron,
-                        action: onContactTapped
-                    )
-                }
+            VStack(spacing: 0) {
+                content
             }
-        }
-    }
-}
-
-// MARK: - Settings Account Card
-private struct SettingsAccountCard: View {
-    let onLogoutTapped: () -> Void
-    let onDeleteAccountTapped: () -> Void
-
-    var body: some View {
-        FTCard(cornerRadius: FTRadius.xl) {
-            VStack(alignment: .leading, spacing: FTSpacing.sm) {
-                FTSectionHeader(title: "계정")
-
-                SettingsRow(
-                    icon: "rectangle.portrait.and.arrow.right",
-                    iconColor: FTColor.error,
-                    title: "로그아웃",
-                    titleColor: FTColor.error,
-                    trailing: .none,
-                    action: onLogoutTapped
-                )
-
-                Divider()
-                    .padding(.leading, 52)
-
-                SettingsRow(
-                    icon: "trash.fill",
-                    iconColor: FTColor.error,
-                    title: "회원탈퇴",
-                    titleColor: FTColor.error,
-                    trailing: .none,
-                    action: onDeleteAccountTapped
-                )
-            }
+            .background(MongleColor.cardBackground)
+            .cornerRadius(MongleRadius.xl)
+            .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 2)
         }
     }
 }
@@ -309,14 +209,16 @@ private struct SettingsAccountCard: View {
 private struct SettingsRow: View {
     enum Trailing {
         case chevron
-        case text(String)
+        case toggle(Bool, (Bool) -> Void)
         case none
     }
 
     let icon: String
     let iconColor: Color
+    var iconBg: Color = Color.clear
     let title: String
-    var titleColor: Color = FTColor.textPrimary
+    var subtitle: String? = nil
+    var titleColor: Color = MongleColor.textPrimary
     let trailing: Trailing
     var action: (() -> Void)? = nil
 
@@ -324,20 +226,28 @@ private struct SettingsRow: View {
         Button {
             action?()
         } label: {
-            HStack(spacing: FTSpacing.sm) {
+            HStack(spacing: MongleSpacing.md) {
                 ZStack {
-                    Circle()
-                        .fill(iconColor.opacity(0.15))
-                        .frame(width: 36, height: 36)
+                    RoundedRectangle(cornerRadius: MongleRadius.xs)
+                        .fill(iconBg.opacity(iconBg == .clear ? 0 : 1))
+                        .frame(width: 40, height: 40)
 
                     Image(systemName: icon)
-                        .font(.system(size: 16))
+                        .font(.system(size: 18))
                         .foregroundColor(iconColor)
                 }
 
-                Text(title)
-                    .font(FTFont.body1())
-                    .foregroundColor(titleColor)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(MongleFont.body1())
+                        .foregroundColor(titleColor)
+
+                    if let subtitle = subtitle {
+                        Text(subtitle)
+                            .font(MongleFont.caption())
+                            .foregroundColor(MongleColor.textSecondary)
+                    }
+                }
 
                 Spacer()
 
@@ -345,18 +255,22 @@ private struct SettingsRow: View {
                 case .chevron:
                     Image(systemName: "chevron.right")
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(FTColor.textHint)
-                case .text(let value):
-                    Text(value)
-                        .font(FTFont.body2())
-                        .foregroundColor(FTColor.textSecondary)
+                        .foregroundColor(MongleColor.textHint)
+                case .toggle(let isOn, let onToggle):
+                    Toggle("", isOn: Binding(get: { isOn }, set: { onToggle($0) }))
+                        .tint(MongleColor.primary)
+                        .labelsHidden()
                 case .none:
                     EmptyView()
                 }
             }
-            .padding(.vertical, FTSpacing.sm)
+            .padding(.horizontal, MongleSpacing.lg)
+            .padding(.vertical, MongleSpacing.sm)
         }
-        .disabled(action == nil)
+        .disabled(action == nil && {
+            if case .toggle = trailing { return false }
+            return true
+        }())
     }
 }
 
@@ -367,22 +281,11 @@ private struct SettingsRow: View {
             currentUser: User(
                 id: UUID(),
                 email: "me@example.com",
-                name: "나",
+                name: "Mom",
                 profileImageURL: nil,
-                role: .son,
+                role: .mother,
                 createdAt: .now
             ),
-            appVersion: "1.0.0",
-            notificationsEnabled: true
-        )) {
-            SettingsFeature()
-        }
-    )
-}
-
-#Preview("Settings Tab - No User") {
-    SettingsTabView(
-        store: Store(initialState: SettingsFeature.State(
             appVersion: "1.0.0"
         )) {
             SettingsFeature()

@@ -10,13 +10,13 @@ import ComposableArchitecture
 import Domain
 
 // Domain의 Notification과 이름 충돌 방지
-public typealias FTNotification = Domain.Notification
+public typealias MongleNotification = Domain.Notification
 
 @Reducer
 public struct NotificationFeature {
     @ObservableState
     public struct State: Equatable {
-        public var notifications: [FTNotification] = []
+        public var notifications: [MongleNotification] = []
         public var isLoading = false
         public var errorMessage: String?
 
@@ -29,14 +29,14 @@ public struct NotificationFeature {
         }
 
         // 그룹화된 알림 (오늘, 이번 주, 이전)
-        public var groupedNotifications: [(String, [FTNotification])] {
+        public var groupedNotifications: [(String, [MongleNotification])] {
             let calendar = Calendar.current
             let today = calendar.startOfDay(for: Date())
             let weekAgo = calendar.date(byAdding: .day, value: -7, to: today) ?? today
 
-            var todayItems: [FTNotification] = []
-            var thisWeekItems: [FTNotification] = []
-            var olderItems: [FTNotification] = []
+            var todayItems: [MongleNotification] = []
+            var thisWeekItems: [MongleNotification] = []
+            var olderItems: [MongleNotification] = []
 
             for notification in notifications {
                 let notificationDay = calendar.startOfDay(for: notification.createdAt)
@@ -49,7 +49,7 @@ public struct NotificationFeature {
                 }
             }
 
-            var result: [(String, [FTNotification])] = []
+            var result: [(String, [MongleNotification])] = []
             if !todayItems.isEmpty { result.append(("오늘", todayItems)) }
             if !thisWeekItems.isEmpty { result.append(("이번 주", thisWeekItems)) }
             if !olderItems.isEmpty { result.append(("이전", olderItems)) }
@@ -57,7 +57,7 @@ public struct NotificationFeature {
             return result
         }
 
-        public init(notifications: [FTNotification] = []) {
+        public init(notifications: [MongleNotification] = []) {
             self.notifications = notifications
         }
     }
@@ -66,17 +66,17 @@ public struct NotificationFeature {
         // MARK: - View Actions
         case onAppear
         case refresh
-        case notificationTapped(FTNotification)
-        case markAsRead(FTNotification)
+        case notificationTapped(MongleNotification)
+        case markAsRead(MongleNotification)
         case markAllAsRead
-        case deleteNotification(FTNotification)
+        case deleteNotification(MongleNotification)
         case dismissError
 
         // MARK: - Internal Actions
         case setLoading(Bool)
         case setError(String?)
-        case notificationsLoaded([FTNotification])
-        case notificationUpdated(FTNotification)
+        case notificationsLoaded([MongleNotification])
+        case notificationUpdated(MongleNotification)
         case notificationDeleted(UUID)
 
         // MARK: - Delegate Actions
@@ -126,7 +126,7 @@ public struct NotificationFeature {
 
             case .markAsRead(let notification):
                 if let index = state.notifications.firstIndex(where: { $0.id == notification.id }) {
-                    let updated = FTNotification(
+                    let updated = MongleNotification(
                         id: notification.id,
                         userId: notification.userId,
                         type: notification.type,
@@ -141,7 +141,7 @@ public struct NotificationFeature {
 
             case .markAllAsRead:
                 state.notifications = state.notifications.map { notification in
-                    FTNotification(
+                    MongleNotification(
                         id: notification.id,
                         userId: notification.userId,
                         type: notification.type,
@@ -193,12 +193,12 @@ public struct NotificationFeature {
 }
 
 // MARK: - Mock Data Generator
-private func generateMockNotifications() -> [FTNotification] {
+private func generateMockNotifications() -> [MongleNotification] {
     let calendar = Calendar.current
     let userId = UUID()
 
     return [
-        FTNotification(
+        MongleNotification(
             id: UUID(),
             userId: userId,
             type: .newQuestion,
@@ -207,7 +207,7 @@ private func generateMockNotifications() -> [FTNotification] {
             isRead: false,
             createdAt: Date()
         ),
-        FTNotification(
+        MongleNotification(
             id: UUID(),
             userId: userId,
             type: .memberAnswered,
@@ -216,7 +216,7 @@ private func generateMockNotifications() -> [FTNotification] {
             isRead: false,
             createdAt: calendar.date(byAdding: .hour, value: -1, to: Date()) ?? Date()
         ),
-        FTNotification(
+        MongleNotification(
             id: UUID(),
             userId: userId,
             type: .allAnswered,
@@ -225,7 +225,7 @@ private func generateMockNotifications() -> [FTNotification] {
             isRead: false,
             createdAt: calendar.date(byAdding: .hour, value: -3, to: Date()) ?? Date()
         ),
-        FTNotification(
+        MongleNotification(
             id: UUID(),
             userId: userId,
             type: .answerRequest,
@@ -234,7 +234,7 @@ private func generateMockNotifications() -> [FTNotification] {
             isRead: true,
             createdAt: calendar.date(byAdding: .day, value: -1, to: Date()) ?? Date()
         ),
-        FTNotification(
+        MongleNotification(
             id: UUID(),
             userId: userId,
             type: .treeGrowth,
@@ -243,7 +243,7 @@ private func generateMockNotifications() -> [FTNotification] {
             isRead: true,
             createdAt: calendar.date(byAdding: .day, value: -2, to: Date()) ?? Date()
         ),
-        FTNotification(
+        MongleNotification(
             id: UUID(),
             userId: userId,
             type: .badgeEarned,
@@ -252,7 +252,7 @@ private func generateMockNotifications() -> [FTNotification] {
             isRead: true,
             createdAt: calendar.date(byAdding: .day, value: -5, to: Date()) ?? Date()
         ),
-        FTNotification(
+        MongleNotification(
             id: UUID(),
             userId: userId,
             type: .newQuestion,

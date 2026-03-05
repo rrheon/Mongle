@@ -1,5 +1,5 @@
 //
-//  FTTextField.swift
+//  MongleTextField.swift
 //  Mongle
 //
 //  Created by 최용헌 on 12/11/25.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct FTTextField: View {
+struct MongleTextField: View {
     let title: String?
     let placeholder: String
     @Binding var text: String
@@ -41,21 +41,21 @@ struct FTTextField: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: FTSpacing.xs) {
+        VStack(alignment: .leading, spacing: MongleSpacing.xs) {
             // Title
             if let title = title {
                 Text(title)
-                    .font(FTFont.body2())
-                    .foregroundColor(FTColor.textSecondary)
+                    .font(MongleFont.body2())
+                    .foregroundColor(MongleColor.textSecondary)
             }
 
             // Input Field
-            HStack(spacing: FTSpacing.sm) {
+            HStack(spacing: MongleSpacing.sm) {
                 // Leading Icon
                 if let leadingIcon = leadingIcon {
                     Image(systemName: leadingIcon)
                         .font(.system(size: 18))
-                        .foregroundColor(isFocused ? FTColor.primary : FTColor.textHint)
+                        .foregroundColor(isFocused ? MongleColor.primary : MongleColor.textHint)
                 }
 
                 // Text Input
@@ -77,7 +77,7 @@ struct FTTextField: View {
                     } label: {
                         Image(systemName: isSecureTextVisible ? "eye.slash.fill" : "eye.fill")
                             .font(.system(size: 16))
-                            .foregroundColor(FTColor.textHint)
+                            .foregroundColor(MongleColor.textHint)
                     }
                 }
 
@@ -88,52 +88,52 @@ struct FTTextField: View {
                     } label: {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 16))
-                            .foregroundColor(FTColor.textHint)
+                            .foregroundColor(MongleColor.textHint)
                     }
                 }
             }
-            .font(FTFont.body1())
-            .padding(.horizontal, FTSpacing.md)
+            .font(MongleFont.body1())
+            .padding(.horizontal, MongleSpacing.md)
             .frame(height: 52)
             .background(fieldBackgroundColor)
-            .cornerRadius(FTRadius.medium)
+            .cornerRadius(MongleRadius.medium)
             .overlay(
-                RoundedRectangle(cornerRadius: FTRadius.medium)
+                RoundedRectangle(cornerRadius: MongleRadius.medium)
                     .stroke(borderColor, lineWidth: isFocused ? 2 : 1)
             )
             .animation(.easeInOut(duration: 0.2), value: isFocused)
 
             // Helper or Error Text
             if let errorMessage = errorMessage, !errorMessage.isEmpty {
-                HStack(spacing: FTSpacing.xxs) {
+                HStack(spacing: MongleSpacing.xxs) {
                     Image(systemName: "exclamationmark.circle.fill")
                         .font(.system(size: 12))
                     Text(errorMessage)
-                        .font(FTFont.caption())
+                        .font(MongleFont.caption())
                 }
-                .foregroundColor(FTColor.error)
+                .foregroundColor(MongleColor.error)
             } else if let helperText = helperText {
                 Text(helperText)
-                    .font(FTFont.caption())
-                    .foregroundColor(FTColor.textHint)
+                    .font(MongleFont.caption())
+                    .foregroundColor(MongleColor.textHint)
             }
         }
     }
 
     private var fieldBackgroundColor: Color {
-        isFocused ? FTColor.background : FTColor.surface
+        isFocused ? MongleColor.background : MongleColor.surface
     }
 
     private var borderColor: Color {
         if errorMessage != nil && !errorMessage!.isEmpty {
-            return FTColor.error
+            return MongleColor.error
         }
-        return isFocused ? FTColor.primary : FTColor.border
+        return isFocused ? MongleColor.primary : MongleColor.border
     }
 }
 
 // MARK: - Text Area (여러 줄 입력)
-struct FTTextArea: View {
+struct MongleTextArea: View {
     let title: String?
     let placeholder: String
     @Binding var text: String
@@ -143,54 +143,54 @@ struct FTTextArea: View {
     @FocusState private var isFocused: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: FTSpacing.xs) {
+        VStack(alignment: .leading, spacing: MongleSpacing.xs) {
             if let title = title {
                 Text(title)
-                    .font(FTFont.body2())
-                    .foregroundColor(FTColor.textSecondary)
+                    .font(MongleFont.body2())
+                    .foregroundColor(MongleColor.textSecondary)
             }
 
             ZStack(alignment: .topLeading) {
                 if text.isEmpty {
                     Text(placeholder)
-                        .font(FTFont.body1())
-                        .foregroundColor(FTColor.textHint)
-                        .padding(.horizontal, FTSpacing.md)
-                        .padding(.vertical, FTSpacing.md)
+                        .font(MongleFont.body1())
+                        .foregroundColor(MongleColor.textHint)
+                        .padding(.horizontal, MongleSpacing.md)
+                        .padding(.vertical, MongleSpacing.md)
                 }
 
                 TextEditor(text: $text)
-                    .font(FTFont.body1())
+                    .font(MongleFont.body1())
                     .focused($isFocused)
                     .scrollContentBackground(.hidden)
-                    .padding(.horizontal, FTSpacing.sm)
-                    .padding(.vertical, FTSpacing.sm)
+                    .padding(.horizontal, MongleSpacing.sm)
+                    .padding(.vertical, MongleSpacing.sm)
             }
             .frame(minHeight: minHeight)
-            .background(isFocused ? FTColor.background : FTColor.surface)
-            .cornerRadius(FTRadius.medium)
+            .background(isFocused ? MongleColor.background : MongleColor.surface)
+            .cornerRadius(MongleRadius.medium)
             .overlay(
-                RoundedRectangle(cornerRadius: FTRadius.medium)
+                RoundedRectangle(cornerRadius: MongleRadius.medium)
                     .stroke(borderColor, lineWidth: isFocused ? 2 : 1)
             )
 
             if let errorMessage = errorMessage, !errorMessage.isEmpty {
-                HStack(spacing: FTSpacing.xxs) {
+                HStack(spacing: MongleSpacing.xxs) {
                     Image(systemName: "exclamationmark.circle.fill")
                         .font(.system(size: 12))
                     Text(errorMessage)
-                        .font(FTFont.caption())
+                        .font(MongleFont.caption())
                 }
-                .foregroundColor(FTColor.error)
+                .foregroundColor(MongleColor.error)
             }
         }
     }
 
     private var borderColor: Color {
         if errorMessage != nil && !errorMessage!.isEmpty {
-            return FTColor.error
+            return MongleColor.error
         }
-        return isFocused ? FTColor.primary : FTColor.border
+        return isFocused ? MongleColor.primary : MongleColor.border
     }
 }
 
@@ -198,9 +198,9 @@ struct FTTextArea: View {
     ScrollView {
         VStack(spacing: 24) {
             Text("기본 텍스트 필드")
-                .font(FTFont.heading3())
+                .font(MongleFont.heading3())
 
-            FTTextField(
+            MongleTextField(
                 title: "이메일",
                 placeholder: "example@email.com",
                 text: .constant(""),
@@ -208,7 +208,7 @@ struct FTTextArea: View {
                 leadingIcon: "envelope"
             )
 
-            FTTextField(
+            MongleTextField(
                 title: "비밀번호",
                 placeholder: "최소 6자 이상",
                 text: .constant(""),
@@ -216,14 +216,14 @@ struct FTTextArea: View {
                 leadingIcon: "lock"
             )
 
-            FTTextField(
+            MongleTextField(
                 title: "닉네임",
                 placeholder: "닉네임을 입력해주세요",
                 text: .constant("홍길동"),
                 helperText: "2-10자 이내로 입력해주세요"
             )
 
-            FTTextField(
+            MongleTextField(
                 title: "비밀번호",
                 placeholder: "최소 6자 이상",
                 text: .constant("abc"),
@@ -232,18 +232,18 @@ struct FTTextArea: View {
             )
 
             Text("타이틀 없는 필드")
-                .font(FTFont.heading3())
+                .font(MongleFont.heading3())
 
-            FTTextField(
+            MongleTextField(
                 placeholder: "검색어를 입력하세요",
                 text: .constant(""),
                 leadingIcon: "magnifyingglass"
             )
 
             Text("텍스트 영역")
-                .font(FTFont.heading3())
+                .font(MongleFont.heading3())
 
-            FTTextArea(
+            MongleTextArea(
                 title: "답변",
                 placeholder: "답변을 입력해주세요...",
                 text: .constant("")
@@ -251,5 +251,5 @@ struct FTTextArea: View {
         }
         .padding()
     }
-    .background(FTColor.surface)
+    .background(MongleColor.surface)
 }

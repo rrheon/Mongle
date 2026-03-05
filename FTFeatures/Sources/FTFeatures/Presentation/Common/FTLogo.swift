@@ -1,5 +1,5 @@
 //
-//  FTLogo.swift
+//  MongleLogo.swift
 //  Mongle
 //
 //  Created by 최용헌 on 12/11/25.
@@ -7,8 +7,8 @@
 
 import SwiftUI
 
-struct FTLogo: View {
-  enum FTLogoType: String {
+struct MongleLogo: View {
+  enum MongleLogoType: String {
     case MongleIcon
     case MongleImg
   }
@@ -28,9 +28,9 @@ struct FTLogo: View {
   }
   
   let size: Size
-  let logo: FTLogoType
+  let logo: MongleLogoType
   
-  init(size: Size = .medium, type: FTLogoType = .MongleIcon) {
+  init(size: Size = .medium, type: MongleLogoType = .MongleIcon) {
     self.size = size
     self.logo = type
   }
@@ -40,21 +40,21 @@ struct FTLogo: View {
       .resizable()
       .scaledToFill()
       .frame(width: size.dimension, height: size.dimension)
-      .foregroundColor(FTColor.primary)
+      .foregroundColor(MongleColor.primary)
   }
 }
 
 #Preview {
   VStack(spacing: 20) {
-    FTLogo(size: .small)
-    FTLogo(size: .medium)
-    FTLogo(size: .large)
+    MongleLogo(size: .small)
+    MongleLogo(size: .medium)
+    MongleLogo(size: .large)
   }
   
   VStack(spacing: 20) {
-    FTLogo(size: .small, type: .MongleImg)
-    FTLogo(size: .medium, type: .MongleImg)
-    FTLogo(size: .large, type: .MongleImg)
+    MongleLogo(size: .small, type: .MongleImg)
+    MongleLogo(size: .medium, type: .MongleImg)
+    MongleLogo(size: .large, type: .MongleImg)
       .foregroundStyle(Color.blue)
   }
 }

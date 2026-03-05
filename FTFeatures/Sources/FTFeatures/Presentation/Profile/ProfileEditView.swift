@@ -20,7 +20,7 @@ public struct ProfileEditView: View {
     public var body: some View {
         NavigationStack {
             ZStack {
-                FTColor.background.ignoresSafeArea()
+                MongleColor.background.ignoresSafeArea()
 
                 if store.isLoading {
                     loadingView
@@ -35,15 +35,15 @@ public struct ProfileEditView: View {
                     Button("취소") {
                         store.send(.cancelButtonTapped)
                     }
-                    .foregroundColor(FTColor.textSecondary)
+                    .foregroundColor(MongleColor.textSecondary)
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("저장") {
                         store.send(.saveButtonTapped)
                     }
-                    .font(FTFont.body1Bold())
-                    .foregroundColor(store.hasChanges && store.isValid ? FTColor.primary : FTColor.textHint)
+                    .font(MongleFont.body1Bold())
+                    .foregroundColor(store.hasChanges && store.isValid ? MongleColor.primary : MongleColor.textHint)
                     .disabled(!store.hasChanges || !store.isValid || store.isSaving)
                 }
             }
@@ -56,7 +56,7 @@ public struct ProfileEditView: View {
     // MARK: - Content View
     private var contentView: some View {
         ScrollView {
-            VStack(spacing: FTSpacing.lg) {
+            VStack(spacing: MongleSpacing.lg) {
                 // 프로필 이미지
                 profileImageSection
 
@@ -69,13 +69,13 @@ public struct ProfileEditView: View {
                 // 이메일 (읽기 전용)
                 emailSection
             }
-            .padding(FTSpacing.md)
+            .padding(MongleSpacing.md)
         }
     }
 
     // MARK: - Profile Image Section
     private var profileImageSection: some View {
-        VStack(spacing: FTSpacing.sm) {
+        VStack(spacing: MongleSpacing.sm) {
             Button {
                 store.send(.profileImageTapped)
             } label: {
@@ -98,7 +98,7 @@ public struct ProfileEditView: View {
 
                     // 편집 아이콘
                     Circle()
-                        .fill(FTColor.primary)
+                        .fill(MongleColor.primary)
                         .frame(width: 32, height: 32)
                         .overlay(
                             Image(systemName: "camera.fill")
@@ -110,69 +110,69 @@ public struct ProfileEditView: View {
             }
 
             Text("사진 변경")
-                .font(FTFont.caption())
-                .foregroundColor(FTColor.primary)
+                .font(MongleFont.caption())
+                .foregroundColor(MongleColor.primary)
         }
-        .padding(.vertical, FTSpacing.md)
+        .padding(.vertical, MongleSpacing.md)
     }
 
     private var profilePlaceholder: some View {
         Circle()
-            .fill(FTColor.primaryLight)
+            .fill(MongleColor.primaryLight)
             .frame(width: 100, height: 100)
             .overlay(
                 Text(store.editedName.prefix(1).uppercased())
                     .font(.system(size: 40, weight: .bold, design: .rounded))
-                    .foregroundColor(FTColor.primary)
+                    .foregroundColor(MongleColor.primary)
             )
     }
 
     // MARK: - Name Input Section
     private var nameInputSection: some View {
-        VStack(alignment: .leading, spacing: FTSpacing.xs) {
+        VStack(alignment: .leading, spacing: MongleSpacing.xs) {
             Text("이름")
-                .font(FTFont.captionBold())
-                .foregroundColor(FTColor.textSecondary)
+                .font(MongleFont.captionBold())
+                .foregroundColor(MongleColor.textSecondary)
 
             TextField("이름을 입력하세요", text: $store.editedName.sending(\.nameChanged))
-                .font(FTFont.body1())
-                .padding(FTSpacing.md)
-                .background(FTColor.surface)
-                .clipShape(RoundedRectangle(cornerRadius: FTRadius.small))
+                .font(MongleFont.body1())
+                .padding(MongleSpacing.md)
+                .background(MongleColor.surface)
+                .clipShape(RoundedRectangle(cornerRadius: MongleRadius.small))
                 .overlay(
-                    RoundedRectangle(cornerRadius: FTRadius.small)
-                        .stroke(FTColor.border, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: MongleRadius.small)
+                        .stroke(MongleColor.border, lineWidth: 1)
                 )
         }
     }
 
     // MARK: - Role Selection Section
     private var roleSelectionSection: some View {
-        VStack(alignment: .leading, spacing: FTSpacing.xs) {
+        VStack(alignment: .leading, spacing: MongleSpacing.xs) {
             Text("가족 역할")
-                .font(FTFont.captionBold())
-                .foregroundColor(FTColor.textSecondary)
+                .font(MongleFont.captionBold())
+                .foregroundColor(MongleColor.textSecondary)
 
             Button {
                 store.send(.showRolePickerToggled)
             } label: {
                 HStack {
                     Text(store.editedRole.rawValue)
-                        .font(FTFont.body1())
-                        .foregroundColor(FTColor.textPrimary)
+                        .font(MongleFont.body1())
+                        .foregroundColor(MongleColor.textPrimary)
 
                     Spacer()
 
                     Image(systemName: store.showRolePicker ? "chevron.up" : "chevron.down")
                         .font(.system(size: 14))
-                        .foregroundColor(FTColor.textSecondary)
+                        .foregroundColor(MongleColor.textSecondary)
                 }
-                .padding(FTSpacing.md)
-                .background(FTColor.surface)
-                .clipShape(RoundedRectangle(cornerRadius: FTRadius.small))
+                .padding(MongleSpacing.md)
+                .background(MongleColor.surface)
+                .clipShape(RoundedRectangle(cornerRadius: MongleRadius.small))
                 .overlay(
-                    RoundedRectangle(cornerRadius: FTRadius.small)
-                        .stroke(FTColor.border, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: MongleRadius.small)
+                        .stroke(MongleColor.border, lineWidth: 1)
                 )
             }
 
@@ -185,29 +185,29 @@ public struct ProfileEditView: View {
                         } label: {
                             HStack {
                                 Text(role.rawValue)
-                                    .font(FTFont.body1())
-                                    .foregroundColor(FTColor.textPrimary)
+                                    .font(MongleFont.body1())
+                                    .foregroundColor(MongleColor.textPrimary)
 
                                 Spacer()
 
                                 if store.editedRole == role {
                                     Image(systemName: "checkmark")
                                         .font(.system(size: 14, weight: .semibold))
-                                        .foregroundColor(FTColor.primary)
+                                        .foregroundColor(MongleColor.primary)
                                 }
                             }
-                            .padding(FTSpacing.md)
-                            .background(store.editedRole == role ? FTColor.primaryLight : Color.clear)
+                            .padding(MongleSpacing.md)
+                            .background(store.editedRole == role ? MongleColor.primaryLight : Color.clear)
                         }
 
                         if role != .other {
                             Divider()
-                                .background(FTColor.divider)
+                                .background(MongleColor.divider)
                         }
                     }
                 }
-                .background(FTColor.cardBackground)
-                .clipShape(RoundedRectangle(cornerRadius: FTRadius.small))
+                .background(MongleColor.cardBackground)
+                .clipShape(RoundedRectangle(cornerRadius: MongleRadius.small))
                 .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
             }
         }
@@ -215,41 +215,41 @@ public struct ProfileEditView: View {
 
     // MARK: - Email Section
     private var emailSection: some View {
-        VStack(alignment: .leading, spacing: FTSpacing.xs) {
+        VStack(alignment: .leading, spacing: MongleSpacing.xs) {
             Text("이메일")
-                .font(FTFont.captionBold())
-                .foregroundColor(FTColor.textSecondary)
+                .font(MongleFont.captionBold())
+                .foregroundColor(MongleColor.textSecondary)
 
             HStack {
                 Text(store.user?.email ?? "")
-                    .font(FTFont.body1())
-                    .foregroundColor(FTColor.textHint)
+                    .font(MongleFont.body1())
+                    .foregroundColor(MongleColor.textHint)
 
                 Spacer()
 
                 Image(systemName: "lock.fill")
                     .font(.system(size: 12))
-                    .foregroundColor(FTColor.textHint)
+                    .foregroundColor(MongleColor.textHint)
             }
-            .padding(FTSpacing.md)
-            .background(FTColor.surface.opacity(0.5))
-            .clipShape(RoundedRectangle(cornerRadius: FTRadius.small))
+            .padding(MongleSpacing.md)
+            .background(MongleColor.surface.opacity(0.5))
+            .clipShape(RoundedRectangle(cornerRadius: MongleRadius.small))
 
             Text("이메일은 변경할 수 없습니다")
-                .font(FTFont.caption())
-                .foregroundColor(FTColor.textHint)
+                .font(MongleFont.caption())
+                .foregroundColor(MongleColor.textHint)
         }
     }
 
     // MARK: - Loading View
     private var loadingView: some View {
-        VStack(spacing: FTSpacing.md) {
+        VStack(spacing: MongleSpacing.md) {
             ProgressView()
                 .scaleEffect(1.2)
 
             Text("프로필 불러오는 중...")
-                .font(FTFont.body2())
-                .foregroundColor(FTColor.textSecondary)
+                .font(MongleFont.body2())
+                .foregroundColor(MongleColor.textSecondary)
         }
     }
 }

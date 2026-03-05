@@ -1,5 +1,5 @@
 //
-//  FTCard.swift
+//  MongleCard.swift
 //  Mongle
 //
 //  Created by Claude on 2025-01-07.
@@ -8,7 +8,7 @@
 import SwiftUI
 
 // MARK: - Card Container
-struct FTCard<Content: View>: View {
+struct MongleCard<Content: View>: View {
     let content: Content
     var padding: CGFloat
     var cornerRadius: CGFloat
@@ -18,10 +18,10 @@ struct FTCard<Content: View>: View {
     @Environment(\.colorScheme) var colorScheme
 
     init(
-        padding: CGFloat = FTSpacing.lg,
-        cornerRadius: CGFloat = FTRadius.xl,
+        padding: CGFloat = MongleSpacing.lg,
+        cornerRadius: CGFloat = MongleRadius.xl,
         hasShadow: Bool = true,
-        backgroundColor: Color = FTColor.cardBackground,
+        backgroundColor: Color = MongleColor.cardBackground,
         @ViewBuilder content: () -> Content
     ) {
         self.padding = padding
@@ -52,7 +52,7 @@ struct FTCard<Content: View>: View {
 }
 
 // MARK: - Question Card (마인드브릿지 스타일 질문 카드)
-struct FTQuestionCard: View {
+struct MongleQuestionCard: View {
     let category: String
     let question: String
     var hasAnswered: Bool = false
@@ -64,21 +64,21 @@ struct FTQuestionCard: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: FTSpacing.md) {
+            VStack(spacing: MongleSpacing.md) {
                 // Top Row - Category & Status
                 HStack {
                     // Category Tag
-                    HStack(spacing: FTSpacing.xxs) {
+                    HStack(spacing: MongleSpacing.xxs) {
                         Image(systemName: categoryIcon)
                             .font(.system(size: 12))
                         Text(category)
-                            .font(FTFont.captionBold())
+                            .font(MongleFont.captionBold())
                     }
-                    .foregroundColor(FTColor.primary)
-                    .padding(.horizontal, FTSpacing.sm)
-                    .padding(.vertical, FTSpacing.xxs)
-                    .background(FTColor.primaryLight)
-                    .cornerRadius(FTRadius.full)
+                    .foregroundColor(MongleColor.primary)
+                    .padding(.horizontal, MongleSpacing.sm)
+                    .padding(.vertical, MongleSpacing.xxs)
+                    .background(MongleColor.primaryLight)
+                    .cornerRadius(MongleRadius.full)
 
                     Spacer()
 
@@ -88,16 +88,16 @@ struct FTQuestionCard: View {
                             Image(systemName: "checkmark.circle.fill")
                                 .font(.system(size: 14))
                             Text("답변 완료")
-                                .font(FTFont.captionBold())
+                                .font(MongleFont.captionBold())
                         }
-                        .foregroundColor(FTColor.success)
+                        .foregroundColor(MongleColor.success)
                     }
                 }
 
                 // Question Text
                 Text(question)
-                    .font(FTFont.heading3())
-                    .foregroundColor(FTColor.textPrimary)
+                    .font(MongleFont.heading3())
+                    .foregroundColor(MongleColor.textPrimary)
                     .multilineTextAlignment(.leading)
                     .lineLimit(3)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -105,40 +105,40 @@ struct FTQuestionCard: View {
                 // Bottom Row - Family Progress & Arrow
                 HStack {
                     if totalFamilyMembers > 0 {
-                        HStack(spacing: FTSpacing.xxs) {
+                        HStack(spacing: MongleSpacing.xxs) {
                             Image(systemName: "person.2.fill")
                                 .font(.system(size: 12))
                             Text("\(familyAnswerCount)/\(totalFamilyMembers)명 답변")
-                                .font(FTFont.caption())
+                                .font(MongleFont.caption())
                         }
-                        .foregroundColor(FTColor.textSecondary)
+                        .foregroundColor(MongleColor.textSecondary)
                     }
 
                     Spacer()
 
                     if !hasAnswered {
-                        HStack(spacing: FTSpacing.xxs) {
+                        HStack(spacing: MongleSpacing.xxs) {
                             Text("답변하기")
-                                .font(FTFont.captionBold())
+                                .font(MongleFont.captionBold())
                             Image(systemName: "arrow.right")
                                 .font(.system(size: 12))
                         }
-                        .foregroundColor(FTColor.primary)
+                        .foregroundColor(MongleColor.primary)
                     } else {
                         Image(systemName: "chevron.right")
                             .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(FTColor.textHint)
+                            .foregroundColor(MongleColor.textHint)
                     }
                 }
             }
-            .padding(FTSpacing.lg)
+            .padding(MongleSpacing.lg)
             .background(
-                RoundedRectangle(cornerRadius: FTRadius.xl)
-                    .fill(hasAnswered ? FTColor.cardBackgroundHighlight : FTColor.cardBackground)
+                RoundedRectangle(cornerRadius: MongleRadius.xl)
+                    .fill(hasAnswered ? MongleColor.cardBackgroundHighlight : MongleColor.cardBackground)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: FTRadius.xl)
-                    .stroke(hasAnswered ? FTColor.primary.opacity(0.3) : .clear, lineWidth: 1)
+                RoundedRectangle(cornerRadius: MongleRadius.xl)
+                    .stroke(hasAnswered ? MongleColor.primary.opacity(0.3) : .clear, lineWidth: 1)
             )
             .shadow(
                 color: colorScheme == .dark ? .black.opacity(0.3) : .black.opacity(0.06),
@@ -157,49 +157,49 @@ struct FTQuestionCard: View {
         case "가치관": return "heart.fill"
         case "미래": return "sparkles"
         case "감사": return "hands.clap.fill"
-        default: return "bubble.left.fill"
+        default: return "bubble.leMongle.fill"
         }
     }
 }
 
 // MARK: - Stat Card (통계 표시 카드)
-struct FTStatCard: View {
+struct MongleStatCard: View {
     let icon: String
     let value: String
     let label: String
-    var iconColor: Color = FTColor.primary
+    var iconColor: Color = MongleColor.primary
 
     var body: some View {
-        VStack(spacing: FTSpacing.sm) {
+        VStack(spacing: MongleSpacing.sm) {
             Image(systemName: icon)
                 .font(.system(size: 24))
                 .foregroundColor(iconColor)
 
             Text(value)
-                .font(FTFont.heading2())
-                .foregroundColor(FTColor.textPrimary)
+                .font(MongleFont.heading2())
+                .foregroundColor(MongleColor.textPrimary)
 
             Text(label)
-                .font(FTFont.caption())
-                .foregroundColor(FTColor.textSecondary)
+                .font(MongleFont.caption())
+                .foregroundColor(MongleColor.textSecondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(FTSpacing.md)
-        .background(FTColor.cardBackground)
-        .cornerRadius(FTRadius.large)
+        .padding(MongleSpacing.md)
+        .background(MongleColor.cardBackground)
+        .cornerRadius(MongleRadius.large)
     }
 }
 
 // MARK: - Member Avatar
-struct FTMemberAvatar: View {
+struct MongleMemberAvatar: View {
     let name: String
     var size: CGFloat = 48
     var showName: Bool = true
-    var backgroundColor: Color = FTColor.primaryLight
-    var textColor: Color = FTColor.primaryDark
+    var backgroundColor: Color = MongleColor.primaryLight
+    var textColor: Color = MongleColor.primaryDark
 
     var body: some View {
-        VStack(spacing: FTSpacing.xxs) {
+        VStack(spacing: MongleSpacing.xxs) {
             Circle()
                 .fill(backgroundColor)
                 .frame(width: size, height: size)
@@ -211,8 +211,8 @@ struct FTMemberAvatar: View {
 
             if showName {
                 Text(name)
-                    .font(FTFont.caption())
-                    .foregroundColor(FTColor.textSecondary)
+                    .font(MongleFont.caption())
+                    .foregroundColor(MongleColor.textSecondary)
                     .lineLimit(1)
             }
         }
@@ -220,7 +220,7 @@ struct FTMemberAvatar: View {
 }
 
 // MARK: - Empty State View
-struct FTEmptyState: View {
+struct MongleEmptyState: View {
     let icon: String
     let title: String
     let message: String
@@ -228,69 +228,69 @@ struct FTEmptyState: View {
     var action: (() -> Void)? = nil
 
     var body: some View {
-        VStack(spacing: FTSpacing.lg) {
+        VStack(spacing: MongleSpacing.lg) {
             Image(systemName: icon)
                 .font(.system(size: 60))
-                .foregroundColor(FTColor.primaryLight)
+                .foregroundColor(MongleColor.primaryLight)
 
-            VStack(spacing: FTSpacing.sm) {
+            VStack(spacing: MongleSpacing.sm) {
                 Text(title)
-                    .font(FTFont.heading3())
-                    .foregroundColor(FTColor.textPrimary)
+                    .font(MongleFont.heading3())
+                    .foregroundColor(MongleColor.textPrimary)
 
                 Text(message)
-                    .font(FTFont.body2())
-                    .foregroundColor(FTColor.textSecondary)
+                    .font(MongleFont.body2())
+                    .foregroundColor(MongleColor.textSecondary)
                     .multilineTextAlignment(.center)
             }
 
             if let actionTitle = actionTitle, let action = action {
-                FTButton(actionTitle, style: .primary, size: .medium) {
+                MongleButton(actionTitle, style: .primary, size: .medium) {
                     action()
                 }
                 .frame(width: 200)
             }
         }
-        .padding(FTSpacing.xl)
+        .padding(MongleSpacing.xl)
     }
 }
 
 // MARK: - Toast View
-struct FTToast: View {
+struct MongleToast: View {
     let message: String
     var icon: String = "checkmark.circle.fill"
-    var iconColor: Color = FTColor.success
+    var iconColor: Color = MongleColor.success
 
     var body: some View {
-        HStack(spacing: FTSpacing.sm) {
+        HStack(spacing: MongleSpacing.sm) {
             Image(systemName: icon)
                 .foregroundColor(iconColor)
 
             Text(message)
-                .font(FTFont.body2())
-                .foregroundColor(FTColor.textPrimary)
+                .font(MongleFont.body2())
+                .foregroundColor(MongleColor.textPrimary)
         }
-        .padding(.horizontal, FTSpacing.lg)
-        .padding(.vertical, FTSpacing.md)
-        .background(FTColor.cardBackground)
-        .cornerRadius(FTRadius.full)
+        .padding(.horizontal, MongleSpacing.lg)
+        .padding(.vertical, MongleSpacing.md)
+        .background(MongleColor.cardBackground)
+        .cornerRadius(MongleRadius.full)
         .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 4)
     }
 }
 
 // MARK: - Error Banner
-struct FTErrorBanner: View {
+struct MongleErrorBanner: View {
     let message: String
     let onDismiss: () -> Void
 
     var body: some View {
-        HStack(spacing: FTSpacing.sm) {
+        HStack(spacing: MongleSpacing.sm) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundColor(.orange)
 
             Text(message)
-                .font(FTFont.body2())
-                .foregroundColor(FTColor.textPrimary)
+                .font(MongleFont.body2())
+                .foregroundColor(MongleColor.textPrimary)
                 .lineLimit(2)
 
             Spacer()
@@ -298,12 +298,12 @@ struct FTErrorBanner: View {
             Button(action: onDismiss) {
                 Image(systemName: "xmark")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(FTColor.textSecondary)
+                    .foregroundColor(MongleColor.textSecondary)
             }
         }
-        .padding(FTSpacing.md)
+        .padding(MongleSpacing.md)
         .background(Color.orange.opacity(0.1))
-        .cornerRadius(FTRadius.medium)
+        .cornerRadius(MongleRadius.medium)
     }
 }
 
@@ -317,7 +317,7 @@ struct ScaleButtonStyle: ButtonStyle {
 }
 
 // MARK: - Section Header
-struct FTSectionHeader: View {
+struct MongleSectionHeader: View {
     let title: String
     var subtitle: String? = nil
     var actionTitle: String? = nil
@@ -327,13 +327,13 @@ struct FTSectionHeader: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(FTFont.body1Bold())
-                    .foregroundColor(FTColor.textPrimary)
+                    .font(MongleFont.body1Bold())
+                    .foregroundColor(MongleColor.textPrimary)
 
                 if let subtitle = subtitle {
                     Text(subtitle)
-                        .font(FTFont.caption())
-                        .foregroundColor(FTColor.textSecondary)
+                        .font(MongleFont.caption())
+                        .foregroundColor(MongleColor.textSecondary)
                 }
             }
 
@@ -341,13 +341,13 @@ struct FTSectionHeader: View {
 
             if let actionTitle = actionTitle, let action = action {
                 Button(action: action) {
-                    HStack(spacing: FTSpacing.xxs) {
+                    HStack(spacing: MongleSpacing.xxs) {
                         Text(actionTitle)
                         Image(systemName: "chevron.right")
                             .font(.system(size: 10, weight: .semibold))
                     }
-                    .font(FTFont.captionBold())
-                    .foregroundColor(FTColor.primary)
+                    .font(MongleFont.captionBold())
+                    .foregroundColor(MongleColor.primary)
                 }
             }
         }
@@ -359,9 +359,9 @@ struct FTSectionHeader: View {
     ScrollView {
         VStack(spacing: 24) {
             Text("Question Card")
-                .font(FTFont.heading3())
+                .font(MongleFont.heading3())
 
-            FTQuestionCard(
+            MongleQuestionCard(
                 category: "일상",
                 question: "오늘 가장 기억에 남는 순간은 무엇인가요?",
                 hasAnswered: false,
@@ -369,7 +369,7 @@ struct FTSectionHeader: View {
                 totalFamilyMembers: 4
             ) {}
 
-            FTQuestionCard(
+            MongleQuestionCard(
                 category: "감사",
                 question: "최근에 가족에게 감사했던 일이 있나요?",
                 hasAnswered: true,
@@ -378,26 +378,26 @@ struct FTSectionHeader: View {
             ) {}
 
             Text("Stat Cards")
-                .font(FTFont.heading3())
+                .font(MongleFont.heading3())
 
-            HStack(spacing: FTSpacing.md) {
-                FTStatCard(icon: "bubble.left.and.bubble.right.fill", value: "42", label: "총 답변")
-                FTStatCard(icon: "flame.fill", value: "7일", label: "연속 참여", iconColor: .orange)
+            HStack(spacing: MongleSpacing.md) {
+                MongleStatCard(icon: "bubble.leMongle.and.bubble.right.fill", value: "42", label: "총 답변")
+                MongleStatCard(icon: "flame.fill", value: "7일", label: "연속 참여", iconColor: .orange)
             }
 
             Text("Member Avatars")
-                .font(FTFont.heading3())
+                .font(MongleFont.heading3())
 
-            HStack(spacing: FTSpacing.sm) {
-                FTMemberAvatar(name: "아빠")
-                FTMemberAvatar(name: "엄마")
-                FTMemberAvatar(name: "나")
+            HStack(spacing: MongleSpacing.sm) {
+                MongleMemberAvatar(name: "아빠")
+                MongleMemberAvatar(name: "엄마")
+                MongleMemberAvatar(name: "나")
             }
 
             Text("Empty State")
-                .font(FTFont.heading3())
+                .font(MongleFont.heading3())
 
-            FTEmptyState(
+            MongleEmptyState(
                 icon: "person.3",
                 title: "아직 가족이 없어요",
                 message: "새 가족을 만들거나\n초대 코드로 참여해보세요",
@@ -405,16 +405,16 @@ struct FTSectionHeader: View {
             ) {}
 
             Text("Toast & Banner")
-                .font(FTFont.heading3())
+                .font(MongleFont.heading3())
 
-            FTToast(message: "초대 코드가 복사되었습니다")
+            MongleToast(message: "초대 코드가 복사되었습니다")
 
-            FTErrorBanner(message: "네트워크 오류가 발생했습니다") {}
+            MongleErrorBanner(message: "네트워크 오류가 발생했습니다") {}
 
             Text("Section Header")
-                .font(FTFont.heading3())
+                .font(MongleFont.heading3())
 
-            FTSectionHeader(
+            MongleSectionHeader(
                 title: "가족 구성원",
                 subtitle: "4명",
                 actionTitle: "전체보기"
@@ -422,5 +422,5 @@ struct FTSectionHeader: View {
         }
         .padding()
     }
-    .background(FTColor.surface)
+    .background(MongleColor.surface)
 }

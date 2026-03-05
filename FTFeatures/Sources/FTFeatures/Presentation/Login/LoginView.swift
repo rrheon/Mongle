@@ -17,44 +17,45 @@ struct LoginView: View {
     @State private var isAnimating = false
     @State private var appleProvider = AppleLoginProvider()
     @State private var kakaoProvider = KakaoLoginProvider()
-    @State private var googleProvider = GoogleLoginProvider()
 
     var body: some View {
         ZStack {
-            // Background Gradient
-            LinearGradient(
-                colors: [FTColor.primaryLight.opacity(0.3), FTColor.surface, FTColor.background],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            // Background
+            Color(hex: "F5F4F1")
+                .ignoresSafeArea()
 
-            VStack(spacing: FTSpacing.xl) {
+            VStack(spacing: MongleSpacing.xl) {
                 Spacer()
 
                 // Logo Section
-                VStack(spacing: FTSpacing.lg) {
+                VStack(spacing: MongleSpacing.lg) {
                     ZStack {
                         Circle()
-                            .fill(FTColor.primaryLight)
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color(hex: "F5A8A0"), Color(hex: "A8DFBC")],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
                             .frame(width: 120, height: 120)
-                            .scaleEffect(isAnimating ? 1.05 : 1.0)
+                            .scaleEffect(isAnimating ? 1.04 : 1.0)
 
-                        FTLogo(size: .large, type: .MongleImg)
+                        MongleLogo(size: .large, type: .MongleImg)
                     }
                     .animation(
                         .easeInOut(duration: 2.0).repeatForever(autoreverses: true),
                         value: isAnimating
                     )
 
-                    VStack(spacing: FTSpacing.xs) {
-                        Text("Mongle")
-                            .font(FTFont.heading1())
-                            .foregroundColor(FTColor.textPrimary)
+                    VStack(spacing: MongleSpacing.xs) {
+                        Text("몽글")
+                            .font(MongleFont.heading1())
+                            .foregroundColor(MongleColor.textPrimary)
 
-                        Text("가족과 함께 추억을 쌓아보세요")
-                            .font(FTFont.body1())
-                            .foregroundColor(FTColor.textSecondary)
+                        Text("오늘의 마음은 어떤 색인가요?")
+                            .font(MongleFont.body1())
+                            .foregroundColor(MongleColor.textSecondary)
                     }
                 }
 
@@ -62,124 +63,90 @@ struct LoginView: View {
 
                 // Error Banner
                 if let errorMessage = store.errorMessage {
-                    FTErrorBanner(message: errorMessage) {
+                    MongleErrorBanner(message: errorMessage) {
                         store.send(.dismissError)
                     }
-                    .padding(.horizontal, FTSpacing.lg)
+                    .padding(.horizontal, MongleSpacing.lg)
                     .transition(.move(edge: .top).combined(with: .opacity))
                 }
 
-                // Social Login Section
-                VStack(spacing: FTSpacing.lg) {
-                    HStack(spacing: FTSpacing.md) {
-                        Rectangle()
-                            .fill(FTColor.divider)
-                            .frame(height: 1)
-                        Text("간편 로그인")
-                            .font(FTFont.caption())
-                            .foregroundColor(FTColor.textHint)
-                        Rectangle()
-                            .fill(FTColor.divider)
-                            .frame(height: 1)
-                    }
-
-                    HStack(spacing: FTSpacing.md) {
-                        SocialLoginCircleButton(
-                            icon: "kakao_icon",
-                            backgroundColor: FTColor.kakao,
-                            label: "카카오"
-                        ) {
-                            store.send(.socialLoginTapped(.kakao))
-                            Task { @MainActor in
-                                do {
-                                    let credential = try await kakaoProvider.authenticate()
-                                    store.send(.socialCredentialReceived(credential))
-                                } catch {
-                                    store.send(.socialLoginFailed(error.localizedDescription))
-                                }
+                // Login Buttons
+                VStack(spacing: MongleSpacing.md) {
+                    // 카카오 로그인
+                    Button {
+                        store.send(.socialLoginTapped(.kakao))
+                        Task { @MainActor in
+                            do {
+                                let credential = try await kakaoProvider.authenticate()
+                                store.send(.socialCredentialReceived(credential))
+                            } catch {
+                                store.send(.socialLoginFailed(error.localizedDescription))
                             }
                         }
-
-                        SocialLoginCircleButton(
-                            icon: "naver_icon",
-                            backgroundColor: FTColor.naver,
-                            label: "네이버"
-                        ) {
-                            // TODO: NaverLoginProvider 구현 후 연결
+                    } label: {
+                        HStack(spacing: MongleSpacing.sm) {
+                            Image("kakao_icon")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 20, height: 20)
+                            Text("카카오로 시작하기")
+                                .font(MongleFont.button())
+                                .foregroundColor(Color(hex: "191919"))
                         }
-
-                        // Google 로그인 - GoogleLoginProvider 연결
-                        SocialLoginCircleButton(
-                            icon: "google_icon",
-                            backgroundColor: FTColor.surface,
-                            label: "구글"
-                        ) {
-                            store.send(.socialLoginTapped(.google))
-                            Task { @MainActor in
-                                do {
-                                    let credential = try await googleProvider.authenticate()
-                                    store.send(.socialCredentialReceived(credential))
-                                } catch {
-                                    store.send(.socialLoginFailed(error.localizedDescription))
-                                }
-                            }
-                        }
-
-                        // Apple 로그인 - AppleLoginProvider 연결
-                        SocialLoginCircleButton(
-                            systemIcon: "apple.logo",
-                            backgroundColor: FTColor.apple,
-                            iconColor: FTColor.appleText,
-                            label: "Apple"
-                        ) {
-                            store.send(.socialLoginTapped(.apple))
-                            Task { @MainActor in
-                                do {
-                                    let credential = try await appleProvider.authenticate()
-                                    store.send(.socialCredentialReceived(credential))
-                                } catch {
-                                    let nsError = error as NSError
-                                    // 사용자가 직접 취소한 경우(1001)는 에러 표시 안 함
-                                    guard nsError.domain != ASAuthorizationError.errorDomain
-                                            || nsError.code != ASAuthorizationError.canceled.rawValue
-                                    else { return }
-                                    store.send(.socialLoginFailed(error.localizedDescription))
-                                }
-                            }
-                        }
-                    }
-                    .disabled(store.isLoading)
-                    .opacity(store.isLoading ? 0.5 : 1.0)
-                }
-
-                // Primary Actions
-                VStack(spacing: FTSpacing.md) {
-                    FTButton("이메일로 로그인", style: .primary) {
-                        store.send(.emailLoginTapped)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 52)
+                        .background(MongleColor.kakao)
+                        .cornerRadius(MongleRadius.large)
                     }
 
-                    FTButton("회원가입", style: .secondary) {
-                        store.send(.emailSignupTapped)
+                    // Apple 로그인
+                    Button {
+                        store.send(.socialLoginTapped(.apple))
+                        Task { @MainActor in
+                            do {
+                                let credential = try await appleProvider.authenticate()
+                                store.send(.socialCredentialReceived(credential))
+                            } catch {
+                                let nsError = error as NSError
+                                guard nsError.domain != ASAuthorizationError.errorDomain
+                                        || nsError.code != ASAuthorizationError.canceled.rawValue
+                                else { return }
+                                store.send(.socialLoginFailed(error.localizedDescription))
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: MongleSpacing.sm) {
+                            Image(systemName: "apple.logo")
+                                .font(.system(size: 18))
+                            Text("Apple로 시작하기")
+                                .font(MongleFont.button())
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 52)
+                        .background(MongleColor.apple)
+                        .foregroundColor(MongleColor.appleText)
+                        .cornerRadius(MongleRadius.large)
                     }
                 }
-                .padding(.horizontal, FTSpacing.lg)
+                .padding(.horizontal, MongleSpacing.lg)
                 .disabled(store.isLoading)
+                .opacity(store.isLoading ? 0.5 : 1.0)
 
                 // Guest mode
                 Button {
                     // Guest mode
                 } label: {
                     Text("둘러보기")
-                        .font(FTFont.body2())
-                        .foregroundColor(FTColor.textSecondary)
+                        .font(MongleFont.body2())
+                        .foregroundColor(MongleColor.textSecondary)
                         .underline()
                 }
-                .padding(.top, FTSpacing.sm)
+                .padding(.top, MongleSpacing.xs)
 
                 Spacer()
-                    .frame(height: FTSpacing.lg)
+                    .frame(height: MongleSpacing.lg)
             }
-            .padding(.horizontal, FTSpacing.lg)
+            .padding(.horizontal, MongleSpacing.lg)
 
             // Loading Overlay
             if store.isLoading {
@@ -189,53 +156,13 @@ struct LoginView: View {
                 ProgressView()
                     .progressViewStyle(.circular)
                     .scaleEffect(1.4)
-                    .tint(FTColor.primary)
+                    .tint(MongleColor.primary)
             }
         }
         .animation(.easeInOut(duration: 0.2), value: store.isLoading)
         .animation(.easeInOut(duration: 0.2), value: store.errorMessage)
         .onAppear {
             isAnimating = true
-        }
-    }
-}
-
-// MARK: - Social Login Circle Button
-
-private struct SocialLoginCircleButton: View {
-    var icon: String? = nil
-    var systemIcon: String? = nil
-    let backgroundColor: Color
-    var iconColor: Color = .white
-    let label: String
-    let action: () -> Void
-
-    var body: some View {
-        VStack(spacing: FTSpacing.xs) {
-            Button(action: action) {
-                ZStack {
-                    Circle()
-                        .fill(backgroundColor)
-                        .frame(width: 56, height: 56)
-                        .shadow(color: backgroundColor.opacity(0.3), radius: 8, x: 0, y: 4)
-
-                    if let icon = icon {
-                        Image(icon)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 24, height: 24)
-                    } else if let systemIcon = systemIcon {
-                        Image(systemName: systemIcon)
-                            .font(.system(size: 24))
-                            .foregroundColor(iconColor)
-                    }
-                }
-            }
-            .buttonStyle(ScaleButtonStyle())
-
-            Text(label)
-                .font(FTFont.caption())
-                .foregroundColor(FTColor.textSecondary)
         }
     }
 }
@@ -248,30 +175,30 @@ struct OnboardingPageView: View {
     let description: String
 
     var body: some View {
-        VStack(spacing: FTSpacing.lg) {
+        VStack(spacing: MongleSpacing.lg) {
             ZStack {
                 Circle()
-                    .fill(FTColor.primaryLight)
+                    .fill(MongleColor.primaryLight)
                     .frame(width: 140, height: 140)
 
                 Image(systemName: icon)
                     .font(.system(size: 60))
-                    .foregroundColor(FTColor.primary)
+                    .foregroundColor(MongleColor.primary)
             }
 
-            VStack(spacing: FTSpacing.sm) {
+            VStack(spacing: MongleSpacing.sm) {
                 Text(title)
-                    .font(FTFont.heading2())
-                    .foregroundColor(FTColor.textPrimary)
+                    .font(MongleFont.heading2())
+                    .foregroundColor(MongleColor.textPrimary)
 
                 Text(description)
-                    .font(FTFont.body1())
-                    .foregroundColor(FTColor.textSecondary)
+                    .font(MongleFont.body1())
+                    .foregroundColor(MongleColor.textSecondary)
                     .multilineTextAlignment(.center)
                     .lineSpacing(4)
             }
         }
-        .padding(FTSpacing.xl)
+        .padding(MongleSpacing.xl)
     }
 }
 
