@@ -21,23 +21,44 @@ public struct HistoryView: View {
             // 헤더
             headerView
 
-            ScrollView {
-                VStack(spacing: FTSpacing.lg) {
-                    // 달력
-                    calendarView
+            if store.isLoading {
+                Spacer()
+                ProgressView()
+                    .tint(MongleColor.primary)
+                Spacer()
+            } else {
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: MongleSpacing.xl) {
+                        let todayItems = itemsForSection(.today)
+                        let yesterdayItems = itemsForSection(.yesterday)
+                        let olderItems = itemsForSection(.older)
 
-                    // 선택된 날짜의 질문 카드
-                    if let item = store.selectedItem {
-                        selectedItemCard(item)
-                    } else {
-                        emptySelectionView
+                        if !todayItems.isEmpty {
+                            HistorySection(title: "오늘", items: todayItems) { item in
+                                store.send(.itemTapped(item))
+                            }
+                        }
+                        if !yesterdayItems.isEmpty {
+                            HistorySection(title: "어제", items: yesterdayItems) { item in
+                                store.send(.itemTapped(item))
+                            }
+                        }
+                        if !olderItems.isEmpty {
+                            HistorySection(title: "이전", items: olderItems) { item in
+                                store.send(.itemTapped(item))
+                            }
+                        }
+                        if todayItems.isEmpty && yesterdayItems.isEmpty && olderItems.isEmpty {
+                            emptyView
+                        }
                     }
+                    .padding(.horizontal, MongleSpacing.md)
+                    .padding(.vertical, MongleSpacing.md)
+                    .padding(.bottom, MongleSpacing.xl)
                 }
-                .padding(.horizontal, FTSpacing.md)
-                .padding(.bottom, FTSpacing.xl)
             }
         }
-        .background(FTColor.background)
+        .background(MongleColor.background)
         .onAppear {
             store.send(.onAppear)
         }
@@ -46,282 +67,178 @@ public struct HistoryView: View {
     // MARK: - Header
     private var headerView: some View {
         HStack {
-            Text("히스토리")
-                .font(FTFont.heading2())
-                .foregroundColor(FTColor.textPrimary)
+            Text("감정 기록")
+                .font(MongleFont.heading2())
+                .foregroundColor(MongleColor.textPrimary)
 
             Spacer()
 
             Button {
                 store.send(.goToToday)
             } label: {
-                Text("오늘")
-                    .font(FTFont.buttonSmall())
-                    .foregroundColor(FTColor.primary)
-                    .padding(.horizontal, FTSpacing.sm)
-                    .padding(.vertical, FTSpacing.xxs)
-                    .background(FTColor.primaryLight)
-                    .clipShape(Capsule())
-            }
-        }
-        .padding(.horizontal, FTSpacing.md)
-        .padding(.vertical, FTSpacing.md)
-        .background(FTColor.background)
-    }
-
-    // MARK: - Calendar View
-    private var calendarView: some View {
-        VStack(spacing: FTSpacing.md) {
-            // 월 네비게이션
-            HStack {
-                Button {
-                    store.send(.previousMonth)
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(FTColor.textSecondary)
-                        .frame(width: 44, height: 44)
+                HStack(spacing: MongleSpacing.xxs) {
+                    Image(systemName: "calendar")
+                        .font(.system(size: 13))
+                    Text(currentMonthLabel)
+                        .font(MongleFont.captionBold())
                 }
-
-                Spacer()
-
-                Text(store.monthTitle)
-                    .font(FTFont.heading3())
-                    .foregroundColor(FTColor.textPrimary)
-
-                Spacer()
-
-                Button {
-                    store.send(.nextMonth)
-                } label: {
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(FTColor.textSecondary)
-                        .frame(width: 44, height: 44)
-                }
-            }
-
-            // 요일 헤더
-            weekdayHeader
-
-            // 날짜 그리드
-            calendarGrid
-        }
-        .padding(FTSpacing.md)
-        .background(FTColor.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: FTRadius.large))
-        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
-    }
-
-    private var weekdayHeader: some View {
-        HStack(spacing: 0) {
-            ForEach(["일", "월", "화", "수", "목", "금", "토"], id: \.self) { day in
-                Text(day)
-                    .font(FTFont.caption())
-                    .foregroundColor(day == "일" ? FTColor.error : (day == "토" ? FTColor.info : FTColor.textSecondary))
-                    .frame(maxWidth: .infinity)
-            }
-        }
-    }
-
-    private var calendarGrid: some View {
-        let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
-
-        return LazyVGrid(columns: columns, spacing: FTSpacing.xs) {
-            ForEach(store.calendarDays, id: \.self) { date in
-                CalendarDayCell(
-                    date: date,
-                    currentMonth: store.currentMonth,
-                    selectedDate: store.selectedDate,
-                    historyItem: store.historyItems[Calendar.current.startOfDay(for: date)]
-                ) {
-                    store.send(.selectDate(date))
-                }
-            }
-        }
-    }
-
-    // MARK: - Selected Item Card
-    private func selectedItemCard(_ item: HistoryItem) -> some View {
-        VStack(alignment: .leading, spacing: FTSpacing.md) {
-            // 날짜 및 상태
-            HStack {
-                Text(formatDate(item.date))
-                    .font(FTFont.body1Bold())
-                    .foregroundColor(FTColor.textPrimary)
-
-                Spacer()
-
-                // 완료 상태 뱃지
-                HStack(spacing: FTSpacing.xxs) {
-                    Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "circle")
-                        .foregroundColor(item.isCompleted ? FTColor.success : FTColor.textHint)
-
-                    Text("\(item.answerCount)/\(item.totalMembers)")
-                        .font(FTFont.captionBold())
-                        .foregroundColor(item.isCompleted ? FTColor.success : FTColor.textSecondary)
-                }
-                .padding(.horizontal, FTSpacing.sm)
-                .padding(.vertical, FTSpacing.xxs)
-                .background(item.isCompleted ? FTColor.success.opacity(0.1) : FTColor.surface)
+                .foregroundColor(MongleColor.primary)
+                .padding(.horizontal, MongleSpacing.sm)
+                .padding(.vertical, MongleSpacing.xxs)
+                .background(MongleColor.primaryLight)
                 .clipShape(Capsule())
             }
-
-            // 카테고리
-            Text(item.question.category.rawValue)
-                .font(FTFont.caption())
-                .foregroundColor(FTColor.primary)
-                .padding(.horizontal, FTSpacing.xs)
-                .padding(.vertical, 2)
-                .background(FTColor.primaryLight)
-                .clipShape(Capsule())
-
-            // 질문 내용
-            Text(item.question.content)
-                .font(FTFont.body1())
-                .foregroundColor(FTColor.textPrimary)
-                .lineLimit(3)
-
-            // 내 답변 상태
-            HStack {
-                Image(systemName: item.userAnswered ? "checkmark.square.fill" : "square")
-                    .foregroundColor(item.userAnswered ? FTColor.primary : FTColor.textHint)
-
-                Text(item.userAnswered ? "답변 완료" : "답변하지 않음")
-                    .font(FTFont.caption())
-                    .foregroundColor(item.userAnswered ? FTColor.primary : FTColor.textHint)
-
-                Spacer()
-
-                // 상세보기 버튼
-                Button {
-                    store.send(.itemTapped(item))
-                } label: {
-                    HStack(spacing: FTSpacing.xxs) {
-                        Text("자세히 보기")
-                        Image(systemName: "chevron.right")
-                    }
-                    .font(FTFont.buttonSmall())
-                    .foregroundColor(FTColor.primary)
-                }
-            }
         }
-        .padding(FTSpacing.md)
-        .background(FTColor.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: FTRadius.large))
-        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+        .padding(.horizontal, MongleSpacing.md)
+        .padding(.vertical, MongleSpacing.md)
+        .background(MongleColor.background)
     }
 
-    // MARK: - Empty Selection View
-    private var emptySelectionView: some View {
-        VStack(spacing: FTSpacing.md) {
-            Image(systemName: "calendar.badge.exclamationmark")
+    private var currentMonthLabel: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = "M월"
+        return formatter.string(from: Date())
+    }
+
+    // MARK: - Empty View
+    private var emptyView: some View {
+        VStack(spacing: MongleSpacing.md) {
+            Image(systemName: "heart.text.square")
                 .font(.system(size: 48))
-                .foregroundColor(FTColor.textHint)
+                .foregroundColor(MongleColor.textHint)
 
-            Text("이 날은 질문이 없어요")
-                .font(FTFont.body1())
-                .foregroundColor(FTColor.textSecondary)
+            Text("아직 감정 기록이 없어요")
+                .font(MongleFont.body1())
+                .foregroundColor(MongleColor.textSecondary)
 
-            Text("다른 날짜를 선택해보세요")
-                .font(FTFont.caption())
-                .foregroundColor(FTColor.textHint)
+            Text("오늘의 질문에 답변하면 기록이 생겨요")
+                .font(MongleFont.caption())
+                .foregroundColor(MongleColor.textHint)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, FTSpacing.xxl)
-        .background(FTColor.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: FTRadius.large))
+        .padding(.vertical, MongleSpacing.xxl)
     }
 
     // MARK: - Helpers
-    private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ko_KR")
-        formatter.dateFormat = "M월 d일 EEEE"
-        return formatter.string(from: date)
+    enum SectionType { case today, yesterday, older }
+
+    private func itemsForSection(_ section: SectionType) -> [HistoryItem] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let yesterday = calendar.date(byAdding: .day, value: -1, to: today)!
+
+        return store.historyItems.values
+            .filter { item in
+                let itemDay = calendar.startOfDay(for: item.date)
+                switch section {
+                case .today: return itemDay == today
+                case .yesterday: return itemDay == yesterday
+                case .older: return itemDay < yesterday
+                }
+            }
+            .sorted { $0.date > $1.date }
     }
 }
 
-// MARK: - Calendar Day Cell
-struct CalendarDayCell: View {
-    let date: Date
-    let currentMonth: Date
-    let selectedDate: Date
-    let historyItem: HistoryItem?
+// MARK: - History Section
+struct HistorySection: View {
+    let title: String
+    let items: [HistoryItem]
+    let onTap: (HistoryItem) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: MongleSpacing.sm) {
+            Text(title)
+                .font(MongleFont.body2())
+                .foregroundColor(MongleColor.textSecondary)
+                .padding(.horizontal, MongleSpacing.xxs)
+
+            VStack(spacing: MongleSpacing.sm) {
+                ForEach(items) { item in
+                    HistoryEntryRow(item: item, onTap: { onTap(item) })
+                }
+            }
+        }
+    }
+}
+
+// MARK: - History Entry Row
+struct HistoryEntryRow: View {
+    let item: HistoryItem
     let onTap: () -> Void
 
-    private var isCurrentMonth: Bool {
-        Calendar.current.isDate(date, equalTo: currentMonth, toGranularity: .month)
-    }
-
-    private var isSelected: Bool {
-        Calendar.current.isDate(date, inSameDayAs: selectedDate)
-    }
-
-    private var isToday: Bool {
-        Calendar.current.isDateInToday(date)
-    }
-
-    private var dayNumber: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "d"
-        return formatter.string(from: date)
+    private var moodColor: Color {
+        let colors: [Color] = [
+            Color(hex: "FFD54F"),
+            Color(hex: "F5978E"),
+            Color(hex: "A8DFBC"),
+            Color(hex: "42A5F5"),
+            Color(hex: "AB47BC")
+        ]
+        return colors[abs(item.question.content.hashValue) % colors.count]
     }
 
     var body: some View {
         Button(action: onTap) {
-            VStack(spacing: 2) {
-                // 날짜 숫자
-                Text(dayNumber)
-                    .font(FTFont.body2())
-                    .foregroundColor(dayTextColor)
+            HStack(spacing: MongleSpacing.md) {
+                // 몽글 무드 아이콘
+                ZStack {
+                    Circle()
+                        .fill(moodColor)
+                        .frame(width: 48, height: 48)
 
-                // 상태 인디케이터
-                if let item = historyItem, isCurrentMonth {
-                    Circle()
-                        .fill(item.isCompleted ? FTColor.success : (item.userAnswered ? FTColor.primary : FTColor.warning))
-                        .frame(width: 6, height: 6)
-                } else {
-                    Circle()
-                        .fill(Color.clear)
-                        .frame(width: 6, height: 6)
+                    HStack(spacing: 5) {
+                        Circle()
+                            .fill(Color(hex: "1A1A1A"))
+                            .frame(width: 5, height: 6)
+                        Circle()
+                            .fill(Color(hex: "1A1A1A"))
+                            .frame(width: 5, height: 6)
+                    }
+                    .offset(y: 2)
                 }
+
+                // 내용
+                VStack(alignment: .leading, spacing: MongleSpacing.xxs) {
+                    Text(item.question.content)
+                        .font(MongleFont.body2())
+                        .fontWeight(.medium)
+                        .foregroundColor(MongleColor.textPrimary)
+                        .lineLimit(2)
+
+                    HStack(spacing: MongleSpacing.xs) {
+                        if item.userAnswered {
+                            Text("답변 완료")
+                                .font(MongleFont.caption())
+                                .foregroundColor(MongleColor.primary)
+                        } else {
+                            Text("미답변")
+                                .font(MongleFont.caption())
+                                .foregroundColor(MongleColor.textHint)
+                        }
+
+                        Text("·")
+                            .foregroundColor(MongleColor.textHint)
+
+                        Text("\(item.answerCount)/\(item.totalMembers)명")
+                            .font(MongleFont.caption())
+                            .foregroundColor(MongleColor.textSecondary)
+                    }
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(MongleColor.textHint)
             }
-            .frame(width: 40, height: 44)
-            .background(backgroundView)
+            .padding(MongleSpacing.md)
+            .background(MongleColor.cardBackground)
+            .cornerRadius(MongleRadius.large)
+            .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
         }
-        .buttonStyle(.plain)
-    }
-
-    private var dayTextColor: Color {
-        if !isCurrentMonth {
-            return FTColor.textHint.opacity(0.5)
-        }
-        if isSelected {
-            return .white
-        }
-        if isToday {
-            return FTColor.primary
-        }
-
-        let weekday = Calendar.current.component(.weekday, from: date)
-        if weekday == 1 { return FTColor.error }
-        if weekday == 7 { return FTColor.info }
-
-        return FTColor.textPrimary
-    }
-
-    @ViewBuilder
-    private var backgroundView: some View {
-        if isSelected {
-            Circle()
-                .fill(FTColor.primary)
-        } else if isToday {
-            Circle()
-                .stroke(FTColor.primary, lineWidth: 1.5)
-        } else {
-            Color.clear
-        }
+        .buttonStyle(ScaleButtonStyle())
     }
 }
 
