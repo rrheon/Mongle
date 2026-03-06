@@ -7,7 +7,7 @@
 
 import SwiftUI
 import ComposableArchitecture
-import FTFeatures
+import MongleFeatures
 
 @main
 struct MongleApp: App {

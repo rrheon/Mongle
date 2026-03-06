@@ -4,15 +4,15 @@
 import PackageDescription
 
 let package = Package(
-    name: "FTFeatures",
+    name: "MongleFeatures",
     platforms: [
         .iOS(.v17),
         .macOS(.v14)
     ],
     products: [
         .library(
-            name: "FTFeatures",
-            targets: ["FTFeatures"]
+            name: "MongleFeatures",
+            targets: ["MongleFeatures"]
         ),
     ],
     dependencies: [
@@ -35,7 +35,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "FTFeatures",
+            name: "MongleFeatures",
             dependencies: [
                 "Domain",
                 "FTData",
@@ -48,7 +48,7 @@ let package = Package(
                 .product(name: "KakaoSDKUser",   package: "kakao-ios-sdk"),
                 .product(name: "GoogleSignIn",   package: "GoogleSignIn-iOS"),
             ],
-            path: "Sources/FTFeatures"
+            path: "Sources/MongleFeatures"
         ),
     ]
 )
