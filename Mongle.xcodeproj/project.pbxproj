@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		EE964C952EEAA86D00AD2760 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = EE964C942EEAA86D00AD2760 /* ComposableArchitecture */; };
 		EEF770AC2F0508AA0049EBB9 /* Domain in Frameworks */ = {isa = PBXBuildFile; productRef = EEF770AB2F0508AA0049EBB9 /* Domain */; };
-		EEF770AF2F0508AA0049EBB9 /* FTData in Frameworks */ = {isa = PBXBuildFile; productRef = EEF770AE2F0508AA0049EBB9 /* FTData */; };
+		EEF770AF2F0508AA0049EBB9 /* MongleData in Frameworks */ = {isa = PBXBuildFile; productRef = EEF770AE2F0508AA0049EBB9 /* MongleData */; };
 		EEF772042F07D3780049EBB9 /* MongleFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = EEF772032F07D3780049EBB9 /* MongleFeatures */; };
 /* End PBXBuildFile section */
 
@@ -58,7 +58,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				EEF770AC2F0508AA0049EBB9 /* Domain in Frameworks */,
-				EEF770AF2F0508AA0049EBB9 /* FTData in Frameworks */,
+				EEF770AF2F0508AA0049EBB9 /* MongleData in Frameworks */,
 				EE964C952EEAA86D00AD2760 /* ComposableArchitecture in Frameworks */,
 				EEF772042F07D3780049EBB9 /* MongleFeatures in Frameworks */,
 			);
@@ -106,7 +106,7 @@
 			packageProductDependencies = (
 				EE964C942EEAA86D00AD2760 /* ComposableArchitecture */,
 				EEF770AB2F0508AA0049EBB9 /* Domain */,
-				EEF770AE2F0508AA0049EBB9 /* FTData */,
+				EEF770AE2F0508AA0049EBB9 /* MongleData */,
 				EEF772032F07D3780049EBB9 /* MongleFeatures */,
 			);
 			productName = FamTree;
@@ -140,7 +140,7 @@
 			packageReferences = (
 				EE964C932EEAA86D00AD2760 /* XCRemoteSwiftPackageReference "swift-composable-architecture" */,
 				EEF770AA2F0508AA0049EBB9 /* XCLocalSwiftPackageReference "Domain" */,
-				EEF770AD2F0508AA0049EBB9 /* XCLocalSwiftPackageReference "FTData" */,
+				EEF770AD2F0508AA0049EBB9 /* XCLocalSwiftPackageReference "MongleData" */,
 				EEF772022F07D3780049EBB9 /* XCLocalSwiftPackageReference "MongleFeatures" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -389,9 +389,9 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Domain;
 		};
-		EEF770AD2F0508AA0049EBB9 /* XCLocalSwiftPackageReference "FTData" */ = {
+		EEF770AD2F0508AA0049EBB9 /* XCLocalSwiftPackageReference "MongleData" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = FTData;
+			relativePath = MongleData;
 		};
 		EEF772022F07D3780049EBB9 /* XCLocalSwiftPackageReference "MongleFeatures" */ = {
 			isa = XCLocalSwiftPackageReference;
@@ -420,9 +420,9 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = Domain;
 		};
-		EEF770AE2F0508AA0049EBB9 /* FTData */ = {
+		EEF770AE2F0508AA0049EBB9 /* MongleData */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = FTData;
+			productName = MongleData;
 		};
 		EEF772032F07D3780049EBB9 /* MongleFeatures */ = {
 			isa = XCSwiftPackageProductDependency;

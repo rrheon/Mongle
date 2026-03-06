@@ -7,7 +7,7 @@
 
 import ComposableArchitecture
 import Domain
-import FTData
+import MongleData
 
 // MARK: - AuthRepository
 

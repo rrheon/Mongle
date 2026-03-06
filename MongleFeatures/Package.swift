@@ -17,7 +17,7 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../Domain"),
-        .package(path: "../FTData"),
+        .package(path: "../MongleData"),
         .package(
             url: "https://github.com/pointfreeco/swift-composable-architecture",
             from: "1.9.0"
@@ -38,7 +38,7 @@ let package = Package(
             name: "MongleFeatures",
             dependencies: [
                 "Domain",
-                "FTData",
+                "MongleData",
                 .product(
                     name: "ComposableArchitecture",
                     package: "swift-composable-architecture"

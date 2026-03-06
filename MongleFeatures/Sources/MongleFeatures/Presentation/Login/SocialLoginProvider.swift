@@ -10,7 +10,7 @@ import KakaoSDKAuth
 import KakaoSDKUser
 import GoogleSignIn
 import Domain
-import FTData
+import MongleData
 
 // MARK: - 소셜 로그인 제공자 프로토콜
 //
