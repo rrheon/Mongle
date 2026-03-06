@@ -27,36 +27,21 @@ struct LoginView: View {
             VStack(spacing: MongleSpacing.xl) {
                 Spacer()
 
-                // Logo Section
-                VStack(spacing: MongleSpacing.lg) {
-                    ZStack {
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [Color(hex: "F5A8A0"), Color(hex: "A8DFBC")],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(width: 120, height: 120)
-                            .scaleEffect(isAnimating ? 1.04 : 1.0)
-
-                        MongleLogo(size: .large, type: .MongleImg)
-                    }
+              // Logo Section
+              VStack(spacing: MongleSpacing.xs) {
+                  MongleLogo(size: .large, type: .MongleLogo)
                     .animation(
-                        .easeInOut(duration: 2.0).repeatForever(autoreverses: true),
-                        value: isAnimating
+                      .easeInOut(duration: 2.0).repeatForever(autoreverses: true),
+                      value: isAnimating
                     )
-
-                    VStack(spacing: MongleSpacing.xs) {
-                        Text("몽글")
-                            .font(MongleFont.heading1())
-                            .foregroundColor(MongleColor.textPrimary)
-
-                        Text("오늘의 마음은 어떤 색인가요?")
-                            .font(MongleFont.body1())
-                            .foregroundColor(MongleColor.textSecondary)
-                    }
+                  
+                  Text("몽글")
+                    .font(MongleFont.heading1())
+                    .foregroundColor(MongleColor.textPrimary)
+                  
+                  Text("오늘의 마음은 어떤 색인가요?")
+                    .font(MongleFont.body1())
+                    .foregroundColor(MongleColor.textSecondary)
                 }
 
                 Spacer()
@@ -72,60 +57,11 @@ struct LoginView: View {
 
                 // Login Buttons
                 VStack(spacing: MongleSpacing.md) {
-                    // 카카오 로그인
-                    Button {
-                        store.send(.socialLoginTapped(.kakao))
-                        Task { @MainActor in
-                            do {
-                                let credential = try await kakaoProvider.authenticate()
-                                store.send(.socialCredentialReceived(credential))
-                            } catch {
-                                store.send(.socialLoginFailed(error.localizedDescription))
-                            }
-                        }
-                    } label: {
-                        HStack(spacing: MongleSpacing.sm) {
-                            Image("kakao_icon")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 20, height: 20)
-                            Text("카카오로 시작하기")
-                                .font(MongleFont.button())
-                                .foregroundColor(Color(hex: "191919"))
-                        }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 52)
-                        .background(MongleColor.kakao)
-                        .cornerRadius(MongleRadius.large)
+                    SocialLoginButton(provider: .kakao) {
+                        performSocialLogin(type: .kakao) { try await kakaoProvider.authenticate() }
                     }
-
-                    // Apple 로그인
-                    Button {
-                        store.send(.socialLoginTapped(.apple))
-                        Task { @MainActor in
-                            do {
-                                let credential = try await appleProvider.authenticate()
-                                store.send(.socialCredentialReceived(credential))
-                            } catch {
-                                let nsError = error as NSError
-                                guard nsError.domain != ASAuthorizationError.errorDomain
-                                        || nsError.code != ASAuthorizationError.canceled.rawValue
-                                else { return }
-                                store.send(.socialLoginFailed(error.localizedDescription))
-                            }
-                        }
-                    } label: {
-                        HStack(spacing: MongleSpacing.sm) {
-                            Image(systemName: "apple.logo")
-                                .font(.system(size: 18))
-                            Text("Apple로 시작하기")
-                                .font(MongleFont.button())
-                        }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 52)
-                        .background(MongleColor.apple)
-                        .foregroundColor(MongleColor.appleText)
-                        .cornerRadius(MongleRadius.large)
+                    SocialLoginButton(provider: .apple) {
+                        performSocialLogin(type: .apple, ignoreCancellation: true) { try await appleProvider.authenticate() }
                     }
                 }
                 .padding(.horizontal, MongleSpacing.lg)
@@ -163,6 +99,32 @@ struct LoginView: View {
         .animation(.easeInOut(duration: 0.2), value: store.errorMessage)
         .onAppear {
             isAnimating = true
+        }
+    }
+}
+
+// MARK: - Private Helpers
+
+private extension LoginView {
+    func performSocialLogin(
+        type: SocialProviderType,
+        ignoreCancellation: Bool = false,
+        authenticate: @escaping () async throws -> any SocialLoginCredential
+    ) {
+        store.send(.socialLoginTapped(type))
+        Task { @MainActor in
+            do {
+                let credential = try await authenticate()
+                store.send(.socialCredentialReceived(credential))
+            } catch {
+                if ignoreCancellation {
+                    let nsError = error as NSError
+                    guard nsError.domain != ASAuthorizationError.errorDomain
+                            || nsError.code != ASAuthorizationError.canceled.rawValue
+                    else { return }
+                }
+                store.send(.socialLoginFailed(error.localizedDescription))
+            }
         }
     }
 }
