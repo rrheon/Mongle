@@ -9,8 +9,8 @@ import SwiftUI
 
 struct MongleLogo: View {
   enum MongleLogoType: String {
+    case MongleLogo
     case MongleIcon
-    case MongleImg
   }
   
   enum Size {
@@ -30,17 +30,18 @@ struct MongleLogo: View {
   let size: Size
   let logo: MongleLogoType
   
-  init(size: Size = .medium, type: MongleLogoType = .MongleIcon) {
+  init(size: Size = .medium, type: MongleLogoType = .MongleLogo) {
     self.size = size
     self.logo = type
   }
   
   var body: some View {
-    Image(logo.rawValue)
+    Image(logo.rawValue, bundle: .module)
+      .renderingMode(.original)
       .resizable()
       .scaledToFill()
       .frame(width: size.dimension, height: size.dimension)
-      .foregroundColor(MongleColor.primary)
+    
   }
 }
 
@@ -52,9 +53,8 @@ struct MongleLogo: View {
   }
   
   VStack(spacing: 20) {
-    MongleLogo(size: .small, type: .MongleImg)
-    MongleLogo(size: .medium, type: .MongleImg)
-    MongleLogo(size: .large, type: .MongleImg)
-      .foregroundStyle(Color.blue)
+    MongleLogo(size: .small, type: .MongleIcon)
+    MongleLogo(size: .medium, type: .MongleLogo)
+    MongleLogo(size: .large, type: .MongleLogo)
   }
 }

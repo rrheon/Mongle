@@ -48,7 +48,8 @@ let package = Package(
                 .product(name: "KakaoSDKUser",   package: "kakao-ios-sdk"),
                 .product(name: "GoogleSignIn",   package: "GoogleSignIn-iOS"),
             ],
-            path: "Sources/MongleFeatures"
+            path: "Sources/MongleFeatures",
+            resources: [.process("Assets.xcassets")]
         ),
     ]
 )
