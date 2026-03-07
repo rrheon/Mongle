@@ -49,7 +49,10 @@ let package = Package(
                 .product(name: "GoogleSignIn",   package: "GoogleSignIn-iOS"),
             ],
             path: "Sources/MongleFeatures",
-            resources: [.process("Assets.xcassets")]
+            resources: [
+                .process("Assets.xcassets"),
+                .process("Fonts")
+            ]
         ),
     ]
 )

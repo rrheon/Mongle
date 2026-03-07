@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "FamTreeIcon.png",
+      "filename" : "kakao_login_medium_wide.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "FamTreeIcon 1.png",
+      "filename" : "kakao_login_large_wide.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "FamTreeIcon 2.png",
+      "filename" : "kakao_login_large_wide 1.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

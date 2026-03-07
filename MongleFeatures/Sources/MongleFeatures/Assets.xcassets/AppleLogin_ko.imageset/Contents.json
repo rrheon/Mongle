@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "hedgehog_character.png",
+      "filename" : "appleid_button@1x (2).png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "hedgehog_character 1.png",
+      "filename" : "appleid_button@2x (2).png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "hedgehog_character 2.png",
+      "filename" : "appleid_button@3x (2).png",
       "idiom" : "universal",
       "scale" : "3x"
     }

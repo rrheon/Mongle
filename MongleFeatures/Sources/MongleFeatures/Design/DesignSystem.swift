@@ -11,11 +11,15 @@ import UIKit
 // MARK: - Colors
 
 public enum MongleColor {
-    // Primary (green-primary: #4CAF50 light / #7BC8A0 dark)
+    // Primary / Brand
     public static let primary = Color(light: "4CAF50", dark: "7BC8A0")
-    public static let primaryLight = Color(light: "E8F5E1", dark: "1E3A2A")
+    public static let primaryLight = Color(light: "A5D6A7", dark: "C2E8D4")
     public static let primaryDark = Color(light: "388E3C", dark: "5BAF85")
-    public static let primarySoft = Color(light: "A5D6A7", dark: "C2E8D4")
+    public static let primarySoft = Color(light: "43A047", dark: "6BBF93")
+
+    // Secondary / warm accent
+    public static let secondary = Color(light: "FF7043", dark: "F5978E")
+    public static let secondaryLight = Color(light: "FFCCBC", dark: "FFE5D9")
 
     // XP / progress bar green
     public static let xpGreen = Color(light: "66BB6A", dark: "8DD4AE")
@@ -28,20 +32,21 @@ public enum MongleColor {
     public static let apple = Color(light: "000000", dark: "FFFFFF")
     public static let appleText = Color(light: "FFFFFF", dark: "000000")
 
-    // Background (bg-secondary: #F5F4F1 / #FDF8F5)
-    public static let background = Color(light: "FFF5F0", dark: "1A120D")
-    public static let surface = Color(light: "F5F4F1", dark: "1E1A16")
-    public static let surfaceWarm = Color(light: "FFF8F0", dark: "221A10")
+    // Background
+    public static let background = Color(light: "F8FAF8", dark: "F8FAF8")
+    public static let surface = Color(light: "FDF8F5", dark: "FDF8F5")
+    public static let surfaceWarm = Color(light: "FFF0E8", dark: "FFF0E8")
 
     // Card
-    public static let cardBackground = Color(light: "FFFFFF", dark: "1E1E1E")
-    public static let cardBackgroundHighlight = Color(light: "E8F5E1", dark: "1E3A2A")
-    public static let cardGlass = Color(hex: "FFFFFF").opacity(0.6)
+    public static let cardBackground = Color(hex: "FFFFFFCC")
+    public static let cardBackgroundSolid = Color(hex: "FFFFFF")
+    public static let cardBackgroundHighlight = Color(hex: "FFFFFF99")
+    public static let cardGlass = Color(hex: "FFFFFF99")
 
     // Border
     public static let border = Color(hex: "E0E0E0")
-    public static let borderCard = Color(hex: "FFFFFF").opacity(0.2)
-    public static let divider = Color(light: "E0E0E0", dark: "2E2E2E")
+    public static let borderCard = Color(hex: "FFFFFF33")
+    public static let divider = Color(hex: "E0E0E0")
 
     // Text (text-primary: #1A1A1A, text-secondary: #6D6D6D, text-tertiary: #9E9E9E)
     public static let textPrimary = Color(hex: "1A1A1A")
@@ -58,8 +63,8 @@ public enum MongleColor {
     public static let notificationDot = Color(hex: "F44336")
 
     // Gradient (bg-gradient-start → bg-gradient-end)
-    public static let gradientStart = Color(hex: "F5A8A0")
-    public static let gradientEnd = Color(hex: "A8DFBC")
+    public static let gradientStart = Color(hex: "43A047")
+    public static let gradientEnd = Color(hex: "4CAF50")
     public static var gradient: LinearGradient {
         LinearGradient(
             colors: [gradientStart, gradientEnd],
@@ -110,38 +115,37 @@ public enum MongleColor {
     public static let accentPeach = Color(hex: "F7B4A0")
 
     // Mint background
-    public static let bgMint = Color(light: "D4EDDA", dark: "1A3325")
+    public static let bgMint = Color(light: "D4EDDA", dark: "E8F5EE")
     public static let bgPeach = Color(hex: "FFE5D9")
+    public static let shadowColor = Color(light: "1A1A1A14", dark: "D4A09014")
+    public static let shadowWarm = Color(hex: "D4A09020")
 }
 
-// MARK: - Typography
-// Design font: "Outfit" — falls back to .rounded system font if not bundled
+
+// MARK: - Font
+
 public enum MongleFont {
-    private static func outfit(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
-        // Use custom Outfit font if available, otherwise fall back to rounded system font
-        if UIFont(name: "Outfit-Regular", size: size) != nil {
-            switch weight {
-            case .bold:       return .custom("Outfit-Bold", size: size)
-            case .semibold:   return .custom("Outfit-SemiBold", size: size)
-            case .medium:     return .custom("Outfit-Medium", size: size)
-            default:          return .custom("Outfit-Regular", size: size)
-            }
+    private static func pretendard(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
+        switch weight {
+        case .bold:     return .custom("Pretendard-Bold", size: size)
+        case .semibold: return .custom("Pretendard-SemiBold", size: size)
+        case .medium:   return .custom("Pretendard-Medium", size: size)
+        default:        return .custom("Pretendard-Regular", size: size)
         }
-        return .system(size: size, weight: weight, design: .rounded)
     }
 
-    public static func heading1() -> Font { outfit(28, weight: .bold) }
-    public static func heading2() -> Font { outfit(24, weight: .bold) }
-    public static func heading3() -> Font { outfit(20, weight: .semibold) }
-    public static func body1() -> Font { outfit(16) }
-    public static func body1Bold() -> Font { outfit(16, weight: .semibold) }
-    public static func body2() -> Font { outfit(14) }
-    public static func body2Bold() -> Font { outfit(14, weight: .semibold) }
-    public static func caption() -> Font { outfit(12) }
-    public static func captionBold() -> Font { outfit(12, weight: .semibold) }
-    public static func button() -> Font { outfit(16, weight: .semibold) }
-    public static func buttonSmall() -> Font { outfit(14, weight: .semibold) }
-    public static func label() -> Font { outfit(11) }
+    public static func heading1() -> Font { pretendard(26, weight: .semibold) }
+    public static func heading2() -> Font { pretendard(22, weight: .semibold) }
+    public static func heading3() -> Font { pretendard(18, weight: .semibold) }
+    public static func body1() -> Font { pretendard(15, weight: .medium) }
+    public static func body1Bold() -> Font { pretendard(15, weight: .semibold) }
+    public static func body2() -> Font { pretendard(14) }
+    public static func body2Bold() -> Font { pretendard(14, weight: .semibold) }
+    public static func caption() -> Font { pretendard(12) }
+    public static func captionBold() -> Font { pretendard(12, weight: .semibold) }
+    public static func button() -> Font { pretendard(16, weight: .semibold) }
+    public static func buttonSmall() -> Font { pretendard(14, weight: .semibold) }
+    public static func label() -> Font { pretendard(11) }
 }
 
 // MARK: - Spacing
@@ -171,24 +175,15 @@ public enum MongleRadius {
 // MARK: - Shadow Styles
 public enum MongleShadow {
     public static func soMongle(scheme: ColorScheme = .light) -> (color: Color, radius: CGFloat, x: CGFloat, y: CGFloat) {
-        let shadowColor = scheme == .dark
-            ? Color.black.opacity(0.3)
-            : Color.black.opacity(0.06)
-        return (shadowColor, 12, 0, 4)
+        (MongleColor.shadowColor, 8, 0, 2)
     }
 
     public static func medium(scheme: ColorScheme = .light) -> (color: Color, radius: CGFloat, x: CGFloat, y: CGFloat) {
-        let shadowColor = scheme == .dark
-            ? Color.black.opacity(0.4)
-            : Color.black.opacity(0.1)
-        return (shadowColor, 16, 0, 6)
+        (MongleColor.shadowColor, 12, 0, 4)
     }
 
     public static func elevated(scheme: ColorScheme = .light) -> (color: Color, radius: CGFloat, x: CGFloat, y: CGFloat) {
-        let shadowColor = scheme == .dark
-            ? Color.black.opacity(0.5)
-            : Color.black.opacity(0.15)
-        return (shadowColor, 20, 0, 8)
+        (MongleColor.shadowWarm, 20, 0, 4)
     }
 }
 
