@@ -1,0 +1,923 @@
+{
+  "builtTestProducts" : [
+    {
+      "binaryPath" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainPackageTests.xctest/Contents/MacOS/DomainPackageTests",
+      "packagePath" : "/Users/yong/Desktop/FamTree/Domain",
+      "productName" : "DomainPackageTests"
+    }
+  ],
+  "copyCommands" : {
+
+  },
+  "explicitTargetDependencyImportCheckingMode" : {
+    "none" : {
+
+    }
+  },
+  "generatedSourceTargetSet" : [
+
+  ],
+  "pluginDescriptions" : [
+
+  ],
+  "swiftCommands" : {
+    "C.Domain-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/sources",
+      "importPath" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Domain.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/Answer.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/DailyQuestion.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/FamilyGroup.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/Member.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/Notification.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/Question.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/TreeProgress.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/User.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/AnswerRepositoryProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/AuthRepositoryProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/DailyQuestionRepositoryProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/FamilyRepositoryProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/QuestionRepositoryProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/TreeRepositoryProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/UserRepositoryProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "Domain",
+      "moduleOutputPath" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Modules/Domain.swiftmodule",
+      "objects" : [
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Domain.swift.o",
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Answer.swift.o",
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/DailyQuestion.swift.o",
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/FamilyGroup.swift.o",
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Member.swift.o",
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Notification.swift.o",
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Question.swift.o",
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/TreeProgress.swift.o",
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/User.swift.o",
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/AnswerRepositoryProtocol.swift.o",
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/AuthRepositoryProtocol.swift.o",
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/DailyQuestionRepositoryProtocol.swift.o",
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/FamilyRepositoryProtocol.swift.o",
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/QuestionRepositoryProtocol.swift.o",
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/TreeRepositoryProtocol.swift.o",
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/UserRepositoryProtocol.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx12.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j8",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/include/Domain-Swift.h",
+        "-swift-version",
+        "5",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.1.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.1.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "domain"
+      ],
+      "outputFileMapPath" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Domain.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Answer.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/DailyQuestion.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/FamilyGroup.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Member.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Notification.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Question.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/TreeProgress.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/User.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/AnswerRepositoryProtocol.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/AuthRepositoryProtocol.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/DailyQuestionRepositoryProtocol.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/FamilyRepositoryProtocol.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/QuestionRepositoryProtocol.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/TreeRepositoryProtocol.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/UserRepositoryProtocol.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Modules/Domain.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Domain.swift",
+        "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/Answer.swift",
+        "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/DailyQuestion.swift",
+        "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/FamilyGroup.swift",
+        "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/Member.swift",
+        "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/Notification.swift",
+        "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/Question.swift",
+        "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/TreeProgress.swift",
+        "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/User.swift",
+        "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/AnswerRepositoryProtocol.swift",
+        "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/AuthRepositoryProtocol.swift",
+        "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/DailyQuestionRepositoryProtocol.swift",
+        "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/FamilyRepositoryProtocol.swift",
+        "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/QuestionRepositoryProtocol.swift",
+        "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/TreeRepositoryProtocol.swift",
+        "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/UserRepositoryProtocol.swift"
+      ],
+      "tempsPath" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.DomainPackageTests-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainPackageTests.build/sources",
+      "importPath" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainPackageTests.derived/runner.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Modules/DomainTests.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainPackageTests.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "DomainPackageTests",
+      "moduleOutputPath" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Modules/DomainPackageTests.swiftmodule",
+      "objects" : [
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainPackageTests.build/runner.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx12.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-Xfrontend",
+        "-enable-cross-import-overlays",
+        "-j8",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainPackageTests.build/include/DomainPackageTests-Swift.h",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.1.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.1.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "domain"
+      ],
+      "outputFileMapPath" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainPackageTests.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainPackageTests.build/runner.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Modules/DomainPackageTests.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainPackageTests.derived/runner.swift"
+      ],
+      "tempsPath" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainPackageTests.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.DomainTests-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainTests.build/sources",
+      "importPath" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Tests/DomainTests/DomainTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Modules/Domain.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainTests.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "DomainTests",
+      "moduleOutputPath" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Modules/DomainTests.swiftmodule",
+      "objects" : [
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainTests.build/DomainTests.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx14.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-Xfrontend",
+        "-enable-cross-import-overlays",
+        "-j8",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-swift-version",
+        "5",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.1.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.1.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "domain"
+      ],
+      "outputFileMapPath" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainTests.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainTests.build/DomainTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Modules/DomainTests.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/yong/Desktop/FamTree/Domain/Tests/DomainTests/DomainTests.swift"
+      ],
+      "tempsPath" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainTests.build",
+      "wholeModuleOptimization" : false
+    }
+  },
+  "swiftFrontendCommands" : {
+
+  },
+  "swiftTargetScanArgs" : {
+    "Domain" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "Domain",
+      "-package-name",
+      "domain",
+      "-c",
+      "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Domain.swift",
+      "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/Answer.swift",
+      "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/DailyQuestion.swift",
+      "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/FamilyGroup.swift",
+      "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/Member.swift",
+      "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/Notification.swift",
+      "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/Question.swift",
+      "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/TreeProgress.swift",
+      "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/User.swift",
+      "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/AnswerRepositoryProtocol.swift",
+      "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/AuthRepositoryProtocol.swift",
+      "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/DailyQuestionRepositoryProtocol.swift",
+      "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/FamilyRepositoryProtocol.swift",
+      "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/QuestionRepositoryProtocol.swift",
+      "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/TreeRepositoryProtocol.swift",
+      "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/UserRepositoryProtocol.swift",
+      "-I",
+      "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx12.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j8",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/include/Domain-Swift.h",
+      "-swift-version",
+      "5",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.1.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.1.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "domain",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "DomainPackageTests" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "DomainPackageTests",
+      "-package-name",
+      "domain",
+      "-c",
+      "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainPackageTests.derived/runner.swift",
+      "-I",
+      "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx12.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-Xfrontend",
+      "-enable-cross-import-overlays",
+      "-j8",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainPackageTests.build/include/DomainPackageTests-Swift.h",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.1.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.1.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "domain",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "DomainTests" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "DomainTests",
+      "-package-name",
+      "domain",
+      "-c",
+      "/Users/yong/Desktop/FamTree/Domain/Tests/DomainTests/DomainTests.swift",
+      "-I",
+      "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx14.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-Xfrontend",
+      "-enable-cross-import-overlays",
+      "-j8",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-swift-version",
+      "5",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.1.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.1.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "domain",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ]
+  },
+  "targetDependencyMap" : {
+    "Domain" : [
+
+    ],
+    "DomainPackageTests" : [
+      "DomainTests",
+      "Domain"
+    ],
+    "DomainTests" : [
+      "Domain"
+    ]
+  },
+  "testDiscoveryCommands" : {
+
+  },
+  "testEntryPointCommands" : {
+    "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainPackageTests.derived/runner.swift" : {
+      "inputs" : [
+
+      ],
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainPackageTests.derived/runner.swift"
+        }
+      ]
+    }
+  },
+  "traitConfiguration" : {
+    "default" : {
+
+    }
+  },
+  "writeCommands" : {
+    "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Domain.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/Answer.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/DailyQuestion.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/FamilyGroup.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/Member.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/Notification.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/Question.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/TreeProgress.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/User.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/AnswerRepositoryProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/AuthRepositoryProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/DailyQuestionRepositoryProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/FamilyRepositoryProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/QuestionRepositoryProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/TreeRepositoryProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/UserRepositoryProtocol.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/sources"
+    },
+    "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainPackageTests.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainPackageTests.derived/runner.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainPackageTests.build/sources"
+    },
+    "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainPackageTests.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Answer.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/AnswerRepositoryProtocol.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/AuthRepositoryProtocol.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/DailyQuestion.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/DailyQuestionRepositoryProtocol.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Domain.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/FamilyGroup.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/FamilyRepositoryProtocol.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Member.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Notification.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Question.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/QuestionRepositoryProtocol.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/TreeProgress.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/TreeRepositoryProtocol.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/User.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/UserRepositoryProtocol.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainPackageTests.build/runner.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainTests.build/DomainTests.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainPackageTests.product/Objects.LinkFileList"
+    },
+    "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainTests.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/yong/Desktop/FamTree/Domain/Tests/DomainTests/DomainTests.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainTests.build/sources"
+    },
+    "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt" : {
+      "alwaysOutOfDate" : true,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<swift-get-version>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+        }
+      ],
+      "outputFilePath" : "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+    }
+  }
+}

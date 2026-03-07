@@ -1,0 +1,22 @@
+# macOS
+.DS_Store
+
+# Xcode
+xcuserdata/
+DerivedData/
+*.xccheckout
+*.moved-aside
+*.xcuserstate
+*.xcscmblueprint
+
+# Swift Package Manager
+.build/
+Packages/
+.swiftpm/
+
+# 민감 정보 — 절대 커밋하지 말 것
+credentials.plist
+GoogleService-Info.plist
+*.env
+Secrets.swift
+**/Secrets.swift

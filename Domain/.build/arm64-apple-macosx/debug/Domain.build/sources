@@ -1,0 +1,16 @@
+/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Domain.swift
+/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/Answer.swift
+/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/DailyQuestion.swift
+/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/FamilyGroup.swift
+/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/Member.swift
+/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/Notification.swift
+/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/Question.swift
+/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/TreeProgress.swift
+/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/User.swift
+/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/AnswerRepositoryProtocol.swift
+/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/AuthRepositoryProtocol.swift
+/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/DailyQuestionRepositoryProtocol.swift
+/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/FamilyRepositoryProtocol.swift
+/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/QuestionRepositoryProtocol.swift
+/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/TreeRepositoryProtocol.swift
+/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/UserRepositoryProtocol.swift

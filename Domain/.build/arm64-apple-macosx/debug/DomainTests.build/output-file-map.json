@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainTests.build/master.swiftdeps"
+  },
+  "/Users/yong/Desktop/FamTree/Domain/Tests/DomainTests/DomainTests.swift": {
+    "dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainTests.build/DomainTests.d",
+    "object": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainTests.build/DomainTests.swift.o",
+    "swiftmodule": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainTests.build/DomainTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainTests.build/DomainTests.swiftdeps",
+    "diagnostics": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/DomainTests.build/DomainTests.dia"
+  }
+}

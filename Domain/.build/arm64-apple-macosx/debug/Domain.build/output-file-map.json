@@ -1,0 +1,117 @@
+{
+  "": {
+    "swift-dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/master.swiftdeps"
+  },
+  "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Domain.swift": {
+    "dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Domain.d",
+    "object": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Domain.swift.o",
+    "swiftmodule": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Domain~partial.swiftmodule",
+    "swift-dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Domain.swiftdeps",
+    "diagnostics": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Domain.dia"
+  },
+  "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/Answer.swift": {
+    "dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Answer.d",
+    "object": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Answer.swift.o",
+    "swiftmodule": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Answer~partial.swiftmodule",
+    "swift-dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Answer.swiftdeps",
+    "diagnostics": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Answer.dia"
+  },
+  "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/DailyQuestion.swift": {
+    "dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/DailyQuestion.d",
+    "object": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/DailyQuestion.swift.o",
+    "swiftmodule": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/DailyQuestion~partial.swiftmodule",
+    "swift-dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/DailyQuestion.swiftdeps",
+    "diagnostics": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/DailyQuestion.dia"
+  },
+  "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/FamilyGroup.swift": {
+    "dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/FamilyGroup.d",
+    "object": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/FamilyGroup.swift.o",
+    "swiftmodule": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/FamilyGroup~partial.swiftmodule",
+    "swift-dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/FamilyGroup.swiftdeps",
+    "diagnostics": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/FamilyGroup.dia"
+  },
+  "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/Member.swift": {
+    "dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Member.d",
+    "object": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Member.swift.o",
+    "swiftmodule": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Member~partial.swiftmodule",
+    "swift-dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Member.swiftdeps",
+    "diagnostics": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Member.dia"
+  },
+  "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/Notification.swift": {
+    "dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Notification.d",
+    "object": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Notification.swift.o",
+    "swiftmodule": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Notification~partial.swiftmodule",
+    "swift-dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Notification.swiftdeps",
+    "diagnostics": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Notification.dia"
+  },
+  "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/Question.swift": {
+    "dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Question.d",
+    "object": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Question.swift.o",
+    "swiftmodule": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Question~partial.swiftmodule",
+    "swift-dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Question.swiftdeps",
+    "diagnostics": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/Question.dia"
+  },
+  "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/TreeProgress.swift": {
+    "dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/TreeProgress.d",
+    "object": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/TreeProgress.swift.o",
+    "swiftmodule": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/TreeProgress~partial.swiftmodule",
+    "swift-dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/TreeProgress.swiftdeps",
+    "diagnostics": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/TreeProgress.dia"
+  },
+  "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Entities/User.swift": {
+    "dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/User.d",
+    "object": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/User.swift.o",
+    "swiftmodule": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/User~partial.swiftmodule",
+    "swift-dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/User.swiftdeps",
+    "diagnostics": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/User.dia"
+  },
+  "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/AnswerRepositoryProtocol.swift": {
+    "dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/AnswerRepositoryProtocol.d",
+    "object": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/AnswerRepositoryProtocol.swift.o",
+    "swiftmodule": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/AnswerRepositoryProtocol~partial.swiftmodule",
+    "swift-dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/AnswerRepositoryProtocol.swiftdeps",
+    "diagnostics": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/AnswerRepositoryProtocol.dia"
+  },
+  "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/AuthRepositoryProtocol.swift": {
+    "dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/AuthRepositoryProtocol.d",
+    "object": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/AuthRepositoryProtocol.swift.o",
+    "swiftmodule": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/AuthRepositoryProtocol~partial.swiftmodule",
+    "swift-dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/AuthRepositoryProtocol.swiftdeps",
+    "diagnostics": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/AuthRepositoryProtocol.dia"
+  },
+  "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/DailyQuestionRepositoryProtocol.swift": {
+    "dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/DailyQuestionRepositoryProtocol.d",
+    "object": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/DailyQuestionRepositoryProtocol.swift.o",
+    "swiftmodule": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/DailyQuestionRepositoryProtocol~partial.swiftmodule",
+    "swift-dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/DailyQuestionRepositoryProtocol.swiftdeps",
+    "diagnostics": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/DailyQuestionRepositoryProtocol.dia"
+  },
+  "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/FamilyRepositoryProtocol.swift": {
+    "dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/FamilyRepositoryProtocol.d",
+    "object": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/FamilyRepositoryProtocol.swift.o",
+    "swiftmodule": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/FamilyRepositoryProtocol~partial.swiftmodule",
+    "swift-dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/FamilyRepositoryProtocol.swiftdeps",
+    "diagnostics": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/FamilyRepositoryProtocol.dia"
+  },
+  "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/QuestionRepositoryProtocol.swift": {
+    "dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/QuestionRepositoryProtocol.d",
+    "object": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/QuestionRepositoryProtocol.swift.o",
+    "swiftmodule": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/QuestionRepositoryProtocol~partial.swiftmodule",
+    "swift-dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/QuestionRepositoryProtocol.swiftdeps",
+    "diagnostics": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/QuestionRepositoryProtocol.dia"
+  },
+  "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/TreeRepositoryProtocol.swift": {
+    "dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/TreeRepositoryProtocol.d",
+    "object": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/TreeRepositoryProtocol.swift.o",
+    "swiftmodule": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/TreeRepositoryProtocol~partial.swiftmodule",
+    "swift-dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/TreeRepositoryProtocol.swiftdeps",
+    "diagnostics": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/TreeRepositoryProtocol.dia"
+  },
+  "/Users/yong/Desktop/FamTree/Domain/Sources/Domain/Repositories/UserRepositoryProtocol.swift": {
+    "dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/UserRepositoryProtocol.d",
+    "object": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/UserRepositoryProtocol.swift.o",
+    "swiftmodule": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/UserRepositoryProtocol~partial.swiftmodule",
+    "swift-dependencies": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/UserRepositoryProtocol.swiftdeps",
+    "diagnostics": "/Users/yong/Desktop/FamTree/Domain/.build/arm64-apple-macosx/debug/Domain.build/UserRepositoryProtocol.dia"
+  }
+}
