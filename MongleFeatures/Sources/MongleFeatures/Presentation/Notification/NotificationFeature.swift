@@ -85,6 +85,7 @@ public struct NotificationFeature {
         public enum Delegate: Sendable, Equatable {
             case navigateToQuestion
             case navigateToTree
+            case navigateToPeerNotAnsweredNudge(String)
         }
     }
 
@@ -118,7 +119,11 @@ public struct NotificationFeature {
 
                 // 타입에 따라 네비게이션
                 switch notification.type {
-                case .newQuestion, .answerRequest, .allAnswered, .memberAnswered:
+                case .answerRequest:
+                    let member = extractMemberName(from: notification.title) ?? "가족"
+                    return .send(.delegate(.navigateToPeerNotAnsweredNudge(member)))
+
+                case .newQuestion, .allAnswered, .memberAnswered:
                     return .send(.delegate(.navigateToQuestion))
                 case .treeGrowth, .badgeEarned:
                     return .send(.delegate(.navigateToTree))
@@ -201,54 +206,54 @@ private func generateMockNotifications() -> [MongleNotification] {
         MongleNotification(
             id: UUID(),
             userId: userId,
-            type: .newQuestion,
-            title: "오늘의 질문이 도착했어요!",
-            body: "오늘 가장 감사했던 순간은 언제인가요?",
+            type: .memberAnswered,
+            title: "Lily가 오늘의 질문에 답변했어요",
+            body: "Lily의 생각을 확인하고 하트를 보내보세요.",
             isRead: false,
             createdAt: Date()
         ),
         MongleNotification(
             id: UUID(),
             userId: userId,
-            type: .memberAnswered,
-            title: "엄마가 답변했어요",
-            body: "엄마가 오늘의 질문에 답변을 남겼어요. 확인해보세요!",
+            type: .answerRequest,
+            title: "Dad가 Mom에게 재촉 알림을 보냈어요",
+            body: "Mom이 아직 답변하지 않았어요. 하트 1개가 사용됐어요.",
             isRead: false,
             createdAt: calendar.date(byAdding: .hour, value: -1, to: Date()) ?? Date()
         ),
         MongleNotification(
             id: UUID(),
             userId: userId,
-            type: .allAnswered,
-            title: "가족 모두 답변 완료!",
-            body: "어제 질문에 가족 모두가 답변했어요. 확인해보세요!",
+            type: .badgeEarned,
+            title: "Mom이 하트 5개를 선물했어요 🎁",
+            body: "하트 시스템에서 새 행동을 열어볼 수 있어요.",
             isRead: false,
             createdAt: calendar.date(byAdding: .hour, value: -3, to: Date()) ?? Date()
         ),
         MongleNotification(
             id: UUID(),
             userId: userId,
-            type: .answerRequest,
-            title: "엄마가 답변을 기다리고 있어요",
-            body: "아직 오늘의 질문에 답변하지 않았어요",
+            type: .allAnswered,
+            title: "오늘 모든 가족이 답변을 완료했어요! 🎉",
+            body: "가족의 답변을 둘러보고 오늘의 감정을 다시 기록해보세요.",
             isRead: true,
             createdAt: calendar.date(byAdding: .day, value: -1, to: Date()) ?? Date()
         ),
         MongleNotification(
             id: UUID(),
             userId: userId,
-            type: .treeGrowth,
-            title: "나무가 자랐어요!",
-            body: "가족 나무가 3단계로 성장했습니다",
+            type: .memberAnswered,
+            title: "Mom이 오늘의 질문에 답변했어요",
+            body: "Mom의 답변을 보고 공감 버튼을 눌러보세요.",
             isRead: true,
             createdAt: calendar.date(byAdding: .day, value: -2, to: Date()) ?? Date()
         ),
         MongleNotification(
             id: UUID(),
             userId: userId,
-            type: .badgeEarned,
-            title: "새 배지 획득!",
-            body: "'7일 연속 답변' 배지를 획득했어요",
+            type: .treeGrowth,
+            title: "우리만의 감정 공간이 자라고 있어요",
+            body: "가족 나무가 한 단계 성장했어요.",
             isRead: true,
             createdAt: calendar.date(byAdding: .day, value: -5, to: Date()) ?? Date()
         ),
@@ -262,4 +267,17 @@ private func generateMockNotifications() -> [MongleNotification] {
             createdAt: calendar.date(byAdding: .day, value: -10, to: Date()) ?? Date()
         ),
     ]
+}
+
+private func extractMemberName(from title: String) -> String? {
+    let separators = ["가", "이", "님"]
+    for separator in separators {
+        if let range = title.range(of: separator) {
+            let name = String(title[..<range.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !name.isEmpty {
+                return name
+            }
+        }
+    }
+    return nil
 }

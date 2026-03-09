@@ -18,7 +18,6 @@ public struct NotificationView: View {
 
     public var body: some View {
         VStack(spacing: 0) {
-            // 헤더
             headerView
 
             if store.isLoading && store.notifications.isEmpty {
@@ -35,22 +34,11 @@ public struct NotificationView: View {
         }
     }
 
-    // MARK: - Header
     private var headerView: some View {
-        HStack {
+        HStack(spacing: 12) {
             Text("알림")
-                .font(MongleFont.heading2())
+                .font(MongleFont.heading3().weight(.bold))
                 .foregroundColor(MongleColor.textPrimary)
-
-            if store.hasUnread {
-                Text("\(store.unreadCount)")
-                    .font(MongleFont.captionBold())
-                    .foregroundColor(.white)
-                    .padding(.horizontal, MongleSpacing.xs)
-                    .padding(.vertical, 2)
-                    .background(MongleColor.error)
-                    .clipShape(Capsule())
-            }
 
             Spacer()
 
@@ -59,55 +47,51 @@ public struct NotificationView: View {
                     store.send(.markAllAsRead)
                 } label: {
                     Text("모두 읽음")
-                        .font(MongleFont.buttonSmall())
-                        .foregroundColor(MongleColor.primary)
+                        .font(MongleFont.captionBold())
+                        .foregroundColor(MongleColor.textSecondary)
                 }
+                .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, MongleSpacing.md)
-        .padding(.vertical, MongleSpacing.md)
-        .background(MongleColor.background)
+        .frame(height: 56)
+        .padding(.horizontal, 20)
+        .background(Color.white)
     }
 
-    // MARK: - Notification List
     private var notificationList: some View {
-        ScrollView {
-            LazyVStack(spacing: 0, pinnedViews: .sectionHeaders) {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 0) {
                 ForEach(store.groupedNotifications, id: \.0) { section, notifications in
-                    Section {
-                        ForEach(notifications, id: \.id) { notification in
-                            NotificationRow(notification: notification) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(section)
+                            .font(MongleFont.captionBold())
+                            .foregroundColor(MongleColor.textSecondary)
+                            .padding(.horizontal, 20)
+                            .padding(.top, 12)
+                            .padding(.bottom, 6)
+
+                        ForEach(Array(notifications.enumerated()), id: \.element.id) { index, notification in
+                            NotificationCard(notification: notification) {
                                 store.send(.notificationTapped(notification))
                             } onDelete: {
                                 store.send(.deleteNotification(notification))
                             }
+
+                            if index != notifications.count - 1 {
+                                Divider()
+                                    .padding(.leading, 76)
+                            }
                         }
-                    } header: {
-                        sectionHeader(section)
                     }
                 }
             }
-            .padding(.bottom, MongleSpacing.xl)
+            .padding(.bottom, 24)
         }
         .refreshable {
             store.send(.refresh)
         }
     }
 
-    private func sectionHeader(_ title: String) -> some View {
-        HStack {
-            Text(title)
-                .font(MongleFont.captionBold())
-                .foregroundColor(MongleColor.textSecondary)
-
-            Spacer()
-        }
-        .padding(.horizontal, MongleSpacing.md)
-        .padding(.vertical, MongleSpacing.xs)
-        .background(MongleColor.background)
-    }
-
-    // MARK: - Loading View
     private var loadingView: some View {
         VStack(spacing: MongleSpacing.md) {
             ProgressView()
@@ -120,7 +104,6 @@ public struct NotificationView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    // MARK: - Empty View
     private var emptyView: some View {
         VStack(spacing: MongleSpacing.md) {
             Image(systemName: "bell.slash")
@@ -139,53 +122,37 @@ public struct NotificationView: View {
     }
 }
 
-// MARK: - Notification Row
-struct NotificationRow: View {
+private struct NotificationCard: View {
     let notification: MongleNotification
     let onTap: () -> Void
     let onDelete: () -> Void
 
     var body: some View {
         Button(action: onTap) {
-            HStack(alignment: .top, spacing: MongleSpacing.sm) {
-                // 아이콘
-                notificationIcon
-                    .frame(width: 40, height: 40)
-                    .background(iconBackgroundColor.opacity(0.15))
-                    .clipShape(Circle())
+            HStack(alignment: .center, spacing: 12) {
+                iconView
 
-                // 내용
-                VStack(alignment: .leading, spacing: MongleSpacing.xxs) {
-                    HStack {
-                        Text(notification.title)
-                            .font(notification.isRead ? MongleFont.body2() : MongleFont.body1Bold())
-                            .foregroundColor(MongleColor.textPrimary)
-                            .lineLimit(1)
-
-                        Spacer()
-
-                        Text(timeAgo)
-                            .font(MongleFont.caption())
-                            .foregroundColor(MongleColor.textHint)
-                    }
-
-                    Text(notification.body)
-                        .font(MongleFont.caption())
-                        .foregroundColor(MongleColor.textSecondary)
-                        .lineLimit(2)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(notification.title)
+                        .font(notification.isRead ? MongleFont.body2() : MongleFont.body2Bold())
+                        .foregroundColor(MongleColor.textPrimary)
                         .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Text(timeAgo)
+                        .font(MongleFont.caption())
+                        .foregroundColor(MongleColor.textPrimary)
                 }
 
-                // 읽지 않음 표시
                 if !notification.isRead {
                     Circle()
-                        .fill(MongleColor.primary)
+                        .fill(MongleColor.primarySoft)
                         .frame(width: 8, height: 8)
                 }
             }
-            .padding(.horizontal, MongleSpacing.md)
-            .padding(.vertical, MongleSpacing.sm)
-            .background(notification.isRead ? MongleColor.background : MongleColor.primaryLight.opacity(0.3))
+            .padding(.horizontal, 20)
+            .frame(height: 72, alignment: .leading)
+            .background(Color.white)
         }
         .buttonStyle(.plain)
         .swipeActions(edge: .trailing) {
@@ -195,11 +162,36 @@ struct NotificationRow: View {
         }
     }
 
-    @ViewBuilder
-    private var notificationIcon: some View {
-        Image(systemName: iconName)
-            .font(.system(size: 18))
-            .foregroundColor(iconBackgroundColor)
+    private var iconView: some View {
+        Group {
+            if notification.type == .memberAnswered {
+                ZStack {
+                    Circle()
+                        .fill(
+                            RadialGradient(
+                                colors: [Color(hex: "FFE082"), Color(hex: "FFD54F")],
+                                center: .init(x: 0.35, y: 0.35),
+                                startRadius: 4,
+                                endRadius: 22
+                            )
+                        )
+                    HStack(spacing: 4) {
+                        eye
+                        eye
+                    }
+                    .offset(y: 2)
+                }
+            } else {
+                Circle()
+                    .fill(iconBackground)
+                    .overlay(
+                        Image(systemName: iconName)
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundColor(iconTint)
+                    )
+            }
+        }
+        .frame(width: 44, height: 44)
     }
 
     private var iconName: String {
@@ -207,19 +199,19 @@ struct NotificationRow: View {
         case .newQuestion:
             return "questionmark.bubble.fill"
         case .memberAnswered:
-            return "person.fill.checkmark"
+            return "bubble.left.and.text.bubble.right.fill"
         case .allAnswered:
             return "checkmark.circle.fill"
         case .answerRequest:
-            return "person.fill.questionmark"
+            return "bell.badge.fill"
         case .treeGrowth:
             return "leaf.fill"
         case .badgeEarned:
-            return "star.fill"
+            return "gift.fill"
         }
     }
 
-    private var iconBackgroundColor: Color {
+    private var iconTint: Color {
         switch notification.type {
         case .newQuestion:
             return MongleColor.info
@@ -228,11 +220,28 @@ struct NotificationRow: View {
         case .allAnswered:
             return MongleColor.success
         case .answerRequest:
-            return MongleColor.warning
+            return MongleColor.accentOrange
         case .treeGrowth:
             return MongleColor.primary
         case .badgeEarned:
-            return Color.orange
+            return MongleColor.moodLoved
+        }
+    }
+
+    private var iconBackground: Color {
+        switch notification.type {
+        case .newQuestion:
+            return Color(hex: "E8F2FD")
+        case .memberAnswered:
+            return MongleColor.primaryLight
+        case .allAnswered:
+            return Color(hex: "E8F6EA")
+        case .answerRequest:
+            return Color(hex: "FFF1E2")
+        case .treeGrowth:
+            return Color(hex: "EAF7EE")
+        case .badgeEarned:
+            return Color(hex: "FCEEEF")
         }
     }
 
@@ -242,9 +251,15 @@ struct NotificationRow: View {
         formatter.unitsStyle = .abbreviated
         return formatter.localizedString(for: notification.createdAt, relativeTo: Date())
     }
+
+    private var eye: some View {
+        Circle()
+            .fill(Color(hex: "5D4037"))
+            .frame(width: 6, height: 7)
+            .overlay(Circle().stroke(Color.white, lineWidth: 1))
+    }
 }
 
-// MARK: - Preview
 #Preview {
     NotificationView(
         store: Store(initialState: NotificationFeature.State()) {
