@@ -58,6 +58,11 @@ public struct HomeFeature {
         // MARK: - View Actions
         case onAppear
         case questionTapped
+        case notificationTapped
+        case heartsTapped
+        case peerAnswerTapped(String)
+        case answerRequiredTapped(String)
+        case peerNudgeTapped(String)
         case refreshData
         case dismissError
 
@@ -71,6 +76,11 @@ public struct HomeFeature {
 
         public enum Delegate: Sendable, Equatable {
             case navigateToQuestionDetail(Question)
+            case navigateToNotifications
+            case navigateToHeartsSystem
+            case navigateToPeerAnswerSelfAnswered(String)
+            case showAnswerFirstPopup(String)
+            case navigateToPeerNotAnsweredNudge(String)
             case requestRefresh
         }
     }
@@ -92,6 +102,21 @@ public struct HomeFeature {
             case .questionTapped:
                 guard let question = state.todayQuestion else { return .none }
                 return .send(.delegate(.navigateToQuestionDetail(question)))
+
+            case .notificationTapped:
+                return .send(.delegate(.navigateToNotifications))
+
+            case .heartsTapped:
+                return .send(.delegate(.navigateToHeartsSystem))
+
+            case .peerAnswerTapped(let memberName):
+                return .send(.delegate(.navigateToPeerAnswerSelfAnswered(memberName)))
+
+            case .answerRequiredTapped(let memberName):
+                return .send(.delegate(.showAnswerFirstPopup(memberName)))
+
+            case .peerNudgeTapped(let memberName):
+                return .send(.delegate(.navigateToPeerNotAnsweredNudge(memberName)))
 
             case .refreshData:
                 guard !state.isRefreshing else { return .none }
@@ -129,4 +154,3 @@ public struct HomeFeature {
         }
     }
 }
-
