@@ -85,7 +85,7 @@ struct LoginView: View {
       .disabled(store.isLoading)
       
       Button {
-        print("둘러보기")
+        store.send(.browseTapped)
       } label: {
         Text("둘러보기")
           .font(MongleFont.body2())
