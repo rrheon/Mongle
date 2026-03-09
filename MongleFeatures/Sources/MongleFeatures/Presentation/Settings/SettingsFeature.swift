@@ -47,6 +47,11 @@ public struct SettingsFeature {
     public enum Action: Sendable, Equatable {
         // MARK: - View Actions
         case onAppear
+        case profileEditTapped
+        case notificationsTapped
+        case notificationSettingsTapped
+        case groupManagementTapped
+        case moodHistoryTapped
         case notificationsToggled(Bool)
         case logoutTapped
         case logoutConfirmed
@@ -68,6 +73,11 @@ public struct SettingsFeature {
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
+            case navigateToProfileEdit
+            case navigateToNotifications
+            case navigateToNotificationSettings
+            case navigateToGroupManagement
+            case navigateToMoodHistory
             case logout
             case accountDeleted
             case openURL(URL)
@@ -98,6 +108,21 @@ public struct SettingsFeature {
             case .onAppear:
                 // User data is typically passed from parent, but we can load if needed
                 return .none
+
+            case .profileEditTapped:
+                return .send(.delegate(.navigateToProfileEdit))
+
+            case .notificationsTapped:
+                return .send(.delegate(.navigateToNotifications))
+
+            case .notificationSettingsTapped:
+                return .send(.delegate(.navigateToNotificationSettings))
+
+            case .groupManagementTapped:
+                return .send(.delegate(.navigateToGroupManagement))
+
+            case .moodHistoryTapped:
+                return .send(.delegate(.navigateToMoodHistory))
 
             case .notificationsToggled(let enabled):
                 state.notificationsEnabled = enabled

@@ -14,88 +14,26 @@ struct SettingsTabView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                Color(hex: "F5F4F1")
-                    .ignoresSafeArea()
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: MongleSpacing.lg) {
+                    profileCard
+                    moodSection
+                    groupSection
+                    accountSection
 
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: MongleSpacing.lg) {
-                        // Profile Card
-                        SettingsProfileCard(
-                            user: store.currentUser,
-                            onEditTapped: {}
-                        )
-                        .padding(.horizontal, MongleSpacing.lg)
+                    Text("몽글 v\(store.appVersion)")
+                        .font(MongleFont.caption())
+                        .foregroundColor(MongleColor.textHint)
+                        .frame(maxWidth: .infinity)
                         .padding(.top, MongleSpacing.sm)
-
-                        // 모늘의 기분 섹션
-                        SettingsSectionCard(title: "모늘의 기분") {
-                            SettingsRow(
-                                icon: "face.smiling",
-                                iconColor: Color(hex: "FFD54F"),
-                                iconBg: Color(hex: "FFF3C4"),
-                                title: "오늘의 기분 설정",
-                                subtitle: "기분에 따라 몽글 색이 변해요",
-                                trailing: .chevron
-                            )
-                            Divider().padding(.leading, 60)
-                            SettingsRow(
-                                icon: "clock.arrow.circlepath",
-                                iconColor: Color(hex: "A8DFBC"),
-                                iconBg: Color(hex: "D4F0E0"),
-                                title: "기분 히스토리",
-                                subtitle: "나의 감정 기록 돌아보기",
-                                trailing: .chevron
-                            )
-                        }
-                        .padding(.horizontal, MongleSpacing.lg)
-
-                        // 그룹 관리 섹션
-                        SettingsSectionCard(title: "그룹 관리") {
-                            SettingsRow(
-                                icon: "bell.fill",
-                                iconColor: Color(hex: "A8DFBC"),
-                                iconBg: Color(hex: "D4F0E0"),
-                                title: "알림 설정",
-                                subtitle: "답변 알림, 리마인더",
-                                trailing: .chevron
-                            )
-                            Divider().padding(.leading, 60)
-                            SettingsRow(
-                                icon: "person.3.fill",
-                                iconColor: Color(hex: "A8DFBC"),
-                                iconBg: Color(hex: "D4F0E0"),
-                                title: "그룹 관리",
-                                subtitle: "멤버 초대, 그룹 설정",
-                                trailing: .chevron
-                            )
-                            Divider().padding(.leading, 60)
-                            SettingsRow(
-                                icon: "person.crop.circle.fill",
-                                iconColor: Color(hex: "A8DFBC"),
-                                iconBg: Color(hex: "D4F0E0"),
-                                title: "계정 관리",
-                                subtitle: "로그아웃, 탈퇴",
-                                trailing: .chevron,
-                                action: { store.send(.logoutTapped) }
-                            )
-                        }
-                        .padding(.horizontal, MongleSpacing.lg)
-
-                        // Footer
-                        Text("몽글 v\(store.appVersion)")
-                            .font(MongleFont.caption())
-                            .foregroundColor(MongleColor.textHint)
-                            .frame(maxWidth: .infinity)
-                            .padding(.top, MongleSpacing.sm)
-
-                        Spacer()
-                            .frame(height: MongleSpacing.xxl)
-                    }
                 }
+                .padding(.horizontal, MongleSpacing.md)
+                .padding(.top, MongleSpacing.md)
+                .padding(.bottom, MongleSpacing.xl)
             }
+            .background(MongleColor.background)
             .navigationTitle("설정")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
             .alert(
                 "로그아웃",
                 isPresented: Binding(
@@ -123,72 +61,142 @@ struct SettingsTabView: View {
             .onAppear { store.send(.onAppear) }
         }
     }
-}
 
-// MARK: - Settings Profile Card
-private struct SettingsProfileCard: View {
-    let user: User?
-    let onEditTapped: () -> Void
-
-    private let monggleColors: [Color] = [
-        Color(hex: "A8DFBC"), Color(hex: "F5978E"),
-        Color(hex: "FFD54F"), Color(hex: "42A5F5")
-    ]
-
-    private var monggleColor: Color {
-        let name = user?.name ?? ""
-        return monggleColors[abs(name.hashValue) % monggleColors.count]
-    }
-
-    var body: some View {
-        MongleCard(cornerRadius: MongleRadius.xl) {
-            HStack(spacing: MongleSpacing.md) {
-                // Monggle Avatar
-                ZStack {
+    private var profileCard: some View {
+        Button {
+            store.send(.profileEditTapped)
+        } label: {
+            VStack(alignment: .leading, spacing: MongleSpacing.md) {
+                HStack(spacing: MongleSpacing.md) {
                     Circle()
-                        .fill(monggleColor)
-                        .frame(width: 64, height: 64)
+                        .fill(profileAccent.light)
+                        .frame(width: 68, height: 68)
+                        .overlay(
+                            Image(systemName: profileAccent.icon)
+                                .font(.system(size: 26))
+                                .foregroundColor(profileAccent.color)
+                        )
 
-                    HStack(spacing: 8) {
-                        Circle().fill(Color(hex: "1A1A1A")).frame(width: 7, height: 8)
-                        Circle().fill(Color(hex: "1A1A1A")).frame(width: 7, height: 8)
-                    }
-                    .offset(y: 3)
-                }
-
-                VStack(alignment: .leading, spacing: MongleSpacing.xxs) {
-                    Text(user?.name ?? "-")
-                        .font(MongleFont.heading3())
-                        .foregroundColor(MongleColor.textPrimary)
-
-                    HStack(spacing: MongleSpacing.xxs) {
-                        Text("오늘의 기분:")
-                            .font(MongleFont.caption())
-                            .foregroundColor(MongleColor.textSecondary)
-                        Text("😊 사랑")
-                            .font(MongleFont.caption())
+                    VStack(alignment: .leading, spacing: MongleSpacing.xxs) {
+                        Text("내 프로필")
+                            .font(MongleFont.body2Bold())
+                            .foregroundColor(MongleColor.primary)
+                        Text(store.currentUser?.name ?? "Mongle User")
+                            .font(MongleFont.heading3())
                             .foregroundColor(MongleColor.textPrimary)
+                        Text("오늘의 기분: 🥰 사랑")
+                            .font(MongleFont.body2())
+                            .foregroundColor(MongleColor.textSecondary)
                     }
-                }
 
-                Spacer()
+                    Spacer()
 
-                Button(action: onEditTapped) {
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(MongleColor.textHint)
                 }
+
+                HStack(spacing: MongleSpacing.xs) {
+                    settingsChip("감정 수정")
+                    settingsChip("프로필 편집")
+                    settingsChip("그룹 연결")
+                }
             }
+            .padding(MongleSpacing.md)
+            .background(
+                LinearGradient(
+                    colors: [Color(hex: "FFFCF8"), Color.white],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .monglePanel(background: .clear, cornerRadius: MongleRadius.xl, shadowOpacity: 0.03)
         }
+        .buttonStyle(.plain)
     }
-}
 
-// MARK: - Settings Section Card
-private struct SettingsSectionCard<Content: View>: View {
-    let title: String
-    @ViewBuilder let content: Content
+    private var moodSection: some View {
+        settingsSection(
+            title: "오늘의 기분",
+            rows: [
+                SettingsRowModel(
+                    icon: "face.smiling.fill",
+                    iconColor: MongleColor.moodHappy,
+                    iconBackground: MongleColor.moodHappyLight,
+                    title: "오늘의 기분 설정",
+                    subtitle: "기분에 따라 몽글 색이 변해요",
+                    action: { store.send(.profileEditTapped) }
+                ),
+                SettingsRowModel(
+                    icon: "clock.arrow.circlepath",
+                    iconColor: MongleColor.moodCalm,
+                    iconBackground: MongleColor.moodCalmLight,
+                    title: "기분 히스토리",
+                    subtitle: "나의 감정 기록 돌아보기",
+                    action: { store.send(.moodHistoryTapped) }
+                )
+            ]
+        )
+    }
 
-    var body: some View {
+    private var groupSection: some View {
+        settingsSection(
+            title: "그룹 관리",
+            rows: [
+                SettingsRowModel(
+                    icon: "bell.fill",
+                    iconColor: MongleColor.primary,
+                    iconBackground: MongleColor.primaryLight,
+                    title: "알림 설정",
+                    subtitle: "답변 알림, 리마인더",
+                    action: { store.send(.notificationSettingsTapped) }
+                ),
+                SettingsRowModel(
+                    icon: "person.3.fill",
+                    iconColor: MongleColor.accentOrange,
+                    iconBackground: Color(hex: "FFF0E6"),
+                    title: "그룹 관리",
+                    subtitle: "멤버 초대, 그룹 설정",
+                    action: { store.send(.groupManagementTapped) }
+                ),
+                SettingsRowModel(
+                    icon: "bell.badge.fill",
+                    iconColor: MongleColor.info,
+                    iconBackground: Color(hex: "E8F2FD"),
+                    title: "알림 센터",
+                    subtitle: "가족 답변과 시스템 알림 확인",
+                    action: { store.send(.notificationsTapped) }
+                )
+            ]
+        )
+    }
+
+    private var accountSection: some View {
+        settingsSection(
+            title: "계정",
+            rows: [
+                SettingsRowModel(
+                    icon: "rectangle.portrait.and.arrow.right",
+                    iconColor: MongleColor.textPrimary,
+                    iconBackground: Color(hex: "F3EFEA"),
+                    title: "로그아웃",
+                    subtitle: "현재 계정에서 로그아웃",
+                    action: { store.send(.logoutTapped) }
+                ),
+                SettingsRowModel(
+                    icon: "trash.fill",
+                    iconColor: MongleColor.error,
+                    iconBackground: Color(hex: "FDE8E8"),
+                    title: "회원탈퇴",
+                    subtitle: "모든 데이터를 삭제하고 앱을 떠나요",
+                    titleColor: MongleColor.error,
+                    action: { store.send(.deleteAccountTapped) }
+                )
+            ]
+        )
+    }
+
+    private func settingsSection(title: String, rows: [SettingsRowModel]) -> some View {
         VStack(alignment: .leading, spacing: MongleSpacing.sm) {
             Text(title)
                 .font(MongleFont.captionBold())
@@ -196,99 +204,80 @@ private struct SettingsSectionCard<Content: View>: View {
                 .padding(.horizontal, MongleSpacing.xxs)
 
             VStack(spacing: 0) {
-                content
-            }
-            .background(MongleColor.cardBackground)
-            .cornerRadius(MongleRadius.xl)
-            .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 2)
-        }
-    }
-}
+                ForEach(rows) { row in
+                    Button(action: row.action) {
+                        HStack(spacing: MongleSpacing.md) {
+                            RoundedRectangle(cornerRadius: MongleRadius.medium)
+                                .fill(row.iconBackground)
+                                .frame(width: 36, height: 36)
+                                .overlay(
+                                    Image(systemName: row.icon)
+                                        .font(.system(size: 18, weight: .medium))
+                                        .foregroundColor(row.iconColor)
+                                )
 
-// MARK: - Settings Row
-private struct SettingsRow: View {
-    enum Trailing {
-        case chevron
-        case toggle(Bool, (Bool) -> Void)
-        case none
-    }
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(row.title)
+                                    .font(MongleFont.body1())
+                                    .foregroundColor(row.titleColor)
+                                Text(row.subtitle)
+                                    .font(MongleFont.caption())
+                                    .foregroundColor(MongleColor.textHint)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
 
-    let icon: String
-    let iconColor: Color
-    var iconBg: Color = Color.clear
-    let title: String
-    var subtitle: String? = nil
-    var titleColor: Color = MongleColor.textPrimary
-    let trailing: Trailing
-    var action: (() -> Void)? = nil
+                            Spacer()
 
-    var body: some View {
-        Button {
-            action?()
-        } label: {
-            HStack(spacing: MongleSpacing.md) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: MongleRadius.xs)
-                        .fill(iconBg.opacity(iconBg == .clear ? 0 : 1))
-                        .frame(width: 40, height: 40)
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(MongleColor.textHint)
+                        }
+                        .padding(.horizontal, MongleSpacing.md)
+                        .frame(minHeight: 56, alignment: .leading)
+                    }
+                    .buttonStyle(.plain)
 
-                    Image(systemName: icon)
-                        .font(.system(size: 18))
-                        .foregroundColor(iconColor)
-                }
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(MongleFont.body1())
-                        .foregroundColor(titleColor)
-
-                    if let subtitle = subtitle {
-                        Text(subtitle)
-                            .font(MongleFont.caption())
-                            .foregroundColor(MongleColor.textSecondary)
+                    if row.id != rows.last?.id {
+                        Divider()
+                            .padding(.leading, 64)
                     }
                 }
-
-                Spacer()
-
-                switch trailing {
-                case .chevron:
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(MongleColor.textHint)
-                case .toggle(let isOn, let onToggle):
-                    Toggle("", isOn: Binding(get: { isOn }, set: { onToggle($0) }))
-                        .tint(MongleColor.primary)
-                        .labelsHidden()
-                case .none:
-                    EmptyView()
-                }
             }
-            .padding(.horizontal, MongleSpacing.lg)
-            .padding(.vertical, MongleSpacing.sm)
+            .background(MongleColor.cardBackgroundSolid)
+            .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
         }
-        .disabled(action == nil && {
-            if case .toggle = trailing { return false }
-            return true
-        }())
     }
+
+    private var profileAccent: (color: Color, light: Color, icon: String) {
+        let options: [(Color, Color, String)] = [
+            (MongleColor.moodHappy, MongleColor.moodHappyLight, "sun.max.fill"),
+            (MongleColor.moodLoved, MongleColor.moodLovedLight, "heart.fill"),
+            (MongleColor.moodCalm, MongleColor.moodCalmLight, "leaf.fill"),
+            (MongleColor.moodExcited, MongleColor.moodExcitedLight, "sparkles")
+        ]
+        let index = abs((store.currentUser?.name ?? "몽글").hashValue) % options.count
+        return options[index]
+    }
+
+    private func settingsChip(_ title: String) -> some View {
+        Text(title)
+            .font(MongleFont.captionBold())
+            .foregroundColor(MongleColor.primaryDark)
+            .padding(.horizontal, MongleSpacing.sm)
+            .padding(.vertical, MongleSpacing.xxs)
+            .background(MongleColor.primaryLight)
+            .clipShape(Capsule())
+    }
+
 }
 
-// MARK: - Previews
-#Preview("Settings Tab") {
-    SettingsTabView(
-        store: Store(initialState: SettingsFeature.State(
-            currentUser: User(
-                id: UUID(),
-                email: "me@example.com",
-                name: "Mom",
-                profileImageURL: nil,
-                role: .mother,
-                createdAt: .now
-            ),
-            appVersion: "1.0.0"
-        )) {
-            SettingsFeature()
-        }
-    )
+private struct SettingsRowModel: Identifiable {
+    let id = UUID()
+    let icon: String
+    let iconColor: Color
+    let iconBackground: Color
+    let title: String
+    let subtitle: String
+    var titleColor: Color = MongleColor.textPrimary
+    let action: () -> Void
 }
