@@ -14,7 +14,10 @@ public struct RootFeature {
     @ObservableState
     public struct State: Equatable {
         public var appState: AppState = .loading
+        public var hasSeenOnboarding: Bool
+        public var onboarding: OnboardingFeature.State
         public var login: LoginFeature.State
+        public var groupSelect: GroupSelectFeature.State
         public var mainTab: MainTabFeature.State?
         public var currentUser: User?
         public var loginProviderType: SocialProviderType?
@@ -25,13 +28,19 @@ public struct RootFeature {
 
         public enum AppState: Equatable {
             case loading
+            case onboarding
             case unauthenticated
+            case guestBrowsing
+            case groupSelection
             case authenticated
         }
 
         public init(
             appState: AppState = .loading,
+            hasSeenOnboarding: Bool = false,
+            onboarding: OnboardingFeature.State = OnboardingFeature.State(),
             login: LoginFeature.State = LoginFeature.State(),
+            groupSelect: GroupSelectFeature.State = GroupSelectFeature.State(),
             mainTab: MainTabFeature.State? = nil,
             currentUser: User? = nil,
             loginProviderType: SocialProviderType? = nil,
@@ -39,7 +48,10 @@ public struct RootFeature {
             questionDetail: QuestionDetailFeature.State? = nil
         ) {
             self.appState = appState
+            self.hasSeenOnboarding = hasSeenOnboarding
+            self.onboarding = onboarding
             self.login = login
+            self.groupSelect = groupSelect
             self.mainTab = mainTab
             self.currentUser = currentUser
             self.loginProviderType = loginProviderType
@@ -52,7 +64,10 @@ public struct RootFeature {
         case onAppear
         case checkAuthResponse(User?)
         case loadDataResponse(Result<RootData, Error>)
+        case showLoginScreen
+        case onboarding(OnboardingFeature.Action)
         case login(LoginFeature.Action)
+        case groupSelect(GroupSelectFeature.Action)
         case mainTab(MainTabFeature.Action)
         case logout
 
@@ -99,8 +114,16 @@ public struct RootFeature {
     public init() {}
 
     public var body: some Reducer<State, Action> {
+        Scope(state: \.onboarding, action: \.onboarding) {
+            OnboardingFeature()
+        }
+
         Scope(state: \.login, action: \.login) {
             LoginFeature()
+        }
+
+        Scope(state: \.groupSelect, action: \.groupSelect) {
+            GroupSelectFeature()
         }
 
         Reduce { state, action in
@@ -142,7 +165,7 @@ public struct RootFeature {
                     state.appState = .loading
                     return .send(.refreshHomeData)
                 } else {
-                    state.appState = .unauthenticated
+                    state.appState = state.hasSeenOnboarding ? .unauthenticated : .onboarding
                     return .none
                 }
 
@@ -167,13 +190,17 @@ public struct RootFeature {
                 if state.mainTab != nil {
                     state.mainTab?.home = homeState
                     state.mainTab?.settings.loginProviderType = providerType
+                    state.mainTab?.settings.currentUser = data.user
                 } else {
                     state.mainTab = MainTabFeature.State(
                         home: homeState,
-                        settings: SettingsFeature.State(loginProviderType: providerType)
+                        settings: SettingsFeature.State(
+                            currentUser: data.user,
+                            loginProviderType: providerType
+                        )
                     )
                 }
-                state.appState = .authenticated
+                state.appState = data.family == nil ? .groupSelection : .authenticated
                 return .none
 
             case .loadDataResponse(.failure(let error)):
@@ -185,6 +212,13 @@ public struct RootFeature {
                 } else {
                     state.appState = .unauthenticated
                 }
+                return .none
+
+            case .showLoginScreen:
+                state.appState = .unauthenticated
+                state.mainTab = nil
+                state.questionDetail = nil
+                state.selectedQuestion = nil
                 return .none
 
             // MARK: - MainTab Delegate Actions
@@ -199,13 +233,22 @@ public struct RootFeature {
             case .mainTab(.delegate(.requestRefresh)):
                 return .send(.refreshHomeData)
 
+            case .mainTab(.delegate(.requestLogin)):
+                return .send(.showLoginScreen)
+
             case .mainTab(.logout):
-                state.appState = .unauthenticated
-                state.mainTab = nil
-                state.currentUser = nil
-                return .none
+                return .send(.logout)
 
             case .mainTab:
+                return .none
+
+            // MARK: - Onboarding Delegate Actions
+            case .onboarding(.delegate(.finished)):
+                state.hasSeenOnboarding = true
+                state.appState = .unauthenticated
+                return .none
+
+            case .onboarding:
                 return .none
 
             // MARK: - Login Delegate Actions
@@ -213,7 +256,22 @@ public struct RootFeature {
                 state.loginProviderType = providerType
                 return .send(.checkAuthResponse(user))
 
+            case .login(.delegate(.browseAsGuest)):
+                state.currentUser = nil
+                state.loginProviderType = nil
+                state.mainTab = makeGuestMainTabState()
+                state.appState = .guestBrowsing
+                return .none
+
             case .login:
+                return .none
+
+            // MARK: - Group Select Delegate Actions
+            case .groupSelect(.delegate(.completed)):
+                state.appState = .authenticated
+                return .none
+
+            case .groupSelect:
                 return .none
 
             case .logout:
@@ -222,11 +280,13 @@ public struct RootFeature {
                 state.currentUser = nil
                 state.loginProviderType = nil
                 state.login = LoginFeature.State()
+                state.groupSelect = GroupSelectFeature.State()
                 return .none
 
             // MARK: - Navigation Dismiss Actions
             case .dismissQuestionDetail:
                 state.selectedQuestion = nil
+                state.questionDetail = nil
                 return .none
 
             // MARK: - QuestionDetail Delegate Actions
@@ -236,9 +296,7 @@ public struct RootFeature {
                 return .none
 
             case .questionDetail(.presented(.delegate(.closed))):
-                state.questionDetail = nil
-                state.selectedQuestion = nil
-                return .none
+                return .send(.dismissQuestionDetail)
 
             case .questionDetail:
                 return .none
@@ -250,5 +308,49 @@ public struct RootFeature {
         .ifLet(\.$questionDetail, action: \.questionDetail) {
             QuestionDetailFeature()
         }
+    }
+}
+
+private extension RootFeature {
+    func makeGuestMainTabState() -> MainTabFeature.State {
+        MainTabFeature.State(
+            isGuestMode: true,
+            home: HomeFeature.State(
+                todayQuestion: Question(
+                    id: UUID(),
+                    content: "오늘 당신을 웃게 한 건 무엇인가요?",
+                    category: .daily,
+                    order: 1
+                ),
+                familyTree: TreeProgress(
+                    stage: .youngTree,
+                    totalAnswers: 12,
+                    consecutiveDays: 5
+                ),
+                family: MongleGroup(
+                    id: UUID(),
+                    name: "Kim Family",
+                    memberIds: [],
+                    createdBy: UUID(),
+                    createdAt: Date()
+                    ,
+                    inviteCode: "MONG-4729",
+                    treeProgressId: UUID()
+                ),
+                familyMembers: [],
+                currentUser: nil,
+                isLoading: false,
+                isRefreshing: false,
+                errorMessage: nil,
+                hasAnsweredToday: false,
+                familyAnswerCount: 3
+            ),
+            history: HistoryFeature.State(),
+            notification: NotificationFeature.State(),
+            settings: SettingsFeature.State(
+                currentUser: nil,
+                loginProviderType: nil
+            )
+        )
     }
 }
