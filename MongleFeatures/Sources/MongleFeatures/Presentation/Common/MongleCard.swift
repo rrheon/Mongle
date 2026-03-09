@@ -51,6 +51,24 @@ struct MongleCard<Content: View>: View {
     }
 }
 
+extension View {
+    func monglePanel(
+        background: Color = MongleColor.cardGlass,
+        cornerRadius: CGFloat = MongleRadius.xl,
+        borderColor: Color = MongleColor.borderCard,
+        shadowOpacity: CGFloat = 0.12
+    ) -> some View {
+        self
+            .background(background)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(borderColor, lineWidth: 1)
+            )
+            .shadow(color: MongleColor.shadowWarm.opacity(shadowOpacity), radius: 20, x: 0, y: 4)
+    }
+}
+
 // MARK: - Question Card (마인드브릿지 스타일 질문 카드)
 struct MongleQuestionCard: View {
     let category: String
@@ -64,101 +82,31 @@ struct MongleQuestionCard: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: MongleSpacing.md) {
-                // Top Row - Category & Status
-                HStack {
-                    // Category Tag
-                    HStack(spacing: MongleSpacing.xxs) {
-                        Image(systemName: categoryIcon)
-                            .font(.system(size: 12))
-                        Text(category)
-                            .font(MongleFont.captionBold())
-                    }
-                    .foregroundColor(MongleColor.primary)
-                    .padding(.horizontal, MongleSpacing.sm)
-                    .padding(.vertical, MongleSpacing.xxs)
-                    .background(MongleColor.primaryLight)
-                    .cornerRadius(MongleRadius.full)
-
-                    Spacer()
-
-                    // Answer Status
-                    if hasAnswered {
-                        HStack(spacing: 4) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.system(size: 14))
-                            Text("답변 완료")
-                                .font(MongleFont.captionBold())
-                        }
-                        .foregroundColor(MongleColor.success)
-                    }
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 6) {
+                    Text("🌿")
+                        .font(.system(size: 16))
+                    Text("Today's Question")
+                        .font(MongleFont.body2Bold())
+                        .foregroundColor(Color(hex: "6D9E71"))
                 }
 
-                // Question Text
-                Text(question)
-                    .font(MongleFont.heading3())
+                HStack(alignment: .center, spacing: 12) {
+                    Text(question)
+                    .font(MongleFont.body1())
                     .foregroundColor(MongleColor.textPrimary)
                     .multilineTextAlignment(.leading)
-                    .lineLimit(3)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
 
-                // Bottom Row - Family Progress & Arrow
-                HStack {
-                    if totalFamilyMembers > 0 {
-                        HStack(spacing: MongleSpacing.xxs) {
-                            Image(systemName: "person.2.fill")
-                                .font(.system(size: 12))
-                            Text("\(familyAnswerCount)/\(totalFamilyMembers)명 답변")
-                                .font(MongleFont.caption())
-                        }
-                        .foregroundColor(MongleColor.textSecondary)
-                    }
-
-                    Spacer()
-
-                    if !hasAnswered {
-                        HStack(spacing: MongleSpacing.xxs) {
-                            Text("답변하기")
-                                .font(MongleFont.captionBold())
-                            Image(systemName: "arrow.right")
-                                .font(.system(size: 12))
-                        }
-                        .foregroundColor(MongleColor.primary)
-                    } else {
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(MongleColor.textHint)
-                    }
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundColor(MongleColor.textHint)
                 }
             }
-            .padding(MongleSpacing.lg)
-            .background(
-                RoundedRectangle(cornerRadius: MongleRadius.xl)
-                    .fill(hasAnswered ? MongleColor.cardBackgroundHighlight : MongleColor.cardBackground)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: MongleRadius.xl)
-                    .stroke(hasAnswered ? MongleColor.primary.opacity(0.3) : .clear, lineWidth: 1)
-            )
-            .shadow(
-                color: colorScheme == .dark ? .black.opacity(0.3) : .black.opacity(0.06),
-                radius: 12,
-                x: 0,
-                y: 4
-            )
+            .padding(20)
+            .monglePanel(background: MongleColor.cardGlass, cornerRadius: MongleRadius.xl, borderColor: MongleColor.borderCard, shadowOpacity: 1)
         }
         .buttonStyle(ScaleButtonStyle())
-    }
-
-    private var categoryIcon: String {
-        switch category {
-        case "일상": return "sun.max.fill"
-        case "추억": return "photo.fill"
-        case "가치관": return "heart.fill"
-        case "미래": return "sparkles"
-        case "감사": return "hands.clap.fill"
-        default: return "bubble.leMongle.fill"
-        }
     }
 }
 

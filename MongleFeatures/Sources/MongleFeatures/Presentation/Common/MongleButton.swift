@@ -30,6 +30,7 @@ struct MongleButton: View {
     let isLoading: Bool
     let icon: String?
     let action: () -> Void
+    @State private var isPressed = false
 
     init(
         _ title: String,
@@ -72,31 +73,39 @@ struct MongleButton: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: buttonHeight)
-            .background(backgroundColor)
+            .background(backgroundFill)
             .foregroundColor(textColor)
-            .cornerRadius(cornerRadius)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(borderColor, lineWidth: hasBorder ? 1.5 : 0)
+                    .stroke(borderColor, lineWidth: hasBorder ? 1.2 : 0)
             )
             .shadow(
                 color: hasShadow ? shadowColor : .clear,
-                radius: hasShadow ? 8 : 0,
+                radius: hasShadow ? 12 : 0,
                 x: 0,
-                y: hasShadow ? 3 : 0
+                y: hasShadow ? 4 : 0
             )
+            .scaleEffect(isPressed ? 0.985 : 1)
         }
         .disabled(isLoading)
-        .scaleEffect(1.0)
-        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isLoading)
+        .buttonStyle(.plain)
+        .contentShape(RoundedRectangle(cornerRadius: cornerRadius))
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in isPressed = true }
+                .onEnded { _ in isPressed = false }
+        )
+        .animation(.spring(response: 0.28, dampingFraction: 0.7), value: isPressed)
+        .animation(.easeInOut(duration: 0.2), value: isLoading)
     }
 
     // MARK: - Size Properties
     private var buttonHeight: CGFloat {
         switch size {
-        case .large: return 52
-        case .medium: return 44
-        case .small: return 36
+        case .large: return 48
+        case .medium: return 48
+        case .small: return 32
         }
     }
 
@@ -110,38 +119,24 @@ struct MongleButton: View {
 
     private var iconSize: CGFloat {
         switch size {
-        case .large: return 20
+        case .large: return 18
         case .medium: return 18
-        case .small: return 16
+        case .small: return 14
         }
     }
 
     private var cornerRadius: CGFloat {
         switch size {
-        case .large: return MongleRadius.large
-        case .medium: return MongleRadius.medium
-        case .small: return MongleRadius.small
+        case .large, .medium, .small: return MongleRadius.full
         }
     }
 
     // MARK: - Style Properties
-    private var backgroundColor: Color {
-        switch style {
-        case .primary: return MongleColor.primary
-        case .secondary: return MongleColor.primaryLight
-        case .tertiary: return .clear
-        case .kakao: return MongleColor.kakao
-        case .naver: return MongleColor.naver
-        case .google: return MongleColor.background
-        case .apple: return MongleColor.apple
-        }
-    }
-
     private var textColor: Color {
         switch style {
         case .primary: return .white
         case .secondary: return MongleColor.primary
-        case .tertiary: return MongleColor.primary
+        case .tertiary: return MongleColor.textSecondary
         case .kakao: return MongleColor.kakaoText
         case .naver: return MongleColor.naverText
         case .google: return MongleColor.textPrimary
@@ -151,8 +146,8 @@ struct MongleButton: View {
 
     private var borderColor: Color {
         switch style {
-        case .google: return MongleColor.border
-        case .secondary: return MongleColor.primary.opacity(0.3)
+        case .google: return Color(hex: "E8E0D6")
+        case .secondary: return MongleColor.primary
         default: return .clear
         }
     }
@@ -162,11 +157,54 @@ struct MongleButton: View {
     }
 
     private var hasShadow: Bool {
-        style == .primary
+        style == .primary || style == .secondary || style == .apple
     }
 
     private var shadowColor: Color {
-        MongleColor.primary.opacity(0.25)
+        switch style {
+        case .primary:
+            return Color(hex: "6BBF9333")
+        case .secondary:
+            return MongleColor.shadowColor
+        case .apple:
+            return Color.black.opacity(0.12)
+        default:
+            return .clear
+        }
+    }
+
+    @ViewBuilder
+    private var backgroundFill: some View {
+        switch style {
+        case .primary:
+            LinearGradient(
+                colors: [Color(hex: "43A047"), Color(hex: "4CAF50")],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        default:
+            backgroundColorShape
+        }
+    }
+
+    @ViewBuilder
+    private var backgroundColorShape: some View {
+        switch style {
+        case .secondary:
+            MongleColor.cardBackground
+        case .tertiary:
+            Color.clear
+        case .kakao:
+            MongleColor.kakao
+        case .naver:
+            MongleColor.naver
+        case .google:
+            Color.white
+        case .apple:
+            MongleColor.apple
+        case .primary:
+            Color.clear
+        }
     }
 
     private var socialIconName: String? {
@@ -190,10 +228,10 @@ struct MonglePillButton: View {
         Button(action: action) {
             Text(title)
                 .font(MongleFont.captionBold())
-                .foregroundColor(isSelected ? .white : MongleColor.primary)
-                .padding(.horizontal, MongleSpacing.md)
-                .padding(.vertical, MongleSpacing.xs)
-                .background(isSelected ? MongleColor.primary : MongleColor.primaryLight)
+                .foregroundColor(isSelected ? .white : MongleColor.textSecondary)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(isSelected ? MongleColor.primary : MongleColor.cardBackground)
                 .cornerRadius(MongleRadius.full)
         }
     }
