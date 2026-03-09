@@ -127,6 +127,7 @@ public struct HistoryFeature {
     public enum Action: Sendable, Equatable {
         // MARK: - View Actions
         case onAppear
+        case calendarTapped
         case selectDate(Date)
         case previousMonth
         case nextMonth
@@ -144,6 +145,7 @@ public struct HistoryFeature {
 
         public enum Delegate: Sendable, Equatable {
             case navigateToQuestionDetail(Question, Date)
+            case navigateToHistoryCalendar
         }
     }
 
@@ -161,6 +163,9 @@ public struct HistoryFeature {
                     let mockData = generateMockHistoryData()
                     await send(.historyLoaded(mockData))
                 }
+
+            case .calendarTapped:
+                return .send(.delegate(.navigateToHistoryCalendar))
 
             case .selectDate(let date):
                 state.selectedDate = date
@@ -225,39 +230,36 @@ public struct HistoryFeature {
 // MARK: - Mock Data Generator
 private func generateMockHistoryData() -> [Date: HistoryItem] {
     let calendar = Calendar.current
-    var items: [Date: HistoryItem] = [:]
+    let today = calendar.startOfDay(for: Date())
+    let yesterday = calendar.date(byAdding: .day, value: -1, to: today) ?? today
+    let twoDaysAgo = calendar.date(byAdding: .day, value: -2, to: today) ?? today
 
-    let questions = [
-        Question(id: UUID(), content: "오늘 가장 감사했던 순간은 언제인가요?", category: .gratitude, order: 1),
-        Question(id: UUID(), content: "어릴 때 가장 좋아했던 놀이는 무엇이었나요?", category: .memory, order: 2),
-        Question(id: UUID(), content: "요즘 가장 관심 있는 것은 무엇인가요?", category: .daily, order: 3),
-        Question(id: UUID(), content: "가족에게 가장 고마웠던 순간은 언제인가요?", category: .gratitude, order: 4),
-        Question(id: UUID(), content: "10년 후 어떤 모습이고 싶은가요?", category: .future, order: 5),
-        Question(id: UUID(), content: "가장 기억에 남는 가족 여행은 언제인가요?", category: .memory, order: 6),
-        Question(id: UUID(), content: "요즘 읽고 있는 책이나 보고 있는 영상이 있나요?", category: .daily, order: 7),
+    let entries: [HistoryItem] = [
+        HistoryItem(
+            date: today,
+            question: Question(id: UUID(), content: "오늘 당신을 웃게 한 건 무엇인가요?", category: .daily, order: 1),
+            answerCount: 3,
+            totalMembers: 5,
+            isCompleted: false,
+            userAnswered: true
+        ),
+        HistoryItem(
+            date: yesterday,
+            question: Question(id: UUID(), content: "가족에게 고마운 순간은?", category: .gratitude, order: 2),
+            answerCount: 5,
+            totalMembers: 5,
+            isCompleted: true,
+            userAnswered: true
+        ),
+        HistoryItem(
+            date: twoDaysAgo,
+            question: Question(id: UUID(), content: "가족에게 고마운 순간은?", category: .gratitude, order: 3),
+            answerCount: 4,
+            totalMembers: 5,
+            isCompleted: false,
+            userAnswered: true
+        )
     ]
 
-    // 최근 30일 데이터 생성
-    for dayOffset in 0..<30 {
-        guard let date = calendar.date(byAdding: .day, value: -dayOffset, to: Date()) else { continue }
-        let startOfDay = calendar.startOfDay(for: date)
-
-        // 70% 확률로 질문 존재
-        if Double.random(in: 0...1) < 0.7 {
-            let question = questions[dayOffset % questions.count]
-            let totalMembers = 4
-            let answerCount = Int.random(in: 0...totalMembers)
-
-            items[startOfDay] = HistoryItem(
-                date: startOfDay,
-                question: question,
-                answerCount: answerCount,
-                totalMembers: totalMembers,
-                isCompleted: answerCount == totalMembers,
-                userAnswered: Double.random(in: 0...1) < 0.8
-            )
-        }
-    }
-
-    return items
+    return Dictionary(uniqueKeysWithValues: entries.map { (calendar.startOfDay(for: $0.date), $0) })
 }
