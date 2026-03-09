@@ -18,6 +18,8 @@ struct CustomNavigationBarModifier<L, C, R>: ViewModifier where L: View, C: View
     content
       .navigationBarBackButtonHidden(true)
       .navigationBarTitleDisplayMode(.inline)
+      .toolbarBackground(backgroundColor, for: .navigationBar)
+      .toolbarBackground(.visible, for: .navigationBar)
       .toolbar {
         ToolbarItem(placement: .topBarLeading) {
           leftView()
@@ -31,8 +33,9 @@ struct CustomNavigationBarModifier<L, C, R>: ViewModifier where L: View, C: View
             .padding(.trailing, -16)
         }
       }
-      .onAppear{
+      .onAppear {
         let navBarAppearance = UINavigationBarAppearance()
+        navBarAppearance.configureWithOpaqueBackground()
         navBarAppearance.backgroundColor = UIColor(backgroundColor)
         navBarAppearance.backgroundEffect = nil
         navBarAppearance.shadowColor = UIColor(borderColor)
