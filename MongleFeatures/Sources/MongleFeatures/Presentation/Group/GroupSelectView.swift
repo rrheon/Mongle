@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import ComposableArchitecture
 
 // MARK: - Group Display Model
@@ -15,6 +16,8 @@ struct GroupInfo: Identifiable {
 /// 몽글 그룹 선택 View
 public struct GroupSelectView: View {
   @Bindable var store: StoreOf<GroupSelectFeature>
+  @State private var codeCopied = false
+  @State private var linkCopied = false
   // 임시 샘플 데이터 (추후 서버 연동 시 state에서 받아올 예정)
   private let groups: [GroupInfo] = [
     GroupInfo(
@@ -99,8 +102,27 @@ public struct GroupSelectView: View {
       .background(MongleColor.background)
 
     case .createStep2:
-      MongleButton("홈으로 가기") {
-        store.send(.completeTapped)
+      VStack(spacing: MongleSpacing.sm) {
+        ShareLink(item: shareText) {
+          HStack(spacing: MongleSpacing.xs) {
+            Image(systemName: "square.and.arrow.up")
+            Text("공유하기")
+          }
+          .font(MongleFont.button())
+          .frame(maxWidth: .infinity)
+          .frame(height: 48)
+          .foregroundColor(MongleColor.primary)
+          .background(Color.white)
+          .clipShape(RoundedRectangle(cornerRadius: MongleRadius.full))
+          .overlay(
+            RoundedRectangle(cornerRadius: MongleRadius.full)
+              .stroke(MongleColor.primary, lineWidth: 1.2)
+          )
+        }
+
+        MongleButton("홈으로 가기") {
+          store.send(.completeTapped)
+        }
       }
       .padding(.horizontal, MongleSpacing.md)
       .padding(.top, MongleSpacing.sm)
@@ -402,6 +424,14 @@ public struct GroupSelectView: View {
 
   // MARK: - Create Step 2
 
+  private var inviteLink: String {
+    "https://monggle.app/join/\(store.inviteCode.lowercased())"
+  }
+
+  private var shareText: String {
+    "몽글에서 함께해요! 🌿\n초대코드: \(store.inviteCode)\n링크: \(inviteLink)"
+  }
+
   private var createStep2View: some View {
     VStack(alignment: .leading, spacing: MongleSpacing.lg) {
       // 프로세스 진행 UI
@@ -415,19 +445,86 @@ public struct GroupSelectView: View {
       }
       .padding(.bottom, MongleSpacing.sm)
 
-      introPanel(
-        eyebrow: store.groupName.isEmpty ? "우리 가족 💚" : store.groupName,
-        title: "공간이 만들어졌어요! 🎉",
-        description: "아래 코드나 링크로 친구를 초대해보세요",
-        accent: MongleColor.primary
-      )
-
-      VStack(alignment: .leading, spacing: MongleSpacing.md) {
-        inviteInfoRow(title: "초대 코드", value: store.inviteCode)
-        inviteInfoRow(title: "초대 링크", value: "monggle.app/join/\(store.inviteCode.lowercased())")
+      // 공간이 만들어졌다는 문구
+      VStack(alignment: .leading, spacing: MongleSpacing.xs) {
+        Text("공간이 만들어졌어요! 🎉")
+          .font(MongleFont.heading2())
+          .foregroundColor(MongleColor.textPrimary)
+        Text("아래 코드나 링크로 친구를 초대해보세요")
+          .font(MongleFont.body2())
+          .foregroundColor(MongleColor.textSecondary)
       }
-      .padding(MongleSpacing.md)
-      .monglePanel(cornerRadius: MongleRadius.xl, shadowOpacity: 0.03)
+      .frame(maxWidth: .infinity, alignment: .leading)
+
+      // 초대코드 카드
+      VStack(alignment: .leading, spacing: MongleSpacing.xs) {
+        Text("초대 코드")
+          .font(MongleFont.captionBold())
+          .foregroundColor(MongleColor.textSecondary)
+
+        HStack {
+          Text(store.inviteCode)
+            .font(MongleFont.heading3())
+            .foregroundColor(MongleColor.primary)
+
+          Spacer()
+
+          Button {
+            UIPasteboard.general.string = store.inviteCode
+            codeCopied = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { codeCopied = false }
+          } label: {
+            Label(codeCopied ? "복사됨" : "복사", systemImage: codeCopied ? "checkmark" : "doc.on.doc")
+              .font(MongleFont.captionBold())
+              .foregroundColor(codeCopied ? MongleColor.success : MongleColor.primary)
+              .padding(.horizontal, MongleSpacing.sm)
+              .padding(.vertical, MongleSpacing.xxs)
+              .background(codeCopied ? MongleColor.success.opacity(0.12) : MongleColor.primaryLight)
+              .clipShape(Capsule())
+          }
+          .animation(.easeInOut(duration: 0.2), value: codeCopied)
+        }
+        .padding(MongleSpacing.md)
+        .background(Color.white)
+        .cornerRadius(MongleRadius.large)
+        .overlay(RoundedRectangle(cornerRadius: MongleRadius.large).stroke(MongleColor.border, lineWidth: 1))
+      }
+
+      // 초대 링크
+      VStack(alignment: .leading, spacing: MongleSpacing.xs) {
+        Text("초대 링크")
+          .font(MongleFont.captionBold())
+          .foregroundColor(MongleColor.textSecondary)
+
+        HStack {
+          Text(inviteLink)
+            .font(MongleFont.caption())
+            .foregroundColor(MongleColor.textPrimary)
+            .lineLimit(1)
+            .truncationMode(.middle)
+
+          Spacer()
+
+          Button {
+            UIPasteboard.general.string = inviteLink
+            linkCopied = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { linkCopied = false }
+          } label: {
+            Label(linkCopied ? "복사됨" : "복사", systemImage: linkCopied ? "checkmark" : "doc.on.doc")
+              .font(MongleFont.captionBold())
+              .foregroundColor(linkCopied ? MongleColor.success : MongleColor.primary)
+              .padding(.horizontal, MongleSpacing.sm)
+              .padding(.vertical, MongleSpacing.xxs)
+              .background(linkCopied ? MongleColor.success.opacity(0.12) : MongleColor.primaryLight)
+              .clipShape(Capsule())
+          }
+          .animation(.easeInOut(duration: 0.2), value: linkCopied)
+        }
+        .padding(MongleSpacing.md)
+        .background(Color.white)
+        .cornerRadius(MongleRadius.large)
+        .overlay(RoundedRectangle(cornerRadius: MongleRadius.large).stroke(MongleColor.border, lineWidth: 1))
+      }
     }
   }
 
@@ -517,56 +614,6 @@ public struct GroupSelectView: View {
     }
   }
 
-  // MARK: - Helpers
-
-  private func introPanel(eyebrow: String, title: String, description: String, accent: Color) -> some View {
-    VStack(alignment: .leading, spacing: MongleSpacing.md) {
-      HStack(spacing: MongleSpacing.xs) {
-        Circle()
-          .fill(accent.opacity(0.18))
-          .frame(width: 44, height: 44)
-          .overlay(
-            Image(systemName: "sparkles")
-              .foregroundColor(accent)
-          )
-
-        VStack(alignment: .leading, spacing: 2) {
-          Text("Mongle")
-            .font(MongleFont.captionBold())
-            .foregroundColor(MongleColor.textSecondary)
-          Text(eyebrow)
-            .font(MongleFont.body2Bold())
-            .foregroundColor(accent)
-        }
-      }
-
-      VStack(alignment: .leading, spacing: MongleSpacing.sm) {
-        Text(title)
-          .font(MongleFont.heading2())
-          .foregroundColor(MongleColor.textPrimary)
-        Text(description)
-          .font(MongleFont.body2())
-          .foregroundColor(MongleColor.textSecondary)
-          .lineSpacing(3)
-      }
-    }
-    .padding(MongleSpacing.md)
-    .monglePanel(background: Color(hex: "FFFCF8"), cornerRadius: MongleRadius.xl, shadowOpacity: 0.03)
-  }
-
-  private func inviteInfoRow(title: String, value: String) -> some View {
-    VStack(alignment: .leading, spacing: MongleSpacing.xxs) {
-      Text(title)
-        .font(MongleFont.captionBold())
-        .foregroundColor(MongleColor.textSecondary)
-      Text(value)
-        .font(title == "초대 코드" ? MongleFont.heading3() : MongleFont.body2())
-        .foregroundColor(title == "초대 코드" ? MongleColor.primary : MongleColor.textPrimary)
-    }
-    .frame(maxWidth: .infinity, alignment: .leading)
-    .padding(MongleSpacing.md)
-    .monglePanel(background: Color(hex: "FAF7F3"), cornerRadius: MongleRadius.large, shadowOpacity: 0.01)
-  }
 }
 
 #Preview("Group Select") {
