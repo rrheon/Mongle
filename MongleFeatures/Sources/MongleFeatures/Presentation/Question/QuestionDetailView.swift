@@ -153,7 +153,7 @@ struct QuestionDetailView: View {
                 }
             }
 
-            MongleButton(store.hasMyAnswer ? "답변 수정하기" : "답변하기") {
+            MongleButtonPrimary(store.hasMyAnswer ? "답변 수정하기" : "답변하기") {
                 store.send(.submitAnswerTapped)
             }
             .disabled(!store.isValidAnswer || store.isSubmitting)

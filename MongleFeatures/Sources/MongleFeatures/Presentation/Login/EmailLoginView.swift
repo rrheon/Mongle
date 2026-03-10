@@ -24,7 +24,7 @@ struct EmailLoginView: View {
         isSecure: true
       )
       
-      MongleButton("로그인", style: .primary) {}
+      MongleButtonPrimary("로그인") {}
 
     }
     .padding()

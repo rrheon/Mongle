@@ -93,7 +93,7 @@ public struct GroupSelectView: View {
   private var bottomButtonBar: some View {
     switch store.step {
     case .createGroup:
-      MongleButton("다음") {
+      MongleButtonPrimary("다음") {
         store.send(.createNextTapped)
       }
       .padding(.horizontal, MongleSpacing.md)
@@ -120,7 +120,7 @@ public struct GroupSelectView: View {
           )
         }
 
-        MongleButton("홈으로 가기") {
+        MongleButtonPrimary("홈으로 가기") {
           store.send(.completeTapped)
         }
       }
@@ -130,7 +130,7 @@ public struct GroupSelectView: View {
       .background(MongleColor.background)
 
     case .joinWithCode:
-      MongleButton("참여하기") {
+      MongleButtonPrimary("참여하기") {
         store.send(.joinTapped)
       }
       .padding(.horizontal, MongleSpacing.md)

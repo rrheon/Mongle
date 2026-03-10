@@ -40,7 +40,7 @@ public struct AnswerFirstPopupView: View {
                 }
 
                 VStack(spacing: MongleSpacing.sm) {
-                    MongleButton("답변하러 가기") {
+                    MongleButtonPrimary("답변하러 가기") {
                         store.send(.answerNowTapped)
                     }
 

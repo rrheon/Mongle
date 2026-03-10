@@ -30,7 +30,7 @@ public struct PenPlaceholderView: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, MongleSpacing.xl)
 
-                MongleButton("닫기") {
+                MongleButtonPrimary("닫기") {
                     store.send(.closeTapped)
                 }
                 .padding(.horizontal, MongleSpacing.xl)

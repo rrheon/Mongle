@@ -985,6 +985,61 @@ public struct MongleSheetAnswer: View {
     }
 }
 
+// MARK: - Panel Modifier
+
+extension View {
+    public func monglePanel(
+        background: Color = MongleColor.cardGlass,
+        cornerRadius: CGFloat = MongleRadius.xl,
+        borderColor: Color = MongleColor.borderCard,
+        shadowOpacity: CGFloat = 0.12
+    ) -> some View {
+        self
+            .background(background)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(borderColor, lineWidth: 1)
+            )
+            .shadow(color: MongleColor.shadowWarm.opacity(shadowOpacity), radius: 20, x: 0, y: 4)
+    }
+}
+
+// MARK: - Error Banner
+
+public struct MongleErrorBanner: View {
+    let message: String
+    let onDismiss: () -> Void
+
+    public init(message: String, onDismiss: @escaping () -> Void) {
+        self.message = message
+        self.onDismiss = onDismiss
+    }
+
+    public var body: some View {
+        HStack(spacing: MongleSpacing.sm) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundColor(.orange)
+
+            Text(message)
+                .font(MongleFont.body2())
+                .foregroundColor(MongleColor.textPrimary)
+                .lineLimit(2)
+
+            Spacer()
+
+            Button(action: onDismiss) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(MongleColor.textSecondary)
+            }
+        }
+        .padding(MongleSpacing.md)
+        .background(Color.orange.opacity(0.1))
+        .cornerRadius(MongleRadius.medium)
+    }
+}
+
 // MARK: - Helpers
 
 extension View {

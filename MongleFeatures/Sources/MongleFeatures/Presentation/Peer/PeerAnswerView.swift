@@ -17,10 +17,10 @@ public struct PeerAnswerView: View {
                     answerCard(title: "나의 답변", subtitle: nil, time: store.myAnswerTime, body: store.myAnswer, accent: MongleColor.primary)
 
                     HStack(spacing: MongleSpacing.sm) {
-                        MongleButton("공감해요", style: .secondary, size: .medium) {
+                        MongleButtonSecondary("공감해요") {
                             store.send(.reactTapped)
                         }
-                        MongleButton("댓글 달기", style: .secondary, size: .medium) {
+                        MongleButtonSecondary("댓글 달기") {
                             store.send(.commentTapped)
                         }
                     }

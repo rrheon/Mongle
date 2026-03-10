@@ -154,7 +154,7 @@ public struct OnboardingView: View {
         VStack(spacing: 20) {
             pageIndicator
 
-            MongleButton(buttonTitle) {
+            MongleButtonPrimary(buttonTitle) {
                 store.send(store.isLastPage ? .getStartedTapped : .nextTapped)
             }
         }

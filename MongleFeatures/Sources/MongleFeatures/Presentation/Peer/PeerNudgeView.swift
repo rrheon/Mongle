@@ -96,7 +96,7 @@ public struct PeerNudgeView: View {
                     .clipShape(Capsule())
             }
 
-            MongleButton(store.isSent ? "재촉 완료" : "재촉하기 💌") {
+            MongleButtonPrimary(store.isSent ? "재촉 완료" : "재촉하기 💌") {
                 store.send(.nudgeTapped)
             }
             .disabled(store.isSent || store.hearts <= 0)

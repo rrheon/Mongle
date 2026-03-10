@@ -400,7 +400,7 @@ public struct SupportScreenView: View {
                     }
                 }
 
-                MongleButton("새 멤버 초대하기", style: .secondary) {
+                MongleButtonSecondary("새 멤버 초대하기") {
                     store.send(.inviteTapped)
                 }
 
@@ -463,7 +463,7 @@ public struct SupportScreenView: View {
                 }
             }
 
-            MongleButton("그룹 나가기", style: .secondary) {
+            MongleButtonSecondary("그룹 나가기") {
                 store.send(.leaveGroupTapped)
             }
 
