@@ -617,6 +617,8 @@ public struct MongleCardGroup: View {
     public var body: some View {
         Button { onTap?() } label: {
             VStack(alignment: .leading, spacing: 12) {
+                Spacer()
+
                 Text(groupName)
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(MongleColor.textPrimary)
@@ -646,8 +648,13 @@ public struct MongleCardGroup: View {
                         .background(MongleColor.primaryLight)
                         .clipShape(Capsule())
                 }
+
+                Spacer()
             }
-            .padding(20)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 20)
+            .frame(height: 130)
+
             .background(MongleColor.cardGlass)
             .cornerRadius(MongleRadius.xl)
             .overlay(RoundedRectangle(cornerRadius: MongleRadius.xl).stroke(MongleColor.border, lineWidth: 1))
