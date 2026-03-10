@@ -558,7 +558,8 @@ public struct MongleCardQuestion: View {
     }
 }
 
-/// component/Card/Glass — generic glass container card
+// MARK: component/Card/Glass — generic glass container card
+
 public struct MongleCardGlass<Content: View>: View {
     let title: String
     var description: String? = nil
@@ -593,8 +594,8 @@ public struct MongleCardGlass<Content: View>: View {
         .shadow(color: Color(hex: "D4A090").opacity(0.12), radius: 20, x: 0, y: 4)
     }
 }
+// MARK: MongleCardGroup
 
-/// component/Card/Group — group card with name, XP bar, member avatars
 public struct MongleCardGroup: View {
     let groupName: String
     let memberColors: [Color]
@@ -616,24 +617,24 @@ public struct MongleCardGroup: View {
     public var body: some View {
         Button { onTap?() } label: {
             VStack(alignment: .leading, spacing: 12) {
+                Text(groupName)
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(MongleColor.textPrimary)
+
                 HStack {
-                    Text(groupName)
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(MongleColor.textPrimary)
-                    
-                  Spacer()
-                   
+                    HStack(spacing: -10) {
+                        ForEach(memberColors.indices, id: \.self) { i in
+                            MongleMonggle(color: memberColors[i], size: 36)
+                                .overlay(Circle().stroke(Color.white, lineWidth: 2).frame(width: 36, height: 36))
+                                .zIndex(Double(memberColors.count - i))
+                        }
+                    }
+
+                    Spacer()
+
                     Image(systemName: "chevron.right")
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(MongleColor.textHint)
-                }
-              
-                HStack(spacing: -10) {
-                    ForEach(memberColors.indices, id: \.self) { i in
-                        MongleMonggle(color: memberColors[i], size: 36)
-                            .overlay(Circle().stroke(Color.white, lineWidth: 2).frame(width: 36, height: 36))
-                            .zIndex(Double(memberColors.count - i))
-                    }
                 }
 
                 if let streakDays {
@@ -647,9 +648,9 @@ public struct MongleCardGroup: View {
                 }
             }
             .padding(20)
-            .background(.ultraThinMaterial)
+            .background(MongleColor.cardGlass)
             .cornerRadius(MongleRadius.xl)
-            .overlay(RoundedRectangle(cornerRadius: MongleRadius.xl).stroke(Color.white.opacity(0.2), lineWidth: 1))
+            .overlay(RoundedRectangle(cornerRadius: MongleRadius.xl).stroke(MongleColor.border, lineWidth: 1))
             .shadow(color: Color(hex: "D4A090").opacity(0.12), radius: 20, x: 0, y: 4)
         }
         .buttonStyle(.plain)
