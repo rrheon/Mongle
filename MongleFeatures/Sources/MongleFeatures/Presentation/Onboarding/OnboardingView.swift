@@ -72,10 +72,6 @@ public struct OnboardingView: View {
             // 그룹 카드
             MongleCardGroup(
                 groupName: "우리 가족 🩷",
-                level: 3,
-                levelName: "Cozy Forest",
-                xpCurrent: 120,
-                xpTotal: 500,
                 memberColors: [
                     MongleColor.monggleOrange,
                     MongleColor.monggleYellow,

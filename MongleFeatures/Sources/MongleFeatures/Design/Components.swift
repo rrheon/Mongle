@@ -597,29 +597,17 @@ public struct MongleCardGlass<Content: View>: View {
 /// component/Card/Group — group card with name, XP bar, member avatars
 public struct MongleCardGroup: View {
     let groupName: String
-    var level: Int? = nil
-    var levelName: String? = nil
-    var xpCurrent: Int? = nil
-    var xpTotal: Int? = nil
     let memberColors: [Color]
     var streakDays: Int? = nil
     var onTap: (() -> Void)? = nil
 
     public init(
         groupName: String,
-        level: Int? = nil,
-        levelName: String? = nil,
-        xpCurrent: Int? = nil,
-        xpTotal: Int? = nil,
         memberColors: [Color],
         streakDays: Int? = nil,
         onTap: (() -> Void)? = nil
     ) {
         self.groupName = groupName
-        self.level = level
-        self.levelName = levelName
-        self.xpCurrent = xpCurrent
-        self.xpTotal = xpTotal
         self.memberColors = memberColors
         self.streakDays = streakDays
         self.onTap = onTap
@@ -632,19 +620,14 @@ public struct MongleCardGroup: View {
                     Text(groupName)
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(MongleColor.textPrimary)
-                    Spacer()
-                    if let level, let levelName {
-                        MongleBadgeLevel(level: level, name: levelName)
-                    }
+                    
+                  Spacer()
+                   
                     Image(systemName: "chevron.right")
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(MongleColor.textHint)
                 }
-
-                if let level, let levelName, let xpCurrent, let xpTotal {
-                    MongleXPBar(level: level, levelName: levelName, current: xpCurrent, total: xpTotal)
-                }
-
+              
                 HStack(spacing: -10) {
                     ForEach(memberColors.indices, id: \.self) { i in
                         MongleMonggle(color: memberColors[i], size: 36)
@@ -1116,10 +1099,6 @@ private struct RoundedCorner: Shape {
             )
             MongleCardGroup(
                 groupName: "Kim Family",
-                level: 3,
-                levelName: "Cozy Forest",
-                xpCurrent: 420,
-                xpTotal: 500,
                 memberColors: [MongleColor.monggleGreen, MongleColor.monggleYellow, MongleColor.monggleBlue, MongleColor.mongglePink, MongleColor.monggleOrange]
             )
             HStack {
