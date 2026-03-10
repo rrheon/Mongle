@@ -58,12 +58,12 @@ public struct GroupSelectView: View {
             switch store.step {
             case .select:
               selectView
-            case .createStep1:
-              createStep1View
-            case .createStep2:
-              createStep2View
-            case .joinGroup:
-              joinGroupView
+            case .createGroup:
+              createGroupView
+            case .groupCreated:
+              groupCreatedView
+            case .joinWithCode:
+              joinWithCodeView
             }
           }
           .padding(.horizontal, MongleSpacing.md)
@@ -92,7 +92,7 @@ public struct GroupSelectView: View {
   @ViewBuilder
   private var bottomButtonBar: some View {
     switch store.step {
-    case .createStep1:
+    case .createGroup:
       MongleButton("다음") {
         store.send(.createNextTapped)
       }
@@ -101,7 +101,7 @@ public struct GroupSelectView: View {
       .padding(.bottom, MongleSpacing.lg)
       .background(MongleColor.background)
 
-    case .createStep2:
+    case .groupCreated:
       VStack(spacing: MongleSpacing.sm) {
         ShareLink(item: shareText) {
           HStack(spacing: MongleSpacing.xs) {
@@ -129,7 +129,7 @@ public struct GroupSelectView: View {
       .padding(.bottom, MongleSpacing.lg)
       .background(MongleColor.background)
 
-    case .joinGroup:
+    case .joinWithCode:
       MongleButton("참여하기") {
         store.send(.joinTapped)
       }
@@ -169,9 +169,9 @@ public struct GroupSelectView: View {
       } else {
         Button {
           switch store.step {
-          case .createStep1: store.send(.createBackTapped)
-          case .createStep2: store.send(.createBackTapped)
-          case .joinGroup:   store.send(.joinBackTapped)
+          case .createGroup: store.send(.createBackTapped)
+          case .groupCreated: store.send(.createBackTapped)
+          case .joinWithCode:   store.send(.joinBackTapped)
           default: break
           }
         } label: {
@@ -196,9 +196,9 @@ public struct GroupSelectView: View {
   private var navigationTitle: String {
     switch store.step {
     case .select:      return ""
-    case .createStep1: return "새 공간 만들기"
-    case .createStep2: return "새 공간 만들기"
-    case .joinGroup:   return "초대코드로 참여하기"
+    case .createGroup: return "새 공간 만들기"
+    case .groupCreated: return "새 공간 만들기"
+    case .joinWithCode:   return "초대코드로 참여하기"
     }
   }
 
@@ -328,9 +328,9 @@ public struct GroupSelectView: View {
     .buttonStyle(.plain)
   }
 
-  // MARK: - Create Step 1
+  // MARK: - 새로운 그룹 만들기
 
-  private var createStep1View: some View {
+  private var createGroupView: some View {
     VStack(spacing: MongleSpacing.lg) {
       // 프로세스 진행 UI
       HStack(spacing: MongleSpacing.xs) {
@@ -422,7 +422,7 @@ public struct GroupSelectView: View {
     }
   }
 
-  // MARK: - Create Step 2
+  // MARK: - 초대코드로 참여하기
 
   private var inviteLink: String {
     "https://monggle.app/join/\(store.inviteCode.lowercased())"
@@ -432,7 +432,7 @@ public struct GroupSelectView: View {
     "몽글에서 함께해요! 🌿\n초대코드: \(store.inviteCode)\n링크: \(inviteLink)"
   }
 
-  private var createStep2View: some View {
+  private var groupCreatedView: some View {
     VStack(alignment: .leading, spacing: MongleSpacing.lg) {
       // 프로세스 진행 UI
       HStack(spacing: MongleSpacing.xs) {
@@ -528,9 +528,9 @@ public struct GroupSelectView: View {
     }
   }
 
-  // MARK: - Join Group (15)
+  // MARK: - Join With Code
 
-  private var joinGroupView: some View {
+  private var joinWithCodeView: some View {
     VStack(spacing: MongleSpacing.lg) {
       MongleLogo(size: .large, type: .MongleLogo)
 

@@ -7,9 +7,9 @@ public struct GroupSelectFeature {
     public struct State: Equatable {
         public enum Step: Equatable, Sendable {
             case select
-            case createStep1
-            case createStep2
-            case joinGroup
+            case createGroup
+            case groupCreated
+            case joinWithCode
         }
 
         public var step: Step = .select
@@ -75,12 +75,12 @@ public struct GroupSelectFeature {
 
             case .actionSheetNewSpaceTapped:
                 state.showActionSheet = false
-                state.step = .createStep1
+                state.step = .createGroup
                 return .none
 
             case .actionSheetJoinSpaceTapped:
                 state.showActionSheet = false
-                state.step = .joinGroup
+                state.step = .joinWithCode
                 return .none
 
             case .notificationTapped:
@@ -107,7 +107,7 @@ public struct GroupSelectFeature {
                 state.groupNameError = nameEmpty
                 state.nicknameError = nickEmpty
                 guard !nameEmpty && !nickEmpty else { return .none }
-                state.step = .createStep2
+                state.step = .groupCreated
                 state.inviteCode = state.inviteCode.isEmpty ? "MONG-4729" : state.inviteCode
                 return .none
 
