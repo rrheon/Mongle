@@ -89,7 +89,7 @@ struct HomeView: View {
           onNotificationTap: onNotificationTap
         )
 
-        // Meadow Scene
+        // Mongle Scene
         MongleSceneView(
           hasCurrentUserAnswered: hasCurrentUserAnswered,
           onViewAnswer: onPeerAnswerTap,
@@ -155,6 +155,8 @@ private struct StatusHUDView: View {
 }
 
 
+// MARK: 누적 답변기록
+
 private struct StreakBadgeView: View {
   let days: Int
   
@@ -168,31 +170,21 @@ private struct StreakBadgeView: View {
   }
   
   var body: some View {
-    HStack(spacing: 5) {
-      Text("🔥")
-        .font(.system(size: 16))
-      VStack(alignment: .leading, spacing: 1) {
-        Text("\(days) Days")
-          .font(.caption.bold())
-          .foregroundColor(badgeColor)
-        Text("Streak")
-          .font(.system(size: 9))
-          .foregroundColor(.secondary)
+    Text("\(days) Days")
+      .font(.caption.bold())
+      .foregroundColor(badgeColor)
+      .padding(.all, 10)
+      .background(
+        Capsule()
+          .fill(badgeColor.opacity(0.15))
+          .overlay(Capsule().stroke(badgeColor.opacity(0.35), lineWidth: 1))
+      )
+      .scaleEffect(scale)
+      .onAppear {
+        withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) {
+          scale = 1.06
+        }
       }
-    }
-    .padding(.horizontal, 10)
-    .padding(.vertical, 6)
-    .background(
-      Capsule()
-        .fill(badgeColor.opacity(0.15))
-        .overlay(Capsule().stroke(badgeColor.opacity(0.35), lineWidth: 1))
-    )
-    .scaleEffect(scale)
-    .onAppear {
-      withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) {
-        scale = 1.06
-      }
-    }
   }
 }
 

@@ -616,41 +616,41 @@ public struct MongleCardGroup: View {
 
     public var body: some View {
         Button { onTap?() } label: {
-            VStack(alignment: .leading, spacing: 12) {
-                Spacer()
-
+          VStack(alignment: .leading, spacing: 10) {
+            HStack {
+              VStack(alignment: .leading, spacing: 12) {
                 Text(groupName)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(MongleColor.textPrimary)
-
-                HStack {
-                    HStack(spacing: -10) {
-                        ForEach(memberColors.indices, id: \.self) { i in
-                            MongleMonggle(color: memberColors[i], size: 36)
-                                .overlay(Circle().stroke(Color.white, lineWidth: 2).frame(width: 36, height: 36))
-                                .zIndex(Double(memberColors.count - i))
-                        }
-                    }
-
-                    Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(MongleColor.textHint)
+                  .font(.system(size: 18, weight: .semibold))
+                  .foregroundColor(MongleColor.textPrimary)
+                
+                HStack(spacing: -10) {
+                  ForEach(memberColors.indices, id: \.self) { i in
+                    MongleMonggle(color: memberColors[i], size: 36)
+                      .overlay(Circle().stroke(Color.white, lineWidth: 2).frame(width: 36, height: 36))
+                      .zIndex(Double(memberColors.count - i))
+                  }
                 }
-
-                if let streakDays {
-                    Text("\(streakDays)일 연속")
-                        .font(MongleFont.captionBold())
-                        .foregroundColor(MongleColor.primary)
-                        .padding(.horizontal, MongleSpacing.sm)
-                        .padding(.vertical, 3)
-                        .background(MongleColor.primaryLight)
-                        .clipShape(Capsule())
-                }
-
-                Spacer()
+                
+              }
+              
+              Spacer()
+              
+              Image(systemName: "chevron.right")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(MongleColor.textHint)
+              
             }
+            
+            if let streakDays {
+              Text("\(streakDays)일 연속")
+                .font(MongleFont.captionBold())
+                .foregroundColor(.white)
+                .padding(.horizontal, MongleSpacing.sm)
+                .padding(.vertical, 3)
+                .background(MongleColor.primaryLight)
+                .clipShape(Capsule())
+            }
+          }
             .frame(maxWidth: .infinity)
             .padding(.horizontal, 20)
             .frame(height: 130)
