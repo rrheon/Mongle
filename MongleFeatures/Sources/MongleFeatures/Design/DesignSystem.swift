@@ -38,14 +38,14 @@ public enum MongleColor {
     public static let surfaceWarm = Color(light: "FFF0E8", dark: "FFF0E8")
 
     // Card
-    public static let cardBackground = Color(hex: "FFFFFFCC")
-    public static let cardBackgroundSolid = Color(hex: "FFFFFF")
-    public static let cardBackgroundHighlight = Color(hex: "FFFFFF99")
-    public static let cardGlass = Color(hex: "FFFFFF99")
+    public static let cardBackground = Color.white.opacity(0.8)
+    public static let cardBackgroundSolid = Color.white
+    public static let cardBackgroundHighlight = Color.white.opacity(0.6)
+    public static let cardGlass = Color.white.opacity(0.6)
 
     // Border
     public static let border = Color(hex: "E0E0E0")
-    public static let borderCard = Color(hex: "FFFFFF33")
+    public static let borderCard = Color.white.opacity(0.2)
     public static let divider = Color(hex: "E0E0E0")
 
     // Text (text-primary: #1A1A1A, text-secondary: #6D6D6D, text-tertiary: #9E9E9E)
