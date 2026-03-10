@@ -21,9 +21,6 @@ struct MainTabView: View {
                         topBarState: HomeTopBarState(
                             streakDays: 0,
                             groupName: store.home.family?.name ?? "우리 가족",
-                            level: 1,
-                            currentXP: 0,
-                            maxXP: 500,
                             hasNotification: false,
                             todayQuestion: store.home.todayQuestion.map {
                                 TopBarQuestion(id: $0.id, text: $0.content, isAnswered: store.home.hasAnsweredToday)

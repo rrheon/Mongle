@@ -12,29 +12,12 @@ import SwiftUI
 struct HomeTopBarState {
   var streakDays: Int
   var groupName: String
-  var level: Int
-  var currentXP: Int
-  var maxXP: Int
   var hasNotification: Bool
   var todayQuestion: TopBarQuestion?
-  
-  var levelName: String {
-    switch level {
-    case 1: return "Tiny Hedgehogs"
-    case 2: return "Growing Meadow"
-    case 3: return "Cozy Forest"
-    case 4: return "Warm Woodland"
-    case 5: return "Golden Meadow"
-    default: return "Legendary Meadow"
-    }
-  }
-  
+
   static let preview = HomeTopBarState(
     streakDays: 5,
     groupName: "Kim Family",
-    level: 3,
-    currentXP: 420,
-    maxXP: 500,
     hasNotification: true,
     todayQuestion: TopBarQuestion(
       id: UUID(),
@@ -131,7 +114,7 @@ struct TopBarView: View {
   var onNotificationTap: () -> Void = { print("알림 탭") }
   
   var body: some View {
-    VStack(spacing: 10) {
+    VStack(spacing: 30) {
       // 1단: Streak | 그룹명 | 알림
       StatusHUDView(
         streakDays: state.streakDays,
