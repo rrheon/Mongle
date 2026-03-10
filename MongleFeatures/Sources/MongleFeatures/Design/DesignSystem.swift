@@ -125,27 +125,37 @@ public enum MongleColor {
 // MARK: - Font
 
 public enum MongleFont {
-    private static func pretendard(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
+    private static func suit(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
         switch weight {
-        case .bold:     return .custom("Pretendard-Bold", size: size)
-        case .semibold: return .custom("Pretendard-SemiBold", size: size)
-        case .medium:   return .custom("Pretendard-Medium", size: size)
-        default:        return .custom("Pretendard-Regular", size: size)
+        case .heavy:    return .custom("SUIT-ExtraBold", size: size)
+        case .bold:     return .custom("SUIT-Bold", size: size)
+        case .semibold: return .custom("SUIT-SemiBold", size: size)
+        case .medium:   return .custom("SUIT-Medium", size: size)
+        default:        return .custom("SUIT-Regular", size: size)
         }
     }
 
-    public static func heading1() -> Font { pretendard(26, weight: .semibold) }
-    public static func heading2() -> Font { pretendard(22, weight: .semibold) }
-    public static func heading3() -> Font { pretendard(18, weight: .semibold) }
-    public static func body1() -> Font { pretendard(15, weight: .medium) }
-    public static func body1Bold() -> Font { pretendard(15, weight: .semibold) }
-    public static func body2() -> Font { pretendard(14) }
-    public static func body2Bold() -> Font { pretendard(14, weight: .semibold) }
-    public static func caption() -> Font { pretendard(12) }
-    public static func captionBold() -> Font { pretendard(12, weight: .semibold) }
-    public static func button() -> Font { pretendard(16, weight: .semibold) }
-    public static func buttonSmall() -> Font { pretendard(14, weight: .semibold) }
-    public static func label() -> Font { pretendard(11) }
+    public static func heading1() -> Font { suit(28, weight: .heavy) }
+    public static func heading2() -> Font { suit(22, weight: .semibold) }
+    public static func heading3() -> Font { suit(18, weight: .semibold) }
+    public static func body1() -> Font { suit(15, weight: .medium) }
+    public static func body1Bold() -> Font { suit(15, weight: .semibold) }
+    public static func body2() -> Font { suit(14) }
+    public static func body2Bold() -> Font { suit(14, weight: .semibold) }
+    public static func caption() -> Font { suit(12) }
+    public static func captionBold() -> Font { suit(12, weight: .semibold) }
+    public static func button() -> Font { suit(16, weight: .semibold) }
+    public static func buttonSmall() -> Font { suit(14, weight: .semibold) }
+    public static func label() -> Font { suit(11) }
+
+    /// SPM 번들에서 SUIT 폰트를 시스템에 등록합니다. 앱 시작 시 한 번 호출하세요.
+    public static func registerFonts() {
+        let names = ["SUIT-Regular", "SUIT-Medium", "SUIT-SemiBold", "SUIT-Bold", "SUIT-ExtraBold"]
+        for name in names {
+            guard let url = Bundle.module.url(forResource: name, withExtension: "otf") else { continue }
+            CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
+        }
+    }
 }
 
 // MARK: - Spacing
