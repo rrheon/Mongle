@@ -47,16 +47,3 @@ extension DependencyValues {
         set { self[QuestionRepositoryKey.self] = newValue }
     }
 }
-
-// MARK: - TreeRepository
-
-private enum TreeRepositoryKey: DependencyKey {
-    static let liveValue: any TreeRepositoryInterface = makeTreeRepository()
-}
-
-extension DependencyValues {
-    public var treeRepository: any TreeRepositoryInterface {
-        get { self[TreeRepositoryKey.self] }
-        set { self[TreeRepositoryKey.self] = newValue }
-    }
-}

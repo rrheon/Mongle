@@ -84,7 +84,6 @@ public struct RootFeature {
     public struct RootData: Equatable, Sendable {
         public let user: User?
         public let question: Question?
-        public let tree: TreeProgress
         public let family: MongleGroup?
         public let familyMembers: [User]
         public let hasAnsweredToday: Bool
@@ -92,14 +91,12 @@ public struct RootFeature {
         public init(
             user: User?,
             question: Question?,
-            tree: TreeProgress,
             family: MongleGroup?,
             familyMembers: [User],
             hasAnsweredToday: Bool = false
         ) {
             self.user = user
             self.question = question
-            self.tree = tree
             self.family = family
             self.familyMembers = familyMembers
             self.hasAnsweredToday = hasAnsweredToday
@@ -109,7 +106,6 @@ public struct RootFeature {
     @Dependency(\.authRepository) var authRepository
     @Dependency(\.familyRepository) var familyRepository
     @Dependency(\.questionRepository) var questionRepository
-    @Dependency(\.treeRepository) var treeRepository
 
     public init() {}
 
@@ -143,12 +139,10 @@ public struct RootFeature {
                         let familyMembers = familyResult?.1 ?? []
 
                         let todayQuestion = try await questionRepository.getTodayQuestion()
-                        let tree = try await treeRepository.getMyTreeProgress() ?? TreeProgress()
 
                         let data = RootData(
                             user: currentUser,
                             question: todayQuestion,
-                            tree: tree,
                             family: family,
                             familyMembers: familyMembers,
                             hasAnsweredToday: false
@@ -175,7 +169,6 @@ public struct RootFeature {
                 // HomeFeature State 업데이트
                 let homeState = HomeFeature.State(
                     todayQuestion: data.question,
-                    familyTree: data.tree,
                     family: data.family,
                     familyMembers: data.familyMembers,
                     currentUser: data.user,
@@ -322,20 +315,13 @@ private extension RootFeature {
                     category: .daily,
                     order: 1
                 ),
-                familyTree: TreeProgress(
-                    stage: .youngTree,
-                    totalAnswers: 12,
-                    consecutiveDays: 5
-                ),
                 family: MongleGroup(
                     id: UUID(),
                     name: "Kim Family",
                     memberIds: [],
                     createdBy: UUID(),
-                    createdAt: Date()
-                    ,
-                    inviteCode: "MONG-4729",
-                    treeProgressId: UUID()
+                    createdAt: Date(),
+                    inviteCode: "MONG-4729"
                 ),
                 familyMembers: [],
                 currentUser: nil,

@@ -31,22 +31,13 @@ public struct OnboardingView: View {
         VStack(spacing: 0) {
             Spacer()
 
-            // 몽글 캐릭터 (글로우 포함)
-            ZStack {
-                Circle()
-                    .fill(MongleColor.monggleGreen.opacity(0.25))
-                    .frame(width: 210, height: 210)
-                    .blur(radius: 40)
-                    .offset(y: 12)
-
-                MongleMonggle.green(size: 160)
-            }
+            MongleLogo(size: .large, type: .MongleLogo)
 
             Spacer().frame(height: 44)
 
             // 텍스트
             VStack(spacing: 12) {
-                Text("몽글에 오신 걸 환영해요 🌿")
+                Text("몽글에 오신 걸 환영해요")
                     .font(.system(size: 26, weight: .bold))
                     .foregroundColor(MongleColor.textPrimary)
                     .multilineTextAlignment(.center)

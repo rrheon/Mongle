@@ -4,7 +4,6 @@ import Domain
 
 private enum PreviewFixtures {
     static let familyID = UUID()
-    static let treeID = UUID()
     static let mom = User(
         id: UUID(),
         email: "mom@example.com",
@@ -43,17 +42,7 @@ private enum PreviewFixtures {
         memberIds: [mom.id, lily.id, ben.id, dad.id],
         createdBy: mom.id,
         createdAt: .now,
-        inviteCode: "MONG-4729",
-        treeProgressId: treeID
-    )
-    static let tree = TreeProgress(
-        id: treeID,
-        familyId: familyID,
-        stage: .youngTree,
-        totalAnswers: 24,
-        consecutiveDays: 5,
-        badgeIds: [],
-        lastUpdated: .now
+        inviteCode: "MONG-4729"
     )
     static let todayQuestion = Question(
         id: UUID(),
@@ -120,7 +109,6 @@ private enum PreviewFixtures {
     static func homeState(guest: Bool = false) -> HomeFeature.State {
         HomeFeature.State(
             todayQuestion: todayQuestion,
-            familyTree: tree,
             family: family,
             familyMembers: [mom, lily, ben, dad],
             currentUser: guest ? nil : mom,

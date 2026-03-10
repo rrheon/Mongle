@@ -14,7 +14,6 @@ public struct HomeFeature {
     @ObservableState
     public struct State: Equatable {
         public var todayQuestion: Question?
-        public var familyTree: TreeProgress = TreeProgress()
         public var family: MongleGroup?
         public var familyMembers: [User] = []
         public var currentUser: User?
@@ -29,7 +28,6 @@ public struct HomeFeature {
 
         public init(
             todayQuestion: Question? = nil,
-            familyTree: TreeProgress = TreeProgress(),
             family: MongleGroup? = nil,
             familyMembers: [User] = [],
             currentUser: User? = nil,
@@ -41,7 +39,6 @@ public struct HomeFeature {
             memberAnswerStatus: [UUID: Bool] = [:]
         ) {
             self.todayQuestion = todayQuestion
-            self.familyTree = familyTree
             self.family = family
             self.familyMembers = familyMembers
             self.currentUser = currentUser
