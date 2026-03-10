@@ -9,6 +9,21 @@ import Foundation
 import ComposableArchitecture
 import Domain
 
+// MARK: - 멤버 답변
+public struct MemberAnswer: Equatable, Identifiable, Sendable {
+    public let id: UUID
+    public let memberName: String
+    public let answerContent: String
+    public let colorIndex: Int // 0~4, MongleMonggle 색상 인덱스
+
+    public init(id: UUID = UUID(), memberName: String, answerContent: String, colorIndex: Int) {
+        self.id = id
+        self.memberName = memberName
+        self.answerContent = answerContent
+        self.colorIndex = colorIndex
+    }
+}
+
 // MARK: - 히스토리 아이템 (날짜별 질문/답변 요약)
 public struct HistoryItem: Equatable, Identifiable, Sendable {
     public let id: UUID
@@ -18,6 +33,7 @@ public struct HistoryItem: Equatable, Identifiable, Sendable {
     public let totalMembers: Int
     public let isCompleted: Bool
     public let userAnswered: Bool
+    public let memberAnswers: [MemberAnswer]
 
     public init(
         id: UUID = UUID(),
@@ -26,7 +42,8 @@ public struct HistoryItem: Equatable, Identifiable, Sendable {
         answerCount: Int,
         totalMembers: Int,
         isCompleted: Bool,
-        userAnswered: Bool
+        userAnswered: Bool,
+        memberAnswers: [MemberAnswer] = []
     ) {
         self.id = id
         self.date = date
@@ -35,6 +52,7 @@ public struct HistoryItem: Equatable, Identifiable, Sendable {
         self.totalMembers = totalMembers
         self.isCompleted = isCompleted
         self.userAnswered = userAnswered
+        self.memberAnswers = memberAnswers
     }
 }
 
@@ -241,23 +259,41 @@ private func generateMockHistoryData() -> [Date: HistoryItem] {
             answerCount: 3,
             totalMembers: 5,
             isCompleted: false,
-            userAnswered: true
+            userAnswered: true,
+            memberAnswers: [
+                MemberAnswer(memberName: "엄마", answerContent: "아이들이 아침에 처음으로 같이 요리해줬어요. 계란이 좀 타긴 했지만 정말 행복했어요 😊", colorIndex: 0),
+                MemberAnswer(memberName: "Lily", answerContent: "아침에 고양이가 제 발 위에서 잠든 것을 발견했어요. 너무 귀여워서 한동안 꼼짝도 못했어요 🐱", colorIndex: 1),
+                MemberAnswer(memberName: "Ben", answerContent: "친구들이랑 오랜만에 축구를 했는데 골을 두 개나 넣었어요! ⚽️", colorIndex: 2)
+            ]
         ),
         HistoryItem(
             date: yesterday,
-            question: Question(id: UUID(), content: "가족에게 고마운 순간은?", category: .gratitude, order: 2),
+            question: Question(id: UUID(), content: "가족에게 가장 고마운 순간은 언제였나요?", category: .gratitude, order: 2),
             answerCount: 5,
             totalMembers: 5,
             isCompleted: true,
-            userAnswered: true
+            userAnswered: true,
+            memberAnswers: [
+                MemberAnswer(memberName: "엄마", answerContent: "매일 아침 밥을 챙겨줄 때 정말 감사해요.", colorIndex: 0),
+                MemberAnswer(memberName: "아빠", answerContent: "힘들 때 아무 말 없이 옆에 있어줄 때요.", colorIndex: 3),
+                MemberAnswer(memberName: "Lily", answerContent: "생일 때 깜짝 파티 준비해줬을 때 너무 감동이었어요 🎂", colorIndex: 1),
+                MemberAnswer(memberName: "Ben", answerContent: "시험 끝나고 맛있는 거 사줄 때요 😋", colorIndex: 2),
+                MemberAnswer(memberName: "할머니", answerContent: "오랜만에 손자들 얼굴 보는 것만으로도 너무 행복해요 🥰", colorIndex: 4)
+            ]
         ),
         HistoryItem(
             date: twoDaysAgo,
-            question: Question(id: UUID(), content: "가족에게 고마운 순간은?", category: .gratitude, order: 3),
+            question: Question(id: UUID(), content: "요즘 가장 즐거운 일은 무엇인가요?", category: .gratitude, order: 3),
             answerCount: 4,
             totalMembers: 5,
             isCompleted: false,
-            userAnswered: true
+            userAnswered: true,
+            memberAnswers: [
+                MemberAnswer(memberName: "엄마", answerContent: "저녁 산책이 요즘 가장 기다려져요 🌙", colorIndex: 0),
+                MemberAnswer(memberName: "아빠", answerContent: "주말에 가족이랑 같이 영화 보는 게 제일 좋아요.", colorIndex: 3),
+                MemberAnswer(memberName: "Lily", answerContent: "새로운 드라마 정주행 중이에요. 너무 재밌어요 📺", colorIndex: 1),
+                MemberAnswer(memberName: "Ben", answerContent: "요즘 기타 배우는 게 너무 재밌어요 🎸", colorIndex: 2)
+            ]
         )
     ]
 
