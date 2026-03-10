@@ -148,10 +148,14 @@ public struct GroupSelectView: View {
   private var customHeader: some View {
     HStack(alignment: .center) {
       if store.step == .select {
-        Text("내 몽글 공간")
-          .font(MongleFont.heading1())
-          .foregroundColor(MongleColor.textPrimary)
-
+//        Text("내 몽글 공간")
+//          .font(MongleFont.heading1())
+//          .foregroundColor(MongleColor.textPrimary)
+        Image("MongleTitleWithLogo_ko", bundle: .module)
+          .resizable()
+          .scaledToFit()
+          .frame(height: 38)
+        
         Spacer()
         Button {
           store.send(.notificationTapped)
@@ -224,7 +228,7 @@ public struct GroupSelectView: View {
     HStack(spacing: MongleSpacing.md) {
       Image(systemName: "plus")
         .font(.system(size: 16, weight: .bold))
-        .foregroundColor(MongleColor.primary)
+        .foregroundColor(.white)
         .frame(width: 36, height: 36)
         .background(MongleColor.primaryLight)
         .clipShape(Circle())
