@@ -597,20 +597,22 @@ public struct MongleCardGlass<Content: View>: View {
 /// component/Card/Group — group card with name, XP bar, member avatars
 public struct MongleCardGroup: View {
     let groupName: String
-    let level: Int
-    let levelName: String
-    let xpCurrent: Int
-    let xpTotal: Int
+    var level: Int? = nil
+    var levelName: String? = nil
+    var xpCurrent: Int? = nil
+    var xpTotal: Int? = nil
     let memberColors: [Color]
+    var streakDays: Int? = nil
     var onTap: (() -> Void)? = nil
 
     public init(
         groupName: String,
-        level: Int,
-        levelName: String,
-        xpCurrent: Int,
-        xpTotal: Int,
+        level: Int? = nil,
+        levelName: String? = nil,
+        xpCurrent: Int? = nil,
+        xpTotal: Int? = nil,
         memberColors: [Color],
+        streakDays: Int? = nil,
         onTap: (() -> Void)? = nil
     ) {
         self.groupName = groupName
@@ -619,6 +621,7 @@ public struct MongleCardGroup: View {
         self.xpCurrent = xpCurrent
         self.xpTotal = xpTotal
         self.memberColors = memberColors
+        self.streakDays = streakDays
         self.onTap = onTap
     }
 
@@ -630,20 +633,34 @@ public struct MongleCardGroup: View {
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(MongleColor.textPrimary)
                     Spacer()
-                    MongleBadgeLevel(level: level, name: levelName)
+                    if let level, let levelName {
+                        MongleBadgeLevel(level: level, name: levelName)
+                    }
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(MongleColor.textHint)
                 }
 
-                MongleXPBar(level: level, levelName: levelName, current: xpCurrent, total: xpTotal)
+                if let level, let levelName, let xpCurrent, let xpTotal {
+                    MongleXPBar(level: level, levelName: levelName, current: xpCurrent, total: xpTotal)
+                }
 
-                HStack(spacing: -8) {
+                HStack(spacing: -10) {
                     ForEach(memberColors.indices, id: \.self) { i in
-                        Circle()
-                            .fill(memberColors[i])
-                            .frame(width: 32, height: 32)
-                            .overlay(Circle().stroke(Color.white, lineWidth: 2))
-                            .shadow(color: Color(hex: "D4A090").opacity(0.08), radius: 4, x: 0, y: 1)
+                        MongleMonggle(color: memberColors[i], size: 36)
+                            .overlay(Circle().stroke(Color.white, lineWidth: 2).frame(width: 36, height: 36))
                             .zIndex(Double(memberColors.count - i))
                     }
+                }
+
+                if let streakDays {
+                    Text("\(streakDays)일 연속")
+                        .font(MongleFont.captionBold())
+                        .foregroundColor(MongleColor.primary)
+                        .padding(.horizontal, MongleSpacing.sm)
+                        .padding(.vertical, 3)
+                        .background(MongleColor.primaryLight)
+                        .clipShape(Capsule())
                 }
             }
             .padding(20)
