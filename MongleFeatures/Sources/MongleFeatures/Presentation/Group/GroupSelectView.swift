@@ -65,8 +65,11 @@ public struct GroupSelectView: View {
           }
           .padding(.horizontal, MongleSpacing.md)
           .padding(.top, MongleSpacing.md)
-          .padding(.bottom, MongleSpacing.xl)
+          .padding(.bottom, MongleSpacing.sm)
         }
+        .scrollDismissesKeyboard(.immediately)
+
+        bottomButtonBar
       }
       .background(MongleColor.background)
       .toolbar(.hidden, for: .navigationBar)
@@ -81,6 +84,43 @@ public struct GroupSelectView: View {
     }
   }
 
+  // MARK: - Bottom Button Bar
+
+  @ViewBuilder
+  private var bottomButtonBar: some View {
+    switch store.step {
+    case .createStep1:
+      MongleButton("다음") {
+        store.send(.createNextTapped)
+      }
+      .padding(.horizontal, MongleSpacing.md)
+      .padding(.top, MongleSpacing.sm)
+      .padding(.bottom, MongleSpacing.lg)
+      .background(MongleColor.background)
+
+    case .createStep2:
+      MongleButton("홈으로 가기") {
+        store.send(.completeTapped)
+      }
+      .padding(.horizontal, MongleSpacing.md)
+      .padding(.top, MongleSpacing.sm)
+      .padding(.bottom, MongleSpacing.lg)
+      .background(MongleColor.background)
+
+    case .joinGroup:
+      MongleButton("참여하기") {
+        store.send(.joinTapped)
+      }
+      .padding(.horizontal, MongleSpacing.md)
+      .padding(.top, MongleSpacing.sm)
+      .padding(.bottom, MongleSpacing.lg)
+      .background(MongleColor.background)
+
+    case .select:
+      EmptyView()
+    }
+  }
+
   // MARK: - Custom Header
 
   private var customHeader: some View {
@@ -89,7 +129,7 @@ public struct GroupSelectView: View {
         Text("내 몽글 공간")
           .font(MongleFont.heading1())
           .foregroundColor(MongleColor.textPrimary)
-        
+
         Spacer()
         Button {
           store.send(.notificationTapped)
@@ -273,23 +313,22 @@ public struct GroupSelectView: View {
       // 프로세스 진행 UI
       HStack(spacing: MongleSpacing.xs) {
         Capsule()
-          .fill(MongleColor.primary)
+          .fill(Color(hex: "A8DFBC"))
           .frame(height: 4)
         Capsule()
-          .fill(MongleColor.border)
+          .fill(Color(hex: "A8DFBC").opacity(0.3))
           .frame(height: 4)
       }
       .padding(.bottom, MongleSpacing.sm)
 
-      // 몽글 캐릭터
-      MongleMonggle(color: MongleColor.monggleGreen, size: 80)
-        .frame(maxWidth: .infinity, alignment: .center)
+      // 몽글 로고
+      MongleLogo(size: .large, type: .MongleLogo)
 
       VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-        Text("우리만의 감정 공간을\n만들어요")
+        Text("우리만의 몽글 공간을 만들어요")
           .font(MongleFont.heading2())
           .foregroundColor(MongleColor.textPrimary)
-        Text("가족이나 친구와 함께 마음을 나눠보세요 🌿")
+        Text("가족이나 친구와 함께 마음을 나눠보세요")
           .font(MongleFont.body2())
           .foregroundColor(MongleColor.textSecondary)
       }
@@ -311,11 +350,20 @@ public struct GroupSelectView: View {
         .padding(MongleSpacing.md)
         .background(Color.white)
         .cornerRadius(MongleRadius.large)
-        .overlay(RoundedRectangle(cornerRadius: MongleRadius.large).stroke(MongleColor.border, lineWidth: 1))
+        .overlay(
+          RoundedRectangle(cornerRadius: MongleRadius.large)
+            .stroke(store.groupNameError ? MongleColor.error : MongleColor.border, lineWidth: 1)
+        )
 
-        Text("가족, 친한 친구, 커플 등 자유롭게!")
-          .font(MongleFont.caption())
-          .foregroundColor(MongleColor.textHint)
+        if store.groupNameError {
+          Text("공간 이름을 입력해주세요")
+            .font(MongleFont.caption())
+            .foregroundColor(MongleColor.error)
+        } else {
+          Text("가족, 친한 친구, 커플 등 자유롭게!")
+            .font(MongleFont.caption())
+            .foregroundColor(MongleColor.textHint)
+        }
       }
 
       // 닉네임 필드
@@ -334,15 +382,20 @@ public struct GroupSelectView: View {
         .padding(MongleSpacing.md)
         .background(Color.white)
         .cornerRadius(MongleRadius.large)
-        .overlay(RoundedRectangle(cornerRadius: MongleRadius.large).stroke(MongleColor.border, lineWidth: 1))
+        .overlay(
+          RoundedRectangle(cornerRadius: MongleRadius.large)
+            .stroke(store.nicknameError ? MongleColor.error : MongleColor.border, lineWidth: 1)
+        )
 
-        Text("다른 멤버에게 보여지는 이름이에요")
-          .font(MongleFont.caption())
-          .foregroundColor(MongleColor.textHint)
-      }
-
-      MongleButton("다음 단계로  →") {
-        store.send(.createNextTapped)
+        if store.nicknameError {
+          Text("닉네임을 입력해주세요")
+            .font(MongleFont.caption())
+            .foregroundColor(MongleColor.error)
+        } else {
+          Text("다른 멤버에게 보여지는 이름이에요")
+            .font(MongleFont.caption())
+            .foregroundColor(MongleColor.textHint)
+        }
       }
     }
   }
@@ -354,10 +407,10 @@ public struct GroupSelectView: View {
       // 프로세스 진행 UI
       HStack(spacing: MongleSpacing.xs) {
         Capsule()
-          .fill(MongleColor.primary)
+          .fill(Color(hex: "A8DFBC"))
           .frame(height: 4)
         Capsule()
-          .fill(MongleColor.primary)
+          .fill(Color(hex: "A8DFBC"))
           .frame(height: 4)
       }
       .padding(.bottom, MongleSpacing.sm)
@@ -375,10 +428,6 @@ public struct GroupSelectView: View {
       }
       .padding(MongleSpacing.md)
       .monglePanel(cornerRadius: MongleRadius.xl, shadowOpacity: 0.03)
-
-      MongleButton("홈으로 가기") {
-        store.send(.completeTapped)
-      }
     }
   }
 
@@ -386,15 +435,14 @@ public struct GroupSelectView: View {
 
   private var joinGroupView: some View {
     VStack(spacing: MongleSpacing.lg) {
-      // 몽글 캐릭터
-      MongleMonggle(color: MongleColor.monggleGreen, size: 80)
-        .frame(maxWidth: .infinity, alignment: .center)
+      MongleLogo(size: .large, type: .MongleLogo)
 
       VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-        Text("초대코드를\n입력해요")
+        Text("초대코드를 입력해주세요.")
           .font(MongleFont.heading2())
           .foregroundColor(MongleColor.textPrimary)
-        Text("친구나 가족에게 받은 코드를 입력하면\n함께 공간에 참여할 수 있어요 🌿")
+
+        Text("친구나 가족에게 받은 코드를 입력하면\n함께 공간에 참여할 수 있어요")
           .font(MongleFont.body2())
           .foregroundColor(MongleColor.textSecondary)
           .lineSpacing(3)
@@ -419,11 +467,20 @@ public struct GroupSelectView: View {
         .padding(MongleSpacing.md)
         .background(Color.white)
         .cornerRadius(MongleRadius.large)
-        .overlay(RoundedRectangle(cornerRadius: MongleRadius.large).stroke(MongleColor.border, lineWidth: 1))
+        .overlay(
+          RoundedRectangle(cornerRadius: MongleRadius.large)
+            .stroke(store.joinCodeError ? MongleColor.error : MongleColor.border, lineWidth: 1)
+        )
 
-        Text("대문자와 숫자로 이루어진 코드에요")
-          .font(MongleFont.caption())
-          .foregroundColor(MongleColor.textHint)
+        if store.joinCodeError {
+          Text("초대 코드를 입력해주세요")
+            .font(MongleFont.caption())
+            .foregroundColor(MongleColor.error)
+        } else {
+          Text("대문자와 숫자로 이루어진 코드에요")
+            .font(MongleFont.caption())
+            .foregroundColor(MongleColor.textHint)
+        }
       }
 
       // 닉네임 필드
@@ -442,15 +499,20 @@ public struct GroupSelectView: View {
         .padding(MongleSpacing.md)
         .background(Color.white)
         .cornerRadius(MongleRadius.large)
-        .overlay(RoundedRectangle(cornerRadius: MongleRadius.large).stroke(MongleColor.border, lineWidth: 1))
+        .overlay(
+          RoundedRectangle(cornerRadius: MongleRadius.large)
+            .stroke(store.nicknameError ? MongleColor.error : MongleColor.border, lineWidth: 1)
+        )
 
-        Text("다른 멤버에게 보여지는 이름이에요")
-          .font(MongleFont.caption())
-          .foregroundColor(MongleColor.textHint)
-      }
-
-      MongleButton("참여하기  →") {
-        store.send(.joinTapped)
+        if store.nicknameError {
+          Text("닉네임을 입력해주세요")
+            .font(MongleFont.caption())
+            .foregroundColor(MongleColor.error)
+        } else {
+          Text("다른 멤버에게 보여지는 이름이에요")
+            .font(MongleFont.caption())
+            .foregroundColor(MongleColor.textHint)
+        }
       }
     }
   }

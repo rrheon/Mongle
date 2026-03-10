@@ -19,6 +19,10 @@ public struct GroupSelectFeature {
         public var inviteCode: String = ""
         public var joinCode: String = ""
 
+        public var groupNameError: Bool = false
+        public var nicknameError: Bool = false
+        public var joinCodeError: Bool = false
+
         public init(
             step: Step = .select,
             groupName: String = "",
@@ -84,18 +88,25 @@ public struct GroupSelectFeature {
 
             case .groupNameChanged(let name):
                 state.groupName = name
+                state.groupNameError = false
                 return .none
 
             case .nicknameChanged(let name):
                 state.nickname = name
+                state.nicknameError = false
                 return .none
 
             case .joinCodeChanged(let code):
                 state.joinCode = code
+                state.joinCodeError = false
                 return .none
 
             case .createNextTapped:
-                guard !state.groupName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return .none }
+                let nameEmpty = state.groupName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                let nickEmpty = state.nickname.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                state.groupNameError = nameEmpty
+                state.nicknameError = nickEmpty
+                guard !nameEmpty && !nickEmpty else { return .none }
                 state.step = .createStep2
                 state.inviteCode = state.inviteCode.isEmpty ? "MONG-4729" : state.inviteCode
                 return .none
@@ -104,6 +115,8 @@ public struct GroupSelectFeature {
                 state.step = .select
                 state.groupName = ""
                 state.nickname = ""
+                state.groupNameError = false
+                state.nicknameError = false
                 return .none
 
             case .completeTapped:
@@ -113,9 +126,16 @@ public struct GroupSelectFeature {
                 state.step = .select
                 state.joinCode = ""
                 state.nickname = ""
+                state.joinCodeError = false
+                state.nicknameError = false
                 return .none
 
             case .joinTapped:
+                let codeEmpty = state.joinCode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                let nickEmpty = state.nickname.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                state.joinCodeError = codeEmpty
+                state.nicknameError = nickEmpty
+                guard !codeEmpty && !nickEmpty else { return .none }
                 return .send(.delegate(.completed))
 
             case .delegate:
