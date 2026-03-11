@@ -6,11 +6,13 @@ public struct PeerNudgeFeature {
     @ObservableState
     public struct State: Equatable {
         public var memberName: String
+        public var questionText: String
         public var hearts: Int
         public var isSent: Bool
 
-        public init(memberName: String, hearts: Int = 5, isSent: Bool = false) {
+        public init(memberName: String, questionText: String = "", hearts: Int = 5, isSent: Bool = false) {
             self.memberName = memberName
+            self.questionText = questionText
             self.hearts = hearts
             self.isSent = isSent
         }

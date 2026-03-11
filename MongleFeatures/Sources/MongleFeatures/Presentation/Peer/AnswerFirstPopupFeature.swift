@@ -3,12 +3,19 @@ import ComposableArchitecture
 
 @Reducer
 public struct AnswerFirstPopupFeature {
+    public enum PopupType: Equatable, Sendable {
+        case viewAnswer  // 답변완료 캐릭터 탭: 답변 후 볼 수 있음
+        case nudge       // 미답변 캐릭터 탭: 답변 후 재촉 가능
+    }
+
     @ObservableState
     public struct State: Equatable {
         public var memberName: String
+        public var popupType: PopupType
 
-        public init(memberName: String) {
+        public init(memberName: String, popupType: PopupType = .viewAnswer) {
             self.memberName = memberName
+            self.popupType = popupType
         }
     }
 

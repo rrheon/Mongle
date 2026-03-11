@@ -1,6 +1,13 @@
 import SwiftUI
 import ComposableArchitecture
 
+struct PeerAnswerContentHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
 public struct PeerAnswerView: View {
     @Bindable var store: StoreOf<PeerAnswerFeature>
 
@@ -9,124 +16,120 @@ public struct PeerAnswerView: View {
     }
 
     public var body: some View {
-        NavigationStack {
+        VStack(spacing: 0) {
+            dragHandle
+            header
             ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: MongleSpacing.lg) {
+                VStack(alignment: .leading, spacing: 16) {
                     questionCard
-                    answerCard(title: "\(store.memberName)의 답변", subtitle: store.memberName, time: store.peerAnswerTime, body: store.peerAnswer, accent: MongleColor.moodLoved)
-                    answerCard(title: "나의 답변", subtitle: nil, time: store.myAnswerTime, body: store.myAnswer, accent: MongleColor.primary)
+                    VStack(alignment: .leading, spacing: MongleSpacing.sm) {
+                        peerInfoRow
+                        answerCard
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(16)
+                    .background(Color.white)
+                    .cornerRadius(16)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(MongleColor.border, lineWidth: 1)
+                    )
 
-                    HStack(spacing: MongleSpacing.sm) {
-                        MongleButtonSecondary("공감해요") {
-                            store.send(.reactTapped)
-                        }
-                        MongleButtonSecondary("댓글 달기") {
-                            store.send(.commentTapped)
-                        }
-                    }
                 }
-                .padding(.horizontal, MongleSpacing.md)
-                .padding(.vertical, MongleSpacing.md)
-            }
-            .background(MongleColor.background)
-            .navigationTitle("\(store.memberName)의 답변")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        store.send(.closeTapped)
-                    } label: {
-                        Image(systemName: "xmark")
+                .padding(.top, MongleSpacing.sm)
+                .padding(.horizontal, 20)
+                .padding(.bottom, MongleSpacing.xl)
+                .background(
+                    GeometryReader { geo in
+                        Color.clear.preference(
+                            key: PeerAnswerContentHeightKey.self,
+                            value: geo.size.height
+                        )
                     }
-                    .foregroundColor(MongleColor.textSecondary)
-                }
+                )
             }
         }
+        .background(MongleColor.cardBackgroundSolid)
     }
 
-    private var questionCard: some View {
-        VStack(alignment: .leading, spacing: MongleSpacing.sm) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("오늘의 질문")
-                        .font(MongleFont.body2Bold())
-                        .foregroundColor(MongleColor.primary)
-                    Text("같은 질문에 대한 서로의 답변을 비교해보세요")
-                        .font(MongleFont.caption())
-                        .foregroundColor(MongleColor.textSecondary)
-                }
+    private var dragHandle: some View {
+        RoundedRectangle(cornerRadius: MongleRadius.full)
+            .fill(Color(hex: "E0E0E0"))
+            .frame(width: 36, height: 4)
+            .frame(maxWidth: .infinity)
+            .padding(.top, 12)
+            .padding(.bottom, MongleSpacing.sm)
+    }
 
-                Spacer()
-
-                Text("답변 비교")
-                    .font(MongleFont.captionBold())
-                    .foregroundColor(MongleColor.primary)
-                    .padding(.horizontal, MongleSpacing.sm)
-                    .padding(.vertical, MongleSpacing.xxs)
-                    .background(MongleColor.primaryLight)
-                    .clipShape(Capsule())
+    private var header: some View {
+        HStack {
+            Spacer()
+            Button {
+                store.send(.closeTapped)
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(MongleColor.textHint)
+                    .padding(MongleSpacing.sm)
             }
+        }
+        .padding(.horizontal, 12)
+        .frame(height: 44)
+    }
 
+  // MARK: 오늘의 질문 카드
+
+    private var questionCard: some View {
+        VStack(alignment: .leading, spacing: MongleSpacing.xs) {
+            Text("오늘의 질문")
+                .font(MongleFont.body2Bold())
+                .foregroundColor(MongleColor.primary)
             Text(store.questionText)
-                .font(MongleFont.heading3())
+                .font(MongleFont.button())
                 .foregroundColor(MongleColor.textPrimary)
                 .multilineTextAlignment(.leading)
                 .lineSpacing(3)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(MongleSpacing.lg)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(minHeight: 148, alignment: .topLeading)
-        .background(
-            LinearGradient(
-                colors: [Color(hex: "FFF6E9"), Color.white],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+        .padding(16)
+        .background(Color.white)
+        .cornerRadius(16)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(MongleColor.primary, lineWidth: 1.5)
         )
-        .monglePanel(background: .clear, cornerRadius: MongleRadius.xl, borderColor: Color(hex: "F4E4D7"), shadowOpacity: 0.04)
+        .contentShape(Rectangle())
     }
 
-    private func answerCard(title: String, subtitle: String?, time: String, body: String, accent: Color) -> some View {
-        VStack(alignment: .leading, spacing: MongleSpacing.sm) {
-            HStack {
-                Circle()
-                    .fill(accent.opacity(0.18))
-                    .frame(width: 40, height: 40)
-                    .overlay(
-                        Image(systemName: "quote.bubble.fill")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(accent)
-                    )
+  // MARK: 몽글 캐릭터 섹션
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(MongleFont.body2Bold())
-                        .foregroundColor(MongleColor.textPrimary)
-                    if let subtitle {
-                        Text(subtitle)
-                            .font(MongleFont.caption())
-                            .foregroundColor(MongleColor.textSecondary)
-                    }
-                }
-
-                Spacer()
-
-                Text(time)
+    private var peerInfoRow: some View {
+        HStack(spacing: MongleSpacing.sm) {
+            MongleMonggle(color: store.monggleColor, size: 36)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(store.memberName)
+                    .font(MongleFont.button())
+                    .foregroundColor(MongleColor.textPrimary)
+                Text(store.peerAnswerTime)
                     .font(MongleFont.caption())
                     .foregroundColor(MongleColor.textHint)
             }
-
-            Text(body)
-                .font(MongleFont.body1())
-                .foregroundColor(MongleColor.textPrimary)
-                .multilineTextAlignment(.leading)
-                .lineSpacing(4)
-                .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(MongleSpacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(minHeight: 164, alignment: .topLeading)
-        .monglePanel(cornerRadius: MongleRadius.large, shadowOpacity: 0.02)
+    }
+
+  // MARK: 답변카드
+
+    private var answerCard: some View {
+        Text(store.peerAnswer)
+            .font(MongleFont.body2())
+            .foregroundColor(MongleColor.textSecondary)
+            .multilineTextAlignment(.leading)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(MongleSpacing.lg)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(MongleColor.cardGlass)
+            .clipShape(RoundedRectangle(cornerRadius: MongleRadius.xl))
     }
 }

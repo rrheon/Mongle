@@ -28,7 +28,9 @@ public struct AnswerFirstPopupView: View {
                         .font(MongleFont.heading3())
                         .foregroundColor(MongleColor.textPrimary)
 
-                    Text("\(store.memberName)의 답변을 보려면\n먼저 오늘의 질문에 답해주세요 🌿")
+                    Text(store.popupType == .nudge
+                         ? "\(store.memberName)에게 재촉하려면\n먼저 오늘의 질문에 답해주세요 🌿"
+                         : "\(store.memberName)의 답변을 보려면\n먼저 오늘의 질문에 답해주세요 🌿")
                         .font(MongleFont.body2())
                         .foregroundColor(MongleColor.textSecondary)
                         .multilineTextAlignment(.center)

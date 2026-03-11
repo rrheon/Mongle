@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 import ComposableArchitecture
 
 @Reducer
@@ -6,6 +7,7 @@ public struct PeerAnswerFeature {
     @ObservableState
     public struct State: Equatable {
         public var memberName: String
+        public var monggleColor: Color
         public var questionText: String
         public var peerAnswer: String
         public var myAnswer: String
@@ -14,6 +16,7 @@ public struct PeerAnswerFeature {
 
         public init(
             memberName: String,
+            monggleColor: Color = MongleColor.monggleYellow,
             questionText: String,
             peerAnswer: String,
             myAnswer: String,
@@ -21,6 +24,7 @@ public struct PeerAnswerFeature {
             myAnswerTime: String = "오늘 오전 8:41"
         ) {
             self.memberName = memberName
+            self.monggleColor = monggleColor
             self.questionText = questionText
             self.peerAnswer = peerAnswer
             self.myAnswer = myAnswer
