@@ -18,6 +18,7 @@ public struct QuestionDetailFeature {
         public var myAnswer: Answer?
         public var familyAnswers: [FamilyAnswer] = []
         public var answerText: String = ""
+        public var selectedMoodIndex: Int? = nil
         public var isLoading: Bool = false
         public var isSubmitting: Bool = false
         public var errorMessage: String?
@@ -26,6 +27,7 @@ public struct QuestionDetailFeature {
         public var isValidAnswer: Bool {
             !answerText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         }
+        public var showMoodRequiredAlert: Bool = false
 
         public struct FamilyAnswer: Equatable, Identifiable, Sendable {
             public let id: UUID
@@ -45,6 +47,7 @@ public struct QuestionDetailFeature {
             myAnswer: Answer? = nil,
             familyAnswers: [FamilyAnswer] = [],
             answerText: String = "",
+            selectedMoodIndex: Int? = nil,
             isLoading: Bool = false,
             isSubmitting: Bool = false,
             errorMessage: String? = nil
@@ -54,6 +57,7 @@ public struct QuestionDetailFeature {
             self.myAnswer = myAnswer
             self.familyAnswers = familyAnswers
             self.answerText = myAnswer?.content ?? answerText
+            self.selectedMoodIndex = selectedMoodIndex
             self.isLoading = isLoading
             self.isSubmitting = isSubmitting
             self.errorMessage = errorMessage
@@ -64,7 +68,9 @@ public struct QuestionDetailFeature {
         // MARK: - View Actions
         case onAppear
         case answerTextChanged(String)
+        case moodSelected(Int)
         case submitAnswerTapped
+        case moodRequiredAlertDismissed
         case dismissErrorTapped
         case closeTapped
 
@@ -162,7 +168,19 @@ public struct QuestionDetailFeature {
                 state.errorMessage = nil
                 return .none
 
+            case .moodSelected(let index):
+                state.selectedMoodIndex = state.selectedMoodIndex == index ? nil : index
+                return .none
+
+            case .moodRequiredAlertDismissed:
+                state.showMoodRequiredAlert = false
+                return .none
+
             case .submitAnswerTapped:
+                guard state.selectedMoodIndex != nil else {
+                    state.showMoodRequiredAlert = true
+                    return .none
+                }
                 guard state.isValidAnswer else {
                     state.errorMessage = "답변을 입력해주세요."
                     return .none

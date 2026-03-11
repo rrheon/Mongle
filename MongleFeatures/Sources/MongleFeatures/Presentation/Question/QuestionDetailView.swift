@@ -2,8 +2,6 @@
 //  QuestionDetailView.swift
 //  Mongle
 //
-//  Created by Claude on 2025-01-06.
-//
 
 import SwiftUI
 import ComposableArchitecture
@@ -12,178 +10,291 @@ import Domain
 struct QuestionDetailView: View {
     @Bindable var store: StoreOf<QuestionDetailFeature>
     @FocusState private var isAnswerFocused: Bool
+    @State private var answerEditorHeight: CGFloat = 120
+
+    private let moods: [(emoji: String, color: Color)] = [
+        ("😊", MongleColor.monggleYellow),
+        ("😌", MongleColor.monggleGreen),
+        ("🥰", MongleColor.mongglePink),
+        ("😢", MongleColor.monggleBlue),
+        ("😴", MongleColor.monggleOrange)
+    ]
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                MongleColor.background
-                    .ignoresSafeArea()
+            VStack(spacing: 0) {
+                customHeader
 
                 if store.isLoading {
-                    ProgressView()
-                        .tint(MongleColor.primary)
+                    Spacer()
+                    ProgressView().tint(MongleColor.primary)
+                    Spacer()
                 } else {
-                    ScrollView(showsIndicators: false) {
-                        VStack(alignment: .leading, spacing: MongleSpacing.lg) {
-                            questionCard
-                            answerComposer
+                    ScrollViewReader { proxy in
+                        ScrollView(showsIndicators: false) {
+                            VStack(spacing: 20) {
+                                questionSection
+                                moodPickerSection
+                                answerInputSection
 
-                            if let errorMessage = store.errorMessage {
-                                errorBanner(errorMessage)
+                                if let errorMessage = store.errorMessage {
+                                    errorBanner(errorMessage)
+                                }
+
+                                Color.clear.frame(height: 1).id("answerBottom")
                             }
-
-                            if !store.familyAnswers.isEmpty {
-                                familyAnswersSection
+                            .padding(.horizontal, 20)
+                            .padding(.top, 20)
+                            .padding(.bottom, 32)
+                        }
+                        .scrollDismissesKeyboard(.immediately)
+                        .onChange(of: isAnswerFocused) { _, focused in
+                            if focused {
+                                withAnimation(.easeOut(duration: 0.3)) {
+                                    proxy.scrollTo("answerBottom", anchor: .bottom)
+                                }
                             }
                         }
-                        .padding(.horizontal, MongleSpacing.md)
-                        .padding(.vertical, MongleSpacing.md)
+                        .onChange(of: store.answerText) { _, _ in
+                            if isAnswerFocused {
+                                proxy.scrollTo("answerBottom", anchor: .bottom)
+                            }
+                        }
                     }
+
+                    ctaButton
                 }
             }
-            .navigationTitle("답변하기")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        store.send(.closeTapped)
-                    } label: {
-                        Image(systemName: "xmark")
-                            .foregroundColor(MongleColor.textSecondary)
-                    }
-                }
-            }
-            .onAppear {
-                store.send(.onAppear)
+            .background(MongleColor.background)
+            .toolbar(.hidden, for: .navigationBar)
+            .onAppear { store.send(.onAppear) }
+            .alert(
+                "오늘의 몽글을 선택해주세요",
+                isPresented: Binding(
+                    get: { store.showMoodRequiredAlert },
+                    set: { _ in }
+                )
+            ) {
+                Button("확인") { store.send(.moodRequiredAlertDismissed) }
+            } message: {
+                Text("지금 기분과 가장 비슷한 몽글 캐릭터를 골라보세요 🌿")
             }
         }
     }
 
-    private var questionCard: some View {
-        VStack(alignment: .leading, spacing: MongleSpacing.md) {
+    // MARK: - Header
+
+    private var customHeader: some View {
+        ZStack {
+            Text("마음 남기기")
+                .font(MongleFont.body1Bold())
+                .foregroundColor(MongleColor.textPrimary)
+
             HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("오늘의 기분은?")
-                        .font(MongleFont.body2Bold())
-                        .foregroundColor(MongleColor.primary)
-                    Text("질문에 답한 뒤 가족의 답변을 확인해보세요")
-                        .font(MongleFont.caption())
-                        .foregroundColor(MongleColor.textSecondary)
+                Button { store.send(.closeTapped) } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(MongleColor.textPrimary)
+                        .frame(width: 44, height: 44)
                 }
-
+                .buttonStyle(.plain)
                 Spacer()
-
-                Text(store.hasMyAnswer ? "답변 완료" : "오늘 질문")
-                    .font(MongleFont.captionBold())
-                    .foregroundColor(store.hasMyAnswer ? MongleColor.primary : MongleColor.accentOrange)
-                    .padding(.horizontal, MongleSpacing.sm)
-                    .padding(.vertical, MongleSpacing.xxs)
-                    .background(store.hasMyAnswer ? MongleColor.primaryLight : Color(hex: "FFF1DE"))
-                    .clipShape(Capsule())
             }
+        }
+        .frame(height: 56)
+        .padding(.horizontal, 8)
+        .background(Color.white)
+    }
+
+    // MARK: - Question Section
+
+    private var questionSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("🌿 Today's Question")
+                .font(MongleFont.captionBold())
+                .foregroundColor(MongleColor.primary)
 
             Text(store.question.content)
-                .font(MongleFont.heading2())
+                .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(MongleColor.textPrimary)
-                .multilineTextAlignment(.leading)
                 .lineSpacing(3)
                 .fixedSize(horizontal: false, vertical: true)
-
-            Text(store.question.category.rawValue)
-                .font(MongleFont.caption())
-                .foregroundColor(MongleColor.textSecondary)
         }
-        .padding(MongleSpacing.lg)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(minHeight: 176, alignment: .topLeading)
-        .background(
-            LinearGradient(
-                colors: [Color(hex: "FFF5E9"), Color.white],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
-        .monglePanel(background: .clear, cornerRadius: MongleRadius.xl, borderColor: Color(hex: "F4E4D7"), shadowOpacity: 0.04)
-    }
-
-    private var answerComposer: some View {
-        VStack(alignment: .leading, spacing: MongleSpacing.md) {
-            HStack {
-                Text("나의 답변")
-                    .font(MongleFont.body1Bold())
-                    .foregroundColor(MongleColor.textPrimary)
-
-                if store.hasMyAnswer {
-                    Text("답변 수정")
-                        .font(MongleFont.captionBold())
-                        .foregroundColor(MongleColor.primary)
-                }
-
-                Spacer()
-            }
-
-            Text("지금 떠오르는 감정이나 장면을 편하게 적어보세요.")
-                .font(MongleFont.caption())
-                .foregroundColor(MongleColor.textSecondary)
-
-            ZStack(alignment: .topLeading) {
-                TextEditor(text: Binding(
-                    get: { store.answerText },
-                    set: { store.send(.answerTextChanged($0)) }
-                ))
-                .font(UIFont(name: "Outfit-Regular", size: 16) == nil ? .system(size: 16, weight: .regular, design: .rounded) : .custom("Outfit-Regular", size: 16))
-                .scrollContentBackground(.hidden)
-                .frame(minHeight: 180)
-                .padding(MongleSpacing.md)
-                .background(Color(hex: "FCFAF7"))
-                .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
-                .overlay(
-                    RoundedRectangle(cornerRadius: MongleRadius.large)
-                        .stroke(isAnswerFocused ? MongleColor.primary : Color(hex: "E8E0D6"), lineWidth: isAnswerFocused ? 2 : 1)
-                )
-                .focused($isAnswerFocused)
-
-                if store.answerText.isEmpty {
-                    Text("오늘의 감정을 자유롭게 적어보세요.")
-                        .font(MongleFont.body2())
-                        .foregroundColor(MongleColor.textHint)
-                        .padding(.horizontal, 30)
-                        .padding(.vertical, 30)
-                        .allowsHitTesting(false)
-                }
-            }
-
-            MongleButtonPrimary(store.hasMyAnswer ? "답변 수정하기" : "답변하기") {
-                store.send(.submitAnswerTapped)
-            }
-            .disabled(!store.isValidAnswer || store.isSubmitting)
-            .opacity((!store.isValidAnswer || store.isSubmitting) ? 0.6 : 1)
-        }
         .padding(MongleSpacing.lg)
-        .monglePanel(cornerRadius: MongleRadius.xl, shadowOpacity: 0.03)
+        .background(Color.white)
+        .cornerRadius(MongleRadius.xl)
+        .overlay(RoundedRectangle(cornerRadius: MongleRadius.xl).stroke(MongleColor.border, lineWidth: 1))
     }
+
+    // MARK: - Mood Picker
+
+    private var moodPickerSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("오늘의 몽글")
+                    .font(MongleFont.captionBold())
+                    .foregroundColor(MongleColor.textSecondary)
+                Spacer()
+                if store.selectedMoodIndex == nil {
+                    Text("하나를 선택해주세요")
+                        .font(MongleFont.caption())
+                        .foregroundColor(MongleColor.textHint)
+                }
+            }
+
+            HStack(spacing: 8) {
+                ForEach(moods.indices, id: \.self) { index in
+                    moodCell(index: index)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(MongleSpacing.lg)
+        .background(Color.white)
+        .cornerRadius(MongleRadius.xl)
+        .overlay(RoundedRectangle(cornerRadius: MongleRadius.xl).stroke(MongleColor.border, lineWidth: 1))
+    }
+
+    private func moodCell(index: Int) -> some View {
+        let isSelected = store.selectedMoodIndex == index
+        let mood = moods[index]
+        let noneSelected = store.selectedMoodIndex == nil
+
+        return Button {
+            store.send(.moodSelected(index))
+        } label: {
+            VStack(spacing: 6) {
+                MongleMonggle(color: mood.color, size: 36)
+                    .scaleEffect(isSelected ? 1.08 : 1.0)
+                    .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
+
+                Text(mood.emoji)
+                    .font(.system(size: 12))
+
+                Circle()
+                    .fill(isSelected ? MongleColor.primary : Color(hex: "E0E0E0"))
+                    .frame(width: 7, height: 7)
+                    .animation(.easeInOut(duration: 0.15), value: isSelected)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+            .opacity(noneSelected || isSelected ? 1.0 : 0.45)
+            .animation(.easeInOut(duration: 0.15), value: isSelected)
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - Answer Input
+
+    private var answerInputSection: some View {
+        ZStack(alignment: .topLeading) {
+            // 높이 측정용 숨김 텍스트
+            Text(store.answerText.isEmpty ? " " : store.answerText)
+                .font(MongleFont.body2())
+                .lineSpacing(4)
+                .padding(MongleSpacing.md)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .opacity(0)
+                .background(
+                    GeometryReader { geo in
+                        Color.clear.onAppear {
+                            answerEditorHeight = max(120, geo.size.height)
+                        }.onChange(of: store.answerText) { _, _ in
+                            answerEditorHeight = max(120, geo.size.height)
+                        }
+                    }
+                )
+
+            TextEditor(text: Binding(
+                get: { store.answerText },
+                set: { store.send(.answerTextChanged($0)) }
+            ))
+            .font(MongleFont.body2())
+            .scrollContentBackground(.hidden)
+            .scrollDisabled(true)
+            .frame(height: answerEditorHeight)
+            .padding(MongleSpacing.md)
+            .focused($isAnswerFocused)
+
+            if store.answerText.isEmpty {
+                Text("오늘의 감정을 자유롭게 적어보세요.\n어떤 이야기든 좋아요.")
+                    .font(MongleFont.body2())
+                    .foregroundColor(MongleColor.textHint)
+                    .lineSpacing(4)
+                    .padding(.horizontal, MongleSpacing.md + 4)
+                    .padding(.vertical, MongleSpacing.md + 8)
+                    .allowsHitTesting(false)
+            }
+        }
+        .background(MongleColor.cardBackgroundSolid)
+        .cornerRadius(MongleRadius.large)
+        .overlay(
+            RoundedRectangle(cornerRadius: MongleRadius.large)
+                .stroke(
+                    isAnswerFocused ? MongleColor.primary : MongleColor.border,
+                    lineWidth: isAnswerFocused ? 1.5 : 1
+                )
+        )
+        .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
+    }
+
+    // MARK: - CTA Button
+
+    private var ctaButton: some View {
+        Button {
+            store.send(.submitAnswerTapped)
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "paperplane.fill")
+                    .font(.system(size: 16))
+                    .foregroundColor(.white)
+                Text(store.hasMyAnswer ? "답변 수정하기" : "마음 남기기")
+                    .font(MongleFont.button())
+                    .foregroundColor(.white)
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 56)
+            .background(
+                LinearGradient(
+                    colors: [Color(hex: "6BBF93"), Color(hex: "7BC8A0")],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .clipShape(Capsule())
+            .shadow(color: Color(hex: "6BBF93").opacity(0.4), radius: 16, x: 0, y: 6)
+        }
+        .disabled(!store.isValidAnswer || store.isSubmitting)
+        .opacity((!store.isValidAnswer || store.isSubmitting) ? 0.6 : 1)
+        .padding(.horizontal, 20)
+        .padding(.top, 12)
+        .padding(.bottom, 32)
+        .background(MongleColor.background)
+    }
+
+    // MARK: - Error Banner
 
     private func errorBanner(_ message: String) -> some View {
         HStack(spacing: MongleSpacing.sm) {
             Image(systemName: "exclamationmark.circle.fill")
                 .foregroundColor(MongleColor.error)
-
             Text(message)
                 .font(MongleFont.body2())
                 .foregroundColor(MongleColor.error)
-
             Spacer()
-
-            Button {
-                store.send(.dismissErrorTapped)
-            } label: {
+            Button { store.send(.dismissErrorTapped) } label: {
                 Image(systemName: "xmark")
                     .foregroundColor(MongleColor.textSecondary)
             }
         }
         .padding(MongleSpacing.md)
-        .monglePanel(background: Color(hex: "FDEBEC"), cornerRadius: MongleRadius.large, borderColor: MongleColor.error.opacity(0.12), shadowOpacity: 0.01)
+        .background(Color(hex: "FDEBEC"))
+        .cornerRadius(MongleRadius.large)
+        .overlay(RoundedRectangle(cornerRadius: MongleRadius.large).stroke(MongleColor.error.opacity(0.12), lineWidth: 1))
     }
+
+    // MARK: - Family Answers
 
     private var familyAnswersSection: some View {
         VStack(alignment: .leading, spacing: MongleSpacing.md) {
@@ -191,7 +302,6 @@ struct QuestionDetailView: View {
                 Text("가족의 답변")
                     .font(MongleFont.body1Bold())
                     .foregroundColor(MongleColor.textPrimary)
-
                 Text("\(store.familyAnswers.count)")
                     .font(MongleFont.captionBold())
                     .foregroundColor(.white)
@@ -199,13 +309,8 @@ struct QuestionDetailView: View {
                     .padding(.vertical, 2)
                     .background(MongleColor.primary)
                     .clipShape(Capsule())
-
                 Spacer()
             }
-
-            Text("가족이 남긴 오늘의 생각을 차례대로 볼 수 있어요.")
-                .font(MongleFont.caption())
-                .foregroundColor(MongleColor.textSecondary)
 
             ForEach(store.familyAnswers) { familyAnswer in
                 familyAnswerCard(familyAnswer)
@@ -224,7 +329,6 @@ struct QuestionDetailView: View {
                             .font(MongleFont.body2Bold())
                             .foregroundColor(MongleColor.primary)
                     )
-
                 VStack(alignment: .leading, spacing: 2) {
                     Text(item.user.name)
                         .font(MongleFont.body2Bold())
@@ -233,9 +337,7 @@ struct QuestionDetailView: View {
                         .font(MongleFont.caption())
                         .foregroundColor(MongleColor.textHint)
                 }
-
                 Spacer()
-
                 Text(timeAgoString(from: item.answer.createdAt))
                     .font(MongleFont.caption())
                     .foregroundColor(MongleColor.textHint)
@@ -244,13 +346,13 @@ struct QuestionDetailView: View {
             Text(item.answer.content)
                 .font(MongleFont.body2())
                 .foregroundColor(MongleColor.textPrimary)
-                .multilineTextAlignment(.leading)
                 .lineSpacing(4)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(MongleSpacing.md)
-        .frame(minHeight: 134, alignment: .topLeading)
-        .monglePanel(cornerRadius: MongleRadius.large, shadowOpacity: 0.02)
+        .background(Color.white)
+        .cornerRadius(MongleRadius.large)
+        .overlay(RoundedRectangle(cornerRadius: MongleRadius.large).stroke(MongleColor.border, lineWidth: 1))
     }
 
     private func timeAgoString(from date: Date) -> String {
@@ -266,15 +368,15 @@ struct QuestionDetailView: View {
         store: Store(initialState: QuestionDetailFeature.State(
             question: Question(
                 id: UUID(),
-                content: "가족에게 고마운 순간은?",
-                category: .gratitude,
+                content: "오늘 당신을 웃게 한 건 무엇인가요?",
+                category: .daily,
                 order: 1
             ),
             currentUser: User(id: UUID(), email: "me@example.com", name: "나", profileImageURL: nil, role: .son, createdAt: .now),
             familyAnswers: [
                 QuestionDetailFeature.State.FamilyAnswer(
-                    user: User(id: UUID(), email: "dad@example.com", name: "아빠", profileImageURL: nil, role: .father, createdAt: .now),
-                    answer: Answer(id: UUID(), dailyQuestionId: UUID(), userId: UUID(), content: "오늘 아침에 같이 밥 먹은 시간이 고마웠어요.", imageURL: nil, createdAt: .now)
+                    user: User(id: UUID(), email: "lily@example.com", name: "Lily", profileImageURL: nil, role: .daughter, createdAt: .now),
+                    answer: Answer(id: UUID(), dailyQuestionId: UUID(), userId: UUID(), content: "아침에 고양이가 제 발 위에서 잠든 것을 발견했어요 🐱", imageURL: nil, createdAt: .now.addingTimeInterval(-18 * 60))
                 )
             ]
         )) {
