@@ -60,6 +60,7 @@ public struct HomeFeature {
         case peerAnswerTapped(String)
         case answerRequiredTapped(String)
         case peerNudgeTapped(String)
+        case nudgeUnavailableTapped(String)
         case refreshData
         case dismissError
 
@@ -78,6 +79,7 @@ public struct HomeFeature {
             case navigateToPeerAnswerSelfAnswered(String)
             case showAnswerFirstPopup(String)
             case navigateToPeerNotAnsweredNudge(String)
+            case showNudgeUnavailablePopup(String)
             case requestRefresh
         }
     }
@@ -114,6 +116,9 @@ public struct HomeFeature {
 
             case .peerNudgeTapped(let memberName):
                 return .send(.delegate(.navigateToPeerNotAnsweredNudge(memberName)))
+
+            case .nudgeUnavailableTapped(let memberName):
+                return .send(.delegate(.showNudgeUnavailablePopup(memberName)))
 
             case .refreshData:
                 guard !state.isRefreshing else { return .none }
