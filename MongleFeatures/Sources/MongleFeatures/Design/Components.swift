@@ -1185,21 +1185,20 @@ public struct MongleView: View {
     }
 
     private func handleTap() {
-        if hasAnswered {
-            // 답변완료 캐릭터
-            if hasCurrentUserAnswered {
-                onViewAnswer()                      // 화면이동: 답변 보기
-            } else {
-                showAnswerFirstToViewAlert = true    // 팝업
-            }
-        } else {
-            // 미답변 캐릭터
-            if hasCurrentUserAnswered {
-                onNudge()                           // 화면이동: 재촉하기
-            } else {
-                showAnswerFirstToNudgeAlert = true  // 팝업
-            }
-        }
+      // 상대의 답변여부, 나의 답변여부
+      switch (hasAnswered, hasCurrentUserAnswered) {
+      case (true, true):
+          onViewAnswer() // 둘 다 답변 완료 -> 답변 보기
+          
+      case (true, false):
+          showAnswerFirstToViewAlert = true  // 상대만 완료 -> 내가 먼저 써야 함 (팝업)
+          
+      case (false, true):
+          onNudge()  // 나만 완료 -> 상대에게 재촉하기
+          
+      case (false, false):
+          showAnswerFirstToNudgeAlert = true // 둘 다 미완료 -> 내가 먼저 써야 재촉 가능 (팝업)
+      }
     }
 
     public var body: some View {

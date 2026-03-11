@@ -6,14 +6,16 @@
 UI 확인
 - MongleUI.Pen
 
-QuestionDetailView
-1. UI 수정
+ProfileEditView -> 몽글카드를 눌렀을 때 이동하는 새로운 화면 생성
+1. UI 생성
 - UI 구성
- 04.Answer 화면과 동일하게 변경할 것
+ 06 · 06-E · Profile Edit 화면과 동일하게 만들것
  
  구성
- - 오늘의 질문 카드
+ - 프로필편집 저장
+   지금 설정된 몽글의 색상
+   이름 변경
+   오늘의 기분
    몽글 캐릭터 선택 카드
-   질문에 대한 답변을 입력할 수 있는 section
-   답변하기 버튼
-  
+   
+   저장하기버튼

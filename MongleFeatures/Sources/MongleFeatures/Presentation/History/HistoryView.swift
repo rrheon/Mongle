@@ -50,7 +50,7 @@ public struct HistoryView: View {
                 }
             }
         }
-        .background(Color(hex: "F8FAF8"))
+        .background(MongleColor.background)
         .onAppear { store.send(.onAppear) }
     }
 
@@ -203,7 +203,7 @@ public struct HistoryView: View {
                 .stroke(MongleColor.primary, lineWidth: 1.5)
         )
         .contentShape(Rectangle())
-        .onTapGesture { store.send(.itemTapped(item)) }
+//        .onTapGesture { store.send(.itemTapped(item)) }
     }
 
     // MARK: - Answer Card

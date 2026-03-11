@@ -166,6 +166,7 @@ private enum PreviewFixtures {
     PeerAnswerView(
         store: Store(initialState: PeerAnswerFeature.State(
             memberName: "Lily",
+            monggleColor: MongleColor.monggleYellow,
             questionText: PreviewFixtures.todayQuestion.content,
             peerAnswer: "아침에 고양이가 제 발 위에서 잠든 것을 발견했어요. 너무 귀여워서 한동안 꼼짝도 못했지 뭐예요 🐱",
             myAnswer: "아이들이 아침에 처음으로 같이 요리해줬어요. 계란이 좀 타긴 했지만 정말 행복했어요 😊",
@@ -179,7 +180,10 @@ private enum PreviewFixtures {
 
 #Preview("Peer Nudge") {
     PeerNudgeView(
-        store: Store(initialState: PeerNudgeFeature.State(memberName: "Ben")) {
+        store: Store(initialState: PeerNudgeFeature.State(
+            memberName: "Ben",
+            questionText: PreviewFixtures.todayQuestion.content
+        )) {
             PeerNudgeFeature()
         }
     )
@@ -220,6 +224,36 @@ private enum PreviewFixtures {
     )
 }
 
+
+
+#Preview("Main Tab") {
+    MainTabView(
+        store: Store(initialState: PreviewFixtures.mainTabState()) {
+            MainTabFeature()
+        }
+    )
+}
+
+#Preview("Main Tab Guest") {
+    MainTabView(
+        store: Store(initialState: PreviewFixtures.mainTabState(guest: true)) {
+            MainTabFeature()
+        }
+    )
+}
+
+#Preview("Root Guest") {
+    RootView(
+        store: Store(initialState: RootFeature.State(
+            appState: .guestBrowsing,
+            hasSeenOnboarding: true,
+            mainTab: PreviewFixtures.mainTabState(guest: true)
+        )) {
+            RootFeature()
+        }
+    )
+}
+
 #Preview("Support Hearts") {
     SupportScreenView(
         store: Store(initialState: SupportScreenFeature.State(screen: .heartsSystem)) {
@@ -256,34 +290,6 @@ private enum PreviewFixtures {
     SupportScreenView(
         store: Store(initialState: SupportScreenFeature.State(screen: .moodHistory)) {
             SupportScreenFeature()
-        }
-    )
-}
-
-#Preview("Main Tab") {
-    MainTabView(
-        store: Store(initialState: PreviewFixtures.mainTabState()) {
-            MainTabFeature()
-        }
-    )
-}
-
-#Preview("Main Tab Guest") {
-    MainTabView(
-        store: Store(initialState: PreviewFixtures.mainTabState(guest: true)) {
-            MainTabFeature()
-        }
-    )
-}
-
-#Preview("Root Guest") {
-    RootView(
-        store: Store(initialState: RootFeature.State(
-            appState: .guestBrowsing,
-            hasSeenOnboarding: true,
-            mainTab: PreviewFixtures.mainTabState(guest: true)
-        )) {
-            RootFeature()
         }
     )
 }

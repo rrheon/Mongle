@@ -145,7 +145,7 @@ public struct RootFeature {
                             question: todayQuestion,
                             family: family,
                             familyMembers: familyMembers,
-                            hasAnsweredToday: false
+                            hasAnsweredToday: true // TODO: 실제 API 연동 시 제거
                         )
                         await send(.loadDataResponse(.success(data)))
                     } catch {
