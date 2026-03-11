@@ -15,7 +15,6 @@ public struct MainTabFeature {
     public struct State: Equatable {
         public var selectedTab: Tab = .home
         public var isGuestMode = false
-        public var showLoginRequiredAlert = false
         public var home: HomeFeature.State
         public var history: HistoryFeature.State
         public var notification: NotificationFeature.State
@@ -25,6 +24,7 @@ public struct MainTabFeature {
         @Presents public var answerFirstPopup: AnswerFirstPopupFeature.State?
         @Presents public var peerNudge: PeerNudgeFeature.State?
         @Presents public var supportScreen: SupportScreenFeature.State?
+        @Presents public var homeQuestionDetail: QuestionDetailFeature.State?
 
         public enum Tab: Hashable, Sendable {
             case home
@@ -36,7 +36,6 @@ public struct MainTabFeature {
         public init(
             selectedTab: Tab = .home,
             isGuestMode: Bool = false,
-            showLoginRequiredAlert: Bool = false,
             home: HomeFeature.State = HomeFeature.State(),
             history: HistoryFeature.State = HistoryFeature.State(),
             notification: NotificationFeature.State = NotificationFeature.State(),
@@ -44,7 +43,6 @@ public struct MainTabFeature {
         ) {
             self.selectedTab = selectedTab
             self.isGuestMode = isGuestMode
-            self.showLoginRequiredAlert = showLoginRequiredAlert
             self.home = home
             self.history = history
             self.notification = notification
@@ -65,6 +63,7 @@ public struct MainTabFeature {
         case answerFirstPopup(PresentationAction<AnswerFirstPopupFeature.Action>)
         case peerNudge(PresentationAction<PeerNudgeFeature.Action>)
         case supportScreen(PresentationAction<SupportScreenFeature.Action>)
+        case homeQuestionDetail(PresentationAction<QuestionDetailFeature.Action>)
         case logout
 
         // MARK: - Delegate Actions (RootFeature에서 처리)
@@ -99,20 +98,13 @@ public struct MainTabFeature {
         Reduce { state, action in
             switch action {
             case .selectTab(let tab):
-                guard !(state.isGuestMode && tab != .home) else {
-                    state.selectedTab = .home
-                    state.showLoginRequiredAlert = true
-                    return .none
-                }
                 state.selectedTab = tab
                 return .none
 
             case .loginRequiredAlertConfirmed:
-                state.showLoginRequiredAlert = false
                 return .send(.delegate(.requestLogin))
 
             case .loginRequiredAlertCancelled:
-                state.showLoginRequiredAlert = false
                 return .none
 
             case .home(let homeAction):
@@ -142,6 +134,9 @@ public struct MainTabFeature {
             case .supportScreen(let action):
                 return handleSupportScreenAction(state: &state, action: action)
 
+            case .homeQuestionDetail(let action):
+                return handleHomeQuestionDetailAction(state: &state, action: action)
+
             case .logout:
                 return .none
 
@@ -164,38 +159,28 @@ public struct MainTabFeature {
         .ifLet(\.$supportScreen, action: \.supportScreen) {
             SupportScreenFeature()
         }
+        .ifLet(\.$homeQuestionDetail, action: \.homeQuestionDetail) {
+            QuestionDetailFeature()
+        }
     }
 
     private func handleHomeAction(state: inout State, action: HomeFeature.Action) -> Effect<Action> {
         switch action {
         case .delegate(.navigateToQuestionDetail(let question)):
-            guard !state.isGuestMode else {
-                state.showLoginRequiredAlert = true
-                return .none
-            }
-            return .send(.delegate(.navigateToQuestionDetail(question)))
+            state.homeQuestionDetail = QuestionDetailFeature.State(
+                question: question,
+                currentUser: state.home.currentUser
+            )
+            return .none
         case .delegate(.requestRefresh):
-            guard !state.isGuestMode else { return .none }
             return .send(.delegate(.requestRefresh))
         case .delegate(.navigateToNotifications):
-            guard !state.isGuestMode else {
-                state.showLoginRequiredAlert = true
-                return .none
-            }
             state.selectedTab = .notification
             return .none
         case .delegate(.navigateToHeartsSystem):
-            guard !state.isGuestMode else {
-                state.showLoginRequiredAlert = true
-                return .none
-            }
             state.supportScreen = SupportScreenFeature.State(screen: .heartsSystem)
             return .none
         case .delegate(.navigateToPeerAnswerSelfAnswered(let memberName)):
-            guard !state.isGuestMode else {
-                state.showLoginRequiredAlert = true
-                return .none
-            }
             state.peerAnswer = PeerAnswerFeature.State(
                 memberName: memberName,
                 questionText: state.home.todayQuestion?.content ?? "오늘 당신을 웃게 한 건 무엇인가요?",
@@ -206,18 +191,16 @@ public struct MainTabFeature {
             )
             return .none
         case .delegate(.showAnswerFirstPopup(let memberName)):
-            guard !state.isGuestMode else {
-                state.showLoginRequiredAlert = true
-                return .none
-            }
-            state.answerFirstPopup = AnswerFirstPopupFeature.State(memberName: memberName)
+            state.answerFirstPopup = AnswerFirstPopupFeature.State(memberName: memberName, popupType: .viewAnswer)
+            return .none
+        case .delegate(.showNudgeUnavailablePopup(let memberName)):
+            state.answerFirstPopup = AnswerFirstPopupFeature.State(memberName: memberName, popupType: .nudge)
             return .none
         case .delegate(.navigateToPeerNotAnsweredNudge(let memberName)):
-            guard !state.isGuestMode else {
-                state.showLoginRequiredAlert = true
-                return .none
-            }
-            state.peerNudge = PeerNudgeFeature.State(memberName: memberName)
+            state.peerNudge = PeerNudgeFeature.State(
+                memberName: memberName,
+                questionText: state.home.todayQuestion?.content ?? ""
+            )
             return .none
         default:
             return .none
@@ -246,7 +229,10 @@ public struct MainTabFeature {
             state.selectedTab = .home
             return .none
         case .delegate(.navigateToPeerNotAnsweredNudge(let memberName)):
-            state.peerNudge = PeerNudgeFeature.State(memberName: memberName)
+            state.peerNudge = PeerNudgeFeature.State(
+                memberName: memberName,
+                questionText: state.home.todayQuestion?.content ?? ""
+            )
             return .none
         default:
             return .none
@@ -287,10 +273,18 @@ public struct MainTabFeature {
         case .presented(.delegate(.profileUpdated(let user))):
             state.settings.currentUser = user
             state.home.currentUser = user
-            state.profileEdit = nil
             return .none
-        case .presented(.delegate(.cancelled)):
-            state.profileEdit = nil
+        case .presented(.delegate(.navigateToMoodHistory)):
+            state.supportScreen = SupportScreenFeature.State(screen: .moodHistory)
+            return .none
+        case .presented(.delegate(.navigateToNotificationSettings)):
+            state.supportScreen = SupportScreenFeature.State(screen: .notificationSettings)
+            return .none
+        case .presented(.delegate(.navigateToGroupManagement)):
+            state.supportScreen = SupportScreenFeature.State(screen: .groupManagement)
+            return .none
+        case .presented(.delegate(.navigateToMoodSetting)),
+             .presented(.delegate(.navigateToAccountManagement)):
             return .none
         default:
             return .none
@@ -342,5 +336,21 @@ public struct MainTabFeature {
             state.supportScreen = nil
         }
         return .none
+    }
+
+    private func handleHomeQuestionDetailAction(
+        state: inout State,
+        action: PresentationAction<QuestionDetailFeature.Action>
+    ) -> Effect<Action> {
+        switch action {
+        case .presented(.delegate(.answerSubmitted)):
+            state.home.hasAnsweredToday = true
+            return .none
+        case .presented(.delegate(.closed)):
+            state.homeQuestionDetail = nil
+            return .none
+        default:
+            return .none
+        }
     }
 }
