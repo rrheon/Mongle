@@ -11,7 +11,6 @@ import Domain
 
 public struct ProfileEditView: View {
     @Bindable var store: StoreOf<ProfileEditFeature>
-    @Environment(\.dismiss) private var dismiss
 
     public init(store: StoreOf<ProfileEditFeature>) {
         self.store = store
@@ -19,242 +18,220 @@ public struct ProfileEditView: View {
 
     public var body: some View {
         NavigationStack {
-            ZStack {
-                MongleColor.background.ignoresSafeArea()
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: MongleSpacing.lg) {
+                    profileCard
+                    moodSection
+                    groupSection
 
-                if store.isLoading {
-                    loadingView
-                } else {
-                    contentView
+                    Text("몽글 v1.0.0")
+                        .font(MongleFont.caption())
+                        .foregroundColor(MongleColor.textHint)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, MongleSpacing.sm)
                 }
+                .padding(.horizontal, MongleSpacing.md)
+                .padding(.top, MongleSpacing.md)
+                .padding(.bottom, MongleSpacing.xl)
             }
-            .navigationTitle("프로필 수정")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("취소") {
-                        store.send(.cancelButtonTapped)
-                    }
-                    .foregroundColor(MongleColor.textSecondary)
-                }
-
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("저장") {
-                        store.send(.saveButtonTapped)
-                    }
-                    .font(MongleFont.body1Bold())
-                    .foregroundColor(store.hasChanges && store.isValid ? MongleColor.primary : MongleColor.textHint)
-                    .disabled(!store.hasChanges || !store.isValid || store.isSaving)
-                }
+            .background(MongleColor.background)
+            .navigationTitle("설정")
+            .navigationBarTitleDisplayMode(.automatic)
+            .onAppear { store.send(.onAppear) }
+            .sheet(
+                item: $store.scope(state: \.mongleCardEdit, action: \.mongleCardEdit)
+            ) { cardEditStore in
+                MongleCardEditView(store: cardEditStore)
             }
         }
-        .onAppear {
-            store.send(.onAppear)
-        }
     }
 
-    // MARK: - Content View
-    private var contentView: some View {
-        ScrollView {
-            VStack(spacing: MongleSpacing.lg) {
-                // 프로필 이미지
-                profileImageSection
+    // MARK: - Profile Card
 
-                // 이름 입력
-                nameInputSection
+    private var profileCard: some View {
+        Button {
+            store.send(.profileCardTapped)
+        } label: {
+            HStack(spacing: MongleSpacing.md) {
+              MongleMonggle(color: .blue)
 
-                // 역할 선택
-                roleSelectionSection
-
-                // 이메일 (읽기 전용)
-                emailSection
-            }
-            .padding(MongleSpacing.md)
-        }
-    }
-
-    // MARK: - Profile Image Section
-    private var profileImageSection: some View {
-        VStack(spacing: MongleSpacing.sm) {
-            Button {
-                store.send(.profileImageTapped)
-            } label: {
-                ZStack(alignment: .bottomTrailing) {
-                    // 프로필 이미지
-                    if let urlString = store.profileImageURL,
-                       let url = URL(string: urlString) {
-                        AsyncImage(url: url) { image in
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                        } placeholder: {
-                            profilePlaceholder
-                        }
-                        .frame(width: 100, height: 100)
-                        .clipShape(Circle())
-                    } else {
-                        profilePlaceholder
-                    }
-
-                    // 편집 아이콘
-                    Circle()
-                        .fill(MongleColor.primary)
-                        .frame(width: 32, height: 32)
-                        .overlay(
-                            Image(systemName: "camera.fill")
-                                .font(.system(size: 14))
-                                .foregroundColor(.white)
-                        )
-                        .offset(x: 4, y: 4)
-                }
-            }
-
-            Text("사진 변경")
-                .font(MongleFont.caption())
-                .foregroundColor(MongleColor.primary)
-        }
-        .padding(.vertical, MongleSpacing.md)
-    }
-
-    private var profilePlaceholder: some View {
-        Circle()
-            .fill(MongleColor.primaryLight)
-            .frame(width: 100, height: 100)
-            .overlay(
-                Text(store.editedName.prefix(1).uppercased())
-                    .font(.system(size: 40, weight: .bold, design: .rounded))
-                    .foregroundColor(MongleColor.primary)
-            )
-    }
-
-    // MARK: - Name Input Section
-    private var nameInputSection: some View {
-        VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-            Text("이름")
-                .font(MongleFont.captionBold())
-                .foregroundColor(MongleColor.textSecondary)
-
-            TextField("이름을 입력하세요", text: $store.editedName.sending(\.nameChanged))
-                .font(MongleFont.body1())
-                .padding(MongleSpacing.md)
-                .background(MongleColor.surface)
-                .clipShape(RoundedRectangle(cornerRadius: MongleRadius.small))
-                .overlay(
-                    RoundedRectangle(cornerRadius: MongleRadius.small)
-                        .stroke(MongleColor.border, lineWidth: 1)
-                )
-        }
-    }
-
-    // MARK: - Role Selection Section
-    private var roleSelectionSection: some View {
-        VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-            Text("가족 역할")
-                .font(MongleFont.captionBold())
-                .foregroundColor(MongleColor.textSecondary)
-
-            Button {
-                store.send(.showRolePickerToggled)
-            } label: {
-                HStack {
-                    Text(store.editedRole.rawValue)
-                        .font(MongleFont.body1())
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(store.user?.name ?? "Mongle User")
+                        .font(MongleFont.heading3())
                         .foregroundColor(MongleColor.textPrimary)
-
-                    Spacer()
-
-                    Image(systemName: store.showRolePicker ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 14))
+                    Text("오늘의 기분: 🥰 사랑")
+                        .font(MongleFont.body2())
                         .foregroundColor(MongleColor.textSecondary)
                 }
-                .padding(MongleSpacing.md)
-                .background(MongleColor.surface)
-                .clipShape(RoundedRectangle(cornerRadius: MongleRadius.small))
-                .overlay(
-                    RoundedRectangle(cornerRadius: MongleRadius.small)
-                        .stroke(MongleColor.border, lineWidth: 1)
-                )
-            }
-
-            // 역할 선택 옵션
-            if store.showRolePicker {
-                VStack(spacing: 0) {
-                    ForEach([FamilyRole.father, .mother, .son, .daughter, .other], id: \.self) { role in
-                        Button {
-                            store.send(.roleChanged(role))
-                        } label: {
-                            HStack {
-                                Text(role.rawValue)
-                                    .font(MongleFont.body1())
-                                    .foregroundColor(MongleColor.textPrimary)
-
-                                Spacer()
-
-                                if store.editedRole == role {
-                                    Image(systemName: "checkmark")
-                                        .font(.system(size: 14, weight: .semibold))
-                                        .foregroundColor(MongleColor.primary)
-                                }
-                            }
-                            .padding(MongleSpacing.md)
-                            .background(store.editedRole == role ? MongleColor.primaryLight : Color.clear)
-                        }
-
-                        if role != .other {
-                            Divider()
-                                .background(MongleColor.divider)
-                        }
-                    }
-                }
-                .background(MongleColor.cardBackground)
-                .clipShape(RoundedRectangle(cornerRadius: MongleRadius.small))
-                .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
-            }
-        }
-    }
-
-    // MARK: - Email Section
-    private var emailSection: some View {
-        VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-            Text("이메일")
-                .font(MongleFont.captionBold())
-                .foregroundColor(MongleColor.textSecondary)
-
-            HStack {
-                Text(store.user?.email ?? "")
-                    .font(MongleFont.body1())
-                    .foregroundColor(MongleColor.textHint)
 
                 Spacer()
 
-                Image(systemName: "lock.fill")
-                    .font(.system(size: 12))
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(MongleColor.textHint)
             }
             .padding(MongleSpacing.md)
-            .background(MongleColor.surface.opacity(0.5))
-            .clipShape(RoundedRectangle(cornerRadius: MongleRadius.small))
-
-            Text("이메일은 변경할 수 없습니다")
-                .font(MongleFont.caption())
-                .foregroundColor(MongleColor.textHint)
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: MongleRadius.xl))
+            .overlay(
+                RoundedRectangle(cornerRadius: MongleRadius.xl)
+                    .stroke(MongleColor.border.opacity(0.3), lineWidth: 1)
+            )
+            .shadow(color: .black.opacity(0.04), radius: 16, x: 0, y: 4)
         }
+        .buttonStyle(.plain)
     }
 
-    // MARK: - Loading View
-    private var loadingView: some View {
-        VStack(spacing: MongleSpacing.md) {
-            ProgressView()
-                .scaleEffect(1.2)
 
-            Text("프로필 불러오는 중...")
-                .font(MongleFont.body2())
-                .foregroundColor(MongleColor.textSecondary)
-        }
+    // MARK: - 활동 및 기록
+
+    private var moodSection: some View {
+        settingsSection(
+            title: "활동 및 기록",
+            rows: [
+                ProfileSettingsRow(
+                    icon: "face.smiling.fill",
+                    iconColor: MongleColor.moodHappy,
+                    iconBackground: MongleColor.moodHappyLight,
+                    title: "기분 설정",
+                    subtitle: "기분에 따라 몽글 색이 변해요",
+                    action: { store.send(.moodSettingTapped) }
+                ),
+                ProfileSettingsRow(
+                    icon: "calendar",
+                    iconColor: MongleColor.moodCalm,
+                    iconBackground: MongleColor.moodCalmLight,
+                    title: "기분 히스토리",
+                    subtitle: "나의 감정 기록 돌아보기",
+                    action: { store.send(.moodHistoryTapped) }
+                )
+            ]
+        )
     }
+
+    // MARK: - 앱 설정
+
+    private var groupSection: some View {
+        settingsSection(
+            title: "앱 설정",
+            rows: [
+                ProfileSettingsRow(
+                    icon: "bell.fill",
+                    iconColor: MongleColor.primary,
+                    iconBackground: MongleColor.primaryLight,
+                    title: "알림 설정",
+                    subtitle: "답변 알림, 리마인더",
+                    action: { store.send(.notificationSettingsTapped) }
+                ),
+                ProfileSettingsRow(
+                    icon: "person.3.fill",
+                    iconColor: MongleColor.accentOrange,
+                    iconBackground: Color(hex: "FFF0E6"),
+                    title: "그룹 관리",
+                    subtitle: "멤버 초대, 그룹 설정",
+                    action: { store.send(.groupManagementTapped) }
+                ),
+                ProfileSettingsRow(
+                    icon: "gearshape.fill",
+                    iconColor: MongleColor.moodCalm,
+                    iconBackground: MongleColor.moodCalmLight,
+                    title: "계정 관리",
+                    subtitle: "로그아웃, 탈퇴",
+                    action: { store.send(.accountManagementTapped) }
+                )
+            ]
+        )
+    }
+
+    // MARK: - Settings Section Builder
+
+  struct SettingsRowView: View {
+    private let row: ProfileSettingsRow
+      
+      var body: some View {
+          HStack(spacing: MongleSpacing.md) {
+              // 아이콘 영역
+              iconView
+              
+              // 텍스트 영역
+              VStack(alignment: .leading, spacing: 2) {
+                  Text(row.title)
+                      .font(MongleFont.body1())
+                      .foregroundColor(MongleColor.textPrimary)
+                  
+                  if !row.subtitle.isEmpty { // 서브타이틀이 있을 때만 렌더링
+                      Text(row.subtitle)
+                          .font(MongleFont.caption())
+                          .foregroundColor(MongleColor.textHint)
+                  }
+              }
+              
+              Spacer()
+              
+              Image(systemName: "chevron.right")
+                  .font(.system(size: 12, weight: .semibold))
+                  .foregroundColor(MongleColor.textHint)
+          }
+          .padding(.horizontal, MongleSpacing.md)
+          .contentShape(Rectangle()) // 투명한 영역도 클릭 가능하게 설정
+      }
+      
+      private var iconView: some View {
+          RoundedRectangle(cornerRadius: MongleRadius.medium)
+              .fill(row.iconBackground)
+              .frame(width: 36, height: 36)
+              .overlay(
+                  Image(systemName: row.icon)
+                      .font(.system(size: 18, weight: .medium))
+                      .foregroundColor(row.iconColor)
+              )
+      }
+  }
+  
+  private func settingsSection(title: String, rows: [ProfileSettingsRow]) -> some View {
+      VStack(alignment: .leading, spacing: MongleSpacing.sm) {
+          // 섹션 타이틀
+          Text(title)
+              .font(MongleFont.captionBold())
+              .foregroundColor(MongleColor.textSecondary)
+              .padding(.horizontal, MongleSpacing.xxs)
+
+          // 섹션 카드 컨테이너
+          VStack(spacing: 0) {
+              ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
+                  Button(action: row.action) {
+                      SettingsRowView(row: row)
+                          .frame(minHeight: 56)
+                  }
+                  .buttonStyle(PlainButtonStyle())
+
+                  // 마지막 항목이 아닐 때만 구분선 표시
+                  if index < rows.count - 1 {
+                      Divider()
+                          .padding(.leading, 64) // 아이콘 너비 + 간격만큼 push
+                  }
+              }
+          }
+          .background(MongleColor.cardBackgroundSolid)
+          .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
+      }
+  }
+}
+
+// MARK: - Private Models
+
+private struct ProfileSettingsRow: Identifiable {
+    let id = UUID()
+    let icon: String
+    let iconColor: Color
+    let iconBackground: Color
+    let title: String
+    let subtitle: String
+    let action: () -> Void
 }
 
 // MARK: - Preview
+
 #Preview {
     ProfileEditView(
         store: Store(initialState: ProfileEditFeature.State()) {

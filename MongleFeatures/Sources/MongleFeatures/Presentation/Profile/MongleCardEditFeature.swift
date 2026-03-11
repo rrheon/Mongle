@@ -1,0 +1,95 @@
+//
+//  MongleCardEditFeature.swift
+//  Mongle
+//
+
+import Foundation
+import ComposableArchitecture
+import Domain
+
+@Reducer
+public struct MongleCardEditFeature {
+    @ObservableState
+    public struct State: Equatable {
+        public var user: User?
+        public var editedName: String = ""
+        public var selectedMoodId: String = "loved"
+        public var isSaving = false
+
+        public var hasChanges: Bool {
+            guard let user = user else { return !editedName.isEmpty }
+            return editedName != user.name || selectedMoodId != "loved"
+        }
+
+        public var isValid: Bool {
+            !editedName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        }
+
+        public init(user: User? = nil) {
+            self.user = user
+            if let user = user {
+                self.editedName = user.name
+            }
+        }
+    }
+
+    public enum Action: Sendable, Equatable {
+        case backTapped
+        case saveTapped
+        case nameChanged(String)
+        case moodSelected(String)
+        case saveCompleted(User)
+
+        case delegate(Delegate)
+
+        public enum Delegate: Sendable, Equatable {
+            case saved(User)
+            case cancelled
+        }
+    }
+
+    public init() {}
+
+    public var body: some Reducer<State, Action> {
+        Reduce { state, action in
+            switch action {
+            case .backTapped:
+                return .send(.delegate(.cancelled))
+
+            case .saveTapped:
+                guard state.isValid else { return .none }
+                guard let user = state.user else { return .none }
+                state.isSaving = true
+                let name = state.editedName.trimmingCharacters(in: .whitespacesAndNewlines)
+                return .run { send in
+                    try await Task.sleep(nanoseconds: 400_000_000)
+                    let updated = User(
+                        id: user.id,
+                        email: user.email,
+                        name: name,
+                        profileImageURL: user.profileImageURL,
+                        role: user.role,
+                        createdAt: user.createdAt
+                    )
+                    await send(.saveCompleted(updated))
+                }
+
+            case .nameChanged(let name):
+                state.editedName = name
+                return .none
+
+            case .moodSelected(let moodId):
+                state.selectedMoodId = moodId
+                return .none
+
+            case .saveCompleted(let user):
+                state.isSaving = false
+                state.user = user
+                return .send(.delegate(.saved(user)))
+
+            case .delegate:
+                return .none
+            }
+        }
+    }
+}
