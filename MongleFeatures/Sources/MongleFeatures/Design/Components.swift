@@ -1135,3 +1135,265 @@ private struct RoundedCorner: Shape {
     MongleHeaderHome(familyName: "Kim Family", streakDays: 5, hasNotification: true)
         .background(Color(hex: "F5F4F1"))
 }
+
+// MARK: - Mongle Character Movement Model
+
+public struct MongleCharacter: Identifiable {
+    public let id = UUID()
+    public let name: String
+    public let color: Color
+    public var hasAnswered: Bool
+    public var position: CGPoint
+    public var targetPosition: CGPoint
+    public var overlapCounter: Int = 0  // 충돌 지속 프레임 수
+    public var stepCount: Int = 0       // 이동 누적 스텝 수 (hop 위상 계산용)
+    public var restFramesLeft: Int = 0  // 휴식 남은 프레임 수 (> 0 이면 정지)
+
+    public init(name: String, color: Color, hasAnswered: Bool, position: CGPoint, targetPosition: CGPoint) {
+        self.name = name
+        self.color = color
+        self.hasAnswered = hasAnswered
+        self.position = position
+        self.targetPosition = targetPosition
+    }
+}
+
+// MARK: - Mongle Interactive View (상태 배지 + 캐릭터)
+
+public struct MongleView: View {
+    public let name: String
+    public let color: Color
+    public let hasAnswered: Bool
+    public let hasCurrentUserAnswered: Bool
+    public let onViewAnswer: () -> Void
+    public let onNudge: () -> Void
+
+    // 팝업: 답변완료 캐릭터 탭 + 내가 미답변 → "먼저 답변하면 볼 수 있어요"
+    @State private var showAnswerFirstToViewAlert = false
+    // 팝업: 미답변 캐릭터 탭 + 내가 미답변 → "먼저 답변하면 재촉할 수 있어요"
+    @State private var showAnswerFirstToNudgeAlert = false
+
+    public init(name: String, color: Color, hasAnswered: Bool, hasCurrentUserAnswered: Bool,
+                onViewAnswer: @escaping () -> Void,
+                onNudge: @escaping () -> Void) {
+        self.name = name
+        self.color = color
+        self.hasAnswered = hasAnswered
+        self.hasCurrentUserAnswered = true
+        self.onViewAnswer = onViewAnswer
+        self.onNudge = onNudge
+    }
+
+    private func handleTap() {
+        if hasAnswered {
+            // 답변완료 캐릭터
+            if hasCurrentUserAnswered {
+                onViewAnswer()                      // 화면이동: 답변 보기
+            } else {
+                showAnswerFirstToViewAlert = true    // 팝업
+            }
+        } else {
+            // 미답변 캐릭터
+            if hasCurrentUserAnswered {
+                onNudge()                           // 화면이동: 재촉하기
+            } else {
+                showAnswerFirstToNudgeAlert = true  // 팝업
+            }
+        }
+    }
+
+    public var body: some View {
+        Button(action: handleTap) {
+            VStack(spacing: 4) {
+                statusBadge
+                MongleMonggle(color: color, name: name)
+            }
+        }
+        .buttonStyle(.plain)
+        .alert("\(name)의 답변 보기", isPresented: $showAnswerFirstToViewAlert) {
+            Button("확인", role: .cancel) {}
+        } message: {
+            Text("오늘의 질문에 먼저 답변하면\n\(name)의 답변을 볼 수 있어요!")
+        }
+        .alert("\(name) 재촉하기", isPresented: $showAnswerFirstToNudgeAlert) {
+            Button("확인", role: .cancel) {}
+        } message: {
+            Text("오늘의 질문에 먼저 답변하면\n\(name)에게 재촉할 수 있어요!")
+        }
+    }
+
+    @ViewBuilder
+    private var statusBadge: some View {
+        HStack(spacing: 4) {
+            Image(systemName: hasAnswered ? "checkmark.circle.fill" : "clock")
+                .font(.system(size: 10, weight: .bold))
+            Text(hasAnswered ? "답변완료" : "미답변")
+                .font(.caption2.bold())
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(hasAnswered ? Color.green.opacity(0.85) : Color.gray.opacity(0.4))
+        .foregroundColor(.white)
+        .clipShape(Capsule())
+    }
+}
+
+// MARK: - Mongle Scene (구역 내 이동 + 충돌 감지)
+
+public struct MongleSceneView: View {
+    public var hasCurrentUserAnswered: Bool = false
+    public var onViewAnswer: (String) -> Void = { _ in }
+    public var onNudge: (String) -> Void = { _ in }
+
+    private let stepSize: CGFloat = 2.0
+    private let interval: TimeInterval = 0.12
+    private let collisionRadius: CGFloat = 76
+    private let targetThreshold: CGFloat = 12
+    private let wallPadding: CGFloat = 50
+    private let overlapLimit: Int = 10
+
+    @State private var mongles: [MongleCharacter] = []
+    @State private var timer: Timer?
+
+    private static let memberData: [(String, Color, Bool)] = [
+        ("Dad", .orange, true),
+        ("Mom", .green, false),
+        ("Lily", .yellow, true),
+        ("Ben", .blue, false),
+        ("Alex", .pink, true)
+    ]
+
+    public init(hasCurrentUserAnswered: Bool = false,
+                onViewAnswer: @escaping (String) -> Void = { _ in },
+                onNudge: @escaping (String) -> Void = { _ in }) {
+        self.hasCurrentUserAnswered = hasCurrentUserAnswered
+        self.onViewAnswer = onViewAnswer
+        self.onNudge = onNudge
+    }
+
+    public var body: some View {
+        GeometryReader { geo in
+            ZStack {
+                ForEach(mongles) { h in
+                    let hopY = -abs(sin(CGFloat(h.stepCount) * .pi / 5.0)) * 12
+                    MongleView(
+                        name: h.name,
+                        color: h.color,
+                        hasAnswered: h.hasAnswered,
+                        hasCurrentUserAnswered: hasCurrentUserAnswered,
+                        onViewAnswer: { onViewAnswer(h.name) },
+                        onNudge: { onNudge(h.name) }
+                    )
+                    .position(CGPoint(x: h.position.x, y: h.position.y + hopY))
+                    .animation(.linear(duration: interval), value: h.stepCount)
+                }
+            }
+            .onAppear {
+                if geo.size.width > 0, geo.size.height > 0 {
+                    if mongles.isEmpty { initMongles(size: geo.size) }
+                    startTimer(size: geo.size)
+                }
+            }
+            .onChange(of: geo.size) { _, newSize in
+                guard newSize.width > 0, newSize.height > 0 else { return }
+                if mongles.isEmpty { initMongles(size: newSize) }
+                if timer == nil { startTimer(size: newSize) }
+            }
+            .onDisappear {
+                timer?.invalidate()
+                timer = nil
+            }
+        }
+        .frame(maxHeight: .infinity)
+    }
+
+    private func initMongles(size: CGSize) {
+        guard size.width > 0, size.height > 0 else { return }
+        var placed: [CGPoint] = []
+        mongles = Self.memberData.map { name, color, hasAnswered in
+            var pos = randomPos(size: size)
+            for _ in 0..<30 {
+                let overlaps = placed.contains { hypot(pos.x - $0.x, pos.y - $0.y) < collisionRadius }
+                if !overlaps { break }
+                pos = randomPos(size: size)
+            }
+            placed.append(pos)
+            return MongleCharacter(
+                name: name,
+                color: color,
+                hasAnswered: hasAnswered,
+                position: pos,
+                targetPosition: randomPos(size: size)
+            )
+        }
+    }
+
+    private func randomPos(size: CGSize) -> CGPoint {
+        CGPoint(
+            x: CGFloat.random(in: wallPadding...(size.width - wallPadding)),
+            y: CGFloat.random(in: wallPadding...(size.height - wallPadding))
+        )
+    }
+
+    private func startTimer(size: CGSize) {
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { _ in
+            step(size: size)
+        }
+    }
+
+    private func step(size: CGSize) {
+        for i in mongles.indices {
+            if mongles[i].restFramesLeft > 0 {
+                mongles[i].restFramesLeft -= 1
+                if mongles[i].restFramesLeft == 0 {
+                    mongles[i].targetPosition = randomPos(size: size)
+                }
+                continue
+            }
+
+            var pos = mongles[i].position
+            let target = mongles[i].targetPosition
+            let dx = target.x - pos.x
+            let dy = target.y - pos.y
+            let dist = hypot(dx, dy)
+
+            if dist < targetThreshold {
+                if Bool.random() {
+                    mongles[i].restFramesLeft = Int.random(in: 10...50)
+                } else {
+                    mongles[i].targetPosition = randomPos(size: size)
+                }
+                continue
+            }
+
+            pos.x += (dx / dist) * stepSize
+            pos.y += (dy / dist) * stepSize
+
+            if pos.x < wallPadding || pos.x > size.width - wallPadding ||
+                pos.y < wallPadding || pos.y > size.height - wallPadding {
+                pos.x = min(max(pos.x, wallPadding), size.width - wallPadding)
+                pos.y = min(max(pos.y, wallPadding), size.height - wallPadding)
+                mongles[i].targetPosition = randomPos(size: size)
+            }
+
+            let collides = mongles.indices.contains { j in
+                guard j != i else { return false }
+                return hypot(pos.x - mongles[j].position.x,
+                             pos.y - mongles[j].position.y) < collisionRadius
+            }
+            if collides {
+                mongles[i].overlapCounter += 1
+                if mongles[i].overlapCounter >= overlapLimit {
+                    mongles[i].targetPosition = randomPos(size: size)
+                    mongles[i].overlapCounter = 0
+                }
+                continue
+            }
+
+            mongles[i].overlapCounter = 0
+            mongles[i].stepCount += 1
+            mongles[i].position = pos
+        }
+    }
+}

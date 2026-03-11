@@ -33,20 +33,6 @@ struct TopBarQuestion: Identifiable {
   let isAnswered: Bool
 }
 
-// MARK: - Mongle 캐릭터 모델
-
-private struct MongleCharacter: Identifiable {
-  let id = UUID()
-  let name: String
-  let color: Color
-  var hasAnswered: Bool
-  var position: CGPoint
-  var targetPosition: CGPoint
-  var overlapCounter: Int = 0  // 충돌 지속 프레임 수
-  var stepCount: Int = 0       // 이동 누적 스텝 수 (hop 위상 계산용)
-  var restFramesLeft: Int = 0  // 휴식 남은 프레임 수 (> 0 이면 정지)
-}
-
 // MARK: - Main View
 
 struct HomeView: View {
@@ -55,10 +41,9 @@ struct HomeView: View {
   var onQuestionTap: () -> Void
   var onNotificationTap: () -> Void
   var onHeartsTap: () -> Void
-  var onPeerAnswerTap: (String) -> Void
-  var onAnswerRequiredTap: (String) -> Void
-  var onPeerNudgeTap: (String) -> Void
-  
+  var onPeerAnswerTap: (String) -> Void   // 화면이동: 답변 보기
+  var onPeerNudgeTap: (String) -> Void    // 화면이동: 재촉하기
+
   init(
     topBarState: HomeTopBarState = .preview,
     hasCurrentUserAnswered: Bool = false,
@@ -66,7 +51,6 @@ struct HomeView: View {
     onNotificationTap: @escaping () -> Void = {},
     onHeartsTap: @escaping () -> Void = {},
     onPeerAnswerTap: @escaping (String) -> Void = { _ in },
-    onAnswerRequiredTap: @escaping (String) -> Void = { _ in },
     onPeerNudgeTap: @escaping (String) -> Void = { _ in }
   ) {
     self.topBarState = topBarState
@@ -75,34 +59,29 @@ struct HomeView: View {
     self.onNotificationTap = onNotificationTap
     self.onHeartsTap = onHeartsTap
     self.onPeerAnswerTap = onPeerAnswerTap
-    self.onAnswerRequiredTap = onAnswerRequiredTap
     self.onPeerNudgeTap = onPeerNudgeTap
   }
   
   var body: some View {
-    NavigationStack {
-      VStack(spacing: 0) {
-        // HUD TopBar
-        TopBarView(
-          state: topBarState,
-          onQuestionTap: onQuestionTap,
-          onNotificationTap: onNotificationTap
-        )
+    VStack(spacing: 0) {
+      // HUD TopBar
+      TopBarView(
+        state: topBarState,
+        onQuestionTap: onQuestionTap,
+        onNotificationTap: onNotificationTap
+      )
 
-        // Mongle Scene
-        MongleSceneView(
-          hasCurrentUserAnswered: hasCurrentUserAnswered,
-          onViewAnswer: onPeerAnswerTap,
-          onAnswerQuestion: onAnswerRequiredTap,
-          onNudge: onPeerNudgeTap
-        )
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-      }
+      // Mongle Scene
+      MongleSceneView(
+        hasCurrentUserAnswered: hasCurrentUserAnswered,
+        onViewAnswer: onPeerAnswerTap,
+        onNudge: onPeerNudgeTap
+      )
       .frame(maxWidth: .infinity, maxHeight: .infinity)
-      .background(MongleColor.background)
-      .ignoresSafeArea(edges: .top)
-      .toolbar(.hidden, for: .navigationBar)
     }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .background(MongleColor.background)
+    .ignoresSafeArea(edges: .top)
   }
 }
 
@@ -261,273 +240,6 @@ private struct TodayQuestionCard: View {
         .onChanged { _ in isPressed = true }
         .onEnded { _ in isPressed = false }
     )
-  }
-}
-
-// MARK: - Mongle Scene (구역 내 이동 + 충돌 감지)
-struct MongleSceneView: View {
-  // 현재 사용자가 오늘 질문에 답변했는지 여부
-  var hasCurrentUserAnswered: Bool = false
-  var onViewAnswer: (String) -> Void = { name in print("\(name)의 답변 보기") }
-  var onAnswerQuestion: (String) -> Void = { name in print("\(name) 답변하기 화면으로 이동") }
-  var onNudge: (String) -> Void = { name in print("\(name) 재촉 화면으로 이동") }
-  
-  private let stepSize: CGFloat = 2.0
-  private let interval: TimeInterval = 0.12
-  private let collisionRadius: CGFloat = 76  // 원(28) + 상단버튼(~28) + 하단이름(~16) + 여유
-  private let targetThreshold: CGFloat = 12
-  private let wallPadding: CGFloat = 50
-  private let overlapLimit: Int = 10  // ~1.2초 충돌 지속 후 새 목표 설정
-  
-  @State private var mongles: [MongleCharacter] = []
-  @State private var timer: Timer?
-  
-  private static let memberData: [(String, Color, Bool)] = [
-    ("Dad", .orange, true),
-    ("Mom", .green, false),
-    ("Lily", .yellow, true),
-    ("Ben", .blue, false),
-    ("Alex", .pink, true)
-  ]
-  
-  var body: some View {
-    GeometryReader { geo in
-      ZStack {
-//        // Ground shadow
-//        Ellipse()
-//          .fill(Color.green.opacity(0.2))
-//          .frame(width: 260, height: 80)
-//          .blur(radius: 16)
-//          .position(x: geo.size.width / 2, y: geo.size.height - 10)
-        
-        ForEach(mongles) { h in
-          // stepCount 기반 포물선 hop: 5스텝(0.6초)마다 한 번 튀어오름
-          let hopY = -abs(sin(CGFloat(h.stepCount) * .pi / 5.0)) * 12
-          MongleView(
-            name: h.name,
-            color: h.color,
-            hasAnswered: h.hasAnswered,
-            hasCurrentUserAnswered: hasCurrentUserAnswered,
-            onViewAnswer: { onViewAnswer(h.name) },
-            onAnswerQuestion: { onAnswerQuestion(h.name) },
-            onNudge: { onNudge(h.name) }
-          )
-          .position(CGPoint(x: h.position.x, y: h.position.y + hopY))
-          .animation(.linear(duration: interval), value: h.stepCount)
-        }
-      }
-      .onAppear {
-        if geo.size.width > 0, geo.size.height > 0 {
-          if mongles.isEmpty { initMongles(size: geo.size) }
-          startTimer(size: geo.size)
-        }
-      }
-      .onChange(of: geo.size) { _, newSize in
-        guard newSize.width > 0, newSize.height > 0 else { return }
-        if mongles.isEmpty { initMongles(size: newSize) }
-        if timer == nil { startTimer(size: newSize) }
-      }
-      .onDisappear {
-        timer?.invalidate()
-        timer = nil
-      }
-    }
-    .frame(maxHeight: .infinity)
-  }
-  
-  private func initMongles(size: CGSize) {
-    guard size.width > 0, size.height > 0 else { return }
-    // 초기 위치가 겹치지 않도록 최대 30회 재시도
-    var placed: [CGPoint] = []
-    mongles = Self.memberData.map { name, color, hasAnswered in
-      var pos = randomPos(size: size)
-      for _ in 0..<30 {
-        let overlaps = placed.contains { hypot(pos.x - $0.x, pos.y - $0.y) < collisionRadius }
-        if !overlaps { break }
-        pos = randomPos(size: size)
-      }
-      placed.append(pos)
-      return MongleCharacter(
-        name: name,
-        color: color,
-        hasAnswered: hasAnswered,
-        position: pos,
-        targetPosition: randomPos(size: size)
-      )
-    }
-  }
-  
-  private func randomPos(size: CGSize) -> CGPoint {
-    CGPoint(
-      x: CGFloat.random(in: wallPadding...(size.width - wallPadding)),
-      y: CGFloat.random(in: wallPadding...(size.height - wallPadding))
-    )
-  }
-  
-  private func startTimer(size: CGSize) {
-    timer?.invalidate()
-    timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { _ in
-      step(size: size)
-    }
-  }
-  
-  private func step(size: CGSize) {
-    for i in mongles.indices {
-      // 휴식 중 → 프레임 차감 후 건너뜀. 휴식 종료 시 새 목표 설정
-      if mongles[i].restFramesLeft > 0 {
-        mongles[i].restFramesLeft -= 1
-        if mongles[i].restFramesLeft == 0 {
-          mongles[i].targetPosition = randomPos(size: size)
-        }
-        continue
-      }
-      
-      var pos = mongles[i].position
-      let target = mongles[i].targetPosition
-      let dx = target.x - pos.x
-      let dy = target.y - pos.y
-      let dist = hypot(dx, dy)
-      
-      // 목표 도달 → 50% 확률로 휴식 (10~50프레임, 약 1.2~6초), 나머지는 바로 이동
-      if dist < targetThreshold {
-        if Bool.random() {
-          mongles[i].restFramesLeft = Int.random(in: 10...50)
-        } else {
-          mongles[i].targetPosition = randomPos(size: size)
-        }
-        continue
-      }
-      
-      // 목표 방향으로 한 걸음 이동
-      pos.x += (dx / dist) * stepSize
-      pos.y += (dy / dist) * stepSize
-      
-      // 벽 충돌 → 위치 보정 + 새 목표
-      if pos.x < wallPadding || pos.x > size.width - wallPadding ||
-          pos.y < wallPadding || pos.y > size.height - wallPadding {
-        pos.x = min(max(pos.x, wallPadding), size.width - wallPadding)
-        pos.y = min(max(pos.y, wallPadding), size.height - wallPadding)
-        mongles[i].targetPosition = randomPos(size: size)
-      }
-      
-      // 다른 몽글와 충돌 → overlapLimit 프레임 초과 시 새 목표 설정
-      let collides = mongles.indices.contains { j in
-        guard j != i else { return false }
-        return hypot(pos.x - mongles[j].position.x,
-                     pos.y - mongles[j].position.y) < collisionRadius
-      }
-      if collides {
-        mongles[i].overlapCounter += 1
-        if mongles[i].overlapCounter >= overlapLimit {
-          mongles[i].targetPosition = randomPos(size: size)
-          mongles[i].overlapCounter = 0
-        }
-        // 이번 프레임은 위치 갱신 없이 다음 프레임 재시도
-        continue
-      }
-      
-      mongles[i].overlapCounter = 0
-      mongles[i].stepCount += 1
-      mongles[i].position = pos
-    }
-  }
-}
-
-// MARK: - Mongle Component (버튼 포함)
-struct MongleView: View {
-  let name: String
-  let color: Color
-  let hasAnswered: Bool
-  let hasCurrentUserAnswered: Bool
-  let onViewAnswer: () -> Void
-  let onAnswerQuestion: () -> Void
-  let onNudge: () -> Void
-  
-  var body: some View {
-    VStack(spacing: 4) {
-      // 상단 버튼: 답변 여부에 따라 다른 스타일
-      if hasAnswered {
-        // 답변한 경우
-        // 1) 본인도 답변한 경우 → 답변 보기
-        // 2) 본인이 답변하지 않은 경우 → 답변하기
-        Button(action: hasCurrentUserAnswered ? onViewAnswer : onAnswerQuestion) {
-          HStack(spacing: 4) {
-            Image(systemName: hasCurrentUserAnswered ? "bubble.left.fill" : "pencil")
-              .font(.system(size: 10, weight: .bold))
-            Text(hasCurrentUserAnswered ? "답변 보기" : "답변하기")
-              .font(.caption2.bold())
-          }
-          .padding(.horizontal, 8)
-          .padding(.vertical, 4)
-          .background(hasCurrentUserAnswered ? Color.green : Color.orange)
-          .foregroundColor(.white)
-          .clipShape(Capsule())
-        }
-      } else {
-        // 이 몽글캐릭터가 아직 답변하지 않은 경우
-        if hasCurrentUserAnswered {
-          Button(action: onNudge) {
-            HStack(spacing: 4) {
-              Image(systemName: "bell.badge")
-                .font(.system(size: 10))
-              Text("재촉하기")
-                .font(.caption2.bold())
-            }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(Color.red.opacity(0.85))
-            .foregroundColor(.white)
-            .clipShape(Capsule())
-          }
-        } else {
-          HStack(spacing: 4) {
-            Image(systemName: "clock")
-              .font(.system(size: 10))
-            Text("미답변")
-              .font(.caption2.bold())
-          }
-          .padding(.horizontal, 8)
-          .padding(.vertical, 4)
-          .background(Color.gray.opacity(0.4))
-          .foregroundColor(.white)
-          .clipShape(Capsule())
-        }
-      }
-      
-      // 몽글 캐릭터
-      Circle()
-        .fill(color)
-        .frame(width: 56, height: 56)
-        .overlay(
-          Circle()
-            .stroke(Color.white.opacity(0.5), lineWidth: 2)
-        )
-        .overlay(
-          HStack(spacing: 6) {
-            ZStack {
-              Circle()
-                .fill(Color.white)
-                .frame(width: 13, height: 13)
-              Circle()
-                .fill(Color.black)
-                .frame(width: 10, height: 10)
-            }
-            ZStack {
-              Circle()
-                .fill(Color.white)
-                .frame(width: 13, height: 13)
-              Circle()
-                .fill(Color.black)
-                .frame(width: 10, height: 10)
-            }
-          }
-            .offset(y: -2)
-        )
-        .shadow(radius: 4)
-      
-      Text(name)
-        .font(.caption2.bold())
-    }
   }
 }
 
