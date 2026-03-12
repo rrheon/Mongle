@@ -59,9 +59,9 @@ public struct ProfileEditView: View {
                     Text(store.user?.name ?? "Mongle User")
                         .font(MongleFont.heading3())
                         .foregroundColor(MongleColor.textPrimary)
-                    Text("오늘의 기분: 🥰 사랑")
-                        .font(MongleFont.body2())
-                        .foregroundColor(MongleColor.textSecondary)
+//                    Text("오늘의 기분: 🥰 사랑")
+//                        .font(MongleFont.body2())
+//                        .foregroundColor(MongleColor.textSecondary)
                 }
 
                 Spacer()
@@ -146,7 +146,7 @@ public struct ProfileEditView: View {
     // MARK: - Settings Section Builder
 
   struct SettingsRowView: View {
-    private let row: ProfileSettingsRow
+    fileprivate let row: ProfileSettingsRow
       
       var body: some View {
           HStack(spacing: MongleSpacing.md) {
@@ -220,7 +220,7 @@ public struct ProfileEditView: View {
 
 // MARK: - Private Models
 
-private struct ProfileSettingsRow: Identifiable {
+fileprivate struct ProfileSettingsRow: Identifiable {
     let id = UUID()
     let icon: String
     let iconColor: Color
