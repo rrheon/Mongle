@@ -25,6 +25,11 @@ public struct MainTabFeature {
         @Presents public var peerNudge: PeerNudgeFeature.State?
         @Presents public var supportScreen: SupportScreenFeature.State?
         @Presents public var homeQuestionDetail: QuestionDetailFeature.State?
+        @Presents public var questionSheet: QuestionSheetFeature.State?
+        @Presents public var heartCostPopup: HeartCostPopupFeature.State?
+        @Presents public var writeQuestion: WriteQuestionFeature.State?
+        public var showRefreshToast: Bool = false
+        public var showWriteToast: Bool = false
 
         public enum Tab: Hashable, Sendable {
             case home
@@ -64,6 +69,11 @@ public struct MainTabFeature {
         case peerNudge(PresentationAction<PeerNudgeFeature.Action>)
         case supportScreen(PresentationAction<SupportScreenFeature.Action>)
         case homeQuestionDetail(PresentationAction<QuestionDetailFeature.Action>)
+        case questionSheet(PresentationAction<QuestionSheetFeature.Action>)
+        case heartCostPopup(PresentationAction<HeartCostPopupFeature.Action>)
+        case writeQuestion(PresentationAction<WriteQuestionFeature.Action>)
+        case dismissRefreshToast
+        case dismissWriteToast
         case logout
 
         // MARK: - Delegate Actions (RootFeature에서 처리)
@@ -78,98 +88,88 @@ public struct MainTabFeature {
 
     public init() {}
 
+    // Swift 타입 체커 한계 회피를 위해 body를 두 단계로 분리
     public var body: some Reducer<State, Action> {
-        Scope(state: \.home, action: \.home) {
-            HomeFeature()
-        }
+        newFeatureReducers
+    }
 
-        Scope(state: \.history, action: \.history) {
-            HistoryFeature()
-        }
+    // 새로 추가된 피처의 ifLet (3개)
+    private var newFeatureReducers: some Reducer<State, Action> {
+        baseReducers
+            .ifLet(\.$questionSheet, action: \.questionSheet) { QuestionSheetFeature() }
+            .ifLet(\.$heartCostPopup, action: \.heartCostPopup) { HeartCostPopupFeature() }
+            .ifLet(\.$writeQuestion, action: \.writeQuestion) { WriteQuestionFeature() }
+    }
 
-        Scope(state: \.notification, action: \.notification) {
-            NotificationFeature()
-        }
-
-        Scope(state: \.settings, action: \.settings) {
-            SettingsFeature()
-        }
-
-        Reduce { state, action in
-            switch action {
-            case .selectTab(let tab):
-                state.selectedTab = tab
-                return .none
-
-            case .loginRequiredAlertConfirmed:
-                return .send(.delegate(.requestLogin))
-
-            case .loginRequiredAlertCancelled:
-                return .none
-
-            case .home(let homeAction):
-                return handleHomeAction(state: &state, action: homeAction)
-
-            case .history(let historyAction):
-                return handleHistoryAction(state: &state, action: historyAction)
-
-            case .notification(let notificationAction):
-                return handleNotificationAction(state: &state, action: notificationAction)
-
-            case .settings(let settingsAction):
-                return handleSettingsAction(state: &state, action: settingsAction)
-
-            case .profileEdit(let action):
-                return handleProfileEditAction(state: &state, action: action)
-
-            case .peerAnswer(let action):
-                return handlePeerAnswerAction(state: &state, action: action)
-
-            case .answerFirstPopup(let action):
-                return handleAnswerFirstPopupAction(state: &state, action: action)
-
-            case .peerNudge(let action):
-                return handlePeerNudgeAction(state: &state, action: action)
-
-            case .supportScreen(let action):
-                return handleSupportScreenAction(state: &state, action: action)
-
-            case .homeQuestionDetail(let action):
-                return handleHomeQuestionDetailAction(state: &state, action: action)
-
-            case .logout:
-                return .none
-
-            case .delegate:
-                return .none
+    // 기존 피처의 Scope / Reduce / ifLet
+    private var baseReducers: some Reducer<State, Action> {
+        CombineReducers {
+            Scope(state: \.home, action: \.home) { HomeFeature() }
+            Scope(state: \.history, action: \.history) { HistoryFeature() }
+            Scope(state: \.notification, action: \.notification) { NotificationFeature() }
+            Scope(state: \.settings, action: \.settings) { SettingsFeature() }
+            Reduce { state, action in
+                switch action {
+                case .selectTab(let tab):
+                    state.selectedTab = tab
+                    return .none
+                case .loginRequiredAlertConfirmed:
+                    return .send(.delegate(.requestLogin))
+                case .loginRequiredAlertCancelled:
+                    return .none
+                case .home(let homeAction):
+                    return handleHomeAction(state: &state, action: homeAction)
+                case .history(let historyAction):
+                    return handleHistoryAction(state: &state, action: historyAction)
+                case .notification(let notificationAction):
+                    return handleNotificationAction(state: &state, action: notificationAction)
+                case .settings(let settingsAction):
+                    return handleSettingsAction(state: &state, action: settingsAction)
+                case .profileEdit(let action):
+                    return handleProfileEditAction(state: &state, action: action)
+                case .peerAnswer(let action):
+                    return handlePeerAnswerAction(state: &state, action: action)
+                case .answerFirstPopup(let action):
+                    return handleAnswerFirstPopupAction(state: &state, action: action)
+                case .peerNudge(let action):
+                    return handlePeerNudgeAction(state: &state, action: action)
+                case .supportScreen(let action):
+                    return handleSupportScreenAction(state: &state, action: action)
+                case .homeQuestionDetail(let action):
+                    return handleHomeQuestionDetailAction(state: &state, action: action)
+                case .questionSheet(let action):
+                    return handleQuestionSheetAction(state: &state, action: action)
+                case .heartCostPopup(let action):
+                    return handleHeartCostPopupAction(state: &state, action: action)
+                case .writeQuestion(let action):
+                    return handleWriteQuestionAction(state: &state, action: action)
+                case .dismissRefreshToast:
+                    state.showRefreshToast = false
+                    return .none
+                case .dismissWriteToast:
+                    state.showWriteToast = false
+                    return .none
+                case .logout:
+                    return .none
+                case .delegate:
+                    return .none
+                }
             }
         }
-        .ifLet(\.$profileEdit, action: \.profileEdit) {
-            ProfileEditFeature()
-        }
-        .ifLet(\.$peerAnswer, action: \.peerAnswer) {
-            PeerAnswerFeature()
-        }
-        .ifLet(\.$answerFirstPopup, action: \.answerFirstPopup) {
-            AnswerFirstPopupFeature()
-        }
-        .ifLet(\.$peerNudge, action: \.peerNudge) {
-            PeerNudgeFeature()
-        }
-        .ifLet(\.$supportScreen, action: \.supportScreen) {
-            SupportScreenFeature()
-        }
-        .ifLet(\.$homeQuestionDetail, action: \.homeQuestionDetail) {
-            QuestionDetailFeature()
-        }
+        .ifLet(\.$profileEdit, action: \.profileEdit) { ProfileEditFeature() }
+        .ifLet(\.$peerAnswer, action: \.peerAnswer) { PeerAnswerFeature() }
+        .ifLet(\.$answerFirstPopup, action: \.answerFirstPopup) { AnswerFirstPopupFeature() }
+        .ifLet(\.$peerNudge, action: \.peerNudge) { PeerNudgeFeature() }
+        .ifLet(\.$supportScreen, action: \.supportScreen) { SupportScreenFeature() }
+        .ifLet(\.$homeQuestionDetail, action: \.homeQuestionDetail) { QuestionDetailFeature() }
     }
 
     private func handleHomeAction(state: inout State, action: HomeFeature.Action) -> Effect<Action> {
         switch action {
-        case .delegate(.navigateToQuestionDetail(let question)):
-            state.homeQuestionDetail = QuestionDetailFeature.State(
-                question: question,
-                currentUser: state.home.currentUser
+        case .delegate(.showQuestionSheet(let question)):
+            state.questionSheet = QuestionSheetFeature.State(
+                questionText: question.content,
+                isAnswered: state.home.hasAnsweredToday
             )
             return .none
         case .delegate(.requestRefresh):
@@ -349,6 +349,79 @@ public struct MainTabFeature {
         case .presented(.delegate(.closed)):
             state.homeQuestionDetail = nil
             return .none
+        default:
+            return .none
+        }
+    }
+
+    private func handleQuestionSheetAction(
+        state: inout State,
+        action: PresentationAction<QuestionSheetFeature.Action>
+    ) -> Effect<Action> {
+        switch action {
+        case .presented(.delegate(.close)):
+            state.questionSheet = nil
+            return .none
+        case .presented(.delegate(.navigateToAnswer)):
+            state.questionSheet = nil
+            guard let question = state.home.todayQuestion else { return .none }
+            state.homeQuestionDetail = QuestionDetailFeature.State(
+                question: question,
+                currentUser: state.home.currentUser
+            )
+            return .none
+        case .presented(.delegate(.showWriteQuestionCost)):
+            state.questionSheet = nil
+            state.heartCostPopup = HeartCostPopupFeature.State(costType: .writeQuestion)
+            return .none
+        case .presented(.delegate(.showRefreshQuestionCost)):
+            state.questionSheet = nil
+            state.heartCostPopup = HeartCostPopupFeature.State(costType: .refreshQuestion)
+            return .none
+        default:
+            return .none
+        }
+    }
+
+    private func handleHeartCostPopupAction(
+        state: inout State,
+        action: PresentationAction<HeartCostPopupFeature.Action>
+    ) -> Effect<Action> {
+        switch action {
+        case .presented(.delegate(.confirmed(.writeQuestion))):
+            state.heartCostPopup = nil
+            state.writeQuestion = WriteQuestionFeature.State()
+            return .none
+        case .presented(.delegate(.confirmed(.refreshQuestion))):
+            state.heartCostPopup = nil
+            state.showRefreshToast = true
+            return .run { send in
+                try? await Task.sleep(nanoseconds: 3_000_000_000)
+                await send(.dismissRefreshToast)
+            }
+        case .presented(.delegate(.cancelled)):
+            state.heartCostPopup = nil
+            return .none
+        default:
+            return .none
+        }
+    }
+
+    private func handleWriteQuestionAction(
+        state: inout State,
+        action: PresentationAction<WriteQuestionFeature.Action>
+    ) -> Effect<Action> {
+        switch action {
+        case .presented(.delegate(.close)):
+            state.writeQuestion = nil
+            return .none
+        case .presented(.delegate(.questionSubmitted)):
+            state.writeQuestion = nil
+            state.showWriteToast = true
+            return .run { send in
+                try? await Task.sleep(nanoseconds: 3_000_000_000)
+                await send(.dismissWriteToast)
+            }
         default:
             return .none
         }

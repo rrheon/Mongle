@@ -73,7 +73,7 @@ public struct HomeFeature {
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
-            case navigateToQuestionDetail(Question)
+            case showQuestionSheet(Question)
             case navigateToNotifications
             case navigateToHeartsSystem
             case navigateToPeerAnswerSelfAnswered(String)
@@ -100,7 +100,7 @@ public struct HomeFeature {
 
             case .questionTapped:
                 guard let question = state.todayQuestion else { return .none }
-                return .send(.delegate(.navigateToQuestionDetail(question)))
+                return .send(.delegate(.showQuestionSheet(question)))
 
             case .notificationTapped:
                 return .send(.delegate(.navigateToNotifications))
