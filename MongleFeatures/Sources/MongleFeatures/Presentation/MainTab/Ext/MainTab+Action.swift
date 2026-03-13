@@ -10,6 +10,7 @@ import Domain
 
 extension MainTabFeature {
 
+  @CasePathable
     public enum Action: Equatable {
 
         // MARK: Tab
@@ -30,6 +31,9 @@ extension MainTabFeature {
         // MARK: Toast
         case dismissRefreshToast
         case dismissWriteToast
+
+        // MARK: Auth
+        case logout
 
         // MARK: Delegate
         case delegate(Delegate)
