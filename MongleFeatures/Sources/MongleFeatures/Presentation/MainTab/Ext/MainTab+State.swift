@@ -31,6 +31,9 @@ extension MainTabFeature {
         // MARK: Toast
         public var showRefreshToast = false
         public var showWriteToast = false
+        public var showNudgeToast = false
+        public var showEditAnswerToast = false
+        public var showAnswerSubmittedToast = false
 
         public enum Tab: Hashable {
             case home

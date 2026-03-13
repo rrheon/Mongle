@@ -31,6 +31,9 @@ extension MainTabFeature {
         // MARK: Toast
         case dismissRefreshToast
         case dismissWriteToast
+        case dismissNudgeToast
+        case dismissEditAnswerToast
+        case dismissAnswerSubmittedToast
 
         // MARK: Auth
         case logout

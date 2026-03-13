@@ -7,11 +7,17 @@ import SwiftUI
 public enum ToastType {
     case refreshQuestion   // 질문 다시받기 완료
     case writeQuestion     // 나만의 질문 작성 완료
+    case nudge             // 재촉하기 완료
+    case editAnswer        // 답변수정하기 완료
+    case answerSubmitted   // 답변 작성 완료
 
     var icon: String {
         switch self {
         case .refreshQuestion: return "arrow.clockwise.circle.fill"
         case .writeQuestion: return "pencil.circle.fill"
+        case .nudge: return "heart.fill"
+        case .editAnswer: return "checkmark.circle.fill"
+        case .answerSubmitted: return "paperplane.fill"
         }
     }
 
@@ -19,6 +25,9 @@ public enum ToastType {
         switch self {
         case .refreshQuestion: return "새로운 질문을 받았어요! 🎉"
         case .writeQuestion: return "나만의 질문을 등록했어요! ✏️"
+        case .nudge: return "재촉 메시지를 보냈어요! 💌"
+        case .editAnswer: return "답변을 수정했어요! ✅"
+        case .answerSubmitted: return "마음을 남겼어요! 🌿"
         }
     }
 
@@ -26,6 +35,9 @@ public enum ToastType {
         switch self {
         case .refreshQuestion: return MongleColor.secondary
         case .writeQuestion: return MongleColor.accentOrange
+        case .nudge: return MongleColor.heartRed
+        case .editAnswer: return MongleColor.primary
+        case .answerSubmitted: return MongleColor.primary
         }
     }
 }

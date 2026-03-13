@@ -67,6 +67,10 @@ extension MainTabFeature {
                     // MongleView에서 로컬 alert으로 처리
                     return .none
 
+                case .home(.delegate(.navigateToHeartsSystem)):
+                    state.modal = .heartInfoPopup(HeartInfoPopupFeature.State(hearts: state.home.hearts))
+                    return .none
+
                 case .home(.delegate(.requestRefresh)):
                     return .send(.delegate(.requestRefresh))
 
@@ -114,6 +118,12 @@ extension MainTabFeature {
                     state.modal = nil
                     return .none
 
+                // MARK: - HeartInfoPopup Delegate
+
+                case .modal(.presented(.heartInfoPopup(.delegate(.close)))):
+                    state.modal = nil
+                    return .none
+
                 // MARK: - PeerAnswer Delegate
 
                 case .modal(.presented(.peerAnswer(.delegate(.close)))):
@@ -125,6 +135,13 @@ extension MainTabFeature {
                 case .path(.element(id: _, action: .peerNudge(.delegate(.close)))):
                     state.path.removeLast()
                     return .none
+
+                case .path(.element(id: _, action: .peerNudge(.delegate(.nudgeSent)))):
+                    state.showNudgeToast = true
+                    return .run { send in
+                        try? await Task.sleep(nanoseconds: 3_000_000_000)
+                        await send(.dismissNudgeToast)
+                    }
 
                 // MARK: - AnswerFirstPopup Delegate
 
@@ -168,7 +185,19 @@ extension MainTabFeature {
 
                 case .path(.element(id: _, action: .questionDetail(.delegate(.answerSubmitted(_))))):
                     state.home.hasAnsweredToday = true
-                    return .none
+                    state.path.removeLast()
+                    state.showAnswerSubmittedToast = true
+                    return .run { send in
+                        try? await Task.sleep(nanoseconds: 3_000_000_000)
+                        await send(.dismissAnswerSubmittedToast)
+                    }
+
+                case .path(.element(id: _, action: .questionDetail(.delegate(.answerEdited(_))))):
+                    state.showEditAnswerToast = true
+                    return .run { send in
+                        try? await Task.sleep(nanoseconds: 3_000_000_000)
+                        await send(.dismissEditAnswerToast)
+                    }
 
                 case .path(.element(id: _, action: .questionDetail(.delegate(.closed)))):
                     state.path.removeLast()
@@ -184,6 +213,18 @@ extension MainTabFeature {
 
                 case .dismissWriteToast:
                     state.showWriteToast = false
+                    return .none
+
+                case .dismissNudgeToast:
+                    state.showNudgeToast = false
+                    return .none
+
+                case .dismissEditAnswerToast:
+                    state.showEditAnswerToast = false
+                    return .none
+
+                case .dismissAnswerSubmittedToast:
+                    state.showAnswerSubmittedToast = false
                     return .none
 
                 case .logout:

@@ -13,12 +13,14 @@ struct HomeTopBarState {
   var streakDays: Int
   var groupName: String
   var hasNotification: Bool
+  var hearts: Int
   var todayQuestion: TopBarQuestion?
 
   static let preview = HomeTopBarState(
     streakDays: 5,
     groupName: "Kim Family",
     hasNotification: true,
+    hearts: 5,
     todayQuestion: TopBarQuestion(
       id: UUID(),
       text: "What made you smile today?",
@@ -71,7 +73,8 @@ struct HomeView: View {
         TopBarView(
           state: topBarState,
           onQuestionTap: onQuestionTap,
-          onNotificationTap: onNotificationTap
+          onNotificationTap: onNotificationTap,
+          onHeartsTap: onHeartsTap
         )
 
         // Mongle Scene
@@ -94,6 +97,7 @@ struct TopBarView: View {
   let state: HomeTopBarState
   var onQuestionTap: () -> Void = { print("질문 카드 탭") }
   var onNotificationTap: () -> Void = { print("알림 탭") }
+  var onHeartsTap: () -> Void = {}
 
   var body: some View {
     VStack(spacing: 0) {
@@ -118,12 +122,38 @@ struct TopBarView: View {
 
       Spacer()
 
+      HeartsButtonView(hearts: state.hearts, onTap: onHeartsTap)
       NotificationButtonView(hasNotification: state.hasNotification, onTap: onNotificationTap)
     }
     .frame(height: 56)
     .padding(.horizontal, 20)
     .padding(.top, 60)
     .background(Color.white.ignoresSafeArea(edges: .top))
+  }
+}
+
+// MARK: 하트버튼
+
+private struct HeartsButtonView: View {
+  let hearts: Int
+  var onTap: () -> Void
+
+  var body: some View {
+    Button(action: onTap) {
+      HStack(spacing: 4) {
+        Image(systemName: "heart.fill")
+          .font(.system(size: 13))
+          .foregroundColor(MongleColor.heartRed)
+        Text("\(hearts)")
+          .font(MongleFont.captionBold())
+          .foregroundColor(MongleColor.textPrimary)
+      }
+      .padding(.vertical, 6)
+      .padding(.horizontal, 10)
+      .background(MongleColor.heartRedLight)
+      .clipShape(Capsule())
+    }
+    .buttonStyle(.plain)
   }
 }
 

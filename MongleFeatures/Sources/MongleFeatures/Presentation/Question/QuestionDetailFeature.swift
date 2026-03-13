@@ -83,6 +83,7 @@ public struct QuestionDetailFeature {
 
         public enum Delegate: Sendable, Equatable {
             case answerSubmitted(Answer)
+            case answerEdited(Answer)
             case closed
         }
     }
@@ -234,9 +235,10 @@ public struct QuestionDetailFeature {
                 return .none
 
             case .submitAnswerResponse(.success(let answer)):
+                let wasEditing = state.hasMyAnswer
                 state.isSubmitting = false
                 state.myAnswer = answer
-                return .send(.delegate(.answerSubmitted(answer)))
+                return .send(wasEditing ? .delegate(.answerEdited(answer)) : .delegate(.answerSubmitted(answer)))
 
             case .submitAnswerResponse(.failure(let error)):
                 state.isSubmitting = false

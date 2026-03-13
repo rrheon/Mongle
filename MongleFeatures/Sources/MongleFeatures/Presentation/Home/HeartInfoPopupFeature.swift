@@ -1,31 +1,22 @@
-import Foundation
 import ComposableArchitecture
 
 @Reducer
-public struct PeerNudgeFeature {
+public struct HeartInfoPopupFeature {
     @ObservableState
     public struct State: Equatable {
-        public var memberName: String
-        public var questionText: String
         public var hearts: Int
-        public var isSent: Bool
 
-        public init(memberName: String, questionText: String = "", hearts: Int = 5, isSent: Bool = false) {
-            self.memberName = memberName
-            self.questionText = questionText
+        public init(hearts: Int = 5) {
             self.hearts = hearts
-            self.isSent = isSent
         }
     }
 
     public enum Action: Sendable, Equatable {
-        case nudgeTapped
         case closeTapped
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
             case close
-            case nudgeSent
         }
     }
 
@@ -34,15 +25,8 @@ public struct PeerNudgeFeature {
     public var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
-            case .nudgeTapped:
-                guard state.hearts > 0 else { return .none }
-                state.hearts -= 1
-                state.isSent = true
-                return .send(.delegate(.nudgeSent))
-
             case .closeTapped:
                 return .send(.delegate(.close))
-
             case .delegate:
                 return .none
             }

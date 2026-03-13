@@ -36,7 +36,14 @@ struct MainTabView: View {
                 }
             }
             .animation(.none, value: store.modal?.heartCostPopup != nil)
-            .overlay(alignment: .top) {
+            .overlay {
+                if let popupStore = store.scope(state: \.modal?.heartInfoPopup, action: \.modal.heartInfoPopup) {
+                    HeartInfoPopupView(store: popupStore)
+                        .transition(.identity)
+                }
+            }
+            .animation(.none, value: store.modal?.heartInfoPopup != nil)
+            .overlay(alignment: .bottom) {
                 toastOverlay
             }
     }
@@ -92,6 +99,7 @@ struct MainTabView: View {
                 streakDays: 0,
                 groupName: store.home.family?.name ?? "우리 가족",
                 hasNotification: false,
+                hearts: store.home.hearts,
                 todayQuestion: store.home.todayQuestion.map {
                     TopBarQuestion(id: $0.id, text: $0.content, isAnswered: store.home.hasAnsweredToday)
                 }
@@ -128,16 +136,31 @@ struct MainTabView: View {
         VStack(spacing: 8) {
             if store.showRefreshToast {
                 MongleToastView(type: .refreshQuestion)
-                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
             }
             if store.showWriteToast {
                 MongleToastView(type: .writeQuestion)
-                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+            if store.showNudgeToast {
+                MongleToastView(type: .nudge)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+            if store.showEditAnswerToast {
+                MongleToastView(type: .editAnswer)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+            if store.showAnswerSubmittedToast {
+                MongleToastView(type: .answerSubmitted)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .padding(.top, 60)
+        .padding(.bottom, 90)
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: store.showRefreshToast)
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: store.showWriteToast)
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: store.showNudgeToast)
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: store.showEditAnswerToast)
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: store.showAnswerSubmittedToast)
     }
 
     // MARK: - Peer Answer Sheet

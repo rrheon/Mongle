@@ -22,6 +22,7 @@ public struct HomeFeature {
         public var errorMessage: String?
         public var hasFamily: Bool { family != nil }
         public var hasAnsweredToday: Bool = false
+        public var hearts: Int = 5
         public var familyAnswerCount: Int
         // 각 멤버별 답변 상태 (userId: hasAnswered)
         public var memberAnswerStatus: [UUID: Bool] = [:]
@@ -35,6 +36,7 @@ public struct HomeFeature {
             isRefreshing: Bool = false,
             errorMessage: String? = nil,
             hasAnsweredToday: Bool = false,
+            hearts: Int = 5,
             familyAnswerCount: Int = 0,
             memberAnswerStatus: [UUID: Bool] = [:]
         ) {
@@ -46,6 +48,7 @@ public struct HomeFeature {
             self.isRefreshing = isRefreshing
             self.errorMessage = errorMessage
             self.hasAnsweredToday = hasAnsweredToday
+            self.hearts = hearts
             self.familyAnswerCount = familyAnswerCount
             self.memberAnswerStatus = memberAnswerStatus
         }

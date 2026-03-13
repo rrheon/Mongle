@@ -44,6 +44,10 @@ public struct HistoryView: View {
                             }
                             .padding(.horizontal, 16)
                             .padding(.top, 12)
+                        } else {
+                            emptyDateCard
+                                .padding(.horizontal, 16)
+                                .padding(.top, 12)
                         }
                     }
                     .padding(.bottom, 24)
@@ -233,6 +237,28 @@ public struct HistoryView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
+        .background(Color.white)
+        .cornerRadius(16)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(MongleColor.border, lineWidth: 1)
+        )
+    }
+
+    private var emptyDateCard: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "calendar.badge.exclamationmark")
+                .font(.system(size: 32))
+                .foregroundColor(MongleColor.textHint)
+            Text("이 날의 기록이 없어요")
+                .font(MongleFont.body2Bold())
+                .foregroundColor(MongleColor.textHint)
+            Text(selectedDateLabel)
+                .font(MongleFont.caption())
+                .foregroundColor(MongleColor.textHint.opacity(0.7))
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 36)
         .background(Color.white)
         .cornerRadius(16)
         .overlay(
