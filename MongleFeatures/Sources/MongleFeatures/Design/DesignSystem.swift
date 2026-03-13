@@ -17,43 +17,65 @@ public enum MongleColor {
     public static let primaryDark = Color(light: "388E3C", dark: "5BAF85")
     public static let primarySoft = Color(light: "43A047", dark: "6BBF93")
 
+    // Primary gradient (button, badge gradients)
+    public static let primaryGradientStart = Color(hex: "6BBF93")
+    public static let primaryGradientEnd = Color(hex: "7BC8A0")
+    public static let primaryXLight = Color(hex: "C2E8D4")
+    public static let primaryMuted = Color(hex: "5BAF85")
+    public static let primaryDeep = Color(hex: "2E7D32")
+
     // Secondary / warm accent
     public static let secondary = Color(light: "FF7043", dark: "F5978E")
-    public static let secondaryLight = Color(light: "FFCCBC", dark: "FFE5D9")
-
-    // XP / progress bar green
-    public static let xpGreen = Color(light: "66BB6A", dark: "8DD4AE")
 
     // Social Login
     public static let kakao = Color(hex: "FEE500")
-    public static let kakaoText = Color(hex: "191919")
     public static let naver = Color(hex: "03C75A")
     public static let naverText = Color(hex: "FFFFFF")
     public static let apple = Color(light: "000000", dark: "FFFFFF")
     public static let appleText = Color(light: "FFFFFF", dark: "000000")
+    public static let googleBorder = Color(hex: "747775")
+    public static let googleRed = Color(hex: "EA4335")
+    public static let googleBlue = Color(hex: "4285F4")
+    public static let googleYellow = Color(hex: "FBBC05")
+    public static let googleGreen = Color(hex: "34A853")
 
     // Background
     public static let background = Color(light: "F8FAF8", dark: "F8FAF8")
     public static let surface = Color(light: "FDF8F5", dark: "FDF8F5")
-    public static let surfaceWarm = Color(light: "FFF0E8", dark: "FFF0E8")
+    public static let bgNeutral = Color(hex: "F5F4F1")
+    public static let bgCreamy = Color(hex: "FFFCF8")
+    public static let bgWarm = Color(hex: "FFF0E6")
+    public static let bgNeutralWarm = Color(hex: "F3EFEA")
+    public static let bgInfoLight = Color(hex: "E8F2FD")
+    public static let bgSuccessLight = Color(hex: "E8F6EA")
+    public static let bgWarmLight = Color(hex: "FFF1E2")
+    public static let bgMintLight = Color(hex: "EAF7EE")
+    public static let bgErrorLight = Color(hex: "FCEEEF")
+    public static let bgDanger = Color(hex: "FDE8E8")
+    public static let bgErrorSoft = Color(hex: "FDEBEC")
+    public static let bgYellowSoft = Color(hex: "FFF1DE")
+    public static let bgPeach = Color(hex: "FFE5D9")
+
+    // App background gradient
+    public static let gradientBgStart = Color(hex: "FFF8F0")
+    public static let gradientBgMid = Color(hex: "FFF2EB")
+    public static let gradientBgEnd = Color(hex: "EFF8F1")
 
     // Card
     public static let cardBackground = Color.white.opacity(0.8)
     public static let cardBackgroundSolid = Color.white
-    public static let cardBackgroundHighlight = Color.white.opacity(0.6)
     public static let cardGlass = Color.white.opacity(0.6)
 
-    // Border
+    // Border / Divider
     public static let border = Color(hex: "E0E0E0")
     public static let borderCard = Color.white.opacity(0.2)
+    public static let borderWarm = Color(hex: "EEE3D8")
     public static let divider = Color(hex: "E0E0E0")
 
-    // Text (text-primary: #1A1A1A, text-secondary: #6D6D6D, text-tertiary: #9E9E9E)
+    // Text
     public static let textPrimary = Color(hex: "1A1A1A")
     public static let textSecondary = Color(hex: "6D6D6D")
     public static let textHint = Color(hex: "9E9E9E")
-    public static let textOnPrimary = Color(hex: "FFFFFF")
-    public static let textOnDark = Color(hex: "FFFFFF")
 
     // Status
     public static let error = Color(hex: "F44336")
@@ -61,17 +83,6 @@ public enum MongleColor {
     public static let success = Color(light: "4CAF50", dark: "66BB6A")
     public static let info = Color(hex: "42A5F5")
     public static let notificationDot = Color(hex: "F44336")
-
-    // Gradient (bg-gradient-start → bg-gradient-end)
-    public static let gradientStart = Color(hex: "43A047")
-    public static let gradientEnd = Color(hex: "4CAF50")
-    public static var gradient: LinearGradient {
-        LinearGradient(
-            colors: [gradientStart, gradientEnd],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-    }
 
     // Monggle character colors
     public static let monggleGreen = Color(light: "66BB6A", dark: "8DD4AE")
@@ -98,27 +109,31 @@ public enum MongleColor {
     public static let moodTired = Color(hex: "B39DDB")
     public static let moodTiredLight = Color(hex: "E0D6F0")
 
-    // Streak
-    public static let streakFire = Color(light: "FF6D00", dark: "F5978E")
-
     // Heart / like
     public static let heartRed = Color(hex: "FF6B6B")
     public static let heartRedLight = Color(hex: "FFE5E5")
+    public static let heartPink = Color(hex: "FF7C85")
+    public static let heartPinkLight = Color(hex: "FF9393")
+    public static let heartPastel = Color(hex: "FFB3B8")
+    public static let heartPastelLight = Color(hex: "FFD8D8")
 
     // Accent
-    public static let accentBlue = Color(hex: "42A5F5")
-    public static let accentCoral = Color(light: "FF7043", dark: "F5978E")
-    public static let accentYellow = Color(hex: "FFD54F")
-    public static let accentPurple = Color(hex: "AB47BC")
-    public static let accentPink = Color(hex: "F06292")
     public static let accentOrange = Color(hex: "FF9800")
     public static let accentPeach = Color(hex: "F7B4A0")
+    public static let accentYellowLight = Color(hex: "FFE082")
+    public static let coralLight = Color(hex: "FF8A80")
 
-    // Mint background
-    public static let bgMint = Color(light: "D4EDDA", dark: "E8F5EE")
-    public static let bgPeach = Color(hex: "FFE5D9")
+    // UI extras
+    public static let brown = Color(hex: "5D4037")
+    public static let pageIndicatorInactive = Color(hex: "E7DED5")
+
+    // Calendar
+    public static let calendarSunday = Color(hex: "1565C0")
+
+    // Shadow
     public static let shadowColor = Color(light: "1A1A1A14", dark: "D4A09014")
     public static let shadowWarm = Color(hex: "D4A09020")
+    public static let shadowBase = Color(hex: "D4A090")
 }
 
 
