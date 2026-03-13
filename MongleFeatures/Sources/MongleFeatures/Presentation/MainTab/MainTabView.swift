@@ -16,29 +16,26 @@ struct MainTabView: View {
 
     var body: some View {
         tabContent
-            .sheet(item: $store.scope(state: \.profileEdit, action: \.profileEdit)) { profileEditStore in
-                ProfileEditView(store: profileEditStore)
-            }
-            .sheet(item: $store.scope(state: \.peerAnswer, action: \.peerAnswer)) { peerAnswerStore in
+            .sheet(item: $store.scope(state: \.modal?.peerAnswer, action: \.modal.peerAnswer)) { peerAnswerStore in
                 peerAnswerSheet(store: peerAnswerStore)
             }
-            .sheet(item: $store.scope(state: \.questionSheet, action: \.questionSheet)) { sheetStore in
+            .sheet(item: $store.scope(state: \.modal?.questionSheet, action: \.modal.questionSheet)) { sheetStore in
                 questionSheetView(store: sheetStore)
             }
             .overlay {
-                if let popupStore = $store.scope(state: \.answerFirstPopup, action: \.answerFirstPopup).wrappedValue {
+                if let popupStore = store.scope(state: \.modal?.answerFirstPopup, action: \.modal.answerFirstPopup) {
                     AnswerFirstPopupView(store: popupStore)
                         .transition(.identity)
                 }
             }
-            .animation(.none, value: store.answerFirstPopup != nil)
+            .animation(.none, value: store.modal?.answerFirstPopup != nil)
             .overlay {
-                if let popupStore = $store.scope(state: \.heartCostPopup, action: \.heartCostPopup).wrappedValue {
+                if let popupStore = store.scope(state: \.modal?.heartCostPopup, action: \.modal.heartCostPopup) {
                     HeartCostPopupView(store: popupStore)
                         .transition(.identity)
                 }
             }
-            .animation(.none, value: store.heartCostPopup != nil)
+            .animation(.none, value: store.modal?.heartCostPopup != nil)
             .overlay(alignment: .top) {
                 toastOverlay
             }
@@ -52,45 +49,43 @@ struct MainTabView: View {
             HistoryView(store: store.scope(state: \.history, action: \.history))
                 .tabItem { Label("HISTORY", systemImage: "book") }
                 .tag(MainTabFeature.State.Tab.history)
-            NotificationView(store: store.scope(state: \.notification, action: \.notification))
-                .tabItem { Label("NOTICE", systemImage: "bell") }
-                .tag(MainTabFeature.State.Tab.notification)
-            SettingsTabView(store: store.scope(state: \.settings, action: \.settings))
-                .tabItem { Label("MY", systemImage: "gearshape") }
+//            NotificationView(store: store.scope(state: \.notification, action: \.notification))
+//                .tabItem { Label("NOTICE", systemImage: "bell") }
+//                .tag(MainTabFeature.State.Tab.notification)
+            ProfileEditView(store: store.scope(state: \.profile, action: \.profile))
+                .tabItem { Label("MY", systemImage: "person") }
                 .tag(MainTabFeature.State.Tab.settings)
         }
-        .accentColor(Color(hex: "2E7D32"))
+        .accentColor(MongleColor.primaryDeep)
     }
 
     // MARK: - Home Tab
 
     private var homeTab: some View {
-        NavigationStack {
+        NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
             homeViewSection
-                .navigationDestination(
-                    item: $store.scope(state: \.peerNudge, action: \.peerNudge)
-                ) { nudgeStore in
-                    PeerNudgeView(store: nudgeStore)
-                        .navigationBarBackButtonHidden(true)
-                }
-                .navigationDestination(
-                    item: $store.scope(state: \.homeQuestionDetail, action: \.homeQuestionDetail)
-                ) { detailStore in
-                    QuestionDetailView(store: detailStore)
-                        .navigationBarBackButtonHidden(true)
-                }
-                .navigationDestination(
-                    item: $store.scope(state: \.writeQuestion, action: \.writeQuestion)
-                ) { writeStore in
-                    WriteQuestionView(store: writeStore)
-                        .navigationBarBackButtonHidden(true)
-                }
+        } destination: { store in
+            switch store.case {
+            case let .questionDetail(detailStore):
+                QuestionDetailView(store: detailStore)
+                    .navigationBarBackButtonHidden(true)
+            case let .notification(notificationStore):
+                NotificationView(store: notificationStore)
+                    .navigationBarBackButtonHidden(true)
+            case let .peerNudge(nudgeStore):
+                PeerNudgeView(store: nudgeStore)
+                    .navigationBarBackButtonHidden(true)
+            case let .writeQuestion(writeStore):
+                WriteQuestionView(store: writeStore)
+                    .navigationBarBackButtonHidden(true)
+            }
         }
         .tabItem { Label("HOME", systemImage: "house") }
         .tag(MainTabFeature.State.Tab.home)
     }
 
-    // MARK: - Subviews (동일)
+    // MARK: - Subviews
+
     private var homeViewSection: some View {
         HomeView(
             topBarState: HomeTopBarState(
