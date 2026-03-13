@@ -86,7 +86,6 @@ public struct NotificationFeature {
         public enum Delegate: Sendable, Equatable {
             case close
             case navigateToQuestion
-            case navigateToTree
             case navigateToPeerNotAnsweredNudge(String)
         }
     }
@@ -128,10 +127,8 @@ public struct NotificationFeature {
                     let member = extractMemberName(from: notification.title) ?? "가족"
                     return .send(.delegate(.navigateToPeerNotAnsweredNudge(member)))
 
-                case .newQuestion, .allAnswered, .memberAnswered:
+                case .newQuestion, .allAnswered, .memberAnswered, .badgeEarned:
                     return .send(.delegate(.navigateToQuestion))
-                case .treeGrowth, .badgeEarned:
-                    return .send(.delegate(.navigateToTree))
                 }
 
             case .markAsRead(let notification):
@@ -252,15 +249,6 @@ private func generateMockNotifications() -> [MongleNotification] {
             body: "Mom의 답변을 보고 공감 버튼을 눌러보세요.",
             isRead: true,
             createdAt: calendar.date(byAdding: .day, value: -2, to: Date()) ?? Date()
-        ),
-        MongleNotification(
-            id: UUID(),
-            userId: userId,
-            type: .treeGrowth,
-            title: "우리만의 감정 공간이 자라고 있어요",
-            body: "가족 나무가 한 단계 성장했어요.",
-            isRead: true,
-            createdAt: calendar.date(byAdding: .day, value: -5, to: Date()) ?? Date()
         ),
         MongleNotification(
             id: UUID(),

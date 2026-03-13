@@ -216,8 +216,6 @@ private struct NotificationCard: View {
             return "checkmark.circle.fill"
         case .answerRequest:
             return "bell.badge.fill"
-        case .treeGrowth:
-            return "leaf.fill"
         case .badgeEarned:
             return "gift.fill"
         }
@@ -233,8 +231,6 @@ private struct NotificationCard: View {
             return MongleColor.success
         case .answerRequest:
             return MongleColor.accentOrange
-        case .treeGrowth:
-            return MongleColor.primary
         case .badgeEarned:
             return MongleColor.moodLoved
         }
@@ -250,8 +246,6 @@ private struct NotificationCard: View {
             return MongleColor.bgSuccessLight
         case .answerRequest:
             return MongleColor.bgWarmLight
-        case .treeGrowth:
-            return MongleColor.bgMintLight
         case .badgeEarned:
             return MongleColor.bgErrorLight
         }

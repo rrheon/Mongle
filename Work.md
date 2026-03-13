@@ -1,21 +1,22 @@
 # 작업해야할 것
 작업 위치
 
-- /Users/yong/Desktop/FamTree/MongleFeatures/Sources/MongleFeatures/Presentation
+- /Users/yong/Desktop/FamTree
  
 UI 확인
 - MongleUI.Pen
 
-ProfileEditView -> 몽글카드를 눌렀을 때 이동하는 새로운 화면 생성
-1. UI 생성
-- UI 구성
- 06 · 06-E · Profile Edit 화면과 동일하게 만들것
- 
- 구성
- - 프로필편집 저장
-   지금 설정된 몽글의 색상
-   이름 변경
-   오늘의 기분
-   몽글 캐릭터 선택 카드
-   
-   저장하기버튼
+HomeView 
+- 알림버튼 또한 하트버튼과 동일하게 UI를 가져가게 설정해줄 것
+
+ProfileEditView
+- 몽글의 색상 밑 사용자의 이름 -> >버튼을 제거하고 화면이동 연결된 것을 해제하기
+
+  활동 및 기록
+  - 기분 설정 -> 프로필 편집으로 변경 -> 기분 및 이름을 변경할 수 있는 화면 (몽글의 색상 밑 사용자의 이름에 원래 달려있던 화면 ) 으로 push 방식으로 이동할 것
+  - 기분 히스토리 -> SupportScreenView 로 push 방식으로 이동하게 수정
+  
+  앱 설정
+  - 알림 설정 -> 알림 설정하는 화면을 찾아서 push방식으로 이동하기 없다면 만들 것
+  - 그룹 관리 -> 그룹 관리하는 화면을 찾아서 push방식으로 이동하기 없다면 만들 것 
+  - 계정 관리 -> 계정 관리하는 화면을 찾아서 push방식으로 이동하기 없다면 만들 것

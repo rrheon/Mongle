@@ -82,29 +82,3 @@ struct LoadingView: View {
     )
 }
 
-//#Preview("Root - Authenticated") {
-//    RootView(
-//        store: Store(
-//            initialState: RootFeature.State(
-//                appState: .authenticated,
-//                mainTab: MainTabFeature.State(
-//                    home: HomeFeature.State(
-//                        todayQuestion: Question(
-//                            id: UUID(),
-//                            content: "오늘 가장 감사했던 순간은 언제인가요?",
-//                            category: .gratitude,
-//                            order: 1
-//                        ),
-//                        familyTree: TreeProgress(
-//                            stage: .youngTree,
-//                            totalAnswers: 12,
-//                            consecutiveDays: 5
-//                        )
-//                    )
-//                )
-//            )
-//        ) {
-//            RootFeature()
-//        }
-//    )
-//}
