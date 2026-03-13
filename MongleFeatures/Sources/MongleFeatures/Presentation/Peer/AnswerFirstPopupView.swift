@@ -13,7 +13,7 @@ public struct AnswerFirstPopupView: View {
             icon: .init(
                 systemName: "pencil.circle.fill",
                 foregroundColor: MongleColor.accentOrange,
-                backgroundColor: Color(hex: "FFF1DE")
+                backgroundColor: MongleColor.bgYellowSoft
             ),
             title: "아직 오늘 답변을 안 했어요!",
             description: store.popupType == .nudge

@@ -97,14 +97,14 @@ public struct MongleCardEditView: View {
 
                 // Left eye
                 Circle()
-                    .fill(Color(hex: "1A1A1A"))
+                    .fill(MongleColor.textPrimary)
                     .frame(width: 13, height: 13)
                     .overlay(Circle().stroke(Color.white, lineWidth: 1.5).frame(width: 15, height: 15))
                     .offset(x: -10, y: 2)
 
                 // Right eye
                 Circle()
-                    .fill(Color(hex: "1A1A1A"))
+                    .fill(MongleColor.textPrimary)
                     .frame(width: 13, height: 13)
                     .overlay(Circle().stroke(Color.white, lineWidth: 1.5).frame(width: 15, height: 15))
                     .offset(x: 10, y: 2)
@@ -162,7 +162,7 @@ public struct MongleCardEditView: View {
             .clipShape(RoundedRectangle(cornerRadius: MongleRadius.medium))
             .overlay(
                 RoundedRectangle(cornerRadius: MongleRadius.medium)
-                    .stroke(Color(hex: "a8dfbc"), lineWidth: 1.5)
+                    .stroke(MongleColor.moodCalm, lineWidth: 1.5)
             )
 
             Text("다른 멤버에게 보여지는 이름이에요")

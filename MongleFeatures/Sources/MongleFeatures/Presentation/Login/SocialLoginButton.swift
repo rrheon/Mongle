@@ -88,7 +88,7 @@ struct SocialLoginButton: View {
         switch provider {
         case .google:
             RoundedRectangle(cornerRadius: provider.cornerRadius)
-                .stroke(Color(hex: "747775").opacity(0.3), lineWidth: 1)
+                .stroke(MongleColor.googleBorder.opacity(0.3), lineWidth: 1)
         default:
             EmptyView()
         }
@@ -189,7 +189,7 @@ private struct GoogleLogoIcon: View {
             red.addLine(to: pt(10.54, 19.41))
             red.addCurve(to: pt(24, 9.5),       control1: pt(12.43, 13.72), control2: pt(17.74, 9.5))
             red.closeSubpath()
-            context.fill(red, with: .color(Color(hex: "EA4335")))
+            context.fill(red, with: .color(MongleColor.googleRed))
 
             // Blue — right arc (#4285F4)
             var blue = Path()
@@ -202,7 +202,7 @@ private struct GoogleLogoIcon: View {
             blue.addLine(to: pt(39.89, 42.2))
             blue.addCurve(to: pt(46.98, 24.55), control1: pt(44.4, 38.02),  control2: pt(46.98, 31.84))
             blue.closeSubpath()
-            context.fill(blue, with: .color(Color(hex: "4285F4")))
+            context.fill(blue, with: .color(MongleColor.googleBlue))
 
             // Yellow — left arc (#FBBC05)
             var yellow = Path()
@@ -214,7 +214,7 @@ private struct GoogleLogoIcon: View {
             yellow.addCurve(to: pt(2.56, 34.78),  control1: pt(0, 27.88),     control2: pt(0.92, 31.54))
             yellow.addLine(to: pt(10.53, 28.59))
             yellow.closeSubpath()
-            context.fill(yellow, with: .color(Color(hex: "FBBC05")))
+            context.fill(yellow, with: .color(MongleColor.googleYellow))
 
             // Green — bottom arc (#34A853)
             var green = Path()
@@ -226,7 +226,7 @@ private struct GoogleLogoIcon: View {
             green.addLine(to: pt(2.55, 34.77))
             green.addCurve(to: pt(24, 48),       control1: pt(6.51, 42.62),  control2: pt(14.62, 48))
             green.closeSubpath()
-            context.fill(green, with: .color(Color(hex: "34A853")))
+            context.fill(green, with: .color(MongleColor.googleGreen))
         }
         .frame(width: size, height: size)
     }

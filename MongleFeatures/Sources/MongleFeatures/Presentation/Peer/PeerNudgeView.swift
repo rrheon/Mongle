@@ -156,7 +156,7 @@ public struct PeerNudgeView: View {
             .frame(height: 52)
             .background(
                 LinearGradient(
-                    colors: [Color(hex: "FF8A80"), MongleColor.heartRed],
+                    colors: [MongleColor.coralLight, MongleColor.heartRed],
                     startPoint: UnitPoint(x: 0.15, y: 0.15),
                     endPoint: UnitPoint(x: 0.85, y: 0.85)
                 )

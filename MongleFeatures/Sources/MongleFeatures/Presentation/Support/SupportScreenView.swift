@@ -88,7 +88,7 @@ public struct SupportScreenView: View {
             .padding(MongleSpacing.xl)
             .background(
                 LinearGradient(
-                    colors: [Color(hex: "FF7C85"), Color(hex: "FF9393")],
+                    colors: [MongleColor.heartPink, MongleColor.heartPinkLight],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
@@ -109,8 +109,8 @@ public struct SupportScreenView: View {
                 sectionTitle("하트 얻는 방법", subtitle: "매일 쌓이는 하트 규칙")
 
                 HStack(spacing: MongleSpacing.sm) {
-                    miniHeartCard(title: "오늘 접속하기", subtitle: "매일 1회", value: "+1", tint: Color(hex: "FFB3B8"))
-                    miniHeartCard(title: "질문에 답변하기", subtitle: "답변 1회당", value: "+3", tint: Color(hex: "FFD8D8"))
+                    miniHeartCard(title: "오늘 접속하기", subtitle: "매일 1회", value: "+1", tint: MongleColor.heartPastel)
+                    miniHeartCard(title: "질문에 답변하기", subtitle: "답변 1회당", value: "+3", tint: MongleColor.heartPastelLight)
                 }
             }
 
@@ -187,7 +187,7 @@ public struct SupportScreenView: View {
                 .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
                 .overlay(
                     RoundedRectangle(cornerRadius: MongleRadius.large)
-                        .stroke(Color(hex: "EEE3D8"), lineWidth: 1)
+                        .stroke(MongleColor.borderWarm, lineWidth: 1)
                 )
             }
         }
@@ -259,7 +259,7 @@ public struct SupportScreenView: View {
             .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
             .overlay(
                 RoundedRectangle(cornerRadius: MongleRadius.large)
-                    .stroke(Color(hex: "EEE3D8"), lineWidth: 1)
+                    .stroke(MongleColor.borderWarm, lineWidth: 1)
             )
 
             VStack(alignment: .leading, spacing: MongleSpacing.sm) {
@@ -284,7 +284,7 @@ public struct SupportScreenView: View {
             .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
             .overlay(
                 RoundedRectangle(cornerRadius: MongleRadius.large)
-                    .stroke(Color(hex: "EEE3D8"), lineWidth: 1)
+                    .stroke(MongleColor.borderWarm, lineWidth: 1)
             )
 
             HStack(spacing: MongleSpacing.xs) {
@@ -323,7 +323,7 @@ public struct SupportScreenView: View {
             .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
             .overlay(
                 RoundedRectangle(cornerRadius: MongleRadius.large)
-                    .stroke(Color(hex: "EEE3D8"), lineWidth: 1)
+                    .stroke(MongleColor.borderWarm, lineWidth: 1)
             )
 
             infoStrip(
@@ -374,7 +374,7 @@ public struct SupportScreenView: View {
             .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
             .overlay(
                 RoundedRectangle(cornerRadius: MongleRadius.large)
-                    .stroke(Color(hex: "EEE3D8"), lineWidth: 1)
+                    .stroke(MongleColor.borderWarm, lineWidth: 1)
             )
         }
     }
@@ -415,7 +415,7 @@ public struct SupportScreenView: View {
             .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
             .overlay(
                 RoundedRectangle(cornerRadius: MongleRadius.large)
-                    .stroke(Color(hex: "EEE3D8"), lineWidth: 1)
+                    .stroke(MongleColor.borderWarm, lineWidth: 1)
             )
 
             VStack(alignment: .leading, spacing: MongleSpacing.sm) {
@@ -458,7 +458,7 @@ public struct SupportScreenView: View {
                     .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
                     .overlay(
                         RoundedRectangle(cornerRadius: MongleRadius.large)
-                            .stroke(Color(hex: "EEE3D8"), lineWidth: 1)
+                            .stroke(MongleColor.borderWarm, lineWidth: 1)
                     )
                 }
             }
@@ -515,7 +515,7 @@ public struct SupportScreenView: View {
             .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
             .overlay(
                 RoundedRectangle(cornerRadius: MongleRadius.large)
-                    .stroke(Color(hex: "EEE3D8"), lineWidth: 1)
+                    .stroke(MongleColor.borderWarm, lineWidth: 1)
             )
             }
 
@@ -544,7 +544,7 @@ public struct SupportScreenView: View {
             .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
             .overlay(
                 RoundedRectangle(cornerRadius: MongleRadius.large)
-                    .stroke(Color(hex: "EEE3D8"), lineWidth: 1)
+                    .stroke(MongleColor.borderWarm, lineWidth: 1)
             )
 
             VStack(alignment: .leading, spacing: MongleSpacing.sm) {
@@ -577,7 +577,7 @@ public struct SupportScreenView: View {
             .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
             .overlay(
                 RoundedRectangle(cornerRadius: MongleRadius.large)
-                    .stroke(Color(hex: "EEE3D8"), lineWidth: 1)
+                    .stroke(MongleColor.borderWarm, lineWidth: 1)
             )
         }
     }
@@ -615,7 +615,7 @@ public struct SupportScreenView: View {
             Spacer()
         }
         .padding(MongleSpacing.md)
-        .monglePanel(background: Color(hex: "FFFCF8"), cornerRadius: MongleRadius.large, shadowOpacity: 0.02)
+        .monglePanel(background: MongleColor.bgCreamy, cornerRadius: MongleRadius.large, shadowOpacity: 0.02)
     }
 
     private func invitePill(_ title: String) -> some View {

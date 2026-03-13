@@ -57,33 +57,37 @@ public struct HistoryView: View {
     // MARK: - Header
 
     private var headerView: some View {
-        HStack(spacing: 0) {
-            Button { store.send(.previousMonth) } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(MongleColor.textPrimary)
-                    .frame(width: 44, height: 44)
-            }
-            .buttonStyle(.plain)
-
-            Spacer()
-
-            Text(store.monthTitle)
-                .font(MongleFont.body1Bold())
+        HStack(spacing: 12) {
+            Text("기록")
+                .font(MongleFont.heading3().weight(.bold))
                 .foregroundColor(MongleColor.textPrimary)
 
             Spacer()
 
-            Button { store.send(.nextMonth) } label: {
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 16, weight: .medium))
+            HStack(spacing: 4) {
+                Button { store.send(.previousMonth) } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(MongleColor.textPrimary)
+                        .frame(width: 28, height: 28)
+                }
+                .buttonStyle(.plain)
+
+                Text(store.monthTitle)
+                    .font(MongleFont.captionBold())
                     .foregroundColor(MongleColor.textPrimary)
-                    .frame(width: 44, height: 44)
+
+                Button { store.send(.nextMonth) } label: {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(MongleColor.textPrimary)
+                        .frame(width: 28, height: 28)
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
         }
         .frame(height: 56)
-        .padding(.horizontal, 8)
+        .padding(.horizontal, 20)
         .background(Color.white)
     }
 
@@ -97,8 +101,8 @@ public struct HistoryView: View {
                     Text(weekdays[i])
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(
-                            i == 0 ? Color(hex: "F44336") :
-                            i == 6 ? Color(hex: "1565C0") :
+                            i == 0 ? MongleColor.error :
+                            i == 6 ? MongleColor.calendarSunday :
                             MongleColor.textPrimary
                         )
                         .frame(maxWidth: .infinity)
@@ -132,8 +136,8 @@ public struct HistoryView: View {
         let numColor: Color = {
             if isToday { return .white }
             if !isCurrentMonth { return MongleColor.textHint.opacity(0.4) }
-            if weekday == 1 { return Color(hex: "F44336") }
-            if weekday == 7 { return Color(hex: "1565C0") }
+            if weekday == 1 { return MongleColor.error }
+            if weekday == 7 { return MongleColor.calendarSunday }
             return MongleColor.textPrimary
         }()
 

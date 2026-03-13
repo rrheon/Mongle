@@ -18,25 +18,28 @@ public struct ProfileEditView: View {
 
     public var body: some View {
         NavigationStack {
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: MongleSpacing.lg) {
-                    profileCard
-                    moodSection
-                    groupSection
+            VStack(spacing: 0) {
+                headerView
 
-                    Text("몽글 v1.0.0")
-                        .font(MongleFont.caption())
-                        .foregroundColor(MongleColor.textHint)
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, MongleSpacing.sm)
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: MongleSpacing.lg) {
+                        profileCard
+                        moodSection
+                        groupSection
+
+                        Text("몽글 v1.0.0")
+                            .font(MongleFont.caption())
+                            .foregroundColor(MongleColor.textHint)
+                            .frame(maxWidth: .infinity)
+                            .padding(.top, MongleSpacing.sm)
+                    }
+                    .padding(.horizontal, MongleSpacing.md)
+                    .padding(.top, MongleSpacing.md)
+                    .padding(.bottom, MongleSpacing.xl)
                 }
-                .padding(.horizontal, MongleSpacing.md)
-                .padding(.top, MongleSpacing.md)
-                .padding(.bottom, MongleSpacing.xl)
+                .background(MongleColor.background)
             }
-            .background(MongleColor.background)
-            .navigationTitle("설정")
-            .navigationBarTitleDisplayMode(.automatic)
+            .navigationBarHidden(true)
             .onAppear { store.send(.onAppear) }
             .sheet(
                 item: $store.scope(state: \.mongleCardEdit, action: \.mongleCardEdit)
@@ -44,6 +47,21 @@ public struct ProfileEditView: View {
                 MongleCardEditView(store: cardEditStore)
             }
         }
+    }
+
+    // MARK: - Header
+
+    private var headerView: some View {
+        HStack(spacing: 12) {
+            Text("MY")
+                .font(MongleFont.heading3().weight(.bold))
+                .foregroundColor(MongleColor.textPrimary)
+
+            Spacer()
+        }
+        .frame(height: 56)
+        .padding(.horizontal, 20)
+        .background(Color.white)
     }
 
     // MARK: - Profile Card
@@ -126,7 +144,7 @@ public struct ProfileEditView: View {
                 ProfileSettingsRow(
                     icon: "person.3.fill",
                     iconColor: MongleColor.accentOrange,
-                    iconBackground: Color(hex: "FFF0E6"),
+                    iconBackground: MongleColor.bgWarm,
                     title: "그룹 관리",
                     subtitle: "멤버 초대, 그룹 설정",
                     action: { store.send(.groupManagementTapped) }

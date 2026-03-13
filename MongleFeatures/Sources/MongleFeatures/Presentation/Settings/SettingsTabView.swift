@@ -105,7 +105,7 @@ struct SettingsTabView: View {
             .padding(MongleSpacing.md)
             .background(
                 LinearGradient(
-                    colors: [Color(hex: "FFFCF8"), Color.white],
+                    colors: [MongleColor.bgCreamy, Color.white],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
@@ -154,7 +154,7 @@ struct SettingsTabView: View {
                 SettingsRowModel(
                     icon: "person.3.fill",
                     iconColor: MongleColor.accentOrange,
-                    iconBackground: Color(hex: "FFF0E6"),
+                    iconBackground: MongleColor.bgWarm,
                     title: "그룹 관리",
                     subtitle: "멤버 초대, 그룹 설정",
                     action: { store.send(.groupManagementTapped) }
@@ -162,7 +162,7 @@ struct SettingsTabView: View {
                 SettingsRowModel(
                     icon: "bell.badge.fill",
                     iconColor: MongleColor.info,
-                    iconBackground: Color(hex: "E8F2FD"),
+                    iconBackground: MongleColor.bgInfoLight,
                     title: "알림 센터",
                     subtitle: "가족 답변과 시스템 알림 확인",
                     action: { store.send(.notificationsTapped) }
@@ -178,7 +178,7 @@ struct SettingsTabView: View {
                 SettingsRowModel(
                     icon: "rectangle.portrait.and.arrow.right",
                     iconColor: MongleColor.textPrimary,
-                    iconBackground: Color(hex: "F3EFEA"),
+                    iconBackground: MongleColor.bgNeutralWarm,
                     title: "로그아웃",
                     subtitle: "현재 계정에서 로그아웃",
                     action: { store.send(.logoutTapped) }
@@ -186,7 +186,7 @@ struct SettingsTabView: View {
                 SettingsRowModel(
                     icon: "trash.fill",
                     iconColor: MongleColor.error,
-                    iconBackground: Color(hex: "FDE8E8"),
+                    iconBackground: MongleColor.bgDanger,
                     title: "회원탈퇴",
                     subtitle: "모든 데이터를 삭제하고 앱을 떠나요",
                     titleColor: MongleColor.error,

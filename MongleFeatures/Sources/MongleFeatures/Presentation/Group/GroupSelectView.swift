@@ -339,10 +339,10 @@ public struct GroupSelectView: View {
       // 프로세스 진행 UI
       HStack(spacing: MongleSpacing.xs) {
         Capsule()
-          .fill(Color(hex: "A8DFBC"))
+          .fill(MongleColor.moodCalm)
           .frame(height: 4)
         Capsule()
-          .fill(Color(hex: "A8DFBC").opacity(0.3))
+          .fill(MongleColor.moodCalm.opacity(0.3))
           .frame(height: 4)
       }
       .padding(.bottom, MongleSpacing.sm)
@@ -441,10 +441,10 @@ public struct GroupSelectView: View {
       // 프로세스 진행 UI
       HStack(spacing: MongleSpacing.xs) {
         Capsule()
-          .fill(Color(hex: "A8DFBC"))
+          .fill(MongleColor.moodCalm)
           .frame(height: 4)
         Capsule()
-          .fill(Color(hex: "A8DFBC"))
+          .fill(MongleColor.moodCalm)
           .frame(height: 4)
       }
       .padding(.bottom, MongleSpacing.sm)

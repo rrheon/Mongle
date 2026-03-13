@@ -10,7 +10,7 @@ public struct OnboardingView: View {
 
     public var body: some View {
         ZStack {
-            backgroundLayer
+            MongleBackground()
 
             VStack(spacing: 0) {
                 TabView(selection: $store.currentIndex.sending(\.pageChanged)) {
@@ -154,7 +154,7 @@ public struct OnboardingView: View {
         HStack(spacing: 6) {
             ForEach(store.pages) { page in
                 Capsule()
-                    .fill(page.index == store.currentIndex ? MongleColor.primary : Color(hex: "E7DED5"))
+                    .fill(page.index == store.currentIndex ? MongleColor.primary : MongleColor.pageIndicatorInactive)
                     .frame(width: page.index == store.currentIndex ? 28 : 8, height: 8)
                     .animation(.easeInOut(duration: 0.2), value: store.currentIndex)
             }
@@ -171,16 +171,7 @@ public struct OnboardingView: View {
         }
     }
 
-    // MARK: - Background
 
-    private var backgroundLayer: some View {
-        LinearGradient(
-            colors: [Color(hex: "FFF8F0"), Color(hex: "FFF2EB"), Color(hex: "EFF8F1")],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .ignoresSafeArea()
-    }
 }
 
 #Preview("Onboarding") {
