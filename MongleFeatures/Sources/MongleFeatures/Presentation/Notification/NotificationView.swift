@@ -35,26 +35,38 @@ public struct NotificationView: View {
     }
 
     private var headerView: some View {
-        HStack(spacing: 12) {
+        ZStack {
             Text("알림")
                 .font(MongleFont.heading3().weight(.bold))
                 .foregroundColor(MongleColor.textPrimary)
 
-            Spacer()
-
-            if store.hasUnread {
+            HStack {
                 Button {
-                    store.send(.markAllAsRead)
+                    store.send(.backTapped)
                 } label: {
-                    Text("모두 읽음")
-                        .font(MongleFont.captionBold())
-                        .foregroundColor(MongleColor.textSecondary)
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(MongleColor.textPrimary)
+                        .frame(width: 44, height: 44)
                 }
                 .buttonStyle(.plain)
+
+                Spacer()
+
+                if store.hasUnread {
+                    Button {
+                        store.send(.markAllAsRead)
+                    } label: {
+                        Text("모두 읽음")
+                            .font(MongleFont.captionBold())
+                            .foregroundColor(MongleColor.textSecondary)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
         }
         .frame(height: 56)
-        .padding(.horizontal, 20)
+        .padding(.horizontal, 8)
         .background(Color.white)
     }
 
@@ -169,7 +181,7 @@ private struct NotificationCard: View {
                     Circle()
                         .fill(
                             RadialGradient(
-                                colors: [Color(hex: "FFE082"), Color(hex: "FFD54F")],
+                                colors: [MongleColor.accentYellowLight, MongleColor.moodHappy],
                                 center: .init(x: 0.35, y: 0.35),
                                 startRadius: 4,
                                 endRadius: 22
@@ -231,17 +243,17 @@ private struct NotificationCard: View {
     private var iconBackground: Color {
         switch notification.type {
         case .newQuestion:
-            return Color(hex: "E8F2FD")
+            return MongleColor.bgInfoLight
         case .memberAnswered:
             return MongleColor.primaryLight
         case .allAnswered:
-            return Color(hex: "E8F6EA")
+            return MongleColor.bgSuccessLight
         case .answerRequest:
-            return Color(hex: "FFF1E2")
+            return MongleColor.bgWarmLight
         case .treeGrowth:
-            return Color(hex: "EAF7EE")
+            return MongleColor.bgMintLight
         case .badgeEarned:
-            return Color(hex: "FCEEEF")
+            return MongleColor.bgErrorLight
         }
     }
 
@@ -254,7 +266,7 @@ private struct NotificationCard: View {
 
     private var eye: some View {
         Circle()
-            .fill(Color(hex: "5D4037"))
+            .fill(MongleColor.brown)
             .frame(width: 6, height: 7)
             .overlay(Circle().stroke(Color.white, lineWidth: 1))
     }

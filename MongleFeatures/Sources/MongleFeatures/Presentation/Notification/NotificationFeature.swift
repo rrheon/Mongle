@@ -65,6 +65,7 @@ public struct NotificationFeature {
     public enum Action: Sendable, Equatable {
         // MARK: - View Actions
         case onAppear
+        case backTapped
         case refresh
         case notificationTapped(MongleNotification)
         case markAsRead(MongleNotification)
@@ -83,6 +84,7 @@ public struct NotificationFeature {
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
+            case close
             case navigateToQuestion
             case navigateToTree
             case navigateToPeerNotAnsweredNudge(String)
@@ -102,6 +104,9 @@ public struct NotificationFeature {
                     let mockData = generateMockNotifications()
                     await send(.notificationsLoaded(mockData))
                 }
+
+            case .backTapped:
+                return .send(.delegate(.close))
 
             case .refresh:
                 state.isLoading = true
