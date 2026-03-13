@@ -44,7 +44,7 @@ public struct QuestionSheetView: View {
 
     private var dragHandle: some View {
         RoundedRectangle(cornerRadius: MongleRadius.full)
-            .fill(Color(hex: "E0E0E0"))
+            .fill(MongleColor.border)
             .frame(width: 36, height: 4)
             .frame(maxWidth: .infinity)
             .padding(.top, 12)
