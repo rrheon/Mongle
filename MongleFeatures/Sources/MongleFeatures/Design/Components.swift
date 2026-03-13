@@ -37,13 +37,13 @@ public struct MongleButtonPrimary: View {
             .frame(height: 48)
             .background(
                 LinearGradient(
-                    colors: [Color(hex: "6BBF93"), Color(hex: "7BC8A0")],
+                    colors: [MongleColor.primaryGradientStart, MongleColor.primaryGradientEnd],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
             )
             .clipShape(Capsule())
-            .shadow(color: Color(hex: "6BBF93").opacity(0.2), radius: 12, x: 0, y: 4)
+            .shadow(color: MongleColor.primaryGradientStart.opacity(0.2), radius: 12, x: 0, y: 4)
         }
     }
 }
@@ -77,7 +77,7 @@ public struct MongleButtonSecondary: View {
             .background(Color.white.opacity(0.8))
             .clipShape(Capsule())
             .overlay(Capsule().stroke(MongleColor.primary, lineWidth: 1.5))
-            .shadow(color: Color(hex: "D4A090").opacity(0.08), radius: 8, x: 0, y: 2)
+            .shadow(color: MongleColor.shadowBase.opacity(0.08), radius: 8, x: 0, y: 2)
         }
     }
 }
@@ -131,7 +131,7 @@ public struct MongleButtonSmallPill: View {
                 .frame(height: 32)
                 .background(
                     LinearGradient(
-                        colors: [Color(hex: "6BBF93"), Color(hex: "7BC8A0")],
+                        colors: [MongleColor.primaryGradientStart, MongleColor.primaryGradientEnd],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -193,13 +193,13 @@ public struct MongleButtonCTA: View {
             .frame(height: 56)
             .background(
                 LinearGradient(
-                    colors: [Color(hex: "6BBF93"), Color(hex: "7BC8A0")],
+                    colors: [MongleColor.primaryGradientStart, MongleColor.primaryGradientEnd],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
             )
             .clipShape(Capsule())
-            .shadow(color: Color(hex: "6BBF93").opacity(0.25), radius: 16, x: 0, y: 6)
+            .shadow(color: MongleColor.primaryGradientStart.opacity(0.25), radius: 16, x: 0, y: 6)
         }
     }
 }
@@ -232,7 +232,7 @@ public struct MongleInputText: View {
         .background(Color.white)
         .cornerRadius(MongleRadius.medium)
         .overlay(RoundedRectangle(cornerRadius: MongleRadius.medium).stroke(MongleColor.border, lineWidth: 1))
-        .shadow(color: Color(hex: "D4A090").opacity(0.08), radius: 6, x: 0, y: 2)
+        .shadow(color: MongleColor.shadowBase.opacity(0.08), radius: 6, x: 0, y: 2)
     }
 }
 
@@ -264,7 +264,7 @@ public struct MongleInputTextArea: View {
         .background(Color.white)
         .cornerRadius(MongleRadius.medium)
         .overlay(RoundedRectangle(cornerRadius: MongleRadius.medium).stroke(MongleColor.border, lineWidth: 1))
-        .shadow(color: Color(hex: "D4A090").opacity(0.08), radius: 6, x: 0, y: 2)
+        .shadow(color: MongleColor.shadowBase.opacity(0.08), radius: 6, x: 0, y: 2)
     }
 }
 
@@ -284,14 +284,14 @@ public struct MongleBadgeLevel: View {
         HStack(spacing: 4) {
             Text("Lv.\(level)")
                 .font(MongleFont.captionBold())
-                .foregroundColor(Color(hex: "F5978E"))
+                .foregroundColor(MongleColor.moodLoved)
             Text(name)
                 .font(.system(size: 12, weight: .medium))
-                .foregroundColor(Color(hex: "F5978E"))
+                .foregroundColor(MongleColor.moodLoved)
         }
         .padding(.horizontal, 12)
         .frame(height: 28)
-        .background(Color(hex: "FFE5D9"))
+        .background(MongleColor.bgPeach)
         .clipShape(Capsule())
     }
 }
@@ -319,13 +319,13 @@ public struct MongleBadgeStreak: View {
         .frame(height: 32)
         .background(
             LinearGradient(
-                colors: [Color(hex: "F5978E"), Color(hex: "F7B4A0")],
+                colors: [MongleColor.moodLoved, MongleColor.accentPeach],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
         )
         .clipShape(Capsule())
-        .shadow(color: Color(hex: "F5978E").opacity(0.2), radius: 8, x: 0, y: 2)
+        .shadow(color: MongleColor.moodLoved.opacity(0.2), radius: 8, x: 0, y: 2)
     }
 }
 
@@ -346,7 +346,7 @@ public struct MongleBadgeAnswered: View {
         .frame(height: 24)
         .background(
             LinearGradient(
-                colors: [Color(hex: "6BBF93"), Color(hex: "7BC8A0")],
+                colors: [MongleColor.primaryGradientStart, MongleColor.primaryGradientEnd],
                 startPoint: .top,
                 endPoint: .bottom
             )
@@ -414,11 +414,11 @@ public struct MongleMonggle: View {
 
                 HStack(spacing: eyeSize * 0.6) {
                     Circle()
-                        .fill(Color(hex: "1A1A1A"))
+                        .fill(MongleColor.textPrimary)
                         .frame(width: eyeSize, height: eyeSize)
                         .overlay(Circle().stroke(Color.white, lineWidth: 1.5))
                     Circle()
-                        .fill(Color(hex: "1A1A1A"))
+                        .fill(MongleColor.textPrimary)
                         .frame(width: eyeSize, height: eyeSize)
                         .overlay(Circle().stroke(Color.white, lineWidth: 1.5))
                 }
@@ -488,12 +488,12 @@ public struct MongleXPBar: View {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule()
-                        .fill(Color(hex: "C2E8D4"))
+                        .fill(MongleColor.primaryXLight)
                         .frame(height: 8)
                     Capsule()
                         .fill(
                             LinearGradient(
-                                colors: [Color(hex: "5BAF85"), Color(hex: "7BC8A0")],
+                                colors: [MongleColor.primaryMuted, MongleColor.primaryGradientEnd],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -532,7 +532,7 @@ public struct MongleCardQuestion: View {
                         .font(.system(size: 16))
                     Text(label)
                         .font(MongleFont.captionBold())
-                        .foregroundColor(Color(hex: "5BAF85"))
+                        .foregroundColor(MongleColor.primaryMuted)
                 }
 
                 HStack(alignment: .center) {
@@ -551,14 +551,15 @@ public struct MongleCardQuestion: View {
             .background(.ultraThinMaterial)
             .cornerRadius(MongleRadius.xl)
             .overlay(RoundedRectangle(cornerRadius: MongleRadius.xl).stroke(Color.white.opacity(0.2), lineWidth: 1))
-            .shadow(color: Color(hex: "D4A090").opacity(0.12), radius: 16, x: 0, y: 4)
+            .shadow(color: MongleColor.shadowBase.opacity(0.12), radius: 16, x: 0, y: 4)
         }
         .buttonStyle(.plain)
         .disabled(onTap == nil)
     }
 }
 
-/// component/Card/Glass — generic glass container card
+// MARK: component/Card/Glass — generic glass container card
+
 public struct MongleCardGlass<Content: View>: View {
     let title: String
     var description: String? = nil
@@ -590,67 +591,74 @@ public struct MongleCardGlass<Content: View>: View {
         .background(.ultraThinMaterial)
         .cornerRadius(MongleRadius.xl)
         .overlay(RoundedRectangle(cornerRadius: MongleRadius.xl).stroke(Color.white.opacity(0.2), lineWidth: 1))
-        .shadow(color: Color(hex: "D4A090").opacity(0.12), radius: 20, x: 0, y: 4)
+        .shadow(color: MongleColor.shadowBase.opacity(0.12), radius: 20, x: 0, y: 4)
     }
 }
+// MARK: MongleCardGroup
 
-/// component/Card/Group — group card with name, XP bar, member avatars
 public struct MongleCardGroup: View {
     let groupName: String
-    let level: Int
-    let levelName: String
-    let xpCurrent: Int
-    let xpTotal: Int
     let memberColors: [Color]
+    var streakDays: Int? = nil
     var onTap: (() -> Void)? = nil
 
     public init(
         groupName: String,
-        level: Int,
-        levelName: String,
-        xpCurrent: Int,
-        xpTotal: Int,
         memberColors: [Color],
+        streakDays: Int? = nil,
         onTap: (() -> Void)? = nil
     ) {
         self.groupName = groupName
-        self.level = level
-        self.levelName = levelName
-        self.xpCurrent = xpCurrent
-        self.xpTotal = xpTotal
         self.memberColors = memberColors
+        self.streakDays = streakDays
         self.onTap = onTap
     }
 
     public var body: some View {
         Button { onTap?() } label: {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Text(groupName)
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(MongleColor.textPrimary)
-                    Spacer()
-                    MongleBadgeLevel(level: level, name: levelName)
+          VStack(alignment: .leading, spacing: 10) {
+            HStack {
+              VStack(alignment: .leading, spacing: 12) {
+                Text(groupName)
+                  .font(.system(size: 18, weight: .semibold))
+                  .foregroundColor(MongleColor.textPrimary)
+                
+                HStack(spacing: -10) {
+                  ForEach(memberColors.indices, id: \.self) { i in
+                    MongleMonggle(color: memberColors[i], size: 36)
+                      .overlay(Circle().stroke(Color.white, lineWidth: 2).frame(width: 36, height: 36))
+                      .zIndex(Double(memberColors.count - i))
+                  }
                 }
-
-                MongleXPBar(level: level, levelName: levelName, current: xpCurrent, total: xpTotal)
-
-                HStack(spacing: -8) {
-                    ForEach(memberColors.indices, id: \.self) { i in
-                        Circle()
-                            .fill(memberColors[i])
-                            .frame(width: 32, height: 32)
-                            .overlay(Circle().stroke(Color.white, lineWidth: 2))
-                            .shadow(color: Color(hex: "D4A090").opacity(0.08), radius: 4, x: 0, y: 1)
-                            .zIndex(Double(memberColors.count - i))
-                    }
-                }
+                
+              }
+              
+              Spacer()
+              
+              Image(systemName: "chevron.right")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(MongleColor.textHint)
+              
             }
-            .padding(20)
-            .background(.ultraThinMaterial)
+            
+            if let streakDays {
+              Text("\(streakDays)일 연속")
+                .font(MongleFont.captionBold())
+                .foregroundColor(.white)
+                .padding(.horizontal, MongleSpacing.sm)
+                .padding(.vertical, 3)
+                .background(MongleColor.primaryLight)
+                .clipShape(Capsule())
+            }
+          }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 20)
+            .frame(height: 130)
+
+            .background(MongleColor.cardGlass)
             .cornerRadius(MongleRadius.xl)
-            .overlay(RoundedRectangle(cornerRadius: MongleRadius.xl).stroke(Color.white.opacity(0.2), lineWidth: 1))
-            .shadow(color: Color(hex: "D4A090").opacity(0.12), radius: 20, x: 0, y: 4)
+            .overlay(RoundedRectangle(cornerRadius: MongleRadius.xl).stroke(MongleColor.border, lineWidth: 1))
+            .shadow(color: MongleColor.shadowBase.opacity(0.12), radius: 20, x: 0, y: 4)
         }
         .buttonStyle(.plain)
     }
@@ -660,9 +668,9 @@ public struct MongleCardGroup: View {
 public struct MongleCardEmotion: View {
     let date: String
     let mood: String
-    var gradientColors: [Color] = [Color(hex: "F7B4A0"), Color(hex: "C2E8D4")]
+    var gradientColors: [Color] = [MongleColor.accentPeach, MongleColor.primaryXLight]
 
-    public init(date: String, mood: String, gradientColors: [Color] = [Color(hex: "F7B4A0"), Color(hex: "C2E8D4")]) {
+    public init(date: String, mood: String, gradientColors: [Color] = [MongleColor.accentPeach, MongleColor.primaryXLight]) {
         self.date = date
         self.mood = mood
         self.gradientColors = gradientColors
@@ -696,7 +704,7 @@ public struct MongleCardEmotion: View {
         .background(.ultraThinMaterial)
         .cornerRadius(MongleRadius.xl)
         .overlay(RoundedRectangle(cornerRadius: MongleRadius.xl).stroke(Color.white.opacity(0.2), lineWidth: 1))
-        .shadow(color: Color(hex: "D4A090").opacity(0.12), radius: 16, x: 0, y: 4)
+        .shadow(color: MongleColor.shadowBase.opacity(0.12), radius: 16, x: 0, y: 4)
     }
 }
 
@@ -862,7 +870,7 @@ public struct MongleMoodSelector: View {
         .background(.ultraThinMaterial)
         .cornerRadius(MongleRadius.xl)
         .overlay(RoundedRectangle(cornerRadius: MongleRadius.xl).stroke(Color.white.opacity(0.2), lineWidth: 1))
-        .shadow(color: Color(hex: "D4A090").opacity(0.12), radius: 16, x: 0, y: 4)
+        .shadow(color: MongleColor.shadowBase.opacity(0.12), radius: 16, x: 0, y: 4)
     }
 }
 
@@ -932,14 +940,14 @@ public struct MongleSheetAnswer: View {
         VStack(spacing: 20) {
             // Handle bar
             RoundedRectangle(cornerRadius: 100)
-                .fill(Color(hex: "E0E0E0"))
+                .fill(MongleColor.border)
                 .frame(width: 40, height: 4)
 
             // Question
             VStack(alignment: .leading, spacing: 8) {
                 Text("🌿 Today's Question")
                     .font(MongleFont.captionBold())
-                    .foregroundColor(Color(hex: "5BAF85"))
+                    .foregroundColor(MongleColor.primaryMuted)
 
                 Text(question)
                     .font(.system(size: 18, weight: .semibold))
@@ -964,7 +972,62 @@ public struct MongleSheetAnswer: View {
         .padding(.bottom, 32)
         .background(Color.white)
         .cornerRadius(24, corners: [.topLeft, .topRight])
-        .shadow(color: Color(hex: "1A1A1A").opacity(0.1), radius: 20, x: 0, y: -4)
+        .shadow(color: MongleColor.textPrimary.opacity(0.1), radius: 20, x: 0, y: -4)
+    }
+}
+
+// MARK: - Panel Modifier
+
+extension View {
+    public func monglePanel(
+        background: Color = MongleColor.cardGlass,
+        cornerRadius: CGFloat = MongleRadius.xl,
+        borderColor: Color = MongleColor.borderCard,
+        shadowOpacity: CGFloat = 0.12
+    ) -> some View {
+        self
+            .background(background)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(borderColor, lineWidth: 1)
+            )
+            .shadow(color: MongleColor.shadowWarm.opacity(shadowOpacity), radius: 20, x: 0, y: 4)
+    }
+}
+
+// MARK: - Error Banner
+
+public struct MongleErrorBanner: View {
+    let message: String
+    let onDismiss: () -> Void
+
+    public init(message: String, onDismiss: @escaping () -> Void) {
+        self.message = message
+        self.onDismiss = onDismiss
+    }
+
+    public var body: some View {
+        HStack(spacing: MongleSpacing.sm) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundColor(.orange)
+
+            Text(message)
+                .font(MongleFont.body2())
+                .foregroundColor(MongleColor.textPrimary)
+                .lineLimit(2)
+
+            Spacer()
+
+            Button(action: onDismiss) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(MongleColor.textSecondary)
+            }
+        }
+        .padding(MongleSpacing.md)
+        .background(Color.orange.opacity(0.1))
+        .cornerRadius(MongleRadius.medium)
     }
 }
 
@@ -1006,7 +1069,7 @@ private struct RoundedCorner: Shape {
         }
         .padding()
     }
-    .background(Color(hex: "F5F4F1"))
+    .background(MongleColor.bgNeutral)
 }
 
 #Preview("Badges") {
@@ -1020,7 +1083,7 @@ private struct RoundedCorner: Shape {
         }
     }
     .padding()
-    .background(Color(hex: "F5F4F1"))
+    .background(MongleColor.bgNeutral)
 }
 
 #Preview("Monggle") {
@@ -1032,7 +1095,7 @@ private struct RoundedCorner: Shape {
         MongleMonggle.orange(name: "Dad")
     }
     .padding()
-    .background(Color(hex: "F5F4F1"))
+    .background(MongleColor.bgNeutral)
 }
 
 #Preview("Cards") {
@@ -1044,10 +1107,6 @@ private struct RoundedCorner: Shape {
             )
             MongleCardGroup(
                 groupName: "Kim Family",
-                level: 3,
-                levelName: "Cozy Forest",
-                xpCurrent: 420,
-                xpTotal: 500,
                 memberColors: [MongleColor.monggleGreen, MongleColor.monggleYellow, MongleColor.monggleBlue, MongleColor.mongglePink, MongleColor.monggleOrange]
             )
             HStack {
@@ -1057,7 +1116,7 @@ private struct RoundedCorner: Shape {
         }
         .padding()
     }
-    .background(Color(hex: "F5F4F1"))
+    .background(MongleColor.bgNeutral)
 }
 
 #Preview("MoodSelector") {
@@ -1069,10 +1128,271 @@ private struct RoundedCorner: Shape {
         }
     }
     return PreviewWrapper()
-        .background(Color(hex: "F5F4F1"))
+        .background(MongleColor.bgNeutral)
 }
 
 #Preview("Header") {
     MongleHeaderHome(familyName: "Kim Family", streakDays: 5, hasNotification: true)
-        .background(Color(hex: "F5F4F1"))
+        .background(MongleColor.bgNeutral)
+}
+
+// MARK: - Mongle Character Movement Model
+
+public struct MongleCharacter: Identifiable {
+    public let id = UUID()
+    public let name: String
+    public let color: Color
+    public var hasAnswered: Bool
+    public var position: CGPoint
+    public var targetPosition: CGPoint
+    public var overlapCounter: Int = 0  // 충돌 지속 프레임 수
+    public var stepCount: Int = 0       // 이동 누적 스텝 수 (hop 위상 계산용)
+    public var restFramesLeft: Int = 0  // 휴식 남은 프레임 수 (> 0 이면 정지)
+
+    public init(name: String, color: Color, hasAnswered: Bool, position: CGPoint, targetPosition: CGPoint) {
+        self.name = name
+        self.color = color
+        self.hasAnswered = hasAnswered
+        self.position = position
+        self.targetPosition = targetPosition
+    }
+}
+
+// MARK: - Mongle Interactive View (상태 배지 + 캐릭터)
+
+public struct MongleView: View {
+    public let name: String
+    public let color: Color
+    public let hasAnswered: Bool
+    public let hasCurrentUserAnswered: Bool
+    public let onViewAnswer: () -> Void
+    public let onNudge: () -> Void
+
+    // 팝업: 답변완료 캐릭터 탭 + 내가 미답변 → "먼저 답변하면 볼 수 있어요"
+    @State private var showAnswerFirstToViewAlert = false
+    // 팝업: 미답변 캐릭터 탭 + 내가 미답변 → "먼저 답변하면 재촉할 수 있어요"
+    @State private var showAnswerFirstToNudgeAlert = false
+
+    public init(name: String, color: Color, hasAnswered: Bool, hasCurrentUserAnswered: Bool,
+                onViewAnswer: @escaping () -> Void,
+                onNudge: @escaping () -> Void) {
+        self.name = name
+        self.color = color
+        self.hasAnswered = hasAnswered
+        self.hasCurrentUserAnswered = true
+        self.onViewAnswer = onViewAnswer
+        self.onNudge = onNudge
+    }
+
+    private func handleTap() {
+      // 상대의 답변여부, 나의 답변여부
+      switch (hasAnswered, hasCurrentUserAnswered) {
+      case (true, true):
+          onViewAnswer() // 둘 다 답변 완료 -> 답변 보기
+          
+      case (true, false):
+          showAnswerFirstToViewAlert = true  // 상대만 완료 -> 내가 먼저 써야 함 (팝업)
+          
+      case (false, true):
+          onNudge()  // 나만 완료 -> 상대에게 재촉하기
+          
+      case (false, false):
+          showAnswerFirstToNudgeAlert = true // 둘 다 미완료 -> 내가 먼저 써야 재촉 가능 (팝업)
+      }
+    }
+
+    public var body: some View {
+        Button(action: handleTap) {
+            VStack(spacing: 4) {
+                statusBadge
+                MongleMonggle(color: color, name: name)
+            }
+        }
+        .buttonStyle(.plain)
+        .alert("\(name)의 답변 보기", isPresented: $showAnswerFirstToViewAlert) {
+            Button("확인", role: .cancel) {}
+        } message: {
+            Text("오늘의 질문에 먼저 답변하면\n\(name)의 답변을 볼 수 있어요!")
+        }
+        .alert("\(name) 재촉하기", isPresented: $showAnswerFirstToNudgeAlert) {
+            Button("확인", role: .cancel) {}
+        } message: {
+            Text("오늘의 질문에 먼저 답변하면\n\(name)에게 재촉할 수 있어요!")
+        }
+    }
+
+    @ViewBuilder
+    private var statusBadge: some View {
+        HStack(spacing: 4) {
+            Image(systemName: hasAnswered ? "checkmark.circle.fill" : "clock")
+                .font(.system(size: 10, weight: .bold))
+            Text(hasAnswered ? "답변완료" : "미답변")
+                .font(.caption2.bold())
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(hasAnswered ? Color.green.opacity(0.85) : Color.gray.opacity(0.4))
+        .foregroundColor(.white)
+        .clipShape(Capsule())
+    }
+}
+
+// MARK: - Mongle Scene (구역 내 이동 + 충돌 감지)
+
+public struct MongleSceneView: View {
+    public var hasCurrentUserAnswered: Bool = false
+    public var onViewAnswer: (String) -> Void = { _ in }
+    public var onNudge: (String) -> Void = { _ in }
+
+    private let stepSize: CGFloat = 2.0
+    private let interval: TimeInterval = 0.12
+    private let collisionRadius: CGFloat = 76
+    private let targetThreshold: CGFloat = 12
+    private let wallPadding: CGFloat = 50
+    private let overlapLimit: Int = 10
+
+    @State private var mongles: [MongleCharacter] = []
+    @State private var timer: Timer?
+
+    private static let memberData: [(String, Color, Bool)] = [
+        ("Dad", .orange, true),
+        ("Mom", .green, false),
+        ("Lily", .yellow, true),
+        ("Ben", .blue, false),
+        ("Alex", .pink, true)
+    ]
+
+    public init(hasCurrentUserAnswered: Bool = false,
+                onViewAnswer: @escaping (String) -> Void = { _ in },
+                onNudge: @escaping (String) -> Void = { _ in }) {
+        self.hasCurrentUserAnswered = hasCurrentUserAnswered
+        self.onViewAnswer = onViewAnswer
+        self.onNudge = onNudge
+    }
+
+    public var body: some View {
+        GeometryReader { geo in
+            ZStack {
+                ForEach(mongles) { h in
+                    let hopY = -abs(sin(CGFloat(h.stepCount) * .pi / 5.0)) * 12
+                    MongleView(
+                        name: h.name,
+                        color: h.color,
+                        hasAnswered: h.hasAnswered,
+                        hasCurrentUserAnswered: hasCurrentUserAnswered,
+                        onViewAnswer: { onViewAnswer(h.name) },
+                        onNudge: { onNudge(h.name) }
+                    )
+                    .position(CGPoint(x: h.position.x, y: h.position.y + hopY))
+                    .animation(.linear(duration: interval), value: h.stepCount)
+                }
+            }
+            .onAppear {
+                if geo.size.width > 0, geo.size.height > 0 {
+                    if mongles.isEmpty { initMongles(size: geo.size) }
+                    startTimer(size: geo.size)
+                }
+            }
+            .onChange(of: geo.size) { _, newSize in
+                guard newSize.width > 0, newSize.height > 0 else { return }
+                if mongles.isEmpty { initMongles(size: newSize) }
+                if timer == nil { startTimer(size: newSize) }
+            }
+            .onDisappear {
+                timer?.invalidate()
+                timer = nil
+            }
+        }
+        .frame(maxHeight: .infinity)
+    }
+
+    private func initMongles(size: CGSize) {
+        guard size.width > 0, size.height > 0 else { return }
+        var placed: [CGPoint] = []
+        mongles = Self.memberData.map { name, color, hasAnswered in
+            var pos = randomPos(size: size)
+            for _ in 0..<30 {
+                let overlaps = placed.contains { hypot(pos.x - $0.x, pos.y - $0.y) < collisionRadius }
+                if !overlaps { break }
+                pos = randomPos(size: size)
+            }
+            placed.append(pos)
+            return MongleCharacter(
+                name: name,
+                color: color,
+                hasAnswered: hasAnswered,
+                position: pos,
+                targetPosition: randomPos(size: size)
+            )
+        }
+    }
+
+    private func randomPos(size: CGSize) -> CGPoint {
+        CGPoint(
+            x: CGFloat.random(in: wallPadding...(size.width - wallPadding)),
+            y: CGFloat.random(in: wallPadding...(size.height - wallPadding))
+        )
+    }
+
+    private func startTimer(size: CGSize) {
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { _ in
+            step(size: size)
+        }
+    }
+
+    private func step(size: CGSize) {
+        for i in mongles.indices {
+            if mongles[i].restFramesLeft > 0 {
+                mongles[i].restFramesLeft -= 1
+                if mongles[i].restFramesLeft == 0 {
+                    mongles[i].targetPosition = randomPos(size: size)
+                }
+                continue
+            }
+
+            var pos = mongles[i].position
+            let target = mongles[i].targetPosition
+            let dx = target.x - pos.x
+            let dy = target.y - pos.y
+            let dist = hypot(dx, dy)
+
+            if dist < targetThreshold {
+                if Bool.random() {
+                    mongles[i].restFramesLeft = Int.random(in: 10...50)
+                } else {
+                    mongles[i].targetPosition = randomPos(size: size)
+                }
+                continue
+            }
+
+            pos.x += (dx / dist) * stepSize
+            pos.y += (dy / dist) * stepSize
+
+            if pos.x < wallPadding || pos.x > size.width - wallPadding ||
+                pos.y < wallPadding || pos.y > size.height - wallPadding {
+                pos.x = min(max(pos.x, wallPadding), size.width - wallPadding)
+                pos.y = min(max(pos.y, wallPadding), size.height - wallPadding)
+                mongles[i].targetPosition = randomPos(size: size)
+            }
+
+            let collides = mongles.indices.contains { j in
+                guard j != i else { return false }
+                return hypot(pos.x - mongles[j].position.x,
+                             pos.y - mongles[j].position.y) < collisionRadius
+            }
+            if collides {
+                mongles[i].overlapCounter += 1
+                if mongles[i].overlapCounter >= overlapLimit {
+                    mongles[i].targetPosition = randomPos(size: size)
+                    mongles[i].overlapCounter = 0
+                }
+                continue
+            }
+
+            mongles[i].overlapCounter = 0
+            mongles[i].stepCount += 1
+            mongles[i].position = pos
+        }
+    }
 }

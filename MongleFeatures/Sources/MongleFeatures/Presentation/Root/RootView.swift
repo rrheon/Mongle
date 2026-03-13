@@ -22,8 +22,19 @@ public struct RootView: View {
             case .loading:
                 LoadingView()
 
+            case .onboarding:
+                OnboardingView(store: store.scope(state: \.onboarding, action: \.onboarding))
+
             case .unauthenticated:
                 LoginView(store: store.scope(state: \.login, action: \.login))
+
+            case .guestBrowsing:
+                if let mainTabStore = store.scope(state: \.mainTab, action: \.mainTab) {
+                    MainTabView(store: mainTabStore)
+                }
+
+            case .groupSelection:
+                GroupSelectView(store: store.scope(state: \.groupSelect, action: \.groupSelect))
 
             case .authenticated:
                 if let mainTabStore = store.scope(state: \.mainTab, action: \.mainTab) {

@@ -109,7 +109,7 @@
 				EEF770AE2F0508AA0049EBB9 /* MongleData */,
 				EEF772032F07D3780049EBB9 /* MongleFeatures */,
 			);
-			productName = FamTree;
+			productName = Mongle;
 			productReference = EE964B902EE97EF000AD2760 /* Mongle.app */;
 			productType = "com.apple.product-type.application";
 		};

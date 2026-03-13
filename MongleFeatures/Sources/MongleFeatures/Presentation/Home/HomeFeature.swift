@@ -14,7 +14,6 @@ public struct HomeFeature {
     @ObservableState
     public struct State: Equatable {
         public var todayQuestion: Question?
-        public var familyTree: TreeProgress = TreeProgress()
         public var family: MongleGroup?
         public var familyMembers: [User] = []
         public var currentUser: User?
@@ -29,7 +28,6 @@ public struct HomeFeature {
 
         public init(
             todayQuestion: Question? = nil,
-            familyTree: TreeProgress = TreeProgress(),
             family: MongleGroup? = nil,
             familyMembers: [User] = [],
             currentUser: User? = nil,
@@ -41,7 +39,6 @@ public struct HomeFeature {
             memberAnswerStatus: [UUID: Bool] = [:]
         ) {
             self.todayQuestion = todayQuestion
-            self.familyTree = familyTree
             self.family = family
             self.familyMembers = familyMembers
             self.currentUser = currentUser
@@ -58,6 +55,12 @@ public struct HomeFeature {
         // MARK: - View Actions
         case onAppear
         case questionTapped
+        case notificationTapped
+        case heartsTapped
+        case peerAnswerTapped(String)
+        case answerRequiredTapped(String)
+        case peerNudgeTapped(String)
+        case nudgeUnavailableTapped(String)
         case refreshData
         case dismissError
 
@@ -70,7 +73,13 @@ public struct HomeFeature {
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
-            case navigateToQuestionDetail(Question)
+            case showQuestionSheet(Question)
+            case navigateToNotifications
+            case navigateToHeartsSystem
+            case navigateToPeerAnswerSelfAnswered(String)
+            case showAnswerFirstPopup(String)
+            case navigateToPeerNotAnsweredNudge(String)
+            case showNudgeUnavailablePopup(String)
             case requestRefresh
         }
     }
@@ -91,7 +100,25 @@ public struct HomeFeature {
 
             case .questionTapped:
                 guard let question = state.todayQuestion else { return .none }
-                return .send(.delegate(.navigateToQuestionDetail(question)))
+                return .send(.delegate(.showQuestionSheet(question)))
+
+            case .notificationTapped:
+                return .send(.delegate(.navigateToNotifications))
+
+            case .heartsTapped:
+                return .send(.delegate(.navigateToHeartsSystem))
+
+            case .peerAnswerTapped(let memberName):
+                return .send(.delegate(.navigateToPeerAnswerSelfAnswered(memberName)))
+
+            case .answerRequiredTapped(let memberName):
+                return .send(.delegate(.showAnswerFirstPopup(memberName)))
+
+            case .peerNudgeTapped(let memberName):
+                return .send(.delegate(.navigateToPeerNotAnsweredNudge(memberName)))
+
+            case .nudgeUnavailableTapped(let memberName):
+                return .send(.delegate(.showNudgeUnavailablePopup(memberName)))
 
             case .refreshData:
                 guard !state.isRefreshing else { return .none }
@@ -129,4 +156,3 @@ public struct HomeFeature {
         }
     }
 }
-

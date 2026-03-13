@@ -16,6 +16,7 @@ struct MongleApp: App {
   }
 
   init() {
+    MongleFont.registerFonts()
     SocialSDK.initialize()
   }
 

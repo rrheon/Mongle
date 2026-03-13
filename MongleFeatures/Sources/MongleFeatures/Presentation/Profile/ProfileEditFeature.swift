@@ -14,58 +14,40 @@ public struct ProfileEditFeature {
     @ObservableState
     public struct State: Equatable {
         public var user: User?
-        public var editedName: String = ""
-        public var editedRole: FamilyRole = .other
-        public var profileImageURL: String?
         public var isLoading = false
-        public var isSaving = false
         public var errorMessage: String?
-        public var showImagePicker = false
-        public var showRolePicker = false
-
-        public var hasChanges: Bool {
-            guard let user = user else { return false }
-            return editedName != user.name || editedRole != user.role
-        }
-
-        public var isValid: Bool {
-            !editedName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        }
+        @Presents public var mongleCardEdit: MongleCardEditFeature.State?
 
         public init(user: User? = nil) {
             self.user = user
-            if let user = user {
-                self.editedName = user.name
-                self.editedRole = user.role
-                self.profileImageURL = user.profileImageURL
-            }
         }
     }
 
     public enum Action: Sendable, Equatable {
         // MARK: - View Actions
         case onAppear
-        case nameChanged(String)
-        case roleChanged(FamilyRole)
-        case profileImageTapped
-        case saveButtonTapped
-        case cancelButtonTapped
-        case showRolePickerToggled
+        case profileCardTapped
+        case moodSettingTapped
+        case moodHistoryTapped
+        case notificationSettingsTapped
+        case groupManagementTapped
+        case accountManagementTapped
         case dismissError
 
         // MARK: - Internal Actions
-        case setLoading(Bool)
-        case setSaving(Bool)
-        case setError(String?)
         case userLoaded(User)
-        case saveCompleted(User)
+        case mongleCardEdit(PresentationAction<MongleCardEditFeature.Action>)
 
         // MARK: - Delegate Actions
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
+            case navigateToMoodSetting
+            case navigateToMoodHistory
+            case navigateToNotificationSettings
+            case navigateToGroupManagement
+            case navigateToAccountManagement
             case profileUpdated(User)
-            case cancelled
         }
     }
 
@@ -92,81 +74,52 @@ public struct ProfileEditFeature {
                 }
                 return .none
 
-            case .nameChanged(let name):
-                state.editedName = name
+            case .profileCardTapped:
+                state.mongleCardEdit = MongleCardEditFeature.State(user: state.user)
                 return .none
 
-            case .roleChanged(let role):
-                state.editedRole = role
-                state.showRolePicker = false
-                return .none
+            case .moodSettingTapped:
+                return .send(.delegate(.navigateToMoodSetting))
 
-            case .profileImageTapped:
-                state.showImagePicker = true
-                return .none
+            case .moodHistoryTapped:
+                return .send(.delegate(.navigateToMoodHistory))
 
-            case .saveButtonTapped:
-                guard state.isValid, state.hasChanges else { return .none }
-                guard let user = state.user else { return .none }
+            case .notificationSettingsTapped:
+                return .send(.delegate(.navigateToNotificationSettings))
 
-                state.isSaving = true
-                let editedName = state.editedName
-                let editedRole = state.editedRole
+            case .groupManagementTapped:
+                return .send(.delegate(.navigateToGroupManagement))
 
-                return .run { send in
-                    try await Task.sleep(nanoseconds: 500_000_000)
-                    let updatedUser = User(
-                        id: user.id,
-                        email: user.email,
-                        name: editedName.trimmingCharacters(in: .whitespacesAndNewlines),
-                        profileImageURL: user.profileImageURL,
-                        role: editedRole,
-                        createdAt: user.createdAt
-                    )
-                    await send(.saveCompleted(updatedUser))
-                }
-
-            case .cancelButtonTapped:
-                return .send(.delegate(.cancelled))
-
-            case .showRolePickerToggled:
-                state.showRolePicker.toggle()
-                return .none
+            case .accountManagementTapped:
+                return .send(.delegate(.navigateToAccountManagement))
 
             case .dismissError:
                 state.errorMessage = nil
                 return .none
 
-            case .setLoading(let isLoading):
-                state.isLoading = isLoading
-                return .none
-
-            case .setSaving(let isSaving):
-                state.isSaving = isSaving
-                return .none
-
-            case .setError(let message):
-                state.errorMessage = message
-                state.isLoading = false
-                state.isSaving = false
-                return .none
-
             case .userLoaded(let user):
                 state.user = user
-                state.editedName = user.name
-                state.editedRole = user.role
-                state.profileImageURL = user.profileImageURL
                 state.isLoading = false
                 return .none
 
-            case .saveCompleted(let user):
+            case .mongleCardEdit(.presented(.delegate(.saved(let user)))):
                 state.user = user
-                state.isSaving = false
+                state.mongleCardEdit = nil
                 return .send(.delegate(.profileUpdated(user)))
+
+            case .mongleCardEdit(.presented(.delegate(.cancelled))):
+                state.mongleCardEdit = nil
+                return .none
+
+            case .mongleCardEdit:
+                return .none
 
             case .delegate:
                 return .none
             }
+        }
+        .ifLet(\.$mongleCardEdit, action: \.mongleCardEdit) {
+            MongleCardEditFeature()
         }
     }
 }

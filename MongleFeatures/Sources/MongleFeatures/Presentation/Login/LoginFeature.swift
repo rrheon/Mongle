@@ -42,6 +42,7 @@ public struct LoginFeature {
 
         case emailLoginTapped
         case emailSignupTapped
+        case browseTapped
         case dismissError
 
         // MARK: - Internal Actions
@@ -54,6 +55,7 @@ public struct LoginFeature {
 
         public enum Delegate: Sendable, Equatable {
             case loggedIn(User, SocialProviderType?)
+            case browseAsGuest
         }
     }
 
@@ -100,6 +102,9 @@ public struct LoginFeature {
 
             case .emailSignupTapped:
                 return .none
+
+            case .browseTapped:
+                return .send(.delegate(.browseAsGuest))
 
             case .dismissError:
                 state.errorMessage = nil
