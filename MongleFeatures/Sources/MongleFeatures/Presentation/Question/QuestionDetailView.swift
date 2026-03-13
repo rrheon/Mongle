@@ -21,64 +21,62 @@ struct QuestionDetailView: View {
     ]
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                customHeader
+        VStack(spacing: 0) {
+            customHeader
 
-                if store.isLoading {
-                    Spacer()
-                    ProgressView().tint(MongleColor.primary)
-                    Spacer()
-                } else {
-                    ScrollViewReader { proxy in
-                        ScrollView(showsIndicators: false) {
-                            VStack(spacing: 20) {
-                                questionSection
-                                moodPickerSection
-                                answerInputSection
+            if store.isLoading {
+                Spacer()
+                ProgressView().tint(MongleColor.primary)
+                Spacer()
+            } else {
+                ScrollViewReader { proxy in
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: 20) {
+                            questionSection
+                            moodPickerSection
+                            answerInputSection
 
-                                if let errorMessage = store.errorMessage {
-                                    errorBanner(errorMessage)
-                                }
-
-                                Color.clear.frame(height: 1).id("answerBottom")
+                            if let errorMessage = store.errorMessage {
+                                errorBanner(errorMessage)
                             }
-                            .padding(.horizontal, 20)
-                            .padding(.top, 20)
-                            .padding(.bottom, 32)
+
+                            Color.clear.frame(height: 1).id("answerBottom")
                         }
-                        .scrollDismissesKeyboard(.immediately)
-                        .onChange(of: isAnswerFocused) { _, focused in
-                            if focused {
-                                withAnimation(.easeOut(duration: 0.3)) {
-                                    proxy.scrollTo("answerBottom", anchor: .bottom)
-                                }
-                            }
-                        }
-                        .onChange(of: store.answerText) { _, _ in
-                            if isAnswerFocused {
+                        .padding(.horizontal, 20)
+                        .padding(.top, 20)
+                        .padding(.bottom, 32)
+                    }
+                    .scrollDismissesKeyboard(.immediately)
+                    .onChange(of: isAnswerFocused) { _, focused in
+                        if focused {
+                            withAnimation(.easeOut(duration: 0.3)) {
                                 proxy.scrollTo("answerBottom", anchor: .bottom)
                             }
                         }
                     }
-
-                    ctaButton
+                    .onChange(of: store.answerText) { _, _ in
+                        if isAnswerFocused {
+                            proxy.scrollTo("answerBottom", anchor: .bottom)
+                        }
+                    }
                 }
+
+                ctaButton
             }
-            .background(MongleColor.background)
-            .toolbar(.hidden, for: .navigationBar)
-            .onAppear { store.send(.onAppear) }
-            .alert(
-                "오늘의 몽글을 선택해주세요",
-                isPresented: Binding(
-                    get: { store.showMoodRequiredAlert },
-                    set: { _ in }
-                )
-            ) {
-                Button("확인") { store.send(.moodRequiredAlertDismissed) }
-            } message: {
-                Text("지금 기분과 가장 비슷한 몽글 캐릭터를 골라보세요 🌿")
-            }
+        }
+        .background(MongleColor.background)
+        .toolbar(.hidden, for: .navigationBar)
+        .onAppear { store.send(.onAppear) }
+        .alert(
+            "오늘의 몽글을 선택해주세요",
+            isPresented: Binding(
+                get: { store.showMoodRequiredAlert },
+                set: { _ in }
+            )
+        ) {
+            Button("확인") { store.send(.moodRequiredAlertDismissed) }
+        } message: {
+            Text("지금 기분과 가장 비슷한 몽글 캐릭터를 골라보세요 🌿")
         }
     }
 
@@ -173,7 +171,7 @@ struct QuestionDetailView: View {
                     .font(.system(size: 12))
 
                 Circle()
-                    .fill(isSelected ? MongleColor.primary : Color(hex: "E0E0E0"))
+                    .fill(isSelected ? MongleColor.primary : MongleColor.border)
                     .frame(width: 7, height: 7)
                     .animation(.easeInOut(duration: 0.15), value: isSelected)
             }
@@ -257,13 +255,13 @@ struct QuestionDetailView: View {
             .frame(height: 56)
             .background(
                 LinearGradient(
-                    colors: [Color(hex: "6BBF93"), Color(hex: "7BC8A0")],
+                    colors: [MongleColor.primaryGradientStart, MongleColor.primaryGradientEnd],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
             )
             .clipShape(Capsule())
-            .shadow(color: Color(hex: "6BBF93").opacity(0.4), radius: 16, x: 0, y: 6)
+            .shadow(color: MongleColor.primaryGradientStart.opacity(0.4), radius: 16, x: 0, y: 6)
         }
         .disabled(!store.isValidAnswer || store.isSubmitting)
         .opacity((!store.isValidAnswer || store.isSubmitting) ? 0.6 : 1)
@@ -289,7 +287,7 @@ struct QuestionDetailView: View {
             }
         }
         .padding(MongleSpacing.md)
-        .background(Color(hex: "FDEBEC"))
+        .background(MongleColor.bgErrorSoft)
         .cornerRadius(MongleRadius.large)
         .overlay(RoundedRectangle(cornerRadius: MongleRadius.large).stroke(MongleColor.error.opacity(0.12), lineWidth: 1))
     }
