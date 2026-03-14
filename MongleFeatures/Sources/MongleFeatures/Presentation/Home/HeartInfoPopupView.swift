@@ -12,6 +12,7 @@ public struct HeartInfoPopupView: View {
         ZStack {
             Color.black.opacity(0.45)
                 .ignoresSafeArea()
+                .onTapGesture { store.send(.closeTapped) }
 
             VStack(spacing: MongleSpacing.lg) {
                 // 아이콘

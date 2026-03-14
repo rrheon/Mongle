@@ -1,22 +1,15 @@
 # 작업해야할 것
 작업 위치
+- /Users/yong/Desktop/FamTree/MongleFeatures
 
-- /Users/yong/Desktop/FamTree
- 
 UI 확인
 - MongleUI.Pen
 
-HomeView 
-- 알림버튼 또한 하트버튼과 동일하게 UI를 가져가게 설정해줄 것
+서버 작업 위치
+- /Users/yong/Desktop/FamTreeServer
 
-ProfileEditView
-- 몽글의 색상 밑 사용자의 이름 -> >버튼을 제거하고 화면이동 연결된 것을 해제하기
+LoginView
+- 실제 로그인이 가능하도록 작업할 것
 
-  활동 및 기록
-  - 기분 설정 -> 프로필 편집으로 변경 -> 기분 및 이름을 변경할 수 있는 화면 (몽글의 색상 밑 사용자의 이름에 원래 달려있던 화면 ) 으로 push 방식으로 이동할 것
-  - 기분 히스토리 -> SupportScreenView 로 push 방식으로 이동하게 수정
-  
-  앱 설정
-  - 알림 설정 -> 알림 설정하는 화면을 찾아서 push방식으로 이동하기 없다면 만들 것
-  - 그룹 관리 -> 그룹 관리하는 화면을 찾아서 push방식으로 이동하기 없다면 만들 것 
-  - 계정 관리 -> 계정 관리하는 화면을 찾아서 push방식으로 이동하기 없다면 만들 것
+서버
+- 각 SNS로그인 시 JWT토큰을 사용해서 사용자를 구별, 참여하고 있는 그룹을 가져오는지 확인
