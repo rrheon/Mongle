@@ -145,37 +145,47 @@ public struct GroupSelectView: View {
 
   // MARK: - Custom Header
 
+  @ViewBuilder
   private var customHeader: some View {
-    HStack(alignment: .center) {
-      if store.step == .select {
-//        Text("내 몽글 공간")
-//          .font(MongleFont.heading1())
-//          .foregroundColor(MongleColor.textPrimary)
-        Image("MongleTitleWithLogo_ko", bundle: .module)
-          .resizable()
-          .scaledToFit()
-          .frame(height: 38)
-        
+    if store.step == .select {
+      HStack(spacing: 12) {
+        Text("몽글")
+          .font(MongleFont.heading3().weight(.bold))
+          .foregroundColor(MongleColor.textPrimary)
+
         Spacer()
+
         Button {
           store.send(.notificationTapped)
         } label: {
           ZStack(alignment: .topTrailing) {
-            Image(systemName: "bell")
-              .font(.system(size: 20))
-              .foregroundColor(MongleColor.textPrimary)
+            Image(systemName: "bell.fill")
+              .font(.system(size: 13))
+              .foregroundColor(MongleColor.primary)
+              .padding(.vertical, 6)
+              .padding(.horizontal, 10)
+              .background(MongleColor.primaryLight)
+              .clipShape(Capsule())
+
             Circle()
               .fill(Color.red)
               .frame(width: 8, height: 8)
-              .offset(x: 2, y: -2)
+              .offset(x: -2, y: 2)
           }
         }
-      } else {
+        .buttonStyle(.plain)
+      }
+      .frame(height: 56)
+      .padding(.top, 60)
+      .padding(.horizontal, 20)
+      .background(Color.white.ignoresSafeArea(edges: .top))
+    } else {
+      HStack(alignment: .center) {
         Button {
           switch store.step {
           case .createGroup: store.send(.createBackTapped)
           case .groupCreated: store.send(.createBackTapped)
-          case .joinWithCode:   store.send(.joinBackTapped)
+          case .joinWithCode: store.send(.joinBackTapped)
           default: break
           }
         } label: {
@@ -188,13 +198,12 @@ public struct GroupSelectView: View {
           .font(MongleFont.body2Bold())
           .foregroundColor(MongleColor.textPrimary)
         Spacer()
-        // trailing spacer for center alignment
         Color.clear.frame(width: 28, height: 28)
       }
+      .padding(.horizontal, MongleSpacing.md)
+      .padding(.vertical, MongleSpacing.md)
+      .background(MongleColor.background)
     }
-    .padding(.horizontal, MongleSpacing.md)
-    .padding(.vertical, MongleSpacing.md)
-    .background(MongleColor.background)
   }
 
   private var navigationTitle: String {
