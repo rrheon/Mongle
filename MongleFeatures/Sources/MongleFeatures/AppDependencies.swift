@@ -47,3 +47,42 @@ extension DependencyValues {
         set { self[QuestionRepositoryKey.self] = newValue }
     }
 }
+
+// MARK: - AnswerRepository
+
+private enum AnswerRepositoryKey: DependencyKey {
+    static let liveValue: any AnswerRepositoryInterface = makeAnswerRepository()
+}
+
+extension DependencyValues {
+    public var answerRepository: any AnswerRepositoryInterface {
+        get { self[AnswerRepositoryKey.self] }
+        set { self[AnswerRepositoryKey.self] = newValue }
+    }
+}
+
+// MARK: - UserRepository
+
+private enum UserRepositoryKey: DependencyKey {
+    static let liveValue: any UserRepositoryInterface = makeUserRepository()
+}
+
+extension DependencyValues {
+    public var userRepository: any UserRepositoryInterface {
+        get { self[UserRepositoryKey.self] }
+        set { self[UserRepositoryKey.self] = newValue }
+    }
+}
+
+// MARK: - DailyQuestionRepository
+
+private enum DailyQuestionRepositoryKey: DependencyKey {
+    static let liveValue: any DailyQuestionRepositoryInterface = makeDailyQuestionRepository()
+}
+
+extension DependencyValues {
+    public var dailyQuestionRepository: any DailyQuestionRepositoryInterface {
+        get { self[DailyQuestionRepositoryKey.self] }
+        set { self[DailyQuestionRepositoryKey.self] = newValue }
+    }
+}
