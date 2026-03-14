@@ -65,7 +65,8 @@ public struct HistoryFeature {
         public var historyItems: [Date: HistoryItem] = [:]
         public var selectedItem: HistoryItem?
         public var isLoading = false
-        public var errorMessage: String?
+        public var errorMessage: String?   // 하위 호환 (기존 뷰에서 사용)
+        public var appError: AppError?     // 새 통합 에러 타입
         public var familyId: UUID?
         public var familyMembers: [User] = []
         /// 이미 로드한 월 목록 (캐시). 같은 월은 재요청하지 않음.
@@ -164,6 +165,7 @@ public struct HistoryFeature {
         // MARK: - Internal Actions
         case setLoading(Bool)
         case setError(String?)
+        case setAppError(AppError?)
         case historyLoaded([Date: HistoryItem])
 
         // MARK: - Delegate Actions
@@ -178,6 +180,7 @@ public struct HistoryFeature {
     @Dependency(\.dailyQuestionRepository) var dailyQuestionRepository
     @Dependency(\.answerRepository) var answerRepository
     @Dependency(\.questionRepository) var questionRepository
+    @Dependency(\.errorHandler) var errorHandler
 
     public init() {}
 
@@ -229,7 +232,7 @@ public struct HistoryFeature {
                         }
                         await send(.historyLoaded(historyItems))
                     } catch {
-                        await send(.setError(error.localizedDescription))
+                        await send(.setAppError(errorHandler(error, context: "HistoryFeature.onAppear")))
                     }
                 }
 
@@ -269,6 +272,7 @@ public struct HistoryFeature {
 
             case .dismissError:
                 state.errorMessage = nil
+                state.appError = nil
                 return .none
 
             case .setLoading(let isLoading):
@@ -277,6 +281,12 @@ public struct HistoryFeature {
 
             case .setError(let message):
                 state.errorMessage = message
+                state.isLoading = false
+                return .none
+
+            case .setAppError(let error):
+                state.appError = error
+                state.errorMessage = error?.userMessage
                 state.isLoading = false
                 return .none
 

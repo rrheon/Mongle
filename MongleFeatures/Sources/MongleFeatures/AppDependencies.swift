@@ -86,3 +86,6 @@ extension DependencyValues {
         set { self[DailyQuestionRepositoryKey.self] = newValue }
     }
 }
+
+// NOTE: ErrorHandler는 ErrorHandlerDependency.swift에서 DependencyKey를 직접 구현합니다.
+// @Dependency(\.errorHandler) 로 사용하세요.
