@@ -13,19 +13,23 @@ public struct Question: Equatable, Sendable {
     public let category: QuestionCategory
     public let order: Int
     public let createdAt: Date
+    /// 오늘의 질문 응답에서 내려오는 DailyQuestion ID (서버 PK). 답변 체크에 사용.
+    public let dailyQuestionId: String?
 
     public init(
         id: UUID,
         content: String,
         category: QuestionCategory,
         order: Int,
-        createdAt: Date = Date()
+        createdAt: Date = Date(),
+        dailyQuestionId: String? = nil
     ) {
         self.id = id
         self.content = content
         self.category = category
         self.order = order
         self.createdAt = createdAt
+        self.dailyQuestionId = dailyQuestionId
     }
 }
 
