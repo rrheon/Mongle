@@ -133,6 +133,10 @@ public struct ProfileEditFeature {
                 state.accountManagement = nil
                 return .send(.delegate(.logout))
 
+            case .accountManagement(.presented(.delegate(.accountDeleted))):
+                state.accountManagement = nil
+                return .send(.delegate(.logout))
+
             case .accountManagement:
                 return .none
 

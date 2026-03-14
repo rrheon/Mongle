@@ -6,6 +6,8 @@ public struct AccountManagementFeature {
     public struct State: Equatable {
         public var showLogoutConfirm = false
         public var showDeleteConfirm = false
+        public var isLoading = false
+        public var errorMessage: String? = nil
 
         public init() {}
     }
@@ -17,13 +19,18 @@ public struct AccountManagementFeature {
         case deleteAccountTapped
         case deleteAccountConfirmed
         case alertDismissed
+        case setLoading(Bool)
+        case setError(String?)
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
             case close
             case logout
+            case accountDeleted
         }
     }
+
+    @Dependency(\.authRepository) var authRepository
 
     public init() {}
 
@@ -39,7 +46,15 @@ public struct AccountManagementFeature {
 
             case .logoutConfirmed:
                 state.showLogoutConfirm = false
-                return .send(.delegate(.logout))
+                state.isLoading = true
+                return .run { send in
+                    do {
+                        try await authRepository.logout()
+                        await send(.delegate(.logout))
+                    } catch {
+                        await send(.setError(error.localizedDescription))
+                    }
+                }
 
             case .deleteAccountTapped:
                 state.showDeleteConfirm = true
@@ -47,11 +62,28 @@ public struct AccountManagementFeature {
 
             case .deleteAccountConfirmed:
                 state.showDeleteConfirm = false
-                return .none
+                state.isLoading = true
+                return .run { send in
+                    do {
+                        try await authRepository.deleteAccount()
+                        await send(.delegate(.accountDeleted))
+                    } catch {
+                        await send(.setError(error.localizedDescription))
+                    }
+                }
 
             case .alertDismissed:
                 state.showLogoutConfirm = false
                 state.showDeleteConfirm = false
+                return .none
+
+            case .setLoading(let loading):
+                state.isLoading = loading
+                return .none
+
+            case .setError(let message):
+                state.errorMessage = message
+                state.isLoading = false
                 return .none
 
             case .delegate:
