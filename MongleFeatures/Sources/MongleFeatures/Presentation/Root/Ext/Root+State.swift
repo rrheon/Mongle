@@ -3,6 +3,7 @@
 //  MongleFeatures
 //
 
+import Foundation
 import ComposableArchitecture
 import Domain
 
@@ -62,7 +63,7 @@ extension RootFeature {
 
         public init(
             appState: AppState = .loading,
-            hasSeenOnboarding: Bool = false,
+            hasSeenOnboarding: Bool = UserDefaults.standard.bool(forKey: "mongle.hasSeenOnboarding"),
             onboarding: OnboardingFeature.State = OnboardingFeature.State(),
             login: LoginFeature.State = LoginFeature.State(),
             groupSelect: GroupSelectFeature.State = GroupSelectFeature.State(),

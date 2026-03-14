@@ -131,6 +131,12 @@ extension RootFeature {
                     state.appState = .unauthenticated
                     return .none
 
+                case .onboarding(.delegate(.neverShowAgain)):
+                    UserDefaults.standard.set(true, forKey: "mongle.hasSeenOnboarding")
+                    state.hasSeenOnboarding = true
+                    state.appState = .unauthenticated
+                    return .none
+
                 case .onboarding:
                     return .none
 
