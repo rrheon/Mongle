@@ -84,33 +84,8 @@ public struct MongleCardEditView: View {
 
     private var avatarSection: some View {
         VStack(spacing: 12) {
-            ZStack {
-                Ellipse()
-                    .fill(
-                        RadialGradient(
-                            colors: [avatarStartColor, avatarEndColor],
-                            center: .init(x: 0.35, y: 0.35),
-                            startRadius: 0,
-                            endRadius: 40
-                        )
-                    )
-                    .frame(width: 80, height: 80)
-                    .shadow(color: avatarEndColor.opacity(0.27), radius: 12, x: 0, y: 4)
-
-                // Left eye
-                Circle()
-                    .fill(MongleColor.textPrimary)
-                    .frame(width: 13, height: 13)
-                    .overlay(Circle().stroke(Color.white, lineWidth: 1.5).frame(width: 15, height: 15))
-                    .offset(x: -10, y: 2)
-
-                // Right eye
-                Circle()
-                    .fill(MongleColor.textPrimary)
-                    .frame(width: 13, height: 13)
-                    .overlay(Circle().stroke(Color.white, lineWidth: 1.5).frame(width: 15, height: 15))
-                    .offset(x: 10, y: 2)
-            }
+            monggleForMood
+                .animation(.spring(response: 0.3), value: store.selectedMoodId)
 
             Text("기분을 바꾸면 색이 변해요")
                 .font(MongleFont.caption())
@@ -119,25 +94,15 @@ public struct MongleCardEditView: View {
         .frame(maxWidth: .infinity)
     }
 
-    private var avatarStartColor: Color {
+    @ViewBuilder
+    private var monggleForMood: some View {
         switch store.selectedMoodId {
-        case "happy":   return MongleColor.moodHappyLight
-        case "calm":    return MongleColor.moodCalmLight
-        case "loved":   return MongleColor.moodLovedLight
-        case "sad":     return MongleColor.moodSadLight
-        case "tired":   return MongleColor.moodTiredLight
-        default:        return MongleColor.moodLovedLight
-        }
-    }
-
-    private var avatarEndColor: Color {
-        switch store.selectedMoodId {
-        case "happy":   return MongleColor.moodHappy
-        case "calm":    return MongleColor.moodCalm
-        case "loved":   return MongleColor.moodLoved
-        case "sad":     return MongleColor.moodSad
-        case "tired":   return MongleColor.moodTired
-        default:        return MongleColor.moodLoved
+        case "happy":   MongleMonggle.yellow(size: 80)
+        case "calm":    MongleMonggle.green(size: 80)
+        case "loved":   MongleMonggle.pink(size: 80)
+        case "sad":     MongleMonggle.blue(size: 80)
+        case "tired":   MongleMonggle.orange(size: 80)
+        default:        MongleMonggle.pink(size: 80)
         }
     }
 
