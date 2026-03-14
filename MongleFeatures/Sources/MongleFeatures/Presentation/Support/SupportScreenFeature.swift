@@ -1,5 +1,6 @@
 import Foundation
 import ComposableArchitecture
+import UIKit
 
 @Reducer
 public struct SupportScreenFeature {
@@ -83,8 +84,14 @@ public struct SupportScreenFeature {
         public var inviteCode: String
         public var members: [GroupMember]
         public var moodRecords: [MoodRecord]
+        public var familyId: UUID?
+        public var currentUserId: UUID?
+        public var showLeaveConfirm: Bool = false
+        public var isLeaving: Bool = false
 
-        public init(screen: Screen) {
+        public init(screen: Screen, familyId: UUID? = nil, currentUserId: UUID? = nil) {
+            self.familyId = familyId
+            self.currentUserId = currentUserId
             let calendar = Calendar(identifier: .gregorian)
             let baseDate = calendar.date(from: DateComponents(year: 2025, month: 3, day: 13)) ?? Date()
             let previousDay = calendar.date(byAdding: .day, value: -1, to: baseDate) ?? baseDate
@@ -153,12 +160,16 @@ public struct SupportScreenFeature {
         case toggleChanged(String, Bool)
         case inviteTapped
         case leaveGroupTapped
+        case leaveGroupConfirmed
+        case leaveGroupAlertDismissed
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
             case close
         }
     }
+
+    @Dependency(\.familyRepository) var familyRepository
 
     public init() {}
 
@@ -191,7 +202,34 @@ public struct SupportScreenFeature {
                 }
                 return .none
 
-            case .inviteTapped, .leaveGroupTapped, .delegate:
+            case .inviteTapped:
+                let code = state.inviteCode
+                return .run { _ in
+                    await MainActor.run {
+                        UIPasteboard.general.string = code
+                    }
+                }
+
+            case .leaveGroupTapped:
+                state.showLeaveConfirm = true
+                return .none
+
+            case .leaveGroupAlertDismissed:
+                state.showLeaveConfirm = false
+                return .none
+
+            case .leaveGroupConfirmed:
+                guard let familyId = state.familyId, let userId = state.currentUserId else {
+                    return .send(.delegate(.close))
+                }
+                state.showLeaveConfirm = false
+                state.isLeaving = true
+                return .run { send in
+                    try? await familyRepository.removeMember(userId: userId, familyId: familyId)
+                    await send(.delegate(.close))
+                }
+
+            case .delegate:
                 return .none
             }
         }

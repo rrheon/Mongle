@@ -14,14 +14,16 @@ public struct ProfileEditFeature {
     @ObservableState
     public struct State: Equatable {
         public var user: User?
+        public var familyId: UUID?
         public var isLoading = false
         public var errorMessage: String?
         @Presents public var mongleCardEdit: MongleCardEditFeature.State?
         @Presents public var supportScreen: SupportScreenFeature.State?
         @Presents public var accountManagement: AccountManagementFeature.State?
 
-        public init(user: User? = nil) {
+        public init(user: User? = nil, familyId: UUID? = nil) {
             self.user = user
+            self.familyId = familyId
         }
     }
 
@@ -90,7 +92,11 @@ public struct ProfileEditFeature {
                 return .none
 
             case .groupManagementTapped:
-                state.supportScreen = SupportScreenFeature.State(screen: .groupManagement)
+                state.supportScreen = SupportScreenFeature.State(
+                    screen: .groupManagement,
+                    familyId: state.familyId,
+                    currentUserId: state.user?.id
+                )
                 return .none
 
             case .accountManagementTapped:

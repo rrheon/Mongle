@@ -30,6 +30,19 @@ public struct SupportScreenView: View {
             .padding(.bottom, MongleSpacing.xl)
         }
         .background(MongleColor.background)
+        .alert("그룹 나가기", isPresented: Binding(
+            get: { store.showLeaveConfirm },
+            set: { if !$0 { store.send(.leaveGroupAlertDismissed) } }
+        )) {
+            Button("나가기", role: .destructive) {
+                store.send(.leaveGroupConfirmed)
+            }
+            Button("취소", role: .cancel) {
+                store.send(.leaveGroupAlertDismissed)
+            }
+        } message: {
+            Text("그룹을 나가면 모든 가족과의 답변 기록이 연결 해제됩니다.")
+        }
         .navigationTitle(store.screen.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
