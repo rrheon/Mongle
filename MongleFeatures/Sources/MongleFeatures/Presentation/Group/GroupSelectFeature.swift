@@ -23,6 +23,9 @@ public struct GroupSelectFeature {
         public var nicknameError: Bool = false
         public var joinCodeError: Bool = false
 
+        public var isLoading: Bool = false
+        public var errorMessage: String? = nil
+
         public init(
             step: Step = .select,
             groupName: String = "",
@@ -52,11 +55,17 @@ public struct GroupSelectFeature {
         case completeTapped
         case joinBackTapped
         case joinTapped
+        case setLoading(Bool)
+        case setInviteCode(String)
+        case setError(String?)
+        case dismissError
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
             case completed
             case notificationTapped
+            case createFamily(name: String)
+            case joinFamily(inviteCode: String)
         }
     }
 
@@ -107,9 +116,8 @@ public struct GroupSelectFeature {
                 state.groupNameError = nameEmpty
                 state.nicknameError = nickEmpty
                 guard !nameEmpty && !nickEmpty else { return .none }
-                state.step = .groupCreated
-                state.inviteCode = state.inviteCode.isEmpty ? "MONG-4729" : state.inviteCode
-                return .none
+                state.isLoading = true
+                return .send(.delegate(.createFamily(name: state.groupName)))
 
             case .createBackTapped:
                 state.step = .select
@@ -117,6 +125,7 @@ public struct GroupSelectFeature {
                 state.nickname = ""
                 state.groupNameError = false
                 state.nicknameError = false
+                state.errorMessage = nil
                 return .none
 
             case .completeTapped:
@@ -128,6 +137,7 @@ public struct GroupSelectFeature {
                 state.nickname = ""
                 state.joinCodeError = false
                 state.nicknameError = false
+                state.errorMessage = nil
                 return .none
 
             case .joinTapped:
@@ -136,7 +146,27 @@ public struct GroupSelectFeature {
                 state.joinCodeError = codeEmpty
                 state.nicknameError = nickEmpty
                 guard !codeEmpty && !nickEmpty else { return .none }
-                return .send(.delegate(.completed))
+                state.isLoading = true
+                return .send(.delegate(.joinFamily(inviteCode: state.joinCode)))
+
+            case .setLoading(let loading):
+                state.isLoading = loading
+                return .none
+
+            case .setInviteCode(let code):
+                state.inviteCode = code
+                state.step = .groupCreated
+                state.isLoading = false
+                return .none
+
+            case .setError(let message):
+                state.errorMessage = message
+                state.isLoading = false
+                return .none
+
+            case .dismissError:
+                state.errorMessage = nil
+                return .none
 
             case .delegate:
                 return .none

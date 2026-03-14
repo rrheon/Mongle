@@ -20,6 +20,8 @@ public protocol MongleRepositoryInterface: Sendable {
     func isMember(userId: UUID, familyId: UUID) async throws -> Bool
     /// 현재 인증된 유저의 가족을 구성원 목록과 함께 조회. 가족이 없으면 nil.
     func getMyFamily() async throws -> (MongleGroup, [User])?
+    /// 초대 코드로 가족에 참여. 서버가 JWT 토큰의 userId를 멤버로 추가함.
+    func joinFamily(inviteCode: String) async throws -> MongleGroup
 }
 
 public enum MongleError: Error, Equatable, Sendable {

@@ -157,8 +157,34 @@ extension RootFeature {
 
                 // MARK: GroupSelect Delegate
                 case .groupSelect(.delegate(.completed)):
-                    state.appState = .authenticated
-                    return .none
+                    return .send(.refreshHomeData)
+
+                case .groupSelect(.delegate(.createFamily(let name))):
+                    return .run { [currentUser = state.currentUser] send in
+                        do {
+                            let family = try await familyRepository.create(MongleGroup(
+                                id: UUID(),
+                                name: name,
+                                memberIds: [],
+                                createdBy: currentUser?.id ?? UUID(),
+                                createdAt: Date(),
+                                inviteCode: ""
+                            ))
+                            await send(.groupSelect(.setInviteCode(family.inviteCode)))
+                        } catch {
+                            await send(.groupSelect(.setError(error.localizedDescription)))
+                        }
+                    }
+
+                case .groupSelect(.delegate(.joinFamily(let code))):
+                    return .run { send in
+                        do {
+                            _ = try await familyRepository.joinFamily(inviteCode: code)
+                            await send(.groupSelect(.delegate(.completed)))
+                        } catch {
+                            await send(.groupSelect(.setError(error.localizedDescription)))
+                        }
+                    }
 
                 case .groupSelect:
                     return .none
