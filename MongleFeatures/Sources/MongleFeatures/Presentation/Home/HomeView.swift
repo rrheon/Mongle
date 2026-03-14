@@ -138,8 +138,10 @@ private struct HeartsButtonView: View {
   let hearts: Int
   var onTap: () -> Void
 
+  @State private var showCallout = false
+
   var body: some View {
-    Button(action: onTap) {
+    Button { showCallout.toggle() } label: {
       HStack(spacing: 4) {
         Image(systemName: "heart.fill")
           .font(.system(size: 13))
@@ -154,6 +156,64 @@ private struct HeartsButtonView: View {
       .clipShape(Capsule())
     }
     .buttonStyle(.plain)
+    .popover(isPresented: $showCallout, arrowEdge: .top) {
+      HeartCalloutView(hearts: hearts)
+        .presentationCompactAdaptation(.popover)
+    }
+  }
+}
+
+// MARK: 하트 설명 카드 (버튼 아래 작은 팝오버)
+
+private struct HeartCalloutView: View {
+  let hearts: Int
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 10) {
+      HStack(spacing: 6) {
+        Image(systemName: "heart.fill")
+          .foregroundColor(MongleColor.heartRed)
+          .font(.system(size: 13))
+        Text("현재 보유 \(hearts)개")
+          .font(MongleFont.captionBold())
+          .foregroundColor(MongleColor.heartRed)
+      }
+
+      Divider()
+
+      heartRow(icon: "arrow.clockwise.circle.fill", color: MongleColor.secondary, text: "질문 다시받기", cost: "1개")
+      heartRow(icon: "pencil.circle.fill", color: MongleColor.accentOrange, text: "나만의 질문 작성", cost: "3개")
+      heartRow(icon: "megaphone.fill", color: MongleColor.heartRed, text: "재촉하기", cost: "1개")
+
+      Divider()
+
+      HStack(spacing: 4) {
+        Image(systemName: "sun.rise.fill")
+          .foregroundColor(MongleColor.primary)
+          .font(.system(size: 11))
+        Text("매일 오전 +1 · 답변 완료 +3")
+          .font(MongleFont.caption())
+          .foregroundColor(MongleColor.textSecondary)
+      }
+    }
+    .padding(14)
+    .frame(width: 220)
+  }
+
+  private func heartRow(icon: String, color: Color, text: String, cost: String) -> some View {
+    HStack {
+      Image(systemName: icon)
+        .foregroundColor(color)
+        .font(.system(size: 12))
+        .frame(width: 18)
+      Text(text)
+        .font(MongleFont.caption())
+        .foregroundColor(MongleColor.textPrimary)
+      Spacer()
+      Text("하트 \(cost)")
+        .font(MongleFont.caption())
+        .foregroundColor(MongleColor.heartRed)
+    }
   }
 }
 
