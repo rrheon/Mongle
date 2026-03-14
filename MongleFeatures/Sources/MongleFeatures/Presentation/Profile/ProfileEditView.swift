@@ -41,10 +41,20 @@ public struct ProfileEditView: View {
             }
             .navigationBarHidden(true)
             .onAppear { store.send(.onAppear) }
-            .sheet(
+            .navigationDestination(
                 item: $store.scope(state: \.mongleCardEdit, action: \.mongleCardEdit)
             ) { cardEditStore in
                 MongleCardEditView(store: cardEditStore)
+            }
+            .navigationDestination(
+                item: $store.scope(state: \.supportScreen, action: \.supportScreen)
+            ) { supportStore in
+                SupportScreenView(store: supportStore)
+            }
+            .navigationDestination(
+                item: $store.scope(state: \.accountManagement, action: \.accountManagement)
+            ) { accountStore in
+                AccountManagementView(store: accountStore)
             }
         }
     }
@@ -67,37 +77,25 @@ public struct ProfileEditView: View {
     // MARK: - Profile Card
 
     private var profileCard: some View {
-        Button {
-            store.send(.profileCardTapped)
-        } label: {
-            HStack(spacing: MongleSpacing.md) {
-              MongleMonggle(color: .blue)
+        HStack(spacing: MongleSpacing.md) {
+            MongleMonggle(color: .blue)
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(store.user?.name ?? "Mongle User")
-                        .font(MongleFont.heading3())
-                        .foregroundColor(MongleColor.textPrimary)
-//                    Text("오늘의 기분: 🥰 사랑")
-//                        .font(MongleFont.body2())
-//                        .foregroundColor(MongleColor.textSecondary)
-                }
-
-                Spacer()
-
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(MongleColor.textHint)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(store.user?.name ?? "Mongle User")
+                    .font(MongleFont.heading3())
+                    .foregroundColor(MongleColor.textPrimary)
             }
-            .padding(MongleSpacing.md)
-            .background(.ultraThinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: MongleRadius.xl))
-            .overlay(
-                RoundedRectangle(cornerRadius: MongleRadius.xl)
-                    .stroke(MongleColor.border.opacity(0.3), lineWidth: 1)
-            )
-            .shadow(color: .black.opacity(0.04), radius: 16, x: 0, y: 4)
+
+            Spacer()
         }
-        .buttonStyle(.plain)
+        .padding(MongleSpacing.md)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: MongleRadius.xl))
+        .overlay(
+            RoundedRectangle(cornerRadius: MongleRadius.xl)
+                .stroke(MongleColor.border.opacity(0.3), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.04), radius: 16, x: 0, y: 4)
     }
 
 
@@ -111,8 +109,8 @@ public struct ProfileEditView: View {
                     icon: "face.smiling.fill",
                     iconColor: MongleColor.moodHappy,
                     iconBackground: MongleColor.moodHappyLight,
-                    title: "기분 설정",
-                    subtitle: "기분에 따라 몽글 색이 변해요",
+                    title: "프로필 편집",
+                    subtitle: "이름과 기분을 변경할 수 있어요",
                     action: { store.send(.moodSettingTapped) }
                 ),
                 ProfileSettingsRow(

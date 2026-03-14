@@ -21,6 +21,7 @@ public struct MongleCardEditView: View {
             scrollContent
         }
         .background(MongleColor.background.ignoresSafeArea())
+        .toolbar(.hidden, for: .navigationBar)
         .onChange(of: selectedMood) { _, newMood in
             if let id = newMood?.id {
                 store.send(.moodSelected(id))
@@ -58,8 +59,9 @@ public struct MongleCardEditView: View {
             .disabled(!store.isValid || store.isSaving)
         }
         .frame(height: 56)
+        .padding(.top, MongleSpacing.sm)
         .padding(.horizontal, MongleSpacing.md)
-        .background(Color.white)
+        .background(Color.white.ignoresSafeArea(edges: .top))
     }
 
     // MARK: - Scroll Content

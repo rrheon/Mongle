@@ -17,6 +17,8 @@ public struct ProfileEditFeature {
         public var isLoading = false
         public var errorMessage: String?
         @Presents public var mongleCardEdit: MongleCardEditFeature.State?
+        @Presents public var supportScreen: SupportScreenFeature.State?
+        @Presents public var accountManagement: AccountManagementFeature.State?
 
         public init(user: User? = nil) {
             self.user = user
@@ -37,17 +39,15 @@ public struct ProfileEditFeature {
         // MARK: - Internal Actions
         case userLoaded(User)
         case mongleCardEdit(PresentationAction<MongleCardEditFeature.Action>)
+        case supportScreen(PresentationAction<SupportScreenFeature.Action>)
+        case accountManagement(PresentationAction<AccountManagementFeature.Action>)
 
         // MARK: - Delegate Actions
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
-            case navigateToMoodSetting
-            case navigateToMoodHistory
-            case navigateToNotificationSettings
-            case navigateToGroupManagement
-            case navigateToAccountManagement
             case profileUpdated(User)
+            case logout
         }
     }
 
@@ -75,23 +75,27 @@ public struct ProfileEditFeature {
                 return .none
 
             case .profileCardTapped:
-                state.mongleCardEdit = MongleCardEditFeature.State(user: state.user)
                 return .none
 
             case .moodSettingTapped:
-                return .send(.delegate(.navigateToMoodSetting))
+                state.mongleCardEdit = MongleCardEditFeature.State(user: state.user)
+                return .none
 
             case .moodHistoryTapped:
-                return .send(.delegate(.navigateToMoodHistory))
+                state.supportScreen = SupportScreenFeature.State(screen: .moodHistory)
+                return .none
 
             case .notificationSettingsTapped:
-                return .send(.delegate(.navigateToNotificationSettings))
+                state.supportScreen = SupportScreenFeature.State(screen: .notificationSettings)
+                return .none
 
             case .groupManagementTapped:
-                return .send(.delegate(.navigateToGroupManagement))
+                state.supportScreen = SupportScreenFeature.State(screen: .groupManagement)
+                return .none
 
             case .accountManagementTapped:
-                return .send(.delegate(.navigateToAccountManagement))
+                state.accountManagement = AccountManagementFeature.State()
+                return .none
 
             case .dismissError:
                 state.errorMessage = nil
@@ -114,12 +118,36 @@ public struct ProfileEditFeature {
             case .mongleCardEdit:
                 return .none
 
+            case .supportScreen(.presented(.delegate(.close))):
+                state.supportScreen = nil
+                return .none
+
+            case .supportScreen:
+                return .none
+
+            case .accountManagement(.presented(.delegate(.close))):
+                state.accountManagement = nil
+                return .none
+
+            case .accountManagement(.presented(.delegate(.logout))):
+                state.accountManagement = nil
+                return .send(.delegate(.logout))
+
+            case .accountManagement:
+                return .none
+
             case .delegate:
                 return .none
             }
         }
         .ifLet(\.$mongleCardEdit, action: \.mongleCardEdit) {
             MongleCardEditFeature()
+        }
+        .ifLet(\.$supportScreen, action: \.supportScreen) {
+            SupportScreenFeature()
+        }
+        .ifLet(\.$accountManagement, action: \.accountManagement) {
+            AccountManagementFeature()
         }
     }
 }

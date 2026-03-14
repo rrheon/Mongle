@@ -11,39 +11,38 @@ public struct SupportScreenView: View {
     }
 
     public var body: some View {
-        NavigationStack {
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: MongleSpacing.lg) {
-                    switch store.screen {
-                    case .heartsSystem:
-                        heartsView
-                    case .historyCalendar:
-                        historyCalendarView
-                    case .notificationSettings:
-                        notificationSettingsView
-                    case .groupManagement:
-                        groupManagementView
-                    case .moodHistory:
-                        moodHistoryView
-                    }
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: MongleSpacing.lg) {
+                switch store.screen {
+                case .heartsSystem:
+                    heartsView
+                case .historyCalendar:
+                    historyCalendarView
+                case .notificationSettings:
+                    notificationSettingsView
+                case .groupManagement:
+                    groupManagementView
+                case .moodHistory:
+                    moodHistoryView
                 }
-                .padding(MongleSpacing.md)
-                .padding(.bottom, MongleSpacing.xl)
             }
-            .background(MongleColor.background)
-            .navigationTitle(store.screen.title)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        store.send(.closeTapped)
-                    } label: {
-                        Image(systemName: "chevron.left")
-                            .foregroundColor(MongleColor.textPrimary)
-                    }
+            .padding(MongleSpacing.md)
+            .padding(.bottom, MongleSpacing.xl)
+        }
+        .background(MongleColor.background)
+        .navigationTitle(store.screen.title)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    store.send(.closeTapped)
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .foregroundColor(MongleColor.textPrimary)
                 }
             }
         }
+        .navigationBarBackButtonHidden(true)
     }
 
     private var heartsView: some View {
