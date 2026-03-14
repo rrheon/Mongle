@@ -96,13 +96,20 @@ public struct SupportScreenFeature {
 
             self.screen = screen
             self.heartBalance = 5
+            let ud = UserDefaults.standard
             self.notificationItems = [
-                .init(id: "r1", title: "가족이 답변했을 때", subtitle: "가족이 오늘의 질문에 답변하면 알림", isOn: true),
-                .init(id: "r2", title: "내 답변에 반응이 왔을 때", subtitle: "하트, 댓글 등의 반응 알림", isOn: true),
-                .init(id: "r3", title: "재촉 알림을 받았을 때", subtitle: "가족에게 답변 재촉 알림을 받으면 알림", isOn: true),
-                .init(id: "r4", title: "내가 재촉 알림을 보냈을 때 결과", subtitle: "재촉 후 상대방이 답변하면 알림", isOn: true),
-                .init(id: "r5", title: "새 질문 알림", subtitle: "매일 오전 새 질문이 등록되면 알림", isOn: true),
-                .init(id: "r6", title: "하트 관련 알림", subtitle: "하트를 받거나 소비했을 때 알림", isOn: true),
+                .init(id: "r1", title: "가족이 답변했을 때", subtitle: "가족이 오늘의 질문에 답변하면 알림",
+                      isOn: ud.object(forKey: "notification.r1") as? Bool ?? true),
+                .init(id: "r2", title: "내 답변에 반응이 왔을 때", subtitle: "하트, 댓글 등의 반응 알림",
+                      isOn: ud.object(forKey: "notification.r2") as? Bool ?? true),
+                .init(id: "r3", title: "재촉 알림을 받았을 때", subtitle: "가족에게 답변 재촉 알림을 받으면 알림",
+                      isOn: ud.object(forKey: "notification.r3") as? Bool ?? true),
+                .init(id: "r4", title: "내가 재촉 알림을 보냈을 때 결과", subtitle: "재촉 후 상대방이 답변하면 알림",
+                      isOn: ud.object(forKey: "notification.r4") as? Bool ?? true),
+                .init(id: "r5", title: "새 질문 알림", subtitle: "매일 오전 새 질문이 등록되면 알림",
+                      isOn: ud.object(forKey: "notification.r5") as? Bool ?? true),
+                .init(id: "r6", title: "하트 관련 알림", subtitle: "하트를 받거나 소비했을 때 알림",
+                      isOn: ud.object(forKey: "notification.r6") as? Bool ?? true),
             ]
             self.quietHours = "오후 10:00 - 오전 8:00"
             self.currentMonth = monthDate
@@ -180,6 +187,7 @@ public struct SupportScreenFeature {
             case .toggleChanged(let id, let isOn):
                 if let index = state.notificationItems.firstIndex(where: { $0.id == id }) {
                     state.notificationItems[index].isOn = isOn
+                    UserDefaults.standard.set(isOn, forKey: "notification.\(id)")
                 }
                 return .none
 
