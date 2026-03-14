@@ -15,6 +15,7 @@ public struct RootFeature {
     @Dependency(\.authRepository) var authRepository
     @Dependency(\.familyRepository) var familyRepository
     @Dependency(\.questionRepository) var questionRepository
+    @Dependency(\.answerRepository) var answerRepository
 
     public init() {}
 

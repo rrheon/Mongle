@@ -15,19 +15,22 @@ extension RootFeature {
         public let family: MongleGroup?
         public let familyMembers: [User]
         public let hasAnsweredToday: Bool
+        public let memberAnswerStatus: [UUID: Bool]
 
         public init(
             user: User?,
             question: Question?,
             family: MongleGroup?,
             familyMembers: [User],
-            hasAnsweredToday: Bool = false
+            hasAnsweredToday: Bool = false,
+            memberAnswerStatus: [UUID: Bool] = [:]
         ) {
             self.user = user
             self.question = question
             self.family = family
             self.familyMembers = familyMembers
             self.hasAnsweredToday = hasAnsweredToday
+            self.memberAnswerStatus = memberAnswerStatus
         }
     }
 

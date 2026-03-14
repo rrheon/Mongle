@@ -35,12 +35,24 @@ extension RootFeature {
                             let family = familyResult?.0
                             let familyMembers = familyResult?.1 ?? []
                             let todayQuestion = try await questionRepository.getTodayQuestion()
+
+                            var memberAnswerStatus: [UUID: Bool] = [:]
+                            if let dqIdString = todayQuestion?.dailyQuestionId,
+                               let dqId = UUID(uuidString: dqIdString) {
+                                let answers = (try? await answerRepository.getByDailyQuestion(dailyQuestionId: dqId)) ?? []
+                                for answer in answers {
+                                    memberAnswerStatus[answer.userId] = true
+                                }
+                            }
+                            let hasAnsweredToday = currentUser.flatMap { memberAnswerStatus[$0.id] } ?? false
+
                             let data = RootData(
                                 user: currentUser,
                                 question: todayQuestion,
                                 family: family,
                                 familyMembers: familyMembers,
-                                hasAnsweredToday: true // TODO: 실제 API 연동 시 제거
+                                hasAnsweredToday: hasAnsweredToday,
+                                memberAnswerStatus: memberAnswerStatus
                             )
                             await send(.loadDataResponse(.success(data)))
                         } catch {
@@ -68,15 +80,26 @@ extension RootFeature {
                         isLoading: false,
                         isRefreshing: false,
                         errorMessage: nil,
-                        hasAnsweredToday: data.hasAnsweredToday
+                        hasAnsweredToday: data.hasAnsweredToday,
+                        memberAnswerStatus: data.memberAnswerStatus
                     )
                     if state.mainTab != nil {
                         state.mainTab?.home = homeState
                         state.mainTab?.profile.user = data.user
+                        state.mainTab?.profile.familyId = data.family?.id
+                        if let familyId = data.family?.id {
+                            state.mainTab?.history.familyId = familyId
+                            state.mainTab?.history.familyMembers = data.familyMembers
+                        }
                     } else {
                         state.mainTab = MainTabFeature.State(
                             home: homeState,
-                            profile: ProfileEditFeature.State(user: data.user)
+                            history: HistoryFeature.State(
+                                familyId: data.family?.id,
+                                familyMembers: data.familyMembers
+                            ),
+                            notification: NotificationFeature.State(),
+                            profile: ProfileEditFeature.State(user: data.user, familyId: data.family?.id)
                         )
                     }
                     state.appState = data.family == nil ? .groupSelection : .authenticated
