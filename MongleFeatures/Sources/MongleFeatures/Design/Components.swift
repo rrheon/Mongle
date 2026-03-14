@@ -841,21 +841,10 @@ public struct MongleMoodSelector: View {
                 ForEach(moods) { mood in
                     Spacer()
                     VStack(spacing: 6) {
-                        ZStack {
-                            Circle()
-                                .fill(mood.color)
-                                .frame(width: 44, height: 44)
-                                .shadow(color: mood.color.opacity(0.33), radius: 10, x: 0, y: 3)
+                        monggle(for: mood.id, size: 44)
+                            .scaleEffect(selected == mood ? 1.18 : 1.0)
+                            .animation(.spring(response: 0.25, dampingFraction: 0.6), value: selected)
 
-                            if selected == mood {
-                                Circle()
-                                    .stroke(Color.white, lineWidth: 2.5)
-                                    .frame(width: 44, height: 44)
-                            }
-                        }
-
-                        Text(mood.emoji)
-                            .font(.system(size: 14))
                         Text(mood.label)
                             .font(.system(size: 10, weight: selected == mood ? .semibold : .medium))
                             .foregroundColor(selected == mood ? MongleColor.textPrimary : MongleColor.textSecondary)
@@ -871,6 +860,18 @@ public struct MongleMoodSelector: View {
         .cornerRadius(MongleRadius.xl)
         .overlay(RoundedRectangle(cornerRadius: MongleRadius.xl).stroke(Color.white.opacity(0.2), lineWidth: 1))
         .shadow(color: MongleColor.shadowBase.opacity(0.12), radius: 16, x: 0, y: 4)
+    }
+
+    @ViewBuilder
+    private func monggle(for moodId: String, size: CGFloat) -> some View {
+        switch moodId {
+        case "happy":   MongleMonggle.yellow(size: size)
+        case "calm":    MongleMonggle.green(size: size)
+        case "loved":   MongleMonggle.pink(size: size)
+        case "sad":     MongleMonggle.blue(size: size)
+        case "tired":   MongleMonggle.orange(size: size)
+        default:        MongleMonggle.pink(size: size)
+        }
     }
 }
 
