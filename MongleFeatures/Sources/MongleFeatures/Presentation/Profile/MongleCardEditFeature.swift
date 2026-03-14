@@ -48,6 +48,8 @@ public struct MongleCardEditFeature {
         }
     }
 
+    @Dependency(\.userRepository) var userRepository
+
     public init() {}
 
     public var body: some Reducer<State, Action> {
@@ -61,17 +63,17 @@ public struct MongleCardEditFeature {
                 guard let user = state.user else { return .none }
                 state.isSaving = true
                 let name = state.editedName.trimmingCharacters(in: .whitespacesAndNewlines)
+                let updated = User(
+                    id: user.id,
+                    email: user.email,
+                    name: name,
+                    profileImageURL: user.profileImageURL,
+                    role: user.role,
+                    createdAt: user.createdAt
+                )
                 return .run { send in
-                    try await Task.sleep(nanoseconds: 400_000_000)
-                    let updated = User(
-                        id: user.id,
-                        email: user.email,
-                        name: name,
-                        profileImageURL: user.profileImageURL,
-                        role: user.role,
-                        createdAt: user.createdAt
-                    )
-                    await send(.saveCompleted(updated))
+                    let saved = (try? await userRepository.update(updated)) ?? updated
+                    await send(.saveCompleted(saved))
                 }
 
             case .nameChanged(let name):
