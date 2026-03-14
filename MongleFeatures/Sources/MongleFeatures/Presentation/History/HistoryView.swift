@@ -32,6 +32,10 @@ public struct HistoryView: View {
                             .padding(.horizontal, 16)
                             .padding(.top, 8)
 
+                        moodTimelineSection
+                            .padding(.horizontal, 16)
+                            .padding(.top, 16)
+
                         if let item = store.selectedItem {
                             VStack(spacing: 10) {
                                 questionCard(item)
@@ -284,6 +288,68 @@ public struct HistoryView: View {
             RoundedRectangle(cornerRadius: 16)
                 .stroke(MongleColor.border, lineWidth: 1)
         )
+    }
+
+    // MARK: - Mood Timeline Section
+
+    private var moodTimelineSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("최근 14일 기분")
+                .font(.custom("Outfit", size: 14).weight(.semibold))
+                .foregroundColor(MongleColor.textPrimary)
+
+            HStack {
+                ForEach(0..<5, id: \.self) { index in
+                    Spacer()
+                    VStack(spacing: 6) {
+                        ZStack(alignment: .topTrailing) {
+                            MongleMonggle(color: monggleColor(for: index), size: 44)
+
+                            let count = moodFrequency14Days[index]
+                            if count > 0 {
+                                Text("\(count)")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .frame(width: 18, height: 18)
+                                    .background(MongleColor.primary)
+                                    .clipShape(Circle())
+                                    .offset(x: 6, y: -6)
+                            }
+                        }
+                        Text(moodLabel(for: index))
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundColor(MongleColor.textSecondary)
+                    }
+                    Spacer()
+                }
+            }
+        }
+        .padding(16)
+        .background(Color.white)
+        .cornerRadius(16)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(MongleColor.border, lineWidth: 1)
+        )
+    }
+
+    private var moodFrequency14Days: [Int] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        var counts = [0, 0, 0, 0, 0]
+        for dayOffset in 0..<14 {
+            guard let date = calendar.date(byAdding: .day, value: -dayOffset, to: today),
+                  let item = store.historyItems[date] else { continue }
+            for answer in item.memberAnswers {
+                counts[answer.colorIndex % 5] += 1
+            }
+        }
+        return counts
+    }
+
+    private func moodLabel(for index: Int) -> String {
+        let labels = ["평온", "행복", "사랑", "우울", "지침"]
+        return labels[index % labels.count]
     }
 
     private func monggleColor(for index: Int) -> Color {
