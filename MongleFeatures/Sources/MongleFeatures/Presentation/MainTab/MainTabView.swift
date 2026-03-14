@@ -93,8 +93,25 @@ struct MainTabView: View {
 
     // MARK: - Subviews
 
+    private static let monggleColors: [Color] = [
+        MongleColor.monggleYellow,
+        MongleColor.monggleGreen,
+        MongleColor.mongglePink,
+        MongleColor.monggleBlue,
+        MongleColor.monggleOrange
+    ]
+
     private var homeViewSection: some View {
-        HomeView(
+        let memberData: [(name: String, color: Color, hasAnswered: Bool)] = store.home.familyMembers
+            .enumerated()
+            .map { index, user in
+                (
+                    name: user.name,
+                    color: Self.monggleColors[index % Self.monggleColors.count],
+                    hasAnswered: store.home.memberAnswerStatus[user.id] ?? false
+                )
+            }
+        return HomeView(
             topBarState: HomeTopBarState(
                 streakDays: 0,
                 groupName: store.home.family?.name ?? "우리 가족",
@@ -105,6 +122,7 @@ struct MainTabView: View {
                 }
             ),
             hasCurrentUserAnswered: store.home.hasAnsweredToday,
+            members: memberData,
             onQuestionTap: { store.send(.home(.questionTapped)) },
             onNotificationTap: { store.send(.home(.notificationTapped)) },
             onHeartsTap: { store.send(.home(.heartsTapped)) },

@@ -1242,6 +1242,7 @@ public struct MongleView: View {
 
 public struct MongleSceneView: View {
     public var hasCurrentUserAnswered: Bool = false
+    public var members: [(name: String, color: Color, hasAnswered: Bool)]
     public var onViewAnswer: (String) -> Void = { _ in }
     public var onNudge: (String) -> Void = { _ in }
 
@@ -1255,7 +1256,7 @@ public struct MongleSceneView: View {
     @State private var mongles: [MongleCharacter] = []
     @State private var timer: Timer?
 
-    private static let memberData: [(String, Color, Bool)] = [
+    private static let defaultMemberData: [(String, Color, Bool)] = [
         ("Dad", .orange, true),
         ("Mom", .green, false),
         ("Lily", .yellow, true),
@@ -1264,11 +1265,17 @@ public struct MongleSceneView: View {
     ]
 
     public init(hasCurrentUserAnswered: Bool = false,
+                members: [(name: String, color: Color, hasAnswered: Bool)] = [],
                 onViewAnswer: @escaping (String) -> Void = { _ in },
                 onNudge: @escaping (String) -> Void = { _ in }) {
         self.hasCurrentUserAnswered = hasCurrentUserAnswered
+        self.members = members
         self.onViewAnswer = onViewAnswer
         self.onNudge = onNudge
+    }
+
+    private var effectiveMembers: [(String, Color, Bool)] {
+        members.isEmpty ? Self.defaultMemberData : members.map { ($0.name, $0.color, $0.hasAnswered) }
     }
 
     public var body: some View {
@@ -1310,7 +1317,7 @@ public struct MongleSceneView: View {
     private func initMongles(size: CGSize) {
         guard size.width > 0, size.height > 0 else { return }
         var placed: [CGPoint] = []
-        mongles = Self.memberData.map { name, color, hasAnswered in
+        mongles = effectiveMembers.map { name, color, hasAnswered in
             var pos = randomPos(size: size)
             for _ in 0..<30 {
                 let overlaps = placed.contains { hypot(pos.x - $0.x, pos.y - $0.y) < collisionRadius }

@@ -40,6 +40,7 @@ struct TopBarQuestion: Identifiable {
 struct HomeView: View {
   let topBarState: HomeTopBarState
   let hasCurrentUserAnswered: Bool
+  let members: [(name: String, color: Color, hasAnswered: Bool)]
   var onQuestionTap: () -> Void
   var onNotificationTap: () -> Void
   var onHeartsTap: () -> Void
@@ -49,6 +50,7 @@ struct HomeView: View {
   init(
     topBarState: HomeTopBarState = .preview,
     hasCurrentUserAnswered: Bool = false,
+    members: [(name: String, color: Color, hasAnswered: Bool)] = [],
     onQuestionTap: @escaping () -> Void = {},
     onNotificationTap: @escaping () -> Void = {},
     onHeartsTap: @escaping () -> Void = {},
@@ -57,6 +59,7 @@ struct HomeView: View {
   ) {
     self.topBarState = topBarState
     self.hasCurrentUserAnswered = hasCurrentUserAnswered
+    self.members = members
     self.onQuestionTap = onQuestionTap
     self.onNotificationTap = onNotificationTap
     self.onHeartsTap = onHeartsTap
@@ -80,6 +83,7 @@ struct HomeView: View {
         // Mongle Scene
         MongleSceneView(
           hasCurrentUserAnswered: hasCurrentUserAnswered,
+          members: members,
           onViewAnswer: onPeerAnswerTap,
           onNudge: onPeerNudgeTap
         )
