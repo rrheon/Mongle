@@ -420,11 +420,9 @@ public struct SupportScreenView: View {
             VStack(alignment: .leading, spacing: MongleSpacing.sm) {
                 sectionTitle("멤버", subtitle: "현재 이 공간에 연결된 사람들")
 
-                ForEach(store.members) { member in
+                ForEach(Array(store.members.enumerated()), id: \.element.id) { index, member in
                     HStack(spacing: MongleSpacing.md) {
-                        Circle()
-                            .fill(Color(hex: member.colorHex))
-                            .frame(width: 40, height: 40)
+                        MongleMonggle(color: monggleColor(for: index), size: 40)
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text(member.name)
@@ -521,19 +519,28 @@ public struct SupportScreenView: View {
             VStack(alignment: .leading, spacing: MongleSpacing.sm) {
                 sectionTitle("기분 타임라인", subtitle: "최근 14일")
 
-                HStack(alignment: .bottom, spacing: 6) {
-                    ForEach(Array(store.moodRecords.enumerated()), id: \.offset) { index, item in
-                        VStack(spacing: 4) {
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color(hex: item.colorHex))
-                                .frame(width: 18, height: CGFloat(24 + ((store.moodRecords.count - index) * 6)))
-                            Circle()
-                                .fill(Color(hex: item.colorHex))
-                                .frame(width: 6, height: 6)
-                            Text(shortDate(item.date))
-                                .font(MongleFont.caption())
+                HStack {
+                    ForEach(0..<5, id: \.self) { index in
+                        Spacer()
+                        VStack(spacing: 6) {
+                            ZStack(alignment: .topTrailing) {
+                                MongleMonggle(color: monggleColor(for: index), size: 44)
+                                let count = moodFrequency(for: index)
+                                if count > 0 {
+                                    Text("\(count)")
+                                        .font(.system(size: 10, weight: .bold))
+                                        .foregroundColor(.white)
+                                        .frame(width: 18, height: 18)
+                                        .background(MongleColor.primary)
+                                        .clipShape(Circle())
+                                        .offset(x: 6, y: -6)
+                                }
+                            }
+                            Text(monggleMoodLabel(for: index))
+                                .font(.system(size: 10, weight: .medium))
                                 .foregroundColor(MongleColor.textSecondary)
                         }
+                        Spacer()
                     }
                 }
             }
@@ -551,9 +558,7 @@ public struct SupportScreenView: View {
 
                 ForEach(store.moodRecords) { record in
                     HStack(spacing: MongleSpacing.md) {
-                        Circle()
-                            .fill(Color(hex: record.colorHex))
-                            .frame(width: 32, height: 32)
+                        MongleMonggle(color: monggleColorForLabel(record.label), size: 32)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(record.label)
                                 .font(MongleFont.body2Bold())
@@ -578,6 +583,37 @@ public struct SupportScreenView: View {
                 RoundedRectangle(cornerRadius: MongleRadius.large)
                     .stroke(MongleColor.borderWarm, lineWidth: 1)
             )
+        }
+    }
+
+    private func monggleColor(for index: Int) -> Color {
+        let colors: [Color] = [
+            MongleColor.monggleYellow,
+            MongleColor.monggleGreen,
+            MongleColor.mongglePink,
+            MongleColor.monggleBlue,
+            MongleColor.monggleOrange
+        ]
+        return colors[index % colors.count]
+    }
+
+    private func monggleMoodLabel(for index: Int) -> String {
+        ["기쁨", "평온", "사랑", "우울", "지침"][index % 5]
+    }
+
+    private func moodFrequency(for index: Int) -> Int {
+        let labels = [["기쁨"], ["평온"], ["사랑"], ["우울"], ["지침"]]
+        let targets = labels[index % labels.count]
+        return store.moodRecords.filter { targets.contains($0.label) }.count
+    }
+
+    private func monggleColorForLabel(_ label: String) -> Color {
+        switch label {
+        case "기쁨": return MongleColor.monggleYellow
+        case "평온": return MongleColor.monggleGreen
+        case "사랑": return MongleColor.mongglePink
+        case "우울": return MongleColor.monggleBlue
+        default: return MongleColor.monggleOrange
         }
     }
 
