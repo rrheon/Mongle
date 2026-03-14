@@ -162,18 +162,23 @@ private struct HeartsButtonView: View {
 private struct NotificationButtonView: View {
   let hasNotification: Bool
   var onTap: () -> Void
-  
+
   var body: some View {
     Button(action: onTap) {
       ZStack(alignment: .topTrailing) {
-        Image(systemName: "bell")
-          .frame(width: 36, height: 36)
-        
+        Image(systemName: "bell.fill")
+          .font(.system(size: 13))
+          .foregroundColor(MongleColor.primary)
+          .padding(.vertical, 6)
+          .padding(.horizontal, 10)
+          .background(MongleColor.primaryLight)
+          .clipShape(Capsule())
+
         if hasNotification {
           Circle()
-            .fill(.red)
+            .fill(Color.red)
             .frame(width: 8, height: 8)
-            .offset(x: -4, y: 8)
+            .offset(x: -2, y: 2)
         }
       }
     }
