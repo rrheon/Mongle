@@ -30,6 +30,10 @@ public struct WriteQuestionView: View {
         .onTapGesture {
             isTextEditorFocused = false
         }
+        .mongleErrorBanner(
+            error: store.appError,
+            onDismiss: { store.send(.setAppError(nil)) }
+        )
     }
 
     // MARK: - Navigation Header

@@ -15,6 +15,7 @@ public struct QuestionDetailFeature {
     public struct State: Equatable {
         public var question: Question
         public var currentUser: User?
+        public var familyMembers: [User]
         public var myAnswer: Answer?
         public var familyAnswers: [FamilyAnswer] = []
         public var answerText: String = ""
@@ -22,12 +23,13 @@ public struct QuestionDetailFeature {
         public var isLoading: Bool = false
         public var isSubmitting: Bool = false
         public var errorMessage: String?
+        public var appError: AppError?
+        public var showMoodRequiredAlert: Bool = false
 
         public var hasMyAnswer: Bool { myAnswer != nil }
         public var isValidAnswer: Bool {
             !answerText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         }
-        public var showMoodRequiredAlert: Bool = false
 
         public struct FamilyAnswer: Equatable, Identifiable, Sendable {
             public let id: UUID
@@ -44,6 +46,7 @@ public struct QuestionDetailFeature {
         public init(
             question: Question,
             currentUser: User? = nil,
+            familyMembers: [User] = [],
             myAnswer: Answer? = nil,
             familyAnswers: [FamilyAnswer] = [],
             answerText: String = "",
@@ -54,6 +57,7 @@ public struct QuestionDetailFeature {
         ) {
             self.question = question
             self.currentUser = currentUser
+            self.familyMembers = familyMembers
             self.myAnswer = myAnswer
             self.familyAnswers = familyAnswers
             self.answerText = myAnswer?.content ?? answerText
@@ -75,8 +79,9 @@ public struct QuestionDetailFeature {
         case closeTapped
 
         // MARK: - Internal Actions
-        case loadDataResponse(Result<LoadedData, AnswerError>)
-        case submitAnswerResponse(Result<Answer, AnswerError>)
+        case loadDataResponse(Result<LoadedData, AppError>)
+        case submitAnswerResponse(Result<Answer, AppError>)
+        case setAppError(AppError?)
 
         // MARK: - Delegate Actions
         case delegate(Delegate)
@@ -98,22 +103,8 @@ public struct QuestionDetailFeature {
         }
     }
 
-    public enum AnswerError: Error, Equatable, Sendable {
-        case emptyAnswer
-        case networkError
-        case unknown(String)
-
-        var localizedDescription: String {
-            switch self {
-            case .emptyAnswer:
-                return "답변을 입력해주세요."
-            case .networkError:
-                return "네트워크 연결을 확인해주세요."
-            case .unknown(let message):
-                return message
-            }
-        }
-    }
+    @Dependency(\.answerRepository) var answerRepository
+    @Dependency(\.errorHandler) var errorHandler
 
     public init() {}
 
@@ -123,45 +114,30 @@ public struct QuestionDetailFeature {
             // MARK: - View Actions
             case .onAppear:
                 state.isLoading = true
-                let questionId = state.question.id
-
-                return .run { send in
-                    // TODO: 실제 API 호출로 교체
-                    try await Task.sleep(nanoseconds: 500_000_000)
-
-                    // Mock 데이터
-                    let lily = User(id: UUID(), email: "lily@example.com", name: "Lily", profileImageURL: nil, role: .daughter, createdAt: .now)
-                    let mom = User(id: UUID(), email: "mom@example.com", name: "Mom", profileImageURL: nil, role: .mother, createdAt: .now)
-
-                    let mockFamilyAnswers: [State.FamilyAnswer] = [
-                        State.FamilyAnswer(
-                            user: lily,
-                            answer: Answer(
-                                id: UUID(),
-                                dailyQuestionId: questionId,
-                                userId: lily.id,
-                                content: "아침에 고양이가 제 발 위에서 잠든 것을 발견했어요. 너무 귀여워서 한동안 꼼짝도 못했지 뭐예요 🐱",
-                                imageURL: nil,
-                                createdAt: .now.addingTimeInterval(-18 * 60)
-                            )
-                        ),
-                        State.FamilyAnswer(
-                            user: mom,
-                            answer: Answer(
-                                id: UUID(),
-                                dailyQuestionId: questionId,
-                                userId: mom.id,
-                                content: "오늘 오랜만에 가족이랑 같이 밥 먹었는데 진짜 행복했어요 😊",
-                                imageURL: nil,
-                                createdAt: .now.addingTimeInterval(-53 * 60)
-                            )
-                        )
-                    ]
-
-                    await send(.loadDataResponse(.success(LoadedData(
-                        myAnswer: nil,
-                        familyAnswers: mockFamilyAnswers
-                    ))))
+                guard let dqIdString = state.question.dailyQuestionId,
+                      let dailyQuestionId = UUID(uuidString: dqIdString) else {
+                    // dailyQuestionId 없으면 빈 상태
+                    state.isLoading = false
+                    return .none
+                }
+                let currentUserId = state.currentUser?.id
+                let members = state.familyMembers
+                return .run { [answerRepository] send in
+                    do {
+                        let answers = try await answerRepository.getByDailyQuestion(dailyQuestionId: dailyQuestionId)
+                        let myAnswer = answers.first(where: { $0.userId == currentUserId })
+                        let familyAnswers: [State.FamilyAnswer] = answers
+                            .filter { $0.userId != currentUserId }
+                            .map { answer in
+                                let user = members.first(where: { $0.id == answer.userId })
+                                    ?? User(id: answer.userId, email: "", name: "멤버",
+                                            profileImageURL: nil, role: .other, createdAt: Date())
+                                return State.FamilyAnswer(user: user, answer: answer)
+                            }
+                        await send(.loadDataResponse(.success(LoadedData(myAnswer: myAnswer, familyAnswers: familyAnswers))))
+                    } catch {
+                        await send(.loadDataResponse(.failure(AppError.from(error))))
+                    }
                 }
 
             case .answerTextChanged(let text):
@@ -186,34 +162,53 @@ public struct QuestionDetailFeature {
                     state.errorMessage = "답변을 입력해주세요."
                     return .none
                 }
+                guard let dqIdString = state.question.dailyQuestionId,
+                      let dailyQuestionId = UUID(uuidString: dqIdString) else {
+                    state.errorMessage = "질문 정보를 불러올 수 없습니다."
+                    return .none
+                }
 
                 state.isSubmitting = true
                 state.errorMessage = nil
 
                 let answerText = state.answerText.trimmingCharacters(in: .whitespacesAndNewlines)
-                let questionId = state.question.id
                 let userId = state.currentUser?.id ?? UUID()
-                let existingAnswerId = state.myAnswer?.id
+                let existingAnswer = state.myAnswer
 
-                return .run { send in
-                    // TODO: 실제 API 호출로 교체
-                    try await Task.sleep(nanoseconds: 1_000_000_000)
-
-                    let answer = Answer(
-                        id: existingAnswerId ?? UUID(),
-                        dailyQuestionId: questionId,
-                        userId: userId,
-                        content: answerText,
-                        imageURL: nil,
-                        createdAt: .now,
-                        updatedAt: existingAnswerId != nil ? .now : nil
-                    )
-
-                    await send(.submitAnswerResponse(.success(answer)))
+                return .run { [answerRepository] send in
+                    do {
+                        let result: Answer
+                        if let existing = existingAnswer {
+                            let updated = Answer(
+                                id: existing.id,
+                                dailyQuestionId: dailyQuestionId,
+                                userId: userId,
+                                content: answerText,
+                                imageURL: existing.imageURL,
+                                createdAt: existing.createdAt,
+                                updatedAt: Date()
+                            )
+                            result = try await answerRepository.update(updated)
+                        } else {
+                            let newAnswer = Answer(
+                                id: UUID(),
+                                dailyQuestionId: dailyQuestionId,
+                                userId: userId,
+                                content: answerText,
+                                imageURL: nil,
+                                createdAt: Date()
+                            )
+                            result = try await answerRepository.create(newAnswer)
+                        }
+                        await send(.submitAnswerResponse(.success(result)))
+                    } catch {
+                        await send(.submitAnswerResponse(.failure(AppError.from(error))))
+                    }
                 }
 
             case .dismissErrorTapped:
                 state.errorMessage = nil
+                state.appError = nil
                 return .none
 
             case .closeTapped:
@@ -231,7 +226,7 @@ public struct QuestionDetailFeature {
 
             case .loadDataResponse(.failure(let error)):
                 state.isLoading = false
-                state.errorMessage = error.localizedDescription
+                state.appError = error
                 return .none
 
             case .submitAnswerResponse(.success(let answer)):
@@ -242,7 +237,15 @@ public struct QuestionDetailFeature {
 
             case .submitAnswerResponse(.failure(let error)):
                 state.isSubmitting = false
-                state.errorMessage = error.localizedDescription
+                state.appError = error
+                state.errorMessage = error.userMessage
+                return .none
+
+            case .setAppError(let error):
+                state.appError = error
+                state.errorMessage = error?.userMessage
+                state.isLoading = false
+                state.isSubmitting = false
                 return .none
 
             // MARK: - Delegate Actions
