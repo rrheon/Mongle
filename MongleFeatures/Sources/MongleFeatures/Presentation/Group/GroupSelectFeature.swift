@@ -25,6 +25,7 @@ public struct GroupSelectFeature {
 
         public var isLoading: Bool = false
         public var errorMessage: String? = nil
+        public var appError: AppError? = nil
 
         public init(
             step: Step = .select,
@@ -58,6 +59,7 @@ public struct GroupSelectFeature {
         case setLoading(Bool)
         case setInviteCode(String)
         case setError(String?)
+        case setAppError(AppError?)
         case dismissError
         case delegate(Delegate)
 
@@ -164,8 +166,15 @@ public struct GroupSelectFeature {
                 state.isLoading = false
                 return .none
 
+            case .setAppError(let error):
+                state.appError = error
+                state.errorMessage = error?.userMessage
+                state.isLoading = false
+                return .none
+
             case .dismissError:
                 state.errorMessage = nil
+                state.appError = nil
                 return .none
 
             case .delegate:

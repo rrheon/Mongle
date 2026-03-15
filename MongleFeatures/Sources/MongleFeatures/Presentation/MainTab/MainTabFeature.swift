@@ -11,9 +11,13 @@ import Domain
 
 @Reducer
 public struct MainTabFeature {
-  public init() {}
-  
-  public var body: some ReducerOf<Self> {
-    reducer
-  }
+
+    @Dependency(\.questionRepository) var questionRepository
+    @Dependency(\.errorHandler) var errorHandler
+
+    public init() {}
+
+    public var body: some ReducerOf<Self> {
+        reducer
+    }
 }

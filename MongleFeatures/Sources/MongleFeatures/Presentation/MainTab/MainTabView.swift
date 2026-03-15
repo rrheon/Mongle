@@ -113,7 +113,7 @@ struct MainTabView: View {
             }
         return HomeView(
             topBarState: HomeTopBarState(
-                streakDays: 0,
+                streakDays: store.home.streakDays,
                 groupName: store.home.family?.name ?? "우리 가족",
                 hasNotification: false,
                 hearts: store.home.hearts,
@@ -129,6 +129,20 @@ struct MainTabView: View {
             onPeerAnswerTap: { store.send(.home(.peerAnswerTapped($0))) },
             onPeerNudgeTap: { store.send(.home(.peerNudgeTapped($0))) }
         )
+        .mongleErrorBanner(
+            error: store.home.appError,
+            onDismiss: { store.send(.home(.dismissError)) },
+            onRetry: store.home.appError?.isRetryable == true ? { store.send(.home(.refreshData)) } : nil
+        )
+        .alert("로그인이 필요해요", isPresented: Binding(
+            get: { store.home.showGuestLoginPrompt },
+            set: { if !$0 { store.send(.home(.guestLoginDismissed)) } }
+        )) {
+            Button("로그인하기") { store.send(.home(.guestLoginTapped)) }
+            Button("취소", role: .cancel) { store.send(.home(.guestLoginDismissed)) }
+        } message: {
+            Text("이 기능을 이용하려면 로그인이 필요해요.")
+        }
     }
 
     // MARK: - Question Sheet

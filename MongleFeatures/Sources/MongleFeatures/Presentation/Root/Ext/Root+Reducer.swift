@@ -6,6 +6,7 @@
 import Foundation
 import ComposableArchitecture
 import Domain
+import UserNotifications
 
 extension RootFeature {
 
@@ -44,7 +45,15 @@ extension RootFeature {
                                     memberAnswerStatus[answer.userId] = true
                                 }
                             }
-                            let hasAnsweredToday = currentUser.flatMap { memberAnswerStatus[$0.id] } ?? false
+                            // 서버 hasMyAnswer를 fallback으로 사용 (answers 로드 실패 시)
+                            let hasAnsweredToday: Bool
+                            if let userId = currentUser?.id, memberAnswerStatus[userId] != nil {
+                                hasAnsweredToday = memberAnswerStatus[userId] == true
+                            } else {
+                                hasAnsweredToday = todayQuestion?.hasMyAnswer ?? false
+                            }
+
+                            let streakDays = (try? await userRepository.getMyStreak()) ?? 0
 
                             let data = RootData(
                                 user: currentUser,
@@ -52,7 +61,8 @@ extension RootFeature {
                                 family: family,
                                 familyMembers: familyMembers,
                                 hasAnsweredToday: hasAnsweredToday,
-                                memberAnswerStatus: memberAnswerStatus
+                                memberAnswerStatus: memberAnswerStatus,
+                                streakDays: streakDays
                             )
                             await send(.loadDataResponse(.success(data)))
                         } catch {
@@ -81,12 +91,16 @@ extension RootFeature {
                         isRefreshing: false,
                         errorMessage: nil,
                         hasAnsweredToday: data.hasAnsweredToday,
-                        memberAnswerStatus: data.memberAnswerStatus
+                        hearts: data.user?.hearts ?? 0,
+                        familyAnswerCount: data.question?.familyAnswerCount ?? 0,
+                        memberAnswerStatus: data.memberAnswerStatus,
+                        streakDays: data.streakDays
                     )
                     if state.mainTab != nil {
                         state.mainTab?.home = homeState
                         state.mainTab?.profile.user = data.user
                         state.mainTab?.profile.familyId = data.family?.id
+                        state.mainTab?.profile.familyCreatedById = data.family?.createdBy
                         if let familyId = data.family?.id {
                             state.mainTab?.history.familyId = familyId
                             state.mainTab?.history.familyMembers = data.familyMembers
@@ -99,17 +113,33 @@ extension RootFeature {
                                 familyMembers: data.familyMembers
                             ),
                             notification: NotificationFeature.State(),
-                            profile: ProfileEditFeature.State(user: data.user, familyId: data.family?.id)
+                            profile: ProfileEditFeature.State(user: data.user, familyId: data.family?.id, familyCreatedById: data.family?.createdBy)
                         )
                     }
-                    state.appState = data.family == nil ? .groupSelection : .authenticated
+                    let newAppState: RootFeature.State.AppState = data.family == nil ? .groupSelection : .authenticated
+                    state.appState = newAppState
+                    // 최초 로그인 시 푸시 알림 권한 요청
+                    if newAppState == .authenticated {
+                        return .run { _ in
+                            let key = "mongle.didRequestPushPermission"
+                            guard !UserDefaults.standard.bool(forKey: key) else { return }
+                            UserDefaults.standard.set(true, forKey: key)
+                            _ = try? await UNUserNotificationCenter.current()
+                                .requestAuthorization(options: [.alert, .badge, .sound])
+                        }
+                    }
                     return .none
 
                 case .loadDataResponse(.failure(let error)):
+                    let appError = AppError.from(error)
+                    if appError.requiresLogin {
+                        return .send(.showLoginScreen)
+                    }
                     if state.mainTab != nil {
                         state.mainTab?.home.isLoading = false
                         state.mainTab?.home.isRefreshing = false
-                        state.mainTab?.home.errorMessage = error.localizedDescription
+                        state.mainTab?.home.appError = appError
+                        state.mainTab?.home.errorMessage = appError.userMessage
                     } else {
                         state.appState = .unauthenticated
                     }
@@ -195,7 +225,7 @@ extension RootFeature {
                             ))
                             await send(.groupSelect(.setInviteCode(family.inviteCode)))
                         } catch {
-                            await send(.groupSelect(.setError(error.localizedDescription)))
+                            await send(.groupSelect(.setAppError(AppError.from(error))))
                         }
                     }
 
@@ -205,7 +235,7 @@ extension RootFeature {
                             _ = try await familyRepository.joinFamily(inviteCode: code)
                             await send(.groupSelect(.delegate(.completed)))
                         } catch {
-                            await send(.groupSelect(.setError(error.localizedDescription)))
+                            await send(.groupSelect(.setAppError(AppError.from(error))))
                         }
                     }
 

@@ -15,6 +15,7 @@ public struct LoginFeature {
     public struct State: Equatable {
         public var isLoading: Bool = false
         public var errorMessage: String?
+        public var appError: AppError?
         public var lastUsedProviderType: SocialProviderType?
 
         public init(
@@ -48,6 +49,7 @@ public struct LoginFeature {
         // MARK: - Internal Actions
 
         case loginResponse(Result<User, AuthError>)
+        case setAppError(AppError?)
 
         // MARK: - Delegate Actions
 
@@ -79,7 +81,7 @@ public struct LoginFeature {
                         let user = try await authRepository.socialLogin(with: credential)
                         await send(.loginResponse(.success(user)))
                     } catch {
-                        await send(.loginResponse(.failure(.socialLoginFailed(credential.providerType))))
+                        await send(.setAppError(AppError.from(error)))
                     }
                 }
 
@@ -106,8 +108,15 @@ public struct LoginFeature {
             case .browseTapped:
                 return .send(.delegate(.browseAsGuest))
 
+            case .setAppError(let error):
+                state.appError = error
+                state.errorMessage = error?.userMessage
+                state.isLoading = false
+                return .none
+
             case .dismissError:
                 state.errorMessage = nil
+                state.appError = nil
                 return .none
 
             case .delegate:

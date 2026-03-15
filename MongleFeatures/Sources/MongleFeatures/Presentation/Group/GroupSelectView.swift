@@ -76,6 +76,11 @@ public struct GroupSelectView: View {
       }
       .background(MongleColor.background)
       .toolbar(.hidden, for: .navigationBar)
+      .mongleErrorBanner(
+        error: store.appError,
+        onDismiss: { store.send(.dismissError) },
+        onRetry: store.appError?.isRetryable == true ? { store.send(store.step == .createGroup ? .createNextTapped : .joinTapped) } : nil
+      )
     }
     .sheet(isPresented: Binding(
       get: { store.showActionSheet },

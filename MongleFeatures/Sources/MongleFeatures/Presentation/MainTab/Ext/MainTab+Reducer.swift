@@ -54,9 +54,15 @@ extension MainTabFeature {
                     ))
                     return .none
 
-                case .home(.delegate(.navigateToPeerNotAnsweredNudge(let memberName))):
+                case .home(.delegate(.navigateToPeerNotAnsweredNudge(let targetUser))):
                     let questionText = state.home.todayQuestion?.content ?? ""
-                    state.path.append(.peerNudge(PeerNudgeFeature.State(memberName: memberName, questionText: questionText)))
+                    let hearts = state.home.hearts
+                    state.path.append(.peerNudge(PeerNudgeFeature.State(
+                        targetUserId: targetUser.id.uuidString,
+                        memberName: targetUser.name,
+                        questionText: questionText,
+                        hearts: hearts
+                    )))
                     return .none
 
                 case .home(.delegate(.showAnswerFirstPopup(let memberName))):
@@ -73,6 +79,9 @@ extension MainTabFeature {
 
                 case .home(.delegate(.requestRefresh)):
                     return .send(.delegate(.requestRefresh))
+
+                case .home(.delegate(.requestLogin)):
+                    return .send(.delegate(.requestLogin))
 
                 // MARK: - QuestionSheet Delegate
 
@@ -107,10 +116,13 @@ extension MainTabFeature {
                         return .none
                     case .refreshQuestion:
                         state.modal = nil
-                        state.showRefreshToast = true
-                        return .run { send in
-                            try? await Task.sleep(nanoseconds: 3_000_000_000)
-                            await send(.dismissRefreshToast)
+                        return .run { [questionRepository] send in
+                            do {
+                                let newQuestion = try await questionRepository.skipTodayQuestion()
+                                await send(.skipQuestionResponse(.success(newQuestion)))
+                            } catch {
+                                await send(.skipQuestionResponse(.failure(AppError.from(error))))
+                            }
                         }
                     }
 
@@ -136,7 +148,8 @@ extension MainTabFeature {
                     state.path.removeLast()
                     return .none
 
-                case .path(.element(id: _, action: .peerNudge(.delegate(.nudgeSent)))):
+                case .path(.element(id: _, action: .peerNudge(.delegate(.nudgeSent(let heartsRemaining))))):
+                    state.home.hearts = heartsRemaining
                     state.showNudgeToast = true
                     return .run { send in
                         try? await Task.sleep(nanoseconds: 3_000_000_000)
@@ -162,8 +175,14 @@ extension MainTabFeature {
                     state.path.removeLast()
                     return .none
 
-                case .path(.element(id: _, action: .writeQuestion(.delegate(.questionSubmitted)))):
+                case .path(.element(id: _, action: .writeQuestion(.delegate(.questionSubmitted(let question, let heartsRemaining))))):
                     state.path.removeLast()
+                    // 오늘의 질문 교체 + 하트 잔액 업데이트 + 답변 상태 초기화
+                    state.home.todayQuestion = question
+                    state.home.hearts = heartsRemaining
+                    state.home.memberAnswerStatus = [:]
+                    state.home.hasAnsweredToday = false
+                    state.home.familyAnswerCount = 0
                     state.showWriteToast = true
                     return .run { send in
                         try? await Task.sleep(nanoseconds: 3_000_000_000)
@@ -176,15 +195,19 @@ extension MainTabFeature {
                         .questionDetail(
                             QuestionDetailFeature.State(
                                 question: question,
-                                currentUser: state.home.currentUser
+                                currentUser: state.home.currentUser,
+                                familyMembers: state.home.familyMembers
                             )
                         )
                     )
 
                     return .none
 
-                case .path(.element(id: _, action: .questionDetail(.delegate(.answerSubmitted(_))))):
+                case .path(.element(id: _, action: .questionDetail(.delegate(.answerSubmitted(let answer))))):
                     state.home.hasAnsweredToday = true
+                    if let userId = state.home.currentUser?.id {
+                        state.home.memberAnswerStatus[userId] = true
+                    }
                     state.path.removeLast()
                     state.showAnswerSubmittedToast = true
                     return .run { send in
@@ -205,6 +228,24 @@ extension MainTabFeature {
 
                 case .path(.element(id: _, action: .notification(.delegate(.close)))):
                     state.path.removeLast()
+                    return .none
+
+                case .skipQuestionResponse(.success(let question)):
+                    if let question = question {
+                        state.home.todayQuestion = question
+                        state.home.hearts = max(0, state.home.hearts - 1)
+                        state.home.memberAnswerStatus = [:]
+                        state.home.hasAnsweredToday = false
+                        state.home.familyAnswerCount = 0
+                    }
+                    state.showRefreshToast = true
+                    return .run { send in
+                        try? await Task.sleep(nanoseconds: 3_000_000_000)
+                        await send(.dismissRefreshToast)
+                    }
+
+                case .skipQuestionResponse(.failure(let error)):
+                    state.home.appError = error
                     return .none
 
                 case .dismissRefreshToast:

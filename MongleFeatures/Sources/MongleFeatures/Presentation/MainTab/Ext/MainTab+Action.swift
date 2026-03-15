@@ -28,6 +28,9 @@ extension MainTabFeature {
         // MARK: Modal
         case modal(PresentationAction<Modal.Action>)
 
+        // MARK: Skip Question
+        case skipQuestionResponse(Result<Question?, AppError>)
+
         // MARK: Toast
         case dismissRefreshToast
         case dismissWriteToast
