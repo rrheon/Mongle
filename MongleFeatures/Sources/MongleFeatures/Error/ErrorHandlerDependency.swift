@@ -64,27 +64,3 @@ extension DependencyValues {
     }
 }
 
-// MARK: - Effect Extension
-
-/// TCA Effect에서 에러를 한 줄로 처리하는 헬퍼.
-///
-/// ```swift
-/// return .run { send in
-///     try await someWork()
-/// }
-/// .catch(errorHandler: errorHandler, context: "FeatureName") { appError in
-///     .send(.setError(appError))
-/// }
-/// ```
-public extension Effect {
-    /// 에러 발생 시 `errorHandler`로 변환 후 `recovery` 클로저를 실행한다.
-    func mapToAppError(
-        errorHandler: ErrorHandler,
-        context: String = "",
-        recovery: @Sendable @escaping (AppError) -> Effect<Action>
-    ) -> Effect<Action> {
-        self.catch { error in
-            recovery(errorHandler(error, context: context))
-        }
-    }
-}

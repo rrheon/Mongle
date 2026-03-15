@@ -997,41 +997,6 @@ extension View {
     }
 }
 
-// MARK: - Error Banner
-
-public struct MongleErrorBanner: View {
-    let message: String
-    let onDismiss: () -> Void
-
-    public init(message: String, onDismiss: @escaping () -> Void) {
-        self.message = message
-        self.onDismiss = onDismiss
-    }
-
-    public var body: some View {
-        HStack(spacing: MongleSpacing.sm) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundColor(.orange)
-
-            Text(message)
-                .font(MongleFont.body2())
-                .foregroundColor(MongleColor.textPrimary)
-                .lineLimit(2)
-
-            Spacer()
-
-            Button(action: onDismiss) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(MongleColor.textSecondary)
-            }
-        }
-        .padding(MongleSpacing.md)
-        .background(Color.orange.opacity(0.1))
-        .cornerRadius(MongleRadius.medium)
-    }
-}
-
 // MARK: - Helpers
 
 extension View {
