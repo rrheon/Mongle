@@ -22,6 +22,8 @@ public protocol MongleRepositoryInterface: Sendable {
     func getMyFamily() async throws -> (MongleGroup, [User])?
     /// 초대 코드로 가족에 참여. 서버가 JWT 토큰의 userId를 멤버로 추가함.
     func joinFamily(inviteCode: String) async throws -> MongleGroup
+    /// 방장이 특정 멤버를 가족에서 내보내기. DELETE /families/members/{memberId}
+    func kickMember(memberId: UUID) async throws
 }
 
 public enum MongleError: Error, Equatable, Sendable {

@@ -15,6 +15,10 @@ public struct Question: Equatable, Sendable {
     public let createdAt: Date
     /// 오늘의 질문 응답에서 내려오는 DailyQuestion ID (서버 PK). 답변 체크에 사용.
     public let dailyQuestionId: String?
+    /// 이미 답변한 가족 수 (GET /questions/today 응답의 familyAnswerCount)
+    public let familyAnswerCount: Int
+    /// 현재 유저가 이미 답변했는지 (GET /questions/today 응답의 hasMyAnswer)
+    public let hasMyAnswer: Bool
 
     public init(
         id: UUID,
@@ -22,7 +26,9 @@ public struct Question: Equatable, Sendable {
         category: QuestionCategory,
         order: Int,
         createdAt: Date = Date(),
-        dailyQuestionId: String? = nil
+        dailyQuestionId: String? = nil,
+        familyAnswerCount: Int = 0,
+        hasMyAnswer: Bool = false
     ) {
         self.id = id
         self.content = content
@@ -30,6 +36,8 @@ public struct Question: Equatable, Sendable {
         self.order = order
         self.createdAt = createdAt
         self.dailyQuestionId = dailyQuestionId
+        self.familyAnswerCount = familyAnswerCount
+        self.hasMyAnswer = hasMyAnswer
     }
 }
 
