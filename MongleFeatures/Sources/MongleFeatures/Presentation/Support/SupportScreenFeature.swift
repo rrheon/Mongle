@@ -1,5 +1,6 @@
 import Foundation
 import ComposableArchitecture
+import Domain
 import UIKit
 
 @Reducer
@@ -59,20 +60,6 @@ public struct SupportScreenFeature {
             }
         }
 
-        public struct MoodRecord: Equatable, Identifiable, Sendable {
-            public let id: UUID
-            public let date: Date
-            public let label: String
-            public let colorHex: String
-
-            public init(id: UUID = UUID(), date: Date, label: String, colorHex: String) {
-                self.id = id
-                self.date = date
-                self.label = label
-                self.colorHex = colorHex
-            }
-        }
-
         public var screen: Screen
         public var heartBalance: Int
         public var notificationItems: [ToggleItem]
@@ -83,15 +70,26 @@ public struct SupportScreenFeature {
         public var groupName: String
         public var inviteCode: String
         public var members: [GroupMember]
-        public var moodRecords: [MoodRecord]
+        public var moodRecords: [Domain.MoodRecord]
+        public var isMoodLoading: Bool = false
         public var familyId: UUID?
         public var currentUserId: UUID?
+        public var familyCreatedById: UUID?
         public var showLeaveConfirm: Bool = false
         public var isLeaving: Bool = false
+        public var kickTargetMember: GroupMember?
+        public var showKickConfirm: Bool = false
+        public var isKicking: Bool = false
 
-        public init(screen: Screen, familyId: UUID? = nil, currentUserId: UUID? = nil) {
+        public var isCurrentUserOwner: Bool {
+            guard let currentUserId, let createdById = familyCreatedById else { return false }
+            return currentUserId == createdById
+        }
+
+        public init(screen: Screen, familyId: UUID? = nil, currentUserId: UUID? = nil, familyCreatedById: UUID? = nil) {
             self.familyId = familyId
             self.currentUserId = currentUserId
+            self.familyCreatedById = familyCreatedById
             let calendar = Calendar(identifier: .gregorian)
             let baseDate = calendar.date(from: DateComponents(year: 2025, month: 3, day: 13)) ?? Date()
             let previousDay = calendar.date(byAdding: .day, value: -1, to: baseDate) ?? baseDate
@@ -142,17 +140,18 @@ public struct SupportScreenFeature {
                 .init(name: "Alex", subtitle: "2025년 2월 가입", colorHex: "AB47BC"),
             ]
             self.moodRecords = [
-                .init(date: baseDate, label: "기쁨", colorHex: "FFD54F"),
-                .init(date: previousDay, label: "평온", colorHex: "A8DFBC"),
-                .init(date: twoDaysAgo, label: "설렘", colorHex: "FF9800"),
-                .init(date: threeDaysAgo, label: "사랑", colorHex: "F48FB1"),
-                .init(date: fourDaysAgo, label: "지침", colorHex: "90A4AE"),
-                .init(date: fiveDaysAgo, label: "불안", colorHex: "BA68C8"),
+                Domain.MoodRecord(id: UUID().uuidString, mood: "happy", note: nil, date: baseDate),
+                Domain.MoodRecord(id: UUID().uuidString, mood: "calm", note: nil, date: previousDay),
+                Domain.MoodRecord(id: UUID().uuidString, mood: "excited", note: nil, date: twoDaysAgo),
+                Domain.MoodRecord(id: UUID().uuidString, mood: "loved", note: nil, date: threeDaysAgo),
+                Domain.MoodRecord(id: UUID().uuidString, mood: "tired", note: nil, date: fourDaysAgo),
+                Domain.MoodRecord(id: UUID().uuidString, mood: "anxious", note: nil, date: fiveDaysAgo),
             ]
         }
     }
 
     public enum Action: Sendable, Equatable {
+        case onAppear
         case closeTapped
         case previousMonthTapped
         case nextMonthTapped
@@ -162,6 +161,12 @@ public struct SupportScreenFeature {
         case leaveGroupTapped
         case leaveGroupConfirmed
         case leaveGroupAlertDismissed
+        case kickMemberTapped(State.GroupMember)
+        case kickMemberConfirmed
+        case kickMemberCancelled
+        case kickMemberSuccess
+        case kickMemberFailure(AppError)
+        case moodLoaded([Domain.MoodRecord])
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
@@ -170,12 +175,28 @@ public struct SupportScreenFeature {
     }
 
     @Dependency(\.familyRepository) var familyRepository
+    @Dependency(\.moodRepository) var moodRepository
 
     public init() {}
 
     public var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
+            case .onAppear:
+                guard state.screen == .moodHistory else { return .none }
+                state.isMoodLoading = true
+                return .run { [moodRepository] send in
+                    let records = (try? await moodRepository.getRecentMoods(days: 14)) ?? []
+                    await send(.moodLoaded(records))
+                }
+
+            case .moodLoaded(let records):
+                state.isMoodLoading = false
+                if !records.isEmpty {
+                    state.moodRecords = records
+                }
+                return .none
+
             case .closeTapped:
                 return .send(.delegate(.close))
 
@@ -228,6 +249,42 @@ public struct SupportScreenFeature {
                     try? await familyRepository.removeMember(userId: userId, familyId: familyId)
                     await send(.delegate(.close))
                 }
+
+            case .kickMemberTapped(let member):
+                state.kickTargetMember = member
+                state.showKickConfirm = true
+                return .none
+
+            case .kickMemberCancelled:
+                state.kickTargetMember = nil
+                state.showKickConfirm = false
+                return .none
+
+            case .kickMemberConfirmed:
+                guard let target = state.kickTargetMember else { return .none }
+                state.showKickConfirm = false
+                state.isKicking = true
+                return .run { [familyRepository] send in
+                    do {
+                        try await familyRepository.kickMember(memberId: target.id)
+                        await send(.kickMemberSuccess)
+                    } catch {
+                        await send(.kickMemberFailure(AppError.from(error)))
+                    }
+                }
+
+            case .kickMemberSuccess:
+                if let target = state.kickTargetMember {
+                    state.members.removeAll { $0.id == target.id }
+                }
+                state.kickTargetMember = nil
+                state.isKicking = false
+                return .none
+
+            case .kickMemberFailure:
+                state.kickTargetMember = nil
+                state.isKicking = false
+                return .none
 
             case .delegate:
                 return .none

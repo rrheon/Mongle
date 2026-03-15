@@ -24,6 +24,10 @@ public struct AccountManagementView: View {
             .background(MongleColor.background)
         }
         .toolbar(.hidden, for: .navigationBar)
+        .mongleErrorBanner(
+            error: store.appError,
+            onDismiss: { store.send(.dismissError) }
+        )
         .alert("로그아웃", isPresented: Binding(
             get: { store.showLogoutConfirm },
             set: { _ in store.send(.alertDismissed) }

@@ -8,6 +8,7 @@ public struct AccountManagementFeature {
         public var showDeleteConfirm = false
         public var isLoading = false
         public var errorMessage: String? = nil
+        public var appError: AppError? = nil
 
         public init() {}
     }
@@ -21,6 +22,8 @@ public struct AccountManagementFeature {
         case alertDismissed
         case setLoading(Bool)
         case setError(String?)
+        case setAppError(AppError?)
+        case dismissError
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
@@ -52,7 +55,7 @@ public struct AccountManagementFeature {
                         try await authRepository.logout()
                         await send(.delegate(.logout))
                     } catch {
-                        await send(.setError(error.localizedDescription))
+                        await send(.setAppError(AppError.from(error)))
                     }
                 }
 
@@ -68,7 +71,7 @@ public struct AccountManagementFeature {
                         try await authRepository.deleteAccount()
                         await send(.delegate(.accountDeleted))
                     } catch {
-                        await send(.setError(error.localizedDescription))
+                        await send(.setAppError(AppError.from(error)))
                     }
                 }
 
@@ -84,6 +87,17 @@ public struct AccountManagementFeature {
             case .setError(let message):
                 state.errorMessage = message
                 state.isLoading = false
+                return .none
+
+            case .setAppError(let error):
+                state.appError = error
+                state.errorMessage = error?.userMessage
+                state.isLoading = false
+                return .none
+
+            case .dismissError:
+                state.errorMessage = nil
+                state.appError = nil
                 return .none
 
             case .delegate:

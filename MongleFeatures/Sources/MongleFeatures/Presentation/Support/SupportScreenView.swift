@@ -43,6 +43,22 @@ public struct SupportScreenView: View {
         } message: {
             Text("그룹을 나가면 모든 가족과의 답변 기록이 연결 해제됩니다.")
         }
+        .alert(
+            store.kickTargetMember.map { "\($0.name)님을 내보낼까요?" } ?? "멤버 내보내기",
+            isPresented: Binding(
+                get: { store.showKickConfirm },
+                set: { if !$0 { store.send(.kickMemberCancelled) } }
+            )
+        ) {
+            Button("내보내기", role: .destructive) {
+                store.send(.kickMemberConfirmed)
+            }
+            Button("취소", role: .cancel) {
+                store.send(.kickMemberCancelled)
+            }
+        } message: {
+            Text("해당 멤버는 그룹에서 제외됩니다.")
+        }
         .navigationTitle(store.screen.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -56,6 +72,7 @@ public struct SupportScreenView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
+        .onAppear { store.send(.onAppear) }
     }
 
     private var heartsView: some View {
@@ -458,7 +475,19 @@ public struct SupportScreenView: View {
 
                         Spacer()
 
-                        if !member.isOwner {
+                        if store.isCurrentUserOwner && !member.isOwner {
+                            Button {
+                                store.send(.kickMemberTapped(member))
+                            } label: {
+                                Text("내보내기")
+                                    .font(MongleFont.captionBold())
+                                    .foregroundColor(MongleColor.error)
+                                    .padding(.horizontal, MongleSpacing.sm)
+                                    .padding(.vertical, MongleSpacing.xxs)
+                                    .background(MongleColor.error.opacity(0.1))
+                                    .clipShape(Capsule())
+                            }
+                        } else if !member.isOwner {
                             Image(systemName: "ellipsis")
                                 .foregroundColor(MongleColor.textHint)
                         }
@@ -571,11 +600,11 @@ public struct SupportScreenView: View {
 
                 ForEach(store.moodRecords) { record in
                     HStack(spacing: MongleSpacing.md) {
-                        MongleMonggle(color: monggleColorForLabel(record.label), size: 32)
+                        MongleMonggle(color: monggleColorForLabel(moodName(for: record.mood)), size: 32)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(record.label)
+                            Text(moodName(for: record.mood))
                                 .font(MongleFont.body2Bold())
-                                .foregroundColor(Color(hex: record.colorHex))
+                                .foregroundColor(colorForMoodID(record.mood))
                             Text(record.date.formatted(date: .abbreviated, time: .omitted))
                                 .font(MongleFont.caption())
                                 .foregroundColor(MongleColor.textSecondary)
@@ -615,9 +644,9 @@ public struct SupportScreenView: View {
     }
 
     private func moodFrequency(for index: Int) -> Int {
-        let labels = [["기쁨"], ["평온"], ["사랑"], ["우울"], ["지침"]]
-        let targets = labels[index % labels.count]
-        return store.moodRecords.filter { targets.contains($0.label) }.count
+        let moods = [["happy"], ["calm"], ["loved"], ["sad"], ["tired"]]
+        let targets = moods[index % moods.count]
+        return store.moodRecords.filter { targets.contains($0.mood) }.count
     }
 
     private func monggleColorForLabel(_ label: String) -> Color {

@@ -15,15 +15,18 @@ public struct ProfileEditFeature {
     public struct State: Equatable {
         public var user: User?
         public var familyId: UUID?
+        public var familyCreatedById: UUID?
         public var isLoading = false
         public var errorMessage: String?
+        public var appError: AppError?
         @Presents public var mongleCardEdit: MongleCardEditFeature.State?
         @Presents public var supportScreen: SupportScreenFeature.State?
         @Presents public var accountManagement: AccountManagementFeature.State?
 
-        public init(user: User? = nil, familyId: UUID? = nil) {
+        public init(user: User? = nil, familyId: UUID? = nil, familyCreatedById: UUID? = nil) {
             self.user = user
             self.familyId = familyId
+            self.familyCreatedById = familyCreatedById
         }
     }
 
@@ -95,7 +98,8 @@ public struct ProfileEditFeature {
                 state.supportScreen = SupportScreenFeature.State(
                     screen: .groupManagement,
                     familyId: state.familyId,
-                    currentUserId: state.user?.id
+                    currentUserId: state.user?.id,
+                    familyCreatedById: state.familyCreatedById
                 )
                 return .none
 
@@ -105,6 +109,7 @@ public struct ProfileEditFeature {
 
             case .dismissError:
                 state.errorMessage = nil
+                state.appError = nil
                 return .none
 
             case .userLoaded(let user):
