@@ -94,7 +94,7 @@ extension MainTabFeature {
                     guard let question = state.home.todayQuestion else { return .none }
                     return .run { send in
                         // 시트 dismiss 애니메이션 완료 후 push
-                        try? await Task.sleep(nanoseconds: 350_000_000)
+                        try await Task.sleep(nanoseconds: 350_000_000)
                         await send(.delegate(.navigateToQuestionDetail(question)))
                     }
 
@@ -152,7 +152,7 @@ extension MainTabFeature {
                     state.home.hearts = heartsRemaining
                     state.showNudgeToast = true
                     return .run { send in
-                        try? await Task.sleep(nanoseconds: 3_000_000_000)
+                        try await Task.sleep(nanoseconds: 3_000_000_000)
                         await send(.dismissNudgeToast)
                     }
 
@@ -185,7 +185,7 @@ extension MainTabFeature {
                     state.home.familyAnswerCount = 0
                     state.showWriteToast = true
                     return .run { send in
-                        try? await Task.sleep(nanoseconds: 3_000_000_000)
+                        try await Task.sleep(nanoseconds: 3_000_000_000)
                         await send(.dismissWriteToast)
                     }
 
@@ -211,14 +211,14 @@ extension MainTabFeature {
                     state.path.removeLast()
                     state.showAnswerSubmittedToast = true
                     return .run { send in
-                        try? await Task.sleep(nanoseconds: 3_000_000_000)
+                        try await Task.sleep(nanoseconds: 3_000_000_000)
                         await send(.dismissAnswerSubmittedToast)
                     }
 
                 case .path(.element(id: _, action: .questionDetail(.delegate(.answerEdited(_))))):
                     state.showEditAnswerToast = true
                     return .run { send in
-                        try? await Task.sleep(nanoseconds: 3_000_000_000)
+                        try await Task.sleep(nanoseconds: 3_000_000_000)
                         await send(.dismissEditAnswerToast)
                     }
 
@@ -240,7 +240,7 @@ extension MainTabFeature {
                     }
                     state.showRefreshToast = true
                     return .run { send in
-                        try? await Task.sleep(nanoseconds: 3_000_000_000)
+                        try await Task.sleep(nanoseconds: 3_000_000_000)
                         await send(.dismissRefreshToast)
                     }
 
