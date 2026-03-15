@@ -20,12 +20,17 @@ public struct HomeFeature {
         public var isLoading = false
         public var isRefreshing = false
         public var errorMessage: String?
+        public var appError: AppError?
         public var hasFamily: Bool { family != nil }
         public var hasAnsweredToday: Bool = false
         public var hearts: Int = 5
         public var familyAnswerCount: Int
         // 각 멤버별 답변 상태 (userId: hasAnswered)
         public var memberAnswerStatus: [UUID: Bool] = [:]
+        public var showGuestLoginPrompt: Bool = false
+        public var streakDays: Int = 0
+
+        public var isGuest: Bool { currentUser == nil }
 
         public init(
             todayQuestion: Question? = nil,
@@ -35,10 +40,12 @@ public struct HomeFeature {
             isLoading: Bool = false,
             isRefreshing: Bool = false,
             errorMessage: String? = nil,
+            appError: AppError? = nil,
             hasAnsweredToday: Bool = false,
             hearts: Int = 5,
             familyAnswerCount: Int = 0,
-            memberAnswerStatus: [UUID: Bool] = [:]
+            memberAnswerStatus: [UUID: Bool] = [:],
+            streakDays: Int = 0
         ) {
             self.todayQuestion = todayQuestion
             self.family = family
@@ -47,10 +54,12 @@ public struct HomeFeature {
             self.isLoading = isLoading
             self.isRefreshing = isRefreshing
             self.errorMessage = errorMessage
+            self.appError = appError
             self.hasAnsweredToday = hasAnsweredToday
             self.hearts = hearts
             self.familyAnswerCount = familyAnswerCount
             self.memberAnswerStatus = memberAnswerStatus
+            self.streakDays = streakDays
         }
     }
 
@@ -66,11 +75,14 @@ public struct HomeFeature {
         case nudgeUnavailableTapped(String)
         case refreshData
         case dismissError
+        case guestLoginTapped
+        case guestLoginDismissed
 
         // MARK: - Internal Actions
         case setLoading(Bool)
         case setRefreshing(Bool)
         case setError(String?)
+        case setAppError(AppError?)
 
         // MARK: - Delegate Actions (상위 Feature에서 처리)
         case delegate(Delegate)
@@ -81,9 +93,10 @@ public struct HomeFeature {
             case navigateToHeartsSystem
             case navigateToPeerAnswerSelfAnswered(String)
             case showAnswerFirstPopup(String)
-            case navigateToPeerNotAnsweredNudge(String)
+            case navigateToPeerNotAnsweredNudge(User)
             case showNudgeUnavailablePopup(String)
             case requestRefresh
+            case requestLogin
         }
     }
 
@@ -102,6 +115,10 @@ public struct HomeFeature {
                 return .none
 
             case .questionTapped:
+                if state.isGuest {
+                    state.showGuestLoginPrompt = true
+                    return .none
+                }
                 guard let question = state.todayQuestion else { return .none }
                 return .send(.delegate(.showQuestionSheet(question)))
 
@@ -109,16 +126,33 @@ public struct HomeFeature {
                 return .send(.delegate(.navigateToNotifications))
 
             case .heartsTapped:
+                if state.isGuest {
+                    state.showGuestLoginPrompt = true
+                    return .none
+                }
                 return .send(.delegate(.navigateToHeartsSystem))
 
             case .peerAnswerTapped(let memberName):
                 return .send(.delegate(.navigateToPeerAnswerSelfAnswered(memberName)))
 
             case .answerRequiredTapped(let memberName):
+                if state.isGuest {
+                    state.showGuestLoginPrompt = true
+                    return .none
+                }
                 return .send(.delegate(.showAnswerFirstPopup(memberName)))
 
             case .peerNudgeTapped(let memberName):
-                return .send(.delegate(.navigateToPeerNotAnsweredNudge(memberName)))
+                if state.isGuest {
+                    state.showGuestLoginPrompt = true
+                    return .none
+                }
+                // familyMembers에서 이름으로 User 조회
+                let targetUser = state.familyMembers.first { $0.name == memberName }
+                if let user = targetUser {
+                    return .send(.delegate(.navigateToPeerNotAnsweredNudge(user)))
+                }
+                return .none
 
             case .nudgeUnavailableTapped(let memberName):
                 return .send(.delegate(.showNudgeUnavailablePopup(memberName)))
@@ -131,6 +165,15 @@ public struct HomeFeature {
 
             case .dismissError:
                 state.errorMessage = nil
+                state.appError = nil
+                return .none
+
+            case .guestLoginTapped:
+                state.showGuestLoginPrompt = false
+                return .send(.delegate(.requestLogin))
+
+            case .guestLoginDismissed:
+                state.showGuestLoginPrompt = false
                 return .none
 
             // MARK: - Internal Actions
@@ -147,6 +190,13 @@ public struct HomeFeature {
 
             case .setError(let message):
                 state.errorMessage = message
+                state.isLoading = false
+                state.isRefreshing = false
+                return .none
+
+            case .setAppError(let error):
+                state.appError = error
+                state.errorMessage = error?.userMessage
                 state.isLoading = false
                 state.isRefreshing = false
                 return .none

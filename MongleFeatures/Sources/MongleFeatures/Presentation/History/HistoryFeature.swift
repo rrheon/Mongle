@@ -177,8 +177,6 @@ public struct HistoryFeature {
         }
     }
 
-    @Dependency(\.dailyQuestionRepository) var dailyQuestionRepository
-    @Dependency(\.answerRepository) var answerRepository
     @Dependency(\.questionRepository) var questionRepository
     @Dependency(\.errorHandler) var errorHandler
 
@@ -190,7 +188,7 @@ public struct HistoryFeature {
             case .onAppear:
                 guard state.historyItems.isEmpty else { return .none }
                 state.isLoading = true
-                guard let familyId = state.familyId else {
+                guard state.familyId != nil else {
                     // familyId 없으면 mock 데이터
                     return .run { send in
                         try await Task.sleep(nanoseconds: 500_000_000)
@@ -198,37 +196,32 @@ public struct HistoryFeature {
                         await send(.historyLoaded(mockData))
                     }
                 }
-                let members = state.familyMembers
-                return .run { [dailyQuestionRepository, answerRepository, questionRepository] send in
+                let totalMembers = max(state.familyMembers.count, 1)
+                return .run { [questionRepository] send in
                     do {
-                        let dailyQuestions = try await dailyQuestionRepository.getHistoryByFamily(
-                            familyId: familyId, limit: 60
-                        )
+                        // 단일 API 호출로 질문 + 답변 한꺼번에 가져오기 (N+1 제거)
+                        let historyQuestions = try await questionRepository.getHistory(page: 1, limit: 60)
                         let calendar = Calendar.current
                         var historyItems: [Date: HistoryItem] = [:]
-                        for dq in dailyQuestions {
-                            let answers = (try? await answerRepository.getByDailyQuestion(dailyQuestionId: dq.id)) ?? []
-                            let question = (try? await questionRepository.getByOrder(dq.questionOrder))
-                                ?? Question(id: dq.questionId, content: "질문 #\(dq.questionOrder)", category: .daily, order: dq.questionOrder)
-                            let memberAnswers: [MemberAnswer] = answers.enumerated().map { index, answer in
-                                let name = members.first(where: { $0.id == answer.userId })?.name ?? "멤버"
-                                return MemberAnswer(
-                                    memberName: name,
+                        for hq in historyQuestions {
+                            let memberAnswers: [MemberAnswer] = hq.answers.enumerated().map { index, answer in
+                                MemberAnswer(
+                                    memberName: answer.userName,
                                     answerContent: answer.content,
                                     colorIndex: index % 5
                                 )
                             }
                             let item = HistoryItem(
-                                id: dq.id,
-                                date: dq.date,
-                                question: question,
-                                answerCount: answers.count,
-                                totalMembers: max(members.count, 1),
-                                isCompleted: dq.isCompleted,
-                                userAnswered: !answers.isEmpty,
+                                id: UUID(uuidString: hq.dailyQuestionId) ?? UUID(),
+                                date: hq.date,
+                                question: hq.question,
+                                answerCount: hq.familyAnswerCount,
+                                totalMembers: totalMembers,
+                                isCompleted: hq.familyAnswerCount >= totalMembers,
+                                userAnswered: hq.hasMyAnswer,
                                 memberAnswers: memberAnswers
                             )
-                            historyItems[calendar.startOfDay(for: dq.date)] = item
+                            historyItems[calendar.startOfDay(for: hq.date)] = item
                         }
                         await send(.historyLoaded(historyItems))
                     } catch {
