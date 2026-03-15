@@ -90,6 +90,8 @@ public struct NotificationFeature {
         }
     }
 
+    @Dependency(\.notificationRepository) var notificationRepository
+
     public init() {}
 
     public var body: some Reducer<State, Action> {
@@ -98,10 +100,9 @@ public struct NotificationFeature {
             case .onAppear:
                 guard state.notifications.isEmpty else { return .none }
                 state.isLoading = true
-                return .run { send in
-                    try await Task.sleep(nanoseconds: 500_000_000)
-                    let mockData = generateMockNotifications()
-                    await send(.notificationsLoaded(mockData))
+                return .run { [notificationRepository] send in
+                    let items = (try? await notificationRepository.getNotifications(limit: 50)) ?? []
+                    await send(.notificationsLoaded(items))
                 }
 
             case .backTapped:
@@ -109,10 +110,9 @@ public struct NotificationFeature {
 
             case .refresh:
                 state.isLoading = true
-                return .run { send in
-                    try await Task.sleep(nanoseconds: 500_000_000)
-                    let mockData = generateMockNotifications()
-                    await send(.notificationsLoaded(mockData))
+                return .run { [notificationRepository] send in
+                    let items = (try? await notificationRepository.getNotifications(limit: 50)) ?? []
+                    await send(.notificationsLoaded(items))
                 }
 
             case .notificationTapped(let notification):
@@ -132,6 +132,7 @@ public struct NotificationFeature {
                 }
 
             case .markAsRead(let notification):
+                // Optimistic update
                 if let index = state.notifications.firstIndex(where: { $0.id == notification.id }) {
                     let updated = MongleNotification(
                         id: notification.id,
@@ -144,7 +145,9 @@ public struct NotificationFeature {
                     )
                     state.notifications[index] = updated
                 }
-                return .none
+                return .run { [notificationRepository] _ in
+                    _ = try? await notificationRepository.markAsRead(id: notification.id)
+                }
 
             case .markAllAsRead:
                 state.notifications = state.notifications.map { notification in
@@ -158,7 +161,9 @@ public struct NotificationFeature {
                         createdAt: notification.createdAt
                     )
                 }
-                return .none
+                return .run { [notificationRepository] _ in
+                    _ = try? await notificationRepository.markAllAsRead()
+                }
 
             case .deleteNotification(let notification):
                 state.notifications.removeAll { $0.id == notification.id }
