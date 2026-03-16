@@ -24,6 +24,10 @@ public protocol MongleRepositoryInterface: Sendable {
     func joinFamily(inviteCode: String) async throws -> MongleGroup
     /// 방장이 특정 멤버를 가족에서 내보내기. DELETE /families/members/{memberId}
     func kickMember(memberId: UUID) async throws
+    /// 내 모든 가족 목록 조회 (최대 3개)
+    func getMyFamilies() async throws -> [MongleGroup]
+    /// 활성 가족 전환
+    func selectFamily(familyId: UUID) async throws -> MongleGroup
 }
 
 public enum MongleError: Error, Equatable, Sendable {

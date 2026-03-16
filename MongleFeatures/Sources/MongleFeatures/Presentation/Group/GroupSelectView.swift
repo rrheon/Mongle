@@ -1,15 +1,7 @@
 import SwiftUI
 import UIKit
 import ComposableArchitecture
-
-// MARK: - Group Display Model
-
-struct GroupInfo: Identifiable {
-  let id: UUID
-  let name: String
-  let memberColors: [Color]
-  let streakDays: Int
-}
+import Domain
 
 // MARK: - GroupSelectView
 
@@ -18,31 +10,19 @@ public struct GroupSelectView: View {
   @Bindable var store: StoreOf<GroupSelectFeature>
   @State private var codeCopied = false
   @State private var linkCopied = false
-  // 임시 샘플 데이터 (추후 서버 연동 시 state에서 받아올 예정)
-  private let groups: [GroupInfo] = [
-    GroupInfo(
-      id: UUID(),
-      name: "Kim Family",
-      memberColors: [
-        MongleColor.monggleGreen,
-        MongleColor.monggleYellow,
-        MongleColor.monggleBlue,
-        MongleColor.mongglePink,
-        MongleColor.monggleOrange
-      ],
-      streakDays: 12
-    ),
-    GroupInfo(
-      id: UUID(),
-      name: "절친 모임",
-      memberColors: [
-        MongleColor.monggleGreen,
-        MongleColor.monggleYellow,
-        MongleColor.monggleBlue
-      ],
-      streakDays: 7
-    )
+
+  private static let monggleColors: [Color] = [
+    MongleColor.monggleGreen,
+    MongleColor.monggleYellow,
+    MongleColor.monggleBlue,
+    MongleColor.mongglePink,
+    MongleColor.monggleOrange
   ]
+
+  private func memberColors(for group: MongleGroup) -> [Color] {
+    let count = max(group.memberIds.count, 1)
+    return (0..<count).map { Self.monggleColors[$0 % Self.monggleColors.count] }
+  }
 
   public init(store: StoreOf<GroupSelectFeature>) {
     self.store = store
@@ -181,7 +161,7 @@ public struct GroupSelectView: View {
         .buttonStyle(.plain)
       }
       .frame(height: 56)
-      .padding(.top, 60)
+      .padding(.top, 20)
       .padding(.horizontal, 20)
       .background(Color.white.ignoresSafeArea(edges: .top))
     } else {
@@ -224,17 +204,42 @@ public struct GroupSelectView: View {
 
   private var selectView: some View {
     VStack(alignment: .leading, spacing: MongleSpacing.lg) {
-      VStack(spacing: MongleSpacing.md) {
-        ForEach(groups) { group in
-          MongleCardGroup(
-            groupName: group.name,
-            memberColors: group.memberColors,
-            streakDays: group.streakDays
-          )
+      if store.isLoadingGroups {
+        ProgressView()
+          .tint(MongleColor.primary)
+          .frame(maxWidth: .infinity, alignment: .center)
+          .padding(.vertical, MongleSpacing.md)
+      } else if store.groups.isEmpty {
+        Text("참여 중인 그룹이 없어요.\n새 공간을 만들거나 초대코드로 참여해보세요.")
+          .font(MongleFont.body2())
+          .foregroundColor(MongleColor.textSecondary)
+          .multilineTextAlignment(.center)
+          .frame(maxWidth: .infinity)
+          .padding(.vertical, MongleSpacing.lg)
+      } else {
+        VStack(spacing: MongleSpacing.md) {
+          ForEach(store.groups, id: \.id) { group in
+            MongleCardGroup(
+              groupName: group.name,
+              memberColors: memberColors(for: group),
+              streakDays: 0
+            )
+            .onTapGesture {
+              store.send(.groupTapped(group))
+            }
+          }
         }
       }
 
       newSpaceButton
+    }
+    .alert("그룹 한도 초과", isPresented: Binding(
+      get: { store.showMaxGroupsAlert },
+      set: { _ in store.send(.dismissMaxGroupsAlert) }
+    )) {
+      Button("확인", role: .cancel) { store.send(.dismissMaxGroupsAlert) }
+    } message: {
+      Text("그룹은 최대 3개까지 참여할 수 있어요.")
     }
   }
 

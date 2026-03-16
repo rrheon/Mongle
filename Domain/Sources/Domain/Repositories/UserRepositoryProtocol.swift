@@ -10,6 +10,7 @@ import Foundation
 public protocol UserRepositoryInterface: Sendable {
     func get(id: UUID) async throws -> User
     func update(_ user: User) async throws -> User
+    func updateName(_ name: String) async throws
     func getMyStreak() async throws -> Int
 }
 

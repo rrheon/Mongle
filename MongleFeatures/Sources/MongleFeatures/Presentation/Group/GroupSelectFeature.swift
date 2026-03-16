@@ -1,5 +1,6 @@
 import Foundation
 import ComposableArchitecture
+import Domain
 
 @Reducer
 public struct GroupSelectFeature {
@@ -27,6 +28,10 @@ public struct GroupSelectFeature {
         public var errorMessage: String? = nil
         public var appError: AppError? = nil
 
+        public var groups: [MongleGroup] = []
+        public var isLoadingGroups: Bool = false
+        public var showMaxGroupsAlert: Bool = false
+
         public init(
             step: Step = .select,
             groupName: String = "",
@@ -42,7 +47,7 @@ public struct GroupSelectFeature {
         }
     }
 
-    public enum Action: Sendable, Equatable {
+    public enum Action: Sendable {
         case newSpaceButtonTapped
         case actionSheetDismissed
         case actionSheetNewSpaceTapped
@@ -61,13 +66,18 @@ public struct GroupSelectFeature {
         case setError(String?)
         case setAppError(AppError?)
         case dismissError
+        case onAppear
+        case loadGroupsResponse(Result<[MongleGroup], Error>)
+        case groupTapped(MongleGroup)
+        case dismissMaxGroupsAlert
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
             case completed
             case notificationTapped
-            case createFamily(name: String)
-            case joinFamily(inviteCode: String)
+            case createFamily(name: String, nickname: String)
+            case joinFamily(inviteCode: String, nickname: String)
+            case groupSelected(MongleGroup)
         }
     }
 
@@ -113,13 +123,17 @@ public struct GroupSelectFeature {
                 return .none
 
             case .createNextTapped:
+                guard state.groups.count < 3 else {
+                    state.showMaxGroupsAlert = true
+                    return .none
+                }
                 let nameEmpty = state.groupName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                 let nickEmpty = state.nickname.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                 state.groupNameError = nameEmpty
                 state.nicknameError = nickEmpty
                 guard !nameEmpty && !nickEmpty else { return .none }
                 state.isLoading = true
-                return .send(.delegate(.createFamily(name: state.groupName)))
+                return .send(.delegate(.createFamily(name: state.groupName, nickname: state.nickname)))
 
             case .createBackTapped:
                 state.step = .select
@@ -143,13 +157,17 @@ public struct GroupSelectFeature {
                 return .none
 
             case .joinTapped:
+                guard state.groups.count < 3 else {
+                    state.showMaxGroupsAlert = true
+                    return .none
+                }
                 let codeEmpty = state.joinCode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                 let nickEmpty = state.nickname.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                 state.joinCodeError = codeEmpty
                 state.nicknameError = nickEmpty
                 guard !codeEmpty && !nickEmpty else { return .none }
                 state.isLoading = true
-                return .send(.delegate(.joinFamily(inviteCode: state.joinCode)))
+                return .send(.delegate(.joinFamily(inviteCode: state.joinCode, nickname: state.nickname)))
 
             case .setLoading(let loading):
                 state.isLoading = loading
@@ -175,6 +193,26 @@ public struct GroupSelectFeature {
             case .dismissError:
                 state.errorMessage = nil
                 state.appError = nil
+                return .none
+
+            case .onAppear:
+                state.isLoadingGroups = true
+                return .none
+
+            case .loadGroupsResponse(.success(let groups)):
+                state.groups = groups
+                state.isLoadingGroups = false
+                return .none
+
+            case .loadGroupsResponse(.failure):
+                state.isLoadingGroups = false
+                return .none
+
+            case .groupTapped(let group):
+                return .send(.delegate(.groupSelected(group)))
+
+            case .dismissMaxGroupsAlert:
+                state.showMaxGroupsAlert = false
                 return .none
 
             case .delegate:
