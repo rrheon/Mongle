@@ -41,30 +41,36 @@ struct HomeView: View {
   let topBarState: HomeTopBarState
   let hasCurrentUserAnswered: Bool
   let members: [(name: String, color: Color, hasAnswered: Bool)]
+  var currentUserName: String?
   var onQuestionTap: () -> Void
   var onNotificationTap: () -> Void
   var onHeartsTap: () -> Void
   var onPeerAnswerTap: (String) -> Void   // 화면이동: 답변 보기
   var onPeerNudgeTap: (String) -> Void    // 화면이동: 재촉하기
+  var onMyMonggleTap: () -> Void          // 나의 몽글 탭
 
   init(
     topBarState: HomeTopBarState = .preview,
     hasCurrentUserAnswered: Bool = false,
     members: [(name: String, color: Color, hasAnswered: Bool)] = [],
+    currentUserName: String? = nil,
     onQuestionTap: @escaping () -> Void = {},
     onNotificationTap: @escaping () -> Void = {},
     onHeartsTap: @escaping () -> Void = {},
     onPeerAnswerTap: @escaping (String) -> Void = { _ in },
-    onPeerNudgeTap: @escaping (String) -> Void = { _ in }
+    onPeerNudgeTap: @escaping (String) -> Void = { _ in },
+    onMyMonggleTap: @escaping () -> Void = {}
   ) {
     self.topBarState = topBarState
     self.hasCurrentUserAnswered = hasCurrentUserAnswered
     self.members = members
+    self.currentUserName = currentUserName
     self.onQuestionTap = onQuestionTap
     self.onNotificationTap = onNotificationTap
     self.onHeartsTap = onHeartsTap
     self.onPeerAnswerTap = onPeerAnswerTap
     self.onPeerNudgeTap = onPeerNudgeTap
+    self.onMyMonggleTap = onMyMonggleTap
   }
   
   var body: some View {
@@ -84,8 +90,10 @@ struct HomeView: View {
         MongleSceneView(
           hasCurrentUserAnswered: hasCurrentUserAnswered,
           members: members,
+          currentUserName: currentUserName,
           onViewAnswer: onPeerAnswerTap,
-          onNudge: onPeerNudgeTap
+          onNudge: onPeerNudgeTap,
+          onSelfTap: onMyMonggleTap
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
       }

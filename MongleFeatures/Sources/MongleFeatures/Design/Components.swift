@@ -1131,8 +1131,10 @@ public struct MongleView: View {
     public let color: Color
     public let hasAnswered: Bool
     public let hasCurrentUserAnswered: Bool
+    public let isCurrentUser: Bool
     public let onViewAnswer: () -> Void
     public let onNudge: () -> Void
+    public let onSelfTap: () -> Void
 
     // 팝업: 답변완료 캐릭터 탭 + 내가 미답변 → "먼저 답변하면 볼 수 있어요"
     @State private var showAnswerFirstToViewAlert = false
@@ -1140,28 +1142,38 @@ public struct MongleView: View {
     @State private var showAnswerFirstToNudgeAlert = false
 
     public init(name: String, color: Color, hasAnswered: Bool, hasCurrentUserAnswered: Bool,
+                isCurrentUser: Bool = false,
                 onViewAnswer: @escaping () -> Void,
-                onNudge: @escaping () -> Void) {
+                onNudge: @escaping () -> Void,
+                onSelfTap: @escaping () -> Void = {}) {
         self.name = name
         self.color = color
         self.hasAnswered = hasAnswered
         self.hasCurrentUserAnswered = true
+        self.isCurrentUser = isCurrentUser
         self.onViewAnswer = onViewAnswer
         self.onNudge = onNudge
+        self.onSelfTap = onSelfTap
     }
 
     private func handleTap() {
+      // 나의 캐릭터를 탭한 경우
+      if isCurrentUser {
+          onSelfTap()
+          return
+      }
+
       // 상대의 답변여부, 나의 답변여부
       switch (hasAnswered, hasCurrentUserAnswered) {
       case (true, true):
           onViewAnswer() // 둘 다 답변 완료 -> 답변 보기
-          
+
       case (true, false):
           showAnswerFirstToViewAlert = true  // 상대만 완료 -> 내가 먼저 써야 함 (팝업)
-          
+
       case (false, true):
           onNudge()  // 나만 완료 -> 상대에게 재촉하기
-          
+
       case (false, false):
           showAnswerFirstToNudgeAlert = true // 둘 다 미완료 -> 내가 먼저 써야 재촉 가능 (팝업)
       }
@@ -1189,17 +1201,31 @@ public struct MongleView: View {
 
     @ViewBuilder
     private var statusBadge: some View {
-        HStack(spacing: 4) {
-            Image(systemName: hasAnswered ? "checkmark.circle.fill" : "clock")
-                .font(.system(size: 10, weight: .bold))
-            Text(hasAnswered ? "답변완료" : "미답변")
-                .font(.caption2.bold())
+        if isCurrentUser {
+            HStack(spacing: 4) {
+                Image(systemName: hasAnswered ? "checkmark.circle.fill" : "pencil.circle")
+                    .font(.system(size: 10, weight: .bold))
+                Text(hasAnswered ? "답변완료" : "답변하기")
+                    .font(.caption2.bold())
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(hasAnswered ? MongleColor.primary.opacity(0.85) : MongleColor.accentOrange.opacity(0.85))
+            .foregroundColor(.white)
+            .clipShape(Capsule())
+        } else {
+            HStack(spacing: 4) {
+                Image(systemName: hasAnswered ? "checkmark.circle.fill" : "clock")
+                    .font(.system(size: 10, weight: .bold))
+                Text(hasAnswered ? "답변완료" : "미답변")
+                    .font(.caption2.bold())
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(hasAnswered ? Color.green.opacity(0.85) : Color.gray.opacity(0.4))
+            .foregroundColor(.white)
+            .clipShape(Capsule())
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(hasAnswered ? Color.green.opacity(0.85) : Color.gray.opacity(0.4))
-        .foregroundColor(.white)
-        .clipShape(Capsule())
     }
 }
 
@@ -1208,8 +1234,10 @@ public struct MongleView: View {
 public struct MongleSceneView: View {
     public var hasCurrentUserAnswered: Bool = false
     public var members: [(name: String, color: Color, hasAnswered: Bool)]
+    public var currentUserName: String?
     public var onViewAnswer: (String) -> Void = { _ in }
     public var onNudge: (String) -> Void = { _ in }
+    public var onSelfTap: () -> Void = {}
 
     private let stepSize: CGFloat = 2.0
     private let interval: TimeInterval = 0.12
@@ -1231,12 +1259,16 @@ public struct MongleSceneView: View {
 
     public init(hasCurrentUserAnswered: Bool = false,
                 members: [(name: String, color: Color, hasAnswered: Bool)] = [],
+                currentUserName: String? = nil,
                 onViewAnswer: @escaping (String) -> Void = { _ in },
-                onNudge: @escaping (String) -> Void = { _ in }) {
+                onNudge: @escaping (String) -> Void = { _ in },
+                onSelfTap: @escaping () -> Void = {}) {
         self.hasCurrentUserAnswered = hasCurrentUserAnswered
         self.members = members
+        self.currentUserName = currentUserName
         self.onViewAnswer = onViewAnswer
         self.onNudge = onNudge
+        self.onSelfTap = onSelfTap
     }
 
     private var effectiveMembers: [(String, Color, Bool)] {
@@ -1253,8 +1285,10 @@ public struct MongleSceneView: View {
                         color: h.color,
                         hasAnswered: h.hasAnswered,
                         hasCurrentUserAnswered: hasCurrentUserAnswered,
+                        isCurrentUser: currentUserName != nil && h.name == currentUserName,
                         onViewAnswer: { onViewAnswer(h.name) },
-                        onNudge: { onNudge(h.name) }
+                        onNudge: { onNudge(h.name) },
+                        onSelfTap: onSelfTap
                     )
                     .position(CGPoint(x: h.position.x, y: h.position.y + hopY))
                     .animation(.linear(duration: interval), value: h.stepCount)
