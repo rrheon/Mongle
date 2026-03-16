@@ -1,271 +1,281 @@
-# FamTree 작업 현황
 
-> 마지막 업데이트: 2026-03-01 (Keychain 교체 + loginProviderType 연결)
+# Mongle 작업 현황
 
----
+## 작업 위치
 
-## 프로젝트 구조
-
-```
-FamTree/
-├── Domain/                  # 순수 도메인 레이어 (Entity, Repository Protocol)
-├── FTData/                  # 데이터 레이어 (API, DTO, Repository 구현)
-├── FTFeatures/              # 프레젠테이션 레이어 (TCA Feature + View)
-└── FamTree/                 # 앱 진입점 (FamTreeApp.swift)
-```
-
-**의존성 방향:** `FTFeatures` → `FTData` → `Domain`
-
-**핵심 기술 스택**
-- Swift + SwiftUI
-- TCA (The Composable Architecture) 1.9.0+
-- SPM 멀티 모듈
-- iOS 17+ / macOS 14+
+| 플랫폼 | 경로 |
+|--------|------|
+| iOS | `/Users/yong/Desktop/FamTree/MongleFeatures` |
+| Android | `/Users/yong/Mongle-Android` |
+| Server | `/Users/yong/Desktop/FamTreeServer` |
+| UI 디자인 | `MongleUI.pen` |
 
 ---
 
-## 완료된 작업
+## ✅ 완료된 작업
 
-### 1. 가족 탭 UI — 고슴도치 그리드
-**파일:** `FTFeatures/.../Family/FamilyTabView.swift`
+### Android
 
-- `FamilyHedgehogGridSection`: 2열 `LazyVGrid`로 가족 구성원 목록 표시
-- `FamilyHedgehogCard`: `HedgehogView`(컬러 원 캐릭터)를 역할별 색상으로 표시
-- `FamilyInviteCard`: 점선 테두리 "초대하기" 카드 (그리드 마지막 칸)
-- 카드마다 `animationDelay`를 달리해 순차 부유(float) 애니메이션 적용
+- [x] 네트워크 레이어 구축 (Retrofit 2.11 + OkHttp 4.12 + Moshi 1.15)
+- [x] `NetworkModule` (Hilt) — BASE_URL `http://10.0.2.2:3000/`
+- [x] `MongleApiService` — socialLogin / emailLogin / emailSignup Retrofit 인터페이스
+- [x] `ApiAuthRepository` — MockAuthRepository 대체, 토큰 SharedPreferences 저장
+- [x] `SocialLoginHelper` — Kakao 코루틴 래퍼 + Google Sign-In Intent 헬퍼
+- [x] `LoginScreen` — 실제 Kakao / Google 로그인 흐름 연동
+- [x] `LoginViewModel` — `setError()` 메서드 추가
 
 ---
 
-### 2. 소셜 로그인 — OCP 기반 아키텍처
+### iOS — 인프라
 
-**설계 원칙:** 새로운 제공자 추가 시 기존 코드 수정 불필요. Credential 타입 + Provider 클래스만 추가.
+- [x] **NetworkMonitor** — NWPathMonitor 기반 오프라인 실시간 감지 (`MongleData`)
+- [x] **APIError** public화 — `.offline` / `.timeout` 케이스 추가, `isRetryable` / `requiresLogin` 프로퍼티
+- [x] **APIClient 개선** — URLSession 15초 타임아웃, 오프라인 즉시 차단, URLError→APIError 자동 변환, 지수 백오프 자동 재시도 (5xx·타임아웃 최대 2회)
+- [x] **AppError** — 앱 전체 통합 에러 타입 (`MongleFeatures/Error/AppError.swift`)
+  - `userMessage` (한국어), `isRetryable`, `requiresLogin`, SF Symbol `icon`
+  - `AppError.from(_ error: Error)` — APIError / URLError / Domain 에러 자동 변환
+- [x] **ErrorHandler** TCA `@Dependency(\.errorHandler)` — DEBUG 로깅 내장, `Effect.mapToAppError()` 헬퍼
+- [x] **MongleErrorView** 재사용 UI 컴포넌트
+  - `MongleErrorBanner`: 에러 종류별 색상 상단 배너 + 재시도 버튼
+  - `MongleErrorFullscreen`: 첫 로딩 실패용 전체화면 에러 뷰
+  - `.mongleErrorBanner()` View modifier (`AppError?` / `String?` 오버로드)
+- [x] **Repository 팩토리** 추가 (`makeAnswerRepository()`, `makeUserRepository()`, `makeDailyQuestionRepository()`)
+- [x] **AppDependencies** — `answerRepository`, `userRepository`, `dailyQuestionRepository` TCA 의존성 등록
+- [x] **Question 도메인** — `dailyQuestionId: String?` 필드 추가 (서버 DailyQuestion PK 전파)
+- [x] **QuestionMapper** — `DailyQuestionResponseDTO.id` → `Question.dailyQuestionId` 매핑
+- [x] **데이터 레이어 서버 API 동기화**
+  - `AnswerDTO` — 서버 camelCase 구조로 재작성 (`user: UserDTO` 중첩, `questionId`, `imageUrl`)
+  - `FamilyAnswersResponseDTO` 추가 (`answers`, `totalCount`, `myAnswer`)
+  - `DailyQuestionResponseDTO` 필드 추가 (`hasMyAnswer`, `familyAnswerCount`, `familyId`, `isSkipped`, `skippedAt`)
+  - `AnswerEndpoint` — 실제 경로로 수정 (`/answers/family/{id}`, `/answers/my/{id}`, `POST /answers {questionId, content}`)
+  - `QuestionEndpoint.skip` 추가 (`POST /questions/skip`)
+  - `FamilyEndpoint.leave` 추가 (`DELETE /families/leave`), `removeMember` 대체
+  - `AnswerMapper` — 새 DTO 구조 매핑 (`user.id` → `userId`, `questionId` → `dailyQuestionId`)
+  - `AnswerRepository` — 새 엔드포인트 사용, `getByDailyQuestion` → `getFamilyAnswers` 내부 사용
+  - `FamilyRepository.removeMember` → `DELETE /families/leave` 사용
+  - `QuestionRepository.skipTodayQuestion()` 구현
 
-#### Domain
-**`SocialLoginCredential.swift`**
+---
+
+### iOS — 온보딩
+
+- [x] UserDefaults로 온보딩 완료 상태 저장 (`mongle.hasSeenOnboarding`)
+- [x] 다시 보지 않기 → 로그인 화면 이동
+- [x] 시작 버튼 → 로그인 화면 이동
+
+---
+
+### iOS — 로그인
+
+- [x] Kakao / Google / Apple 소셜 로그인 연동 (`SocialLoginProvider`)
+- [x] JWT 토큰 Keychain 저장 (`KeychainTokenStorage`)
+- [x] 로그인 성공 → `authRepository.socialLogin()` → 토큰 저장 → 그룹 선택 화면 이동
+- [x] 둘러보기 → 게스트 홈 화면 이동 (mock 데이터)
+
+---
+
+### iOS — 그룹 선택
+
+- [x] 새 공간 만들기 → `familyRepository.create()` API 연동 → 초대코드 발급
+- [x] 초대코드로 참여 → `familyRepository.joinFamily(inviteCode:)` API 연동
+- [x] `GroupSelectFeature` delegate 패턴으로 `RootFeature`에서 API 처리
+- [x] `isLoading`, `errorMessage` 상태 관리
+
+---
+
+### iOS — Home 화면
+
+- [x] **하트 버튼** → 팝오버 형식 변경 (`HeartCalloutView`) — 재촉하기/질문다시받기/나만의질문 비용 표시
+- [x] **몽글 캐릭터 동적화** — `familyMembers` + `memberAnswerStatus` 기반으로 실제 멤버 표시
+- [x] **hasAnsweredToday 실제 API** — `answerRepository.getByDailyQuestion()` → `memberAnswerStatus` 딕셔너리 생성
+- [x] `MongleSceneView` — `members: [(name, color, hasAnswered)]` 파라미터 추가 (정적 하드코딩 제거)
+
+---
+
+### iOS — History 화면
+
+- [x] `HistoryFeature.State` — `familyId: UUID?`, `familyMembers: [User]` 추가
+- [x] `dailyQuestionRepository.getHistoryByFamily()` → `answerRepository.getByDailyQuestion()` → `questionRepository.getByOrder()` 실제 API 연동
+- [x] 멤버 이름 → `familyMembers` 배열로 `answer.userId` 매핑
+- [x] 캐시 적용 — `historyItems.isEmpty` guard로 이미 로드한 데이터 재요청 방지
+- [x] `familyId` nil일 경우 mock 데이터 fallback
+- [x] `AppError` 통합 에러 시스템 적용 + `MongleErrorBanner` 연결
+
+---
+
+### iOS — 프로필 설정
+
+- [x] **프로필 편집 (MongleCardEdit)** — `userRepository.update()` 실제 API 연동 (저장 완료)
+  - ⚠️ `ProfileEditFeature.onAppear` 사용자 초기 로딩은 여전히 Task.sleep mock (`state.user == nil`일 때만 타는 분기, RootFeature에서 주입 시 무관)
+- [x] **알림 설정** — UserDefaults로 각 알림 항목 개별 관리 (`notification.r1` ~ `r6`)
+- [x] **그룹 관리**
+  - [x] 그룹 나가기 → 확인 alert → `familyRepository.removeMember(userId:familyId:)` API 연동
+  - [x] 초대코드 복사 → `UIPasteboard.general.string` 클립보드 저장
+  - [x] `SupportScreenFeature` — `familyId`, `currentUserId` 상태 추가 (ProfileEditFeature에서 주입)
+- [x] **계정 관리**
+  - [x] 로그아웃 → `authRepository.logout()` → 토큰 삭제 → 로그인 화면 이동
+  - [x] 계정탈퇴 → 확인 팝업 → `authRepository.deleteAccount()` → 로그인 화면 이동
+  - [x] `@Dependency(\.authRepository)` 실제 의존성 주입
+
+---
+
+## 🔲 남은 작업
+
+### iOS — 우선순위 높음
+
+#### Home 화면
+
+- [x] **질문 답변 제출** — `QuestionDetailFeature` 실제 API 연동 완료
+  - `answerRepository.create()` / `answerRepository.update()` 연동
+  - 제출 후 `hasAnsweredToday = true`, `memberAnswerStatus[currentUser.id] = true` 반영
+  - `familyMembers` 전달 → 가족 답변 이름 매핑
+- [x] **답변 수정하기** — 이미 답변한 경우 버튼 "수정하기"로 표시, `answerRepository.update()` 연동 완료
+- [x] **나만의 질문 작성하기**
+  - 서버: `POST /questions/custom` (하트 3개 차감, 하루 1회 제한, Question.isCustom 플래그)
+  - iOS: `WriteQuestionFeature` 실제 API 연동, 성공 시 todayQuestion/hearts/memberAnswerStatus 업데이트
+- [x] **질문 다시 받기**
+  - 서버: `POST /questions/skip`에 하트 차감(-1) + 잔액 부족 시 에러 추가
+  - iOS: `HeartCostPopup` 확인 → `questionRepository.skipTodayQuestion()` 실제 호출
+  - iOS: 성공 시 `todayQuestion` 교체, `hearts` -1, `memberAnswerStatus` 초기화
+  - 그룹 내 하루 1회 제한 서버에서 처리 (`isSkipped` 체크)
+- [x] **재촉하기 (Nudge)**
+  - 서버: `POST /nudge` (하트 1개 차감, 같은 가족 구성원 확인)
+  - iOS: `PeerNudgeFeature` 실제 API 연동, 성공 시 hearts 업데이트
+  - ⚠️ 푸시 알림 전송은 APNs/FCM 인프라 구축 후 별도 구현 필요
+
+#### 프로필 설정
+
+- [x] **그룹 관리 — 방장 멤버 내보내기**
+  - `isCurrentUserOwner` 기반 내보내기 버튼 표시 (방장만 보임)
+  - `familyRepository.kickMember(memberId:)` → `DELETE /families/members/{memberId}` 연동
+  - `familyCreatedById` ProfileEditFeature → RootFeature에서 주입
+- [x] **기분 히스토리 실제 데이터 연동**
+  - 서버: `POST /moods` (upsert), `GET /moods?days=N` 엔드포인트 추가 (MoodRecord 모델)
+  - iOS: `MoodRepositoryProtocol` + `MoodRepository` + `MoodEndpoint` + TCA dependency 등록
+  - `SupportScreenFeature.onAppear` → `moodRepository.getRecentMoods(days: 14)` 실제 호출
+  - `Domain.MoodRecord` 도입, mood ID(영문) ↔ 한국어 레이블 변환은 View에서 처리
+
+#### 알림 화면
+
+- [x] `NotificationFeature` 실제 API 연동
+  - 서버: `Notification` Prisma 모델 추가, `GET /notifications`, `PATCH /notifications/:id/read`, `PATCH /notifications/read-all` 구현
+  - iOS: `NotificationRepositoryProtocol` + `NotificationRepository` + `NotificationEndpoint` + TCA dependency 등록
+  - `NotificationFeature.onAppear`/`refresh` → 실제 API, `markAsRead`/`markAllAsRead` → 낙관적 업데이트 + 서버 동기화
+
+---
+
+### iOS — 우선순위 중간
+
+#### 에러 처리 시스템 나머지 Feature 적용
+
+AppError 시스템 모든 Feature 적용 완료:
+
+- [x] `HomeFeature` — `appError: AppError?` 추가, `MongleErrorBanner` 연결
+- [x] `LoginFeature` — `appError: AppError?` 추가, `setAppError` 연동
+- [x] `GroupSelectFeature` — `appError: AppError?` 추가
+- [x] `QuestionDetailFeature` — `appError: AppError?` 추가
+- [x] `AccountManagementFeature` — `appError: AppError?` 추가
+- [x] `ProfileEditFeature` — `appError: AppError?` 추가
+- [x] **`Root+Reducer`** — `loadDataResponse(.failure)` 시 AppError 변환, `.unauthorized` → 자동 로그인 화면 이동
+
+#### Home 화면 — 둘러보기 게스트 제한
+
+- [x] 탭바 제외 버튼 터치 시 로그인 요청 팝업 → 로그인 버튼 / 취소
+  - `HomeFeature.State.isGuest` (currentUser == nil 기반) + `showGuestLoginPrompt`
+  - 제한 대상: `questionTapped`, `heartsTapped`, `answerRequiredTapped`, `peerNudgeTapped`
+  - 로그인 버튼 → `delegate(.requestLogin)` → MainTab → Root → 로그인 화면 이동
+
+---
+
+### iOS — 우선순위 낮음
+
+- [x] **스트릭(Streak) 표시** — 연속 답변 일수 계산 로직 및 서버 연동
+  - 서버: `GET /users/me/streak` — Answer 기록 기반 연속 답변 일수 계산 (오늘/어제부터 역산)
+  - iOS: `UserRepositoryInterface.getMyStreak()`, `UserEndpoint.getMyStreak`
+  - `HomeFeature.State.streakDays` 추가, `RootData.streakDays` 포함, `HomeTopBarState`에 실제 값 전달
+- [x] **하트 잔액 실시간 반영** — `User.hearts` 도메인 모델 추가, UserDTO/UserMapper 반영, Root+Reducer에서 `currentUser.hearts`로 초기화
+- [x] **푸시 알림 권한 요청** — 최초 로그인 후 `.authenticated` 상태 진입 시 1회 요청
+  - `UserDefaults("mongle.didRequestPushPermission")` 으로 중복 요청 방지
+  - `UNUserNotificationCenter.requestAuthorization(options: [.alert, .badge, .sound])`
+- [x] **토큰 자동 갱신 (Token Refresh)** — 완료
+  - 서버: `jwt.ts` access 1h / refresh 30d, `POST /auth/refresh` 엔드포인트 추가
+  - iOS: `APIClient` 401 → `attemptTokenRefresh()` → 재시도, `TokenRefreshCoordinator` actor로 동시 갱신 방지
+
+---
+
+### Android — 완료된 작업
+
+- [x] **Home 화면** — 그룹명, 오늘의 질문, 몽글 캐릭터, 가족 멤버, 트리 진행도, 스트릭 표시 / 실제 API 연동
+  - `questionRepository.getTodayQuestion()`, `mongleRepository.getMyFamily()`, `treeRepository.getMyTreeProgress()`
+- [x] **History 화면** — 달력 뷰, 월 네비게이션, 답변 표시(파란 점), 선택 날짜 카드 / 실제 API 연동
+  - `questionRepository.getDailyHistory(page, limit)`, `mongleRepository.getMyFamily()`
+- [x] **Settings(Profile) 화면** — 프로필 편집, 그룹 관리(초대코드, 멤버 내보내기), 계정 관리(로그아웃, 탈퇴) / 실제 API 연동
+  - `userRepository.update()`, `mongleRepository.kickMember()`, `authRepository.deleteAccount()`
+- [x] **알림 화면** — 알림 목록, 읽음/미읽음, 전체 읽음 처리 / 실제 API 연동
+  - `notificationRepository.getNotifications()`, `markAsRead()`, `markAllAsRead()`
+- [x] **전체 UI** — iOS 디자인 시스템 반영 (그라디언트 배경, MongleCard, MongleButton, MongleCharacter 아바타)
+
+### Android — 남은 작업
+
+- [x] **QuestionDetail 화면 — 실제 API 연동**
+  - `ApiAnswerRepository` 구현 (`createAnswer`, `getMyAnswer`, `getFamilyAnswers`, `updateAnswer`)
+  - `AppModule`에서 `MockAnswerRepository` → `ApiAnswerRepository` 교체
+  - `QuestionDetailViewModel` mock 데이터 제거, 실제 API 연동
+  - `familyMembers` RootUiState → MongleNavHost → QuestionDetailScreen → ViewModel 전달
+  - 가족 답변: userId 매칭으로 User 정보 연결, 내 답변: 별도 API 조회
+  - 답변 제출/수정 실제 연동 (myAnswer 유무에 따라 create/update 분기)
+
+---
+
+### 서버 확인 필요 사항
+
+- [x] **History N+1 문제 해결**
+  - 서버: `GET /questions` 응답에 `answers: HistoryAnswerSummary[]` 포함, 단일 Prisma 쿼리로 최적화
+  - iOS: `HistoryFeature`가 `questionRepository.getHistory(page:limit:)` 단일 호출로 전환 (120+ 요청 → 1 요청)
+  - iOS: `DailyQuestionHistoryResponse`, `HistoryQuestion` 도메인 모델 추가
+- [x] `HomeFeature.familyAnswerCount` 실제 연결 — `Question` 도메인에 필드 추가, `Root+Reducer` 초기화 시 반영
+- [x] 기분(Mood) 기록 API — `POST /moods` (upsert), `GET /moods?days=N` 완료
+- [x] 나만의 질문 등록 API — `POST /questions/custom`, 하트 -3, isCustom 플래그, 하루 1회 제한 완료
+- [x] 질문 다시 받기 API — `POST /questions/skip` 하트 차감 포함 완료
+- [x] 재촉하기 API — `POST /nudge` 하트 차감 완료 (푸시 알림은 APNs/FCM 인프라 필요)
+- [x] 알림 목록 / 읽음 처리 API 엔드포인트 — 완료
+- [x] Token refresh 엔드포인트 (`POST /auth/refresh`) — 구현 완료 (stateless JWT rotation)
+
+---
+
+## 에러 처리 시스템 사용법
+
+새로운 Feature에 통합 에러 처리 적용하는 패턴:
+
 ```swift
-public enum SocialProviderType: String { case apple, kakao, naver, google }
+// 1. Feature에 의존성 주입
+@Dependency(\.errorHandler) var errorHandler
 
-public protocol SocialLoginCredential: Sendable {
-    var providerType: SocialProviderType { get }
-    var fields: [String: String] { get }
+// 2. State에 appError 추가
+public var appError: AppError?
+
+// 3. Action에 setAppError 추가
+case setAppError(AppError?)
+
+// 4. catch 블록에서 사용
+} catch {
+    await send(.setAppError(errorHandler(error, context: "FeatureName.action")))
 }
+
+// 5. Reducer에서 처리
+case .setAppError(let error):
+    state.appError = error
+    state.isLoading = false
+    // 로그인 필요 시 자동 처리
+    if error?.requiresLogin == true {
+        return .send(.delegate(.requestLogin))
+    }
+    return .none
+
+// 6. View에서 배너 표시
+.mongleErrorBanner(
+    error: store.appError,
+    onDismiss: { store.send(.setAppError(nil)) },
+    onRetry: store.appError?.isRetryable == true ? { store.send(.refresh) } : nil
+)
 ```
-
-**`AuthRepositoryProtocol.swift`**
-```swift
-func socialLogin(with credential: any SocialLoginCredential) async throws -> User
-func deleteAccount() async throws
-```
-
-#### FTData — Credential 구현체
-
-| 파일 | 제공자 | 서버 전송 필드 |
-|------|--------|--------------|
-| `AppleLoginCredential.swift` | Apple | `identity_token`, `authorization_code`, `name?`, `email?` |
-| `KakaoLoginCredential.swift` | Kakao | `access_token`, `name?`, `email?` |
-| `GoogleLoginCredential.swift` | Google | `id_token`, `name?`, `email?` |
-
-**API 엔드포인트** (`APIEndpoint.swift`)
-```
-POST   /auth/social    — 소셜 로그인 (provider + fields)
-DELETE /auth/account   — 계정 삭제
-```
-
-#### FTFeatures — Provider 구현체
-**`SocialLoginProvider.swift`**
-
-| 클래스 | `authenticate()` | `revokeClientAccess()` |
-|--------|---------|---------|
-| `AppleLoginProvider` | `ASAuthorizationController` + `CheckedContinuation` | no-op (서버에서 revoke) |
-| `KakaoLoginProvider` | `loginWithKakaoTalk` → `loginWithKakaoAccount` 폴백 | `UserApi.shared.unlink()` |
-| `GoogleLoginProvider` | `GIDSignIn.sharedInstance.signIn(withPresenting:)` | `GIDSignIn.sharedInstance.disconnect()` |
-
-**`revokeClientSocialAccess(for:)`**: `@MainActor` 헬퍼 — SettingsFeature가 제공자별 클라이언트 연결 해제를 호출하는 단일 진입점
-
-**SDK 의존성 (FTFeatures/Package.swift)**
-```swift
-.package(url: "https://github.com/kakao/kakao-ios-sdk",    from: "2.22.0")
-.package(url: "https://github.com/google/GoogleSignIn-iOS", from: "7.0.0")
-```
-
-**`LoginView.swift`**: Apple / Kakao / Google 버튼 연결 완료 (Naver 미연결)
-
-**`LoginFeature.swift`**: ⚠️ `socialCredentialReceived` Mock 구현 중 (API 연동 대기)
-
----
-
-### 3. 회원탈퇴
-
-**탈퇴 처리 흐름:**
-```
-탈퇴 버튼 탭
-  → [클라이언트] revokeClientSocialAccess(for: providerType)
-      - Apple : no-op
-      - Kakao : UserApi.shared.unlink()
-      - Google: GIDSignIn.sharedInstance.disconnect()
-  → [서버] DELETE /auth/account
-      - Apple : 서버가 저장된 refresh_token으로 Apple revoke API 호출
-      - Kakao/Google: 이미 unlink/disconnect 완료 → 계정 삭제만 처리
-  → 로컬 토큰 삭제
-  → delegate(.accountDeleted) → MainTabFeature.logout → RootFeature 미인증 상태
-```
-
-**변경 파일:**
-
-| 파일 | 변경 내용 |
-|------|---------|
-| `AuthRepositoryProtocol.swift` | `deleteAccount()` + `accountDeletionFailed` 에러 |
-| `APIEndpoint.swift` | `AuthEndpoint.deleteAccount` (`DELETE /auth/account`) |
-| `AuthRepository.swift` | `deleteAccount()` 구현 (토큰 삭제 포함) |
-| `SocialLoginProvider.swift` | 각 Provider `revokeClientAccess()` + 헬퍼 함수 |
-| `SettingsFeature.swift` | `loginProviderType`, `showDeleteAccountConfirmation`, 삭제 액션/로직 |
-| `SettingsTabView.swift` | 회원탈퇴 버튼 + 2단계 확인 Alert |
-| `MainTabFeature.swift` | `settings(.delegate(.accountDeleted))` → `.logout` 전파 |
-
-**⚠️ 현재 Mock 상태:** `SettingsFeature.deleteAccountConfirmed`에서 실제 API 호출 대신 800ms 지연 후 성공 처리. FastAPI 연동 시 교체 필요.
-
----
-
-## 미완료 / TODO
-
-### 🔴 필수 — 앱 실행에 필요
-
-#### 앱 설정 (Xcode + Info.plist)
-
-- 설정한 키, 파일을 참고하여 작업할 것.
-- gitignore가 있다면 해당 파일은 깃허브에 올라가지 않도록 할 것 (없으면 생성)
-
-**Apple Sign In**
-- [ ] Xcode → Signing & Capabilities → **Sign in with Apple** capability 추가
-  - Apple developer account 필요 추후에 작업
-
-**Kakao 로그인**
-- [x] 카카오 개발자 콘솔에서 iOS 앱 등록 → **Native App Key** 발급
-  - Native App Key : 73b4d3e9a62701280ec877fe441949b3
-- [x] `Info.plist`에 URL Scheme 추가: `kakao73b4d3e9a62701280ec877fe441949b3`
-- [x] `FamTreeApp.swift` SDK 초기화 및 URL 핸들링 (`KakaoSDK.initSDK` + `AuthController.handleOpenUrl`)
-- [x] `Package.swift` `package:` 파라미터 확인 — `"kakao-ios-sdk"` 확인 완료
-
-**Google 로그인**
-- [x] Google Cloud Console에서 iOS OAuth 2.0 클라이언트 ID 발급
-  - `credentials.plist`에서 CLIENT_ID 확인 완료
-- [ ] `GoogleService-Info.plist` 다운로드 → 프로젝트 추가 (credentials.plist로 대체 사용 중)
-- [x] `Info.plist`에 `REVERSED_CLIENT_ID` URL Scheme 추가
-- [x] `FamTreeApp.swift`에 URL 핸들링 (`GIDSignIn.sharedInstance.handle(url)`)
-- [ ] `google_icon` 이미지 에셋 추가
-
-**기타**
-- [x] `.gitignore` 루트 생성 — `credentials.plist`, `GoogleService-Info.plist` 등 민감 파일 제외
-- [x] `Info.plist` 수동 생성 + `pbxproj` `GENERATE_INFOPLIST_FILE = NO` 전환
-
----
-
-### 🟡 중요 — 기능 완성에 필요
-
-#### 백엔드 연동 (Node.js/Express — /Users/yong/Desktop/FamTreeServer)
-
-> ⚠️ 서버는 FastAPI가 아닌 **Node.js/Express + Prisma + PostgreSQL** 구조입니다.
-> 인증은 AWS Cognito 기반이나, 소셜 로그인을 위해 커스텀 JWT 레이어를 추가했습니다.
-
-**인증 엔드포인트 (신규 추가 완료)**
-- [x] `POST /auth/social` — Apple/Kakao/Google 토큰 검증 후 커스텀 JWT 발급
-  - Apple: `identity_token` → JWKS 검증 → user upsert
-  - Kakao: `access_token` → Kakao API 조회 → user upsert
-  - Google: `id_token` → JWKS 검증 → user upsert
-- [x] `DELETE /auth/account` — 계정 삭제 (JWT 인증 필요)
-- [x] 커스텀 JWT 지원: `src/utils/jwt.ts` + `src/middleware/auth.ts` 업데이트
-
-**Mock 제거 (완료)**
-- [x] `LoginFeature.socialCredentialReceived` → `authRepository.socialLogin(with:)` 실제 호출
-- [x] `SettingsFeature.deleteAccountConfirmed` → `authRepository.deleteAccount()` 실제 호출
-- [x] `RootFeature.refreshHomeData` → 실제 API 호출 (families/my, questions/today, tree/progress)
-- [x] `RootFeature.onAppear` → `authRepository.getCurrentUser()` 실제 인증 상태 확인
-- [x] `APIEndpoint.baseURL` → `http://localhost:3000`
-
-**iOS 구조 변경 (완료)**
-- [x] `AppDependencies.swift` — TCA `@Dependency` 등록 (auth/family/question/tree)
-- [x] `FTData.swift` — 공개 팩토리 함수 (`makeAuthRepository()` 등)
-- [x] `UserDTO` — 서버 camelCase 형식으로 CodingKeys 업데이트
-- [x] `FamilyResponseDTO`, `TreeProgressResponseDTO`, `DailyQuestionResponseDTO` — 신규 DTO
-- [x] Mapper에 서버 응답 형식 변환 메서드 추가
-- [x] `HomeEndpoint` — `GET /families/my`, `GET /questions/today`, `GET /tree/progress`
-- [x] `MongleRepositoryInterface.getMyFamily()` / `QuestionRepositoryInterface.getTodayQuestion()` / `TreeRepositoryInterface.getMyTreeProgress()` 추가
-
-#### loginProviderType 연결
-- [x] `LoginFeature.delegate(.loggedIn(user, providerType?))` — delegate에 `SocialProviderType?` 추가
-  - `LoginFeature.State.lastUsedProviderType` 저장 → `.loginResponse(.success)` 시 delegate에 포함
-  - `RootFeature.State.loginProviderType` 저장
-  - `loadDataResponse` 에서 `SettingsFeature.State(loginProviderType:)` 주입
-  - `checkAuthResponse` → `refreshHomeData` 트리거로 수정 (로그인 후 MainTab 생성 보장)
-
-#### 토큰 보안 강화
-- [x] `AuthRepository.TokenStorage` — `UserDefaults` → `KeychainTokenStorage` 교체 완료
-  - `Security` 프레임워크 사용, `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly` 접근 정책
-  - 서비스: `com.mongle.auth`
-
----
-
-### 🟢 향후 작업
-
-#### 네이버 로그인
-- [ ] `FTData/Credentials/NaverLoginCredential.swift` 생성
-- [ ] `SocialLoginProvider.swift`에 `NaverLoginProvider` + `revokeClientAccess()` 추가
-- [ ] `FTFeatures/Package.swift`에 네이버 SDK 의존성 추가
-- [ ] `LoginView.swift` 네이버 버튼 연결 (현재 빈 TODO)
-
-#### 푸시 알림 (FCM)
-- [ ] Firebase SDK 추가 (푸시 전용)
-- [ ] `UNUserNotificationCenter` 권한 요청
-- [ ] FCM 토큰 서버 등록 로직
-- [ ] `NotificationFeature.swift` / `NotificationView.swift` 실제 데이터 연동
-
-#### 이메일 로그인 / 회원가입
-- [ ] `LoginFeature.emailLoginTapped`, `emailSignupTapped` 액션에 네비게이션 추가
-- [ ] `EmailLoginView.swift` Feature 연동 완성
-
----
-
-## 파일별 상태 요약
-
-### Domain
-| 파일 | 상태 |
-|------|------|
-| `SocialLoginCredential.swift` | ✅ 완료 |
-| `AuthRepositoryProtocol.swift` | ✅ 완료 (`socialLogin` + `deleteAccount` 포함) |
-| `User.swift`, `FamilyGroup.swift` 등 | ✅ 완료 |
-
-### FTData
-| 파일 | 상태 |
-|------|------|
-| `AppleLoginCredential.swift` | ✅ 완료 |
-| `KakaoLoginCredential.swift` | ✅ 완료 |
-| `GoogleLoginCredential.swift` | ✅ 완료 |
-| `AuthRepository.swift` | ✅ 완료 (`socialLogin` + `deleteAccount` 구현, API 연동 대기) |
-| `APIEndpoint.swift` | ✅ 완료 (`/auth/social` + `/auth/account`, baseURL 교체 대기) |
-| `APIClient.swift` | ✅ 완료 |
-
-### FTFeatures
-| 파일 | 상태 |
-|------|------|
-| `SocialLoginProvider.swift` | ✅ Apple·Kakao·Google 로그인 + 회원탈퇴 완료 |
-| `LoginFeature.swift` | ⚠️ Mock 구현 (API 연동 대기) |
-| `LoginView.swift` | ✅ Apple·Kakao·Google 버튼 연결 완료 (Naver 미연결) |
-| `SettingsFeature.swift` | ✅ 로그아웃 + 회원탈퇴 완료 (Mock, loginProviderType 연결 대기) |
-| `SettingsTabView.swift` | ✅ 로그아웃 + 회원탈퇴 UI 완료 |
-| `MainTabFeature.swift` | ✅ accountDeleted 전파 추가 완료 |
-| `RootFeature.swift` | ⚠️ Mock 데이터 사용 중 |
-| `FamilyTabView.swift` | ✅ 고슴도치 그리드 완료 |
-| `HomeFeature.swift` / `HomeView.swift` | ✅ 완료 |
-| `NotificationFeature.swift` / `NotificationView.swift` | ⚠️ 파일 존재, FCM 미연동 |
-| `FamTreeApp.swift` | ⚠️ Kakao·Google URL 핸들링 미추가 |
-
----
-
-## 다음 작업 우선순위
-
-1. ✅ **`FamTreeApp.swift`** — `AppLifecycleSupport.swift`의 `SocialSDK`로 이미 완료
-2. **Xcode Capability** — Sign in with Apple 추가 (Apple 개발자 계정 필요)
-3. ✅ **Keychain 토큰 저장** — `KeychainTokenStorage` 구현 완료
-4. **FastAPI 백엔드** — `/auth/social`, `/auth/account` 엔드포인트 구현
-5. ✅ **loginProviderType 연결** — Login → Root → Settings 경로 완료
-6. **Mock 제거** — FastAPI 연동 후: `LoginFeature.socialCredentialReceived`, `SettingsFeature.deleteAccountConfirmed`, `RootFeature.refreshHomeData`, `RootFeature.onAppear`

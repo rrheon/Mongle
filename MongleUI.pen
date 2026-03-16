@@ -11278,7 +11278,7 @@
           "padding": [
             8,
             20,
-            0,
+            24,
             20
           ],
           "children": [
@@ -11436,6 +11436,73 @@
                   "iconFontName": "chevron-right",
                   "iconFontFamily": "lucide",
                   "fill": "$text-tertiary"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Ur2Dk",
+              "name": "se_adSection",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "0hpLP",
+                  "name": "adSectionLabel",
+                  "fill": "$text-tertiary",
+                  "content": "후원",
+                  "fontFamily": "Outfit",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "B94CI",
+                  "name": "se_adCard",
+                  "width": "fill_container",
+                  "height": 80,
+                  "fill": "#F5F5F5",
+                  "cornerRadius": "$radius-l",
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#E8E8E8"
+                  },
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "mjMp7",
+                      "name": "se_adInner",
+                      "gap": 8,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon_font",
+                          "id": "WEdOT",
+                          "name": "adCardIcon",
+                          "width": 16,
+                          "height": 16,
+                          "iconFontName": "megaphone",
+                          "iconFontFamily": "lucide",
+                          "fill": "#CCCCCC"
+                        },
+                        {
+                          "type": "text",
+                          "id": "VcsPi",
+                          "name": "adCardLabel",
+                          "fill": "#BBBBBB",
+                          "content": "광고",
+                          "fontFamily": "Outfit",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             },
@@ -32653,6 +32720,272 @@
           "fill": "#FFFFFF",
           "x": 0,
           "y": 757
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "CPpg8",
+      "x": 6919,
+      "y": 3255,
+      "name": "Ad · No Hearts Popup",
+      "clip": true,
+      "width": 393,
+      "height": 852,
+      "fill": "#F8FAF8",
+      "cornerRadius": 40,
+      "layout": "none",
+      "children": [
+        {
+          "type": "rectangle",
+          "id": "DmY9a",
+          "x": 0,
+          "y": 0,
+          "name": "dimOverlay",
+          "fill": "#00000050",
+          "width": 393,
+          "height": 852
+        },
+        {
+          "type": "frame",
+          "id": "UwQWx",
+          "x": 0,
+          "y": 472,
+          "name": "adSheet",
+          "width": 393,
+          "height": 380,
+          "fill": "#FFFFFF",
+          "cornerRadius": [
+            28,
+            28,
+            0,
+            0
+          ],
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "6ufbm",
+              "name": "handle",
+              "width": "fill_container",
+              "height": 28,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 2,
+                  "id": "QOh0p",
+                  "name": "handleBar",
+                  "fill": "#E0E0E0",
+                  "width": 40,
+                  "height": 4
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "zT5AD",
+              "name": "topSection",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "padding": [
+                0,
+                24
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "imEZE",
+                  "name": "heartIconWrap",
+                  "width": 64,
+                  "height": 64,
+                  "fill": "#FFF0F0",
+                  "cornerRadius": 999,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "XEhMs",
+                      "name": "heartIco",
+                      "width": 30,
+                      "height": 30,
+                      "iconFontName": "heart-crack",
+                      "iconFontFamily": "lucide",
+                      "fill": "#E57373"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "xPXxP",
+                  "name": "titleText",
+                  "fill": "#1A1A1A",
+                  "content": "하트가 부족해요",
+                  "fontFamily": "Outfit",
+                  "fontSize": 20,
+                  "fontWeight": "700",
+                  "letterSpacing": -0.3
+                },
+                {
+                  "type": "text",
+                  "id": "kGMuA",
+                  "name": "descText",
+                  "fill": "#888888",
+                  "content": "광고를 보고 하트 1개를 받을 수 있어요!",
+                  "fontFamily": "Outfit",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "zfOY7",
+              "name": "adBannerWrap",
+              "width": "fill_container",
+              "height": 100,
+              "padding": [
+                0,
+                24
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "PPXzm",
+                  "name": "adBanner",
+                  "width": "fill_container",
+                  "height": 72,
+                  "fill": "#F5F5F5",
+                  "cornerRadius": 12,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#E0E0E0"
+                  },
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "zRaUY",
+                      "name": "adLabel",
+                      "fill": "#BBBBBB",
+                      "content": "광고 영역 (Google AdMob)",
+                      "fontFamily": "Outfit",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "DB81p",
+              "name": "btnWrap",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 10,
+              "padding": [
+                0,
+                24,
+                32,
+                24
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "PNDer",
+                  "name": "watchAdBtn",
+                  "width": "fill_container",
+                  "height": 52,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 135,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "$green-button",
+                        "position": 0
+                      },
+                      {
+                        "color": "$green-primary",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 999,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#6BBF9333",
+                    "offset": {
+                      "x": 0,
+                      "y": 4
+                    },
+                    "blur": 12
+                  },
+                  "gap": 8,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "PPPZx",
+                      "name": "watchAdIcon",
+                      "width": 20,
+                      "height": 20,
+                      "iconFontName": "play",
+                      "iconFontFamily": "lucide",
+                      "fill": "#FFFFFF"
+                    },
+                    {
+                      "type": "text",
+                      "id": "wV9po",
+                      "name": "watchAdLabel",
+                      "fill": "#FFFFFF",
+                      "content": "광고 보고 하트 받기 💚",
+                      "fontFamily": "Outfit",
+                      "fontSize": 16,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "imJXP",
+                  "name": "skipBtn",
+                  "width": "fill_container",
+                  "height": 44,
+                  "cornerRadius": 999,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "3pNX4",
+                      "name": "skipLabel",
+                      "fill": "#AAAAAA",
+                      "content": "나중에 할게요",
+                      "fontFamily": "Outfit",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     }
