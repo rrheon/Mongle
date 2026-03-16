@@ -45,9 +45,35 @@ public struct RootView: View {
         .onAppear {
             store.send(.onAppear)
         }
+        .alert("🎁 하트 +1", isPresented: Binding(
+            get: { store.showHeartGrantedPopup },
+            set: { if !$0 { store.send(.dismissHeartPopup) } }
+        )) {
+            Button("확인") { store.send(.dismissHeartPopup) }
+        } message: {
+            Text("오늘 처음 접속하셨네요!\n하트 1개를 드렸어요 ❤️")
+        }
+        .onOpenURL { url in
+            if let code = Self.extractInviteCode(from: url) {
+                store.send(.pendingInviteCode(code))
+            }
+        }
         .sheet(item: $store.scope(state: \.questionDetail, action: \.questionDetail)) { questionDetailStore in
             QuestionDetailView(store: questionDetailStore)
         }
+    }
+
+    static func extractInviteCode(from url: URL) -> String? {
+        // Handle monggle://join/{code}
+        if url.scheme == "monggle", url.host == "join" {
+            return url.pathComponents.dropFirst().first?.uppercased()
+        }
+        // Handle https://monggle.app/join/{code}
+        if url.host == "monggle.app", url.pathComponents.count >= 3,
+           url.pathComponents[1] == "join" {
+            return url.pathComponents[2].uppercased()
+        }
+        return nil
     }
 }
 

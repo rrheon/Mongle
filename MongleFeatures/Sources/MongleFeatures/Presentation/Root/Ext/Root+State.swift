@@ -55,6 +55,9 @@ extension RootFeature {
         public var loginProviderType: SocialProviderType?
         public var selectedQuestion: Question?
 
+        // MARK: Heart Popup
+        public var showHeartGrantedPopup: Bool = false
+
         // MARK: Modal
         @Presents public var questionDetail: QuestionDetailFeature.State?
 
@@ -77,6 +80,7 @@ extension RootFeature {
             currentUser: User? = nil,
             loginProviderType: SocialProviderType? = nil,
             selectedQuestion: Question? = nil,
+            showHeartGrantedPopup: Bool = false,
             questionDetail: QuestionDetailFeature.State? = nil
         ) {
             self.appState = appState
@@ -88,6 +92,7 @@ extension RootFeature {
             self.currentUser = currentUser
             self.loginProviderType = loginProviderType
             self.selectedQuestion = selectedQuestion
+            self.showHeartGrantedPopup = showHeartGrantedPopup
             self.questionDetail = questionDetail
         }
     }

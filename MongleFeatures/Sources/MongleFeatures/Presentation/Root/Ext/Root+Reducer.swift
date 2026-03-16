@@ -30,8 +30,10 @@ extension RootFeature {
                     }
 
                 case .refreshHomeData:
-                    return .run { [currentUser = state.currentUser] send in
+                    return .run { send in
                         do {
+                            // 최신 사용자 정보 조회 (닉네임 변경 등 반영)
+                            let currentUser = try? await authRepository.getCurrentUser()
                             let familyResult = try await familyRepository.getMyFamily()
                             let family = familyResult?.0
                             let familyMembers = familyResult?.1 ?? []
@@ -80,8 +82,23 @@ extension RootFeature {
                         return .none
                     }
 
+                case .dismissHeartPopup:
+                    state.showHeartGrantedPopup = false
+                    return .none
+
                 case .loadDataResponse(.success(let data)):
                     state.currentUser = data.user
+
+                    // 하루 첫 접속 하트 팝업 체크
+                    let heartPopupKey = "mongle.lastHeartPopupDate"
+                    let todayStart = Calendar.current.startOfDay(for: Date())
+                    let lastPopupDate = UserDefaults.standard.object(forKey: heartPopupKey) as? Date
+                    let isFirstAccessToday = lastPopupDate == nil || Calendar.current.startOfDay(for: lastPopupDate!) < todayStart
+                    if isFirstAccessToday && data.user != nil {
+                        UserDefaults.standard.set(todayStart, forKey: heartPopupKey)
+                        state.showHeartGrantedPopup = true
+                    }
+
                     let homeState = HomeFeature.State(
                         todayQuestion: data.question,
                         family: data.family,
@@ -126,6 +143,13 @@ extension RootFeature {
                             UserDefaults.standard.set(true, forKey: key)
                             _ = try? await UNUserNotificationCenter.current()
                                 .requestAuthorization(options: [.alert, .badge, .sound])
+                        }
+                    }
+                    if newAppState == .groupSelection {
+                        return .run { [familyRepository] send in
+                            await send(.loadGroupsResponse(
+                                Result { try await familyRepository.getMyFamilies() }
+                            ))
                         }
                     }
                     return .none
@@ -212,7 +236,7 @@ extension RootFeature {
                 case .groupSelect(.delegate(.completed)):
                     return .send(.refreshHomeData)
 
-                case .groupSelect(.delegate(.createFamily(let name))):
+                case .groupSelect(.delegate(.createFamily(let name, let nickname))):
                     return .run { [currentUser = state.currentUser] send in
                         do {
                             let family = try await familyRepository.create(MongleGroup(
@@ -223,21 +247,46 @@ extension RootFeature {
                                 createdAt: Date(),
                                 inviteCode: ""
                             ))
+                            // 닉네임으로 사용자 이름 업데이트
+                            try? await userRepository.updateName(nickname)
                             await send(.groupSelect(.setInviteCode(family.inviteCode)))
                         } catch {
                             await send(.groupSelect(.setAppError(AppError.from(error))))
                         }
                     }
 
-                case .groupSelect(.delegate(.joinFamily(let code))):
+                case .groupSelect(.delegate(.joinFamily(let code, let nickname))):
                     return .run { send in
                         do {
                             _ = try await familyRepository.joinFamily(inviteCode: code)
+                            // 닉네임으로 사용자 이름 업데이트
+                            try? await userRepository.updateName(nickname)
                             await send(.groupSelect(.delegate(.completed)))
                         } catch {
                             await send(.groupSelect(.setAppError(AppError.from(error))))
                         }
                     }
+
+                case .groupSelect(.delegate(.groupSelected(let family))):
+                    state.appState = .loading
+                    return .run { [familyRepository] send in
+                        do {
+                            _ = try await familyRepository.selectFamily(familyId: family.id)
+                            await send(.refreshHomeData)
+                        } catch {
+                            await send(.loadDataResponse(.failure(error)))
+                        }
+                    }
+
+                case .loadGroupsResponse(let result):
+                    return .send(.groupSelect(.loadGroupsResponse(result)))
+
+                case .pendingInviteCode(let code):
+                    if let code = code, state.appState == .groupSelection {
+                        state.groupSelect.joinCode = code
+                        state.groupSelect.step = .joinWithCode
+                    }
+                    return .none
 
                 case .groupSelect:
                     return .none

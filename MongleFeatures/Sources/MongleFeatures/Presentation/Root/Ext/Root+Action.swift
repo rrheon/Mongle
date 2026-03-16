@@ -18,6 +18,9 @@ extension RootFeature {
         case showLoginScreen
         case logout
         case refreshHomeData
+        case pendingInviteCode(String?)
+        case loadGroupsResponse(Result<[MongleGroup], Error>)
+        case dismissHeartPopup
 
         // MARK: Child Features
         case onboarding(OnboardingFeature.Action)
