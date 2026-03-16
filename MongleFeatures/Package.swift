@@ -32,6 +32,10 @@ let package = Package(
             url: "https://github.com/google/GoogleSignIn-iOS",
             from: "7.0.0"
         ),
+        .package(
+            url: "https://github.com/googleads/swift-package-manager-google-mobile-ads",
+            from: "11.0.0"
+        ),
     ],
     targets: [
         .target(
@@ -47,6 +51,7 @@ let package = Package(
                 .product(name: "KakaoSDKAuth",   package: "kakao-ios-sdk"),
                 .product(name: "KakaoSDKUser",   package: "kakao-ios-sdk"),
                 .product(name: "GoogleSignIn",   package: "GoogleSignIn-iOS"),
+                .product(name: "GoogleMobileAds", package: "swift-package-manager-google-mobile-ads"),
             ],
             path: "Sources/MongleFeatures",
             resources: [

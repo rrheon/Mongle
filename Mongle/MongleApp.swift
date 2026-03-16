@@ -8,6 +8,7 @@
 import SwiftUI
 import ComposableArchitecture
 import MongleFeatures
+import GoogleMobileAds
 
 @main
 struct MongleApp: App {
@@ -18,6 +19,7 @@ struct MongleApp: App {
   init() {
     MongleFont.registerFonts()
     SocialSDK.initialize()
+    GADMobileAds.sharedInstance().start(completionHandler: nil)
   }
 
   var body: some Scene {

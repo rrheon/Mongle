@@ -130,6 +130,34 @@ extension MainTabFeature {
                     state.modal = nil
                     return .none
 
+                case .modal(.presented(.heartCostPopup(.delegate(.watchAdRequested(let costType))))):
+                    // 팝업 닫고 광고 재생 → 시청 완료 시 작업 수행
+                    state.modal = nil
+                    return .run { [costType] send in
+                        let earned = await adClient.showRewardedAd()
+                        if earned {
+                            await send(.adRewardEarned(costType))
+                        }
+                    }
+
+                case .adRewardEarned(let costType):
+                    // 광고 시청 완료 → 하트 +1 지급 후 요청 작업 수행
+                    state.home.hearts += 1
+                    switch costType {
+                    case .writeQuestion:
+                        state.path.append(.writeQuestion(WriteQuestionFeature.State()))
+                        return .none
+                    case .refreshQuestion:
+                        return .run { [questionRepository] send in
+                            do {
+                                let newQuestion = try await questionRepository.skipTodayQuestion()
+                                await send(.skipQuestionResponse(.success(newQuestion)))
+                            } catch {
+                                await send(.skipQuestionResponse(.failure(AppError.from(error))))
+                            }
+                        }
+                    }
+
                 // MARK: - HeartInfoPopup Delegate
 
                 case .modal(.presented(.heartInfoPopup(.delegate(.close)))):

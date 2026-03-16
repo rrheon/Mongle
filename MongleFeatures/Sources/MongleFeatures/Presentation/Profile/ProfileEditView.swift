@@ -24,6 +24,14 @@ public struct ProfileEditView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: MongleSpacing.lg) {
                         profileCard
+                        
+                      // 광고 배너
+                        #if os(iOS)
+                        AdBannerSection()
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 4)
+                        #endif
+
                         moodSection
                         groupSection
 

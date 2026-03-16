@@ -17,6 +17,9 @@ struct SettingsTabView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: MongleSpacing.lg) {
                     profileCard
+                    #if os(iOS)
+                    AdBannerSection()
+                    #endif
                     moodSection
                     groupSection
                     accountSection
