@@ -129,7 +129,7 @@ struct MainTabView: View {
             onHeartsTap: { store.send(.home(.heartsTapped)) },
             onPeerAnswerTap: { store.send(.home(.peerAnswerTapped($0))) },
             onPeerNudgeTap: { store.send(.home(.peerNudgeTapped($0))) },
-            onMyMonggleTap: { store.send(.home(.questionTapped)) }
+            onMyMonggleTap: { store.send(.home(.myMonggleTapped)) }
         )
         .mongleErrorBanner(
             error: store.home.appError,

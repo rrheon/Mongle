@@ -45,14 +45,25 @@ public struct RootView: View {
         .onAppear {
             store.send(.onAppear)
         }
-        .alert("🎁 하트 +1", isPresented: Binding(
-            get: { store.showHeartGrantedPopup },
-            set: { if !$0 { store.send(.dismissHeartPopup) } }
-        )) {
-            Button("확인") { store.send(.dismissHeartPopup) }
-        } message: {
-            Text("오늘 처음 접속하셨네요!\n하트 1개를 드렸어요 ❤️")
+        .overlay {
+            if store.showHeartGrantedPopup {
+                MonglePopupView(
+                    icon: MonglePopupView.Icon(
+                        systemName: "heart.fill",
+                        foregroundColor: .red,
+                        backgroundColor: Color.red.opacity(0.12)
+                    ),
+                    title: "하트 +1",
+                    description: "오늘 처음 접속하셨네요!\n하트 1개를 드렸어요 ❤️",
+                    primaryLabel: "확인",
+                    secondaryLabel: "닫기",
+                    onPrimary: { store.send(.dismissHeartPopup) },
+                    onSecondary: { store.send(.dismissHeartPopup) }
+                )
+                .transition(.identity)
+            }
         }
+        .animation(.none, value: store.showHeartGrantedPopup)
         .onOpenURL { url in
             if let code = Self.extractInviteCode(from: url) {
                 store.send(.pendingInviteCode(code))

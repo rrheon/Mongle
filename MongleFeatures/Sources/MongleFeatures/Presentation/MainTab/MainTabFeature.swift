@@ -13,6 +13,7 @@ import Domain
 public struct MainTabFeature {
 
     @Dependency(\.questionRepository) var questionRepository
+    @Dependency(\.answerRepository) var answerRepository
     @Dependency(\.errorHandler) var errorHandler
     @Dependency(\.adClient) var adClient
 

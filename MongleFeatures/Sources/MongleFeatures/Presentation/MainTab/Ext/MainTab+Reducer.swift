@@ -5,6 +5,7 @@
 //  Created by 최용헌 on 3/12/26.
 //
 
+import Foundation
 import ComposableArchitecture
 import Domain
 
@@ -42,6 +43,30 @@ extension MainTabFeature {
 
                 case .home(.delegate(.navigateToNotifications)):
                     state.path.append(.notification(NotificationFeature.State()))
+                    return .none
+
+                case .home(.delegate(.navigateToMyAnswer)):
+                    let questionText = state.home.todayQuestion?.content ?? ""
+                    let memberName = state.home.currentUser?.name ?? ""
+                    let dailyQuestionIdString = state.home.todayQuestion?.dailyQuestionId
+                    let currentUserId = state.home.currentUser?.id
+                    return .run { send in
+                        var answerText = ""
+                        if let dqIdString = dailyQuestionIdString,
+                           let dqId = UUID(uuidString: dqIdString),
+                           let userId = currentUserId {
+                            answerText = (try? await answerRepository.getByUserAndDailyQuestion(dailyQuestionId: dqId, userId: userId))?.content ?? ""
+                        }
+                        await send(.showMyAnswer(memberName: memberName, questionText: questionText, answerText: answerText))
+                    }
+
+                case .showMyAnswer(let memberName, let questionText, let answerText):
+                    state.modal = .peerAnswer(PeerAnswerFeature.State(
+                        memberName: memberName,
+                        questionText: questionText,
+                        peerAnswer: answerText,
+                        myAnswer: answerText
+                    ))
                     return .none
 
                 case .home(.delegate(.navigateToPeerAnswerSelfAnswered(let memberName))):

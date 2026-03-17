@@ -1149,7 +1149,7 @@ public struct MongleView: View {
         self.name = name
         self.color = color
         self.hasAnswered = hasAnswered
-        self.hasCurrentUserAnswered = true
+        self.hasCurrentUserAnswered = hasCurrentUserAnswered
         self.isCurrentUser = isCurrentUser
         self.onViewAnswer = onViewAnswer
         self.onNudge = onNudge

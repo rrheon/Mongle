@@ -31,6 +31,9 @@ extension MainTabFeature {
         // MARK: Skip Question
         case skipQuestionResponse(Result<Question?, AppError>)
 
+        // MARK: My Answer
+        case showMyAnswer(memberName: String, questionText: String, answerText: String)
+
         // MARK: Ad Reward
         case adRewardEarned(HeartCostPopupFeature.CostType)
 

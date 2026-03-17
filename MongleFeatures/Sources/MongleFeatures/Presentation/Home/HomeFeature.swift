@@ -72,6 +72,7 @@ public struct HomeFeature {
         case peerAnswerTapped(String)
         case answerRequiredTapped(String)
         case peerNudgeTapped(String)
+        case myMonggleTapped
         case nudgeUnavailableTapped(String)
         case refreshData
         case dismissError
@@ -92,6 +93,7 @@ public struct HomeFeature {
             case navigateToNotifications
             case navigateToHeartsSystem
             case navigateToPeerAnswerSelfAnswered(String)
+            case navigateToMyAnswer
             case showAnswerFirstPopup(String)
             case navigateToPeerNotAnsweredNudge(User)
             case showNudgeUnavailablePopup(String)
@@ -131,6 +133,18 @@ public struct HomeFeature {
                     return .none
                 }
                 return .send(.delegate(.navigateToHeartsSystem))
+
+            case .myMonggleTapped:
+                if state.isGuest {
+                    state.showGuestLoginPrompt = true
+                    return .none
+                }
+                if state.hasAnsweredToday {
+                    return .send(.delegate(.navigateToMyAnswer))
+                } else {
+                    guard let question = state.todayQuestion else { return .none }
+                    return .send(.delegate(.showQuestionSheet(question)))
+                }
 
             case .peerAnswerTapped(let memberName):
                 return .send(.delegate(.navigateToPeerAnswerSelfAnswered(memberName)))
