@@ -114,17 +114,18 @@ public struct QuestionDetailFeature {
             // MARK: - View Actions
             case .onAppear:
                 state.isLoading = true
-                guard let dqIdString = state.question.dailyQuestionId,
-                      let dailyQuestionId = UUID(uuidString: dqIdString) else {
+                guard state.question.dailyQuestionId != nil else {
                     // dailyQuestionId 없으면 빈 상태
                     state.isLoading = false
                     return .none
                 }
+                // 서버 /answers API는 Question.id 기준 (DailyQuestion.id 아님)
+                let questionId = state.question.id
                 let currentUserId = state.currentUser?.id
                 let members = state.familyMembers
                 return .run { [answerRepository] send in
                     do {
-                        let answers = try await answerRepository.getByDailyQuestion(dailyQuestionId: dailyQuestionId)
+                        let answers = try await answerRepository.getByDailyQuestion(dailyQuestionId: questionId)
                         let myAnswer = answers.first(where: { $0.userId == currentUserId })
                         let familyAnswers: [State.FamilyAnswer] = answers
                             .filter { $0.userId != currentUserId }
@@ -162,8 +163,7 @@ public struct QuestionDetailFeature {
                     state.errorMessage = "답변을 입력해주세요."
                     return .none
                 }
-                guard let dqIdString = state.question.dailyQuestionId,
-                      let dailyQuestionId = UUID(uuidString: dqIdString) else {
+                guard state.question.dailyQuestionId != nil else {
                     state.errorMessage = "질문 정보를 불러올 수 없습니다."
                     return .none
                 }
@@ -174,6 +174,8 @@ public struct QuestionDetailFeature {
                 let answerText = state.answerText.trimmingCharacters(in: .whitespacesAndNewlines)
                 let userId = state.currentUser?.id ?? UUID()
                 let existingAnswer = state.myAnswer
+                // Question.id를 사용 (서버 /answers API는 Question 테이블 ID 기준)
+                let questionId = state.question.id
 
                 return .run { [answerRepository] send in
                     do {
@@ -181,7 +183,7 @@ public struct QuestionDetailFeature {
                         if let existing = existingAnswer {
                             let updated = Answer(
                                 id: existing.id,
-                                dailyQuestionId: dailyQuestionId,
+                                dailyQuestionId: questionId,
                                 userId: userId,
                                 content: answerText,
                                 imageURL: existing.imageURL,
@@ -192,7 +194,7 @@ public struct QuestionDetailFeature {
                         } else {
                             let newAnswer = Answer(
                                 id: UUID(),
-                                dailyQuestionId: dailyQuestionId,
+                                dailyQuestionId: questionId,
                                 userId: userId,
                                 content: answerText,
                                 imageURL: nil,

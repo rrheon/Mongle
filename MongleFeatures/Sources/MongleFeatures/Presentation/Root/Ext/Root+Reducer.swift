@@ -40,9 +40,10 @@ extension RootFeature {
                             let todayQuestion = try await questionRepository.getTodayQuestion()
 
                             var memberAnswerStatus: [UUID: Bool] = [:]
-                            if let dqIdString = todayQuestion?.dailyQuestionId,
-                               let dqId = UUID(uuidString: dqIdString) {
-                                let answers = (try? await answerRepository.getByDailyQuestion(dailyQuestionId: dqId)) ?? []
+                            // 서버 /answers API는 Question.id 기준 (DailyQuestion.id 아님)
+                            if let questionId = todayQuestion?.id,
+                               todayQuestion?.dailyQuestionId != nil {
+                                let answers = (try? await answerRepository.getByDailyQuestion(dailyQuestionId: questionId)) ?? []
                                 for answer in answers {
                                     memberAnswerStatus[answer.userId] = true
                                 }
