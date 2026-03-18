@@ -14,6 +14,7 @@ public struct User: Identifiable, Equatable, Sendable {
     public let profileImageURL: String?
     public let role: FamilyRole
     public let hearts: Int
+    public let moodId: String?
     public let createdAt: Date
 
     public init(
@@ -23,6 +24,7 @@ public struct User: Identifiable, Equatable, Sendable {
         profileImageURL: String?,
         role: FamilyRole,
         hearts: Int = 0,
+        moodId: String? = "loved",
         createdAt: Date
     ) {
         self.id = id
@@ -31,6 +33,7 @@ public struct User: Identifiable, Equatable, Sendable {
         self.profileImageURL = profileImageURL
         self.role = role
         self.hearts = hearts
+        self.moodId = moodId
         self.createdAt = createdAt
     }
 }

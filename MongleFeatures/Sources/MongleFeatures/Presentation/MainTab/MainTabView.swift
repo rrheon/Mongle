@@ -101,13 +101,24 @@ struct MainTabView: View {
         MongleColor.monggleOrange
     ]
 
+    private static func monggleColor(for moodId: String?, fallback index: Int) -> Color {
+        switch moodId {
+        case "happy":  return MongleColor.monggleYellow
+        case "calm":   return MongleColor.monggleGreen
+        case "loved":  return MongleColor.mongglePink
+        case "sad":    return MongleColor.monggleBlue
+        case "tired":  return MongleColor.monggleOrange
+        default:       return monggleColors[index % monggleColors.count]
+        }
+    }
+
     private var homeViewSection: some View {
         let memberData: [(name: String, color: Color, hasAnswered: Bool)] = store.home.familyMembers
             .enumerated()
             .map { index, user in
                 (
                     name: user.name,
-                    color: Self.monggleColors[index % Self.monggleColors.count],
+                    color: Self.monggleColor(for: user.moodId, fallback: index),
                     hasAnswered: store.home.memberAnswerStatus[user.id] ?? false
                 )
             }

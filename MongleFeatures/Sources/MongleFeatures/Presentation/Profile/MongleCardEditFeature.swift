@@ -18,7 +18,7 @@ public struct MongleCardEditFeature {
 
         public var hasChanges: Bool {
             guard let user = user else { return !editedName.isEmpty }
-            return editedName != user.name || selectedMoodId != "loved"
+            return editedName != user.name || selectedMoodId != (user.moodId ?? "loved")
         }
 
         public var isValid: Bool {
@@ -29,6 +29,7 @@ public struct MongleCardEditFeature {
             self.user = user
             if let user = user {
                 self.editedName = user.name
+                self.selectedMoodId = user.moodId ?? "loved"
             }
         }
     }
@@ -63,12 +64,15 @@ public struct MongleCardEditFeature {
                 guard let user = state.user else { return .none }
                 state.isSaving = true
                 let name = state.editedName.trimmingCharacters(in: .whitespacesAndNewlines)
+                let moodId = state.selectedMoodId
                 let updated = User(
                     id: user.id,
                     email: user.email,
                     name: name,
                     profileImageURL: user.profileImageURL,
                     role: user.role,
+                    hearts: user.hearts,
+                    moodId: moodId,
                     createdAt: user.createdAt
                 )
                 return .run { send in

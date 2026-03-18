@@ -84,14 +84,35 @@ public struct ProfileEditView: View {
 
     // MARK: - Profile Card
 
+    private var monggleColorForMood: Color {
+        switch store.user?.moodId {
+        case "happy":  return MongleColor.monggleYellow
+        case "calm":   return MongleColor.monggleGreen
+        case "loved":  return MongleColor.mongglePink
+        case "sad":    return MongleColor.monggleBlue
+        case "tired":  return MongleColor.monggleOrange
+        default:       return MongleColor.mongglePink
+        }
+    }
+
     private var profileCard: some View {
         HStack(spacing: MongleSpacing.md) {
-            MongleMonggle(color: .blue)
+            MongleMonggle(color: monggleColorForMood)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(store.user?.name ?? "Mongle User")
                     .font(MongleFont.heading3())
                     .foregroundColor(MongleColor.textPrimary)
+                if let moodId = store.user?.moodId,
+                   let mood = MoodOption.defaults.first(where: { $0.id == moodId }) {
+                    HStack(spacing: 4) {
+                        Text(mood.emoji)
+                            .font(.system(size: 13))
+                        Text(mood.label)
+                            .font(MongleFont.caption())
+                            .foregroundColor(MongleColor.textSecondary)
+                    }
+                }
             }
 
             Spacer()

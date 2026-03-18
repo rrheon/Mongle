@@ -9,7 +9,7 @@ import Domain
 
 public struct MongleCardEditView: View {
     @Bindable var store: StoreOf<MongleCardEditFeature>
-    @State private var selectedMood: MoodOption? = MoodOption.defaults.first(where: { $0.id == "loved" })
+    @State private var selectedMood: MoodOption?
 
     public init(store: StoreOf<MongleCardEditFeature>) {
         self.store = store
@@ -22,6 +22,10 @@ public struct MongleCardEditView: View {
         }
         .background(MongleColor.background.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
+        .onAppear {
+            selectedMood = MoodOption.defaults.first(where: { $0.id == store.selectedMoodId })
+                ?? MoodOption.defaults.first(where: { $0.id == "loved" })
+        }
         .onChange(of: selectedMood) { _, newMood in
             if let id = newMood?.id {
                 store.send(.moodSelected(id))
