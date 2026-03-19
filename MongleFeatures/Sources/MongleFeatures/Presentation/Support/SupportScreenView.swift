@@ -592,45 +592,51 @@ public struct SupportScreenView: View {
     private var moodHistoryView: some View {
         VStack(spacing: MongleSpacing.md) {
             VStack(alignment: .leading, spacing: MongleSpacing.sm) {
-                sectionTitle("이번 달 기분 요약", subtitle: "3월에 가장 자주 남긴 감정을 확인해요")
+                sectionTitle("이번 달 기분 요약", subtitle: moodSummarySubtitle)
 
-            HStack(alignment: .center, spacing: MongleSpacing.lg) {
-                ZStack {
-                    Circle()
-                        .stroke(MongleColor.moodHappy.opacity(0.22), lineWidth: 16)
-                        .frame(width: 100, height: 100)
-                    Circle()
-                        .trim(from: 0.00, to: 0.35)
-                        .stroke(MongleColor.moodHappy, style: StrokeStyle(lineWidth: 16, lineCap: .round))
-                        .rotationEffect(.degrees(-90))
-                        .frame(width: 100, height: 100)
-                    Circle()
-                        .trim(from: 0.35, to: 0.60)
-                        .stroke(MongleColor.moodCalm, style: StrokeStyle(lineWidth: 16, lineCap: .round))
-                        .rotationEffect(.degrees(-90))
-                        .frame(width: 100, height: 100)
-                    Circle()
-                        .trim(from: 0.60, to: 0.75)
-                        .stroke(MongleColor.moodExcited, style: StrokeStyle(lineWidth: 16, lineCap: .round))
-                        .rotationEffect(.degrees(-90))
-                        .frame(width: 100, height: 100)
-                }
+            let pieData = moodPieData
+            if pieData.isEmpty {
+                Text("이번 달 기분 기록이 없어요")
+                    .font(MongleFont.body2())
+                    .foregroundColor(MongleColor.textHint)
+                    .frame(maxWidth: .infinity)
+                    .padding(MongleSpacing.xl)
+                    .background(MongleColor.cardBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: MongleRadius.large)
+                            .stroke(MongleColor.borderWarm, lineWidth: 1)
+                    )
+            } else {
+                HStack(alignment: .center, spacing: MongleSpacing.lg) {
+                    ZStack {
+                        Circle()
+                            .stroke(Color.gray.opacity(0.1), lineWidth: 16)
+                            .frame(width: 100, height: 100)
+                        ForEach(pieData, id: \.from) { segment in
+                            Circle()
+                                .trim(from: segment.from, to: segment.to)
+                                .stroke(segment.color, style: StrokeStyle(lineWidth: 16, lineCap: .round))
+                                .rotationEffect(.degrees(-90))
+                                .frame(width: 100, height: 100)
+                        }
+                    }
 
-                VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-                    legendRow(color: MongleColor.moodHappy, title: "기쁨", value: "35%")
-                    legendRow(color: MongleColor.moodCalm, title: "평온", value: "25%")
-                    legendRow(color: MongleColor.moodExcited, title: "설렘", value: "15%")
-                    legendRow(color: MongleColor.moodLoved, title: "사랑", value: "12%")
+                    VStack(alignment: .leading, spacing: MongleSpacing.xs) {
+                        ForEach(pieData.prefix(4), id: \.from) { segment in
+                            legendRow(color: segment.color, title: segment.label, value: segment.percentage)
+                        }
+                    }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(MongleSpacing.md)
+                .background(MongleColor.cardBackground)
+                .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
+                .overlay(
+                    RoundedRectangle(cornerRadius: MongleRadius.large)
+                        .stroke(MongleColor.borderWarm, lineWidth: 1)
+                )
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(MongleSpacing.md)
-            .background(MongleColor.cardBackground)
-            .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
-            .overlay(
-                RoundedRectangle(cornerRadius: MongleRadius.large)
-                    .stroke(MongleColor.borderWarm, lineWidth: 1)
-            )
             }
 
             VStack(alignment: .leading, spacing: MongleSpacing.sm) {
@@ -896,6 +902,52 @@ public struct SupportScreenView: View {
 
     private func isCurrentMonth(_ date: Date) -> Bool {
         Calendar.current.isDate(date, equalTo: store.currentMonth, toGranularity: .month)
+    }
+
+    private var moodSummarySubtitle: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = "M월"
+        return "\(formatter.string(from: store.currentMonth))에 가장 자주 남긴 감정을 확인해요"
+    }
+
+    // (from, to, color, label, percentage)
+    private var moodPieData: [(from: Double, to: Double, color: Color, label: String, percentage: String)] {
+        let calendar = Calendar.current
+        let year = calendar.component(.year, from: store.currentMonth)
+        let month = calendar.component(.month, from: store.currentMonth)
+
+        var counts: [String: Int] = [:]
+        for record in store.moodRecords {
+            guard calendar.component(.year, from: record.date) == year,
+                  calendar.component(.month, from: record.date) == month else { continue }
+            counts[record.mood, default: 0] += 1
+        }
+
+        let total = counts.values.reduce(0, +)
+        guard total > 0 else { return [] }
+
+        let moodDefs: [(String, Color, String)] = [
+            ("happy", MongleColor.moodHappy, "기쁨"),
+            ("calm", MongleColor.moodCalm, "평온"),
+            ("loved", MongleColor.moodLoved, "사랑"),
+            ("sad", MongleColor.moodSad, "우울"),
+            ("tired", MongleColor.moodTired, "지침"),
+        ]
+
+        let sorted = moodDefs.filter { (counts[$0.0] ?? 0) > 0 }
+            .sorted { (counts[$0.0] ?? 0) > (counts[$1.0] ?? 0) }
+
+        var result: [(from: Double, to: Double, color: Color, label: String, percentage: String)] = []
+        var current = 0.0
+        for (id, color, label) in sorted {
+            let fraction = Double(counts[id] ?? 0) / Double(total)
+            let to = current + fraction
+            let pct = Int((fraction * 100).rounded())
+            result.append((from: current, to: to, color: color, label: label, percentage: "\(pct)%"))
+            current = to
+        }
+        return result
     }
 
     private func shortDate(_ date: Date) -> String {

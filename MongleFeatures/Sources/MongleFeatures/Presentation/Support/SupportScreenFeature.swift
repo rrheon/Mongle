@@ -95,15 +95,6 @@ public struct SupportScreenFeature {
             self.familyId = familyId
             self.currentUserId = currentUserId
             self.familyCreatedById = familyCreatedById
-            let calendar = Calendar(identifier: .gregorian)
-            let baseDate = calendar.date(from: DateComponents(year: 2025, month: 3, day: 13)) ?? Date()
-            let previousDay = calendar.date(byAdding: .day, value: -1, to: baseDate) ?? baseDate
-            let twoDaysAgo = calendar.date(byAdding: .day, value: -2, to: baseDate) ?? baseDate
-            let threeDaysAgo = calendar.date(byAdding: .day, value: -3, to: baseDate) ?? baseDate
-            let fourDaysAgo = calendar.date(byAdding: .day, value: -4, to: baseDate) ?? baseDate
-            let fiveDaysAgo = calendar.date(byAdding: .day, value: -5, to: baseDate) ?? baseDate
-            let monthDate = calendar.date(from: DateComponents(year: 2025, month: 3, day: 1)) ?? baseDate
-
             self.screen = screen
             self.heartBalance = 5
             let ud = UserDefaults.standard
@@ -122,30 +113,15 @@ public struct SupportScreenFeature {
                       isOn: ud.object(forKey: "notification.r6") as? Bool ?? true),
             ]
             self.quietHours = "오후 10:00 - 오전 8:00"
-            self.currentMonth = monthDate
-            self.selectedDate = baseDate
-            self.moodCalendar = [
-                monthDate: "calm",
-                calendar.date(from: DateComponents(year: 2025, month: 3, day: 2)) ?? baseDate: "happy",
-                calendar.date(from: DateComponents(year: 2025, month: 3, day: 4)) ?? baseDate: "loved",
-                calendar.date(from: DateComponents(year: 2025, month: 3, day: 7)) ?? baseDate: "tired",
-                calendar.date(from: DateComponents(year: 2025, month: 3, day: 10)) ?? baseDate: "excited",
-                baseDate: "happy",
-                calendar.date(from: DateComponents(year: 2025, month: 3, day: 17)) ?? baseDate: "anxious",
-                calendar.date(from: DateComponents(year: 2025, month: 3, day: 22)) ?? baseDate: "calm",
-                calendar.date(from: DateComponents(year: 2025, month: 3, day: 27)) ?? baseDate: "loved",
-            ]
+            let today = Date()
+            let calendar = Calendar.current
+            self.currentMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: today)) ?? today
+            self.selectedDate = today
+            self.moodCalendar = [:]
             self.groupName = ""
             self.inviteCode = ""
             self.members = []
-            self.moodRecords = [
-                Domain.MoodRecord(id: UUID().uuidString, mood: "happy", note: nil, date: baseDate),
-                Domain.MoodRecord(id: UUID().uuidString, mood: "calm", note: nil, date: previousDay),
-                Domain.MoodRecord(id: UUID().uuidString, mood: "excited", note: nil, date: twoDaysAgo),
-                Domain.MoodRecord(id: UUID().uuidString, mood: "loved", note: nil, date: threeDaysAgo),
-                Domain.MoodRecord(id: UUID().uuidString, mood: "tired", note: nil, date: fourDaysAgo),
-                Domain.MoodRecord(id: UUID().uuidString, mood: "anxious", note: nil, date: fiveDaysAgo),
-            ]
+            self.moodRecords = []
         }
     }
 
@@ -187,10 +163,10 @@ public struct SupportScreenFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                if state.screen == .moodHistory {
+                if state.screen == .moodHistory || state.screen == .historyCalendar {
                     state.isMoodLoading = true
                     return .run { [moodRepository] send in
-                        let records = (try? await moodRepository.getRecentMoods(days: 14)) ?? []
+                        let records = (try? await moodRepository.getRecentMoods(days: 31)) ?? []
                         await send(.moodLoaded(records))
                     }
                 }
@@ -205,9 +181,12 @@ public struct SupportScreenFeature {
 
             case .moodLoaded(let records):
                 state.isMoodLoading = false
-                if !records.isEmpty {
-                    state.moodRecords = records
+                state.moodRecords = records
+                var cal: [Date: String] = [:]
+                for record in records {
+                    cal[Calendar.current.startOfDay(for: record.date)] = record.mood
                 }
+                state.moodCalendar = cal
                 return .none
 
             case .groupDataLoaded(let group, let users):
