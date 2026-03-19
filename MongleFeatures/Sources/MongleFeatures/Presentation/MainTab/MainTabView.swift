@@ -46,6 +46,25 @@ struct MainTabView: View {
             .overlay(alignment: .bottom) {
                 toastOverlay
             }
+            .overlay {
+                if store.showAnswerHeartPopup {
+                    MonglePopupView(
+                        icon: MonglePopupView.Icon(
+                            systemName: "heart.fill",
+                            foregroundColor: .red,
+                            backgroundColor: Color.red.opacity(0.12)
+                        ),
+                        title: "하트 +1",
+                        description: "오늘의 질문에 답변하셨네요!\n하트 1개를 드렸어요 ❤️",
+                        primaryLabel: "확인",
+                        secondaryLabel: "닫기",
+                        onPrimary: { store.send(.dismissAnswerHeartPopup) },
+                        onSecondary: { store.send(.dismissAnswerHeartPopup) }
+                    )
+                    .transition(.identity)
+                }
+            }
+            .animation(.none, value: store.showAnswerHeartPopup)
     }
 
     // MARK: - Tab Content
@@ -113,12 +132,15 @@ struct MainTabView: View {
     }
 
     private var homeViewSection: some View {
+        let currentUserId = store.home.currentUser?.id
         let memberData: [(name: String, color: Color, hasAnswered: Bool)] = store.home.familyMembers
             .enumerated()
             .map { index, user in
-                (
+                let isCurrentUser = user.id == currentUserId
+                let moodId = isCurrentUser ? (store.previewMoodId ?? store.currentUserMoodId ?? user.moodId) : user.moodId
+                return (
                     name: user.name,
-                    color: Self.monggleColor(for: user.moodId, fallback: index),
+                    color: Self.monggleColor(for: moodId, fallback: index),
                     hasAnswered: store.home.memberAnswerStatus[user.id] ?? false
                 )
             }
@@ -130,7 +152,8 @@ struct MainTabView: View {
                 hearts: store.home.hearts,
                 todayQuestion: store.home.todayQuestion.map {
                     TopBarQuestion(id: $0.id, text: $0.content, isAnswered: store.home.hasAnsweredToday)
-                }
+                },
+                allFamilies: store.home.allFamilies
             ),
             hasCurrentUserAnswered: store.home.hasAnsweredToday,
             members: memberData,
@@ -140,7 +163,9 @@ struct MainTabView: View {
             onHeartsTap: { store.send(.home(.heartsTapped)) },
             onPeerAnswerTap: { store.send(.home(.peerAnswerTapped($0))) },
             onPeerNudgeTap: { store.send(.home(.peerNudgeTapped($0))) },
-            onMyMonggleTap: { store.send(.home(.myMonggleTapped)) }
+            onMyMonggleTap: { store.send(.home(.myMonggleTapped)) },
+            onGroupSelected: { store.send(.home(.groupSelected($0))) },
+            onNavigateToGroupSelect: { store.send(.home(.navigateToGroupSelectTapped)) }
         )
         .mongleErrorBanner(
             error: store.home.appError,

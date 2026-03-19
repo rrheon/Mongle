@@ -46,6 +46,7 @@ public struct MongleCardEditFeature {
         public enum Delegate: Sendable, Equatable {
             case saved(User)
             case cancelled
+            case colorPreview(String)
         }
     }
 
@@ -86,7 +87,7 @@ public struct MongleCardEditFeature {
 
             case .moodSelected(let moodId):
                 state.selectedMoodId = moodId
-                return .none
+                return .send(.delegate(.colorPreview(moodId)))
 
             case .saveCompleted(let user):
                 state.isSaving = false

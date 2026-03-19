@@ -35,6 +35,15 @@ extension MainTabFeature {
         public var showEditAnswerToast = false
         public var showAnswerSubmittedToast = false
 
+        // MARK: Answer Heart Popup
+        public var showAnswerHeartPopup = false
+
+        // MARK: Current User Mood Override (답변 시 선택한 mood)
+        public var currentUserMoodId: String? = nil
+
+        // MARK: Preview Mood (프로필 편집 중 색상 미리보기)
+        public var previewMoodId: String? = nil
+
         public enum Tab: Hashable {
             case home
             case history
