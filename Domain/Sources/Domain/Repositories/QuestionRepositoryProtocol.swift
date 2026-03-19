@@ -40,13 +40,15 @@ public struct HistoryQuestion: Equatable, Sendable {
         public let userName: String
         public let content: String
         public let imageUrl: String?
+        public let moodId: String?
 
-        public init(id: String, userId: String, userName: String, content: String, imageUrl: String?) {
+        public init(id: String, userId: String, userName: String, content: String, imageUrl: String?, moodId: String? = nil) {
             self.id = id
             self.userId = userId
             self.userName = userName
             self.content = content
             self.imageUrl = imageUrl
+            self.moodId = moodId
         }
     }
 

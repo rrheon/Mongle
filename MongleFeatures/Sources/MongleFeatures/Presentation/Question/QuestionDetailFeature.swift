@@ -87,8 +87,8 @@ public struct QuestionDetailFeature {
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
-            case answerSubmitted(Answer)
-            case answerEdited(Answer)
+            case answerSubmitted(Answer, moodId: String?)
+            case answerEdited(Answer, moodId: String?)
             case closed
         }
     }
@@ -235,7 +235,8 @@ public struct QuestionDetailFeature {
                 let wasEditing = state.hasMyAnswer
                 state.isSubmitting = false
                 state.myAnswer = answer
-                return .send(wasEditing ? .delegate(.answerEdited(answer)) : .delegate(.answerSubmitted(answer)))
+                let moodId = state.selectedMoodIndex.map { MoodOption.defaults[$0].id }
+                return .send(wasEditing ? .delegate(.answerEdited(answer, moodId: moodId)) : .delegate(.answerSubmitted(answer, moodId: moodId)))
 
             case .submitAnswerResponse(.failure(let error)):
                 state.isSubmitting = false

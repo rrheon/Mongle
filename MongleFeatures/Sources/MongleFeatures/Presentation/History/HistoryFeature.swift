@@ -204,11 +204,11 @@ public struct HistoryFeature {
                         let calendar = Calendar.current
                         var historyItems: [Date: HistoryItem] = [:]
                         for hq in historyQuestions {
-                            let memberAnswers: [MemberAnswer] = hq.answers.enumerated().map { index, answer in
+                            let memberAnswers: [MemberAnswer] = hq.answers.map { answer in
                                 MemberAnswer(
                                     memberName: answer.userName,
                                     answerContent: answer.content,
-                                    colorIndex: index % 5
+                                    colorIndex: colorIndexFromMoodId(answer.moodId)
                                 )
                             }
                             let item = HistoryItem(
@@ -296,6 +296,19 @@ public struct HistoryFeature {
                 return .none
             }
         }
+    }
+}
+
+// MARK: - Helpers
+
+private func colorIndexFromMoodId(_ moodId: String?) -> Int {
+    switch moodId {
+    case "calm":  return 0 // green
+    case "happy": return 1 // yellow
+    case "loved": return 2 // pink
+    case "sad":   return 3 // blue
+    case "tired": return 4 // orange
+    default:      return 2 // default: pink
     }
 }
 
