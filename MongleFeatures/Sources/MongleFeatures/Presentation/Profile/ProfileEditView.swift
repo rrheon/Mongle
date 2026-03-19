@@ -49,6 +49,15 @@ public struct ProfileEditView: View {
             }
             .navigationBarHidden(true)
             .onAppear { store.send(.onAppear) }
+            .alert("로그인이 필요해요", isPresented: Binding(
+                get: { store.showGuestLoginPrompt },
+                set: { if !$0 { store.send(.guestLoginDismissed) } }
+            )) {
+                Button("로그인하기") { store.send(.guestLoginTapped) }
+                Button("취소", role: .cancel) { store.send(.guestLoginDismissed) }
+            } message: {
+                Text("이 기능을 이용하려면 로그인이 필요해요.")
+            }
             .navigationDestination(
                 item: $store.scope(state: \.mongleCardEdit, action: \.mongleCardEdit)
             ) { cardEditStore in

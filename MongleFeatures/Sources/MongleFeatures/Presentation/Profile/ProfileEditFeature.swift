@@ -19,14 +19,17 @@ public struct ProfileEditFeature {
         public var isLoading = false
         public var errorMessage: String?
         public var appError: AppError?
+        public var isGuest: Bool = false
+        public var showGuestLoginPrompt: Bool = false
         @Presents public var mongleCardEdit: MongleCardEditFeature.State?
         @Presents public var supportScreen: SupportScreenFeature.State?
         @Presents public var accountManagement: AccountManagementFeature.State?
 
-        public init(user: User? = nil, familyId: UUID? = nil, familyCreatedById: UUID? = nil) {
+        public init(user: User? = nil, familyId: UUID? = nil, familyCreatedById: UUID? = nil, isGuest: Bool = false) {
             self.user = user
             self.familyId = familyId
             self.familyCreatedById = familyCreatedById
+            self.isGuest = isGuest
         }
     }
 
@@ -40,6 +43,8 @@ public struct ProfileEditFeature {
         case groupManagementTapped
         case accountManagementTapped
         case dismissError
+        case guestLoginTapped
+        case guestLoginDismissed
 
         // MARK: - Internal Actions
         case userLoaded(User)
@@ -56,6 +61,7 @@ public struct ProfileEditFeature {
             case groupLeft
             case colorPreview(String)
             case colorPreviewCancelled
+            case requestLogin
         }
     }
 
@@ -86,18 +92,22 @@ public struct ProfileEditFeature {
                 return .none
 
             case .moodSettingTapped:
+                if state.isGuest { state.showGuestLoginPrompt = true; return .none }
                 state.mongleCardEdit = MongleCardEditFeature.State(user: state.user)
                 return .none
 
             case .moodHistoryTapped:
+                if state.isGuest { state.showGuestLoginPrompt = true; return .none }
                 state.supportScreen = SupportScreenFeature.State(screen: .moodHistory)
                 return .none
 
             case .notificationSettingsTapped:
+                if state.isGuest { state.showGuestLoginPrompt = true; return .none }
                 state.supportScreen = SupportScreenFeature.State(screen: .notificationSettings)
                 return .none
 
             case .groupManagementTapped:
+                if state.isGuest { state.showGuestLoginPrompt = true; return .none }
                 state.supportScreen = SupportScreenFeature.State(
                     screen: .groupManagement,
                     familyId: state.familyId,
@@ -107,7 +117,16 @@ public struct ProfileEditFeature {
                 return .none
 
             case .accountManagementTapped:
+                if state.isGuest { state.showGuestLoginPrompt = true; return .none }
                 state.accountManagement = AccountManagementFeature.State()
+                return .none
+
+            case .guestLoginTapped:
+                state.showGuestLoginPrompt = false
+                return .send(.delegate(.requestLogin))
+
+            case .guestLoginDismissed:
+                state.showGuestLoginPrompt = false
                 return .none
 
             case .dismissError:

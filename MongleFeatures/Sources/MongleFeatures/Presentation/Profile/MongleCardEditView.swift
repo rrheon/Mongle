@@ -22,6 +22,14 @@ public struct MongleCardEditView: View {
         }
         .background(MongleColor.background.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
+        .alert("변경 실패", isPresented: Binding(
+            get: { store.saveError != nil },
+            set: { if !$0 { store.send(.dismissSaveError) } }
+        )) {
+            Button("확인", role: .cancel) { store.send(.dismissSaveError) }
+        } message: {
+            Text(store.saveError?.userMessage ?? "")
+        }
         .onAppear {
             selectedMood = MoodOption.defaults.first(where: { $0.id == store.selectedMoodId })
                 ?? MoodOption.defaults.first(where: { $0.id == "loved" })

@@ -15,6 +15,7 @@ public struct MongleCardEditFeature {
         public var editedName: String = ""
         public var selectedMoodId: String = "loved"
         public var isSaving = false
+        public var saveError: AppError? = nil
 
         public var hasChanges: Bool {
             guard let user = user else { return !editedName.isEmpty }
@@ -40,6 +41,8 @@ public struct MongleCardEditFeature {
         case nameChanged(String)
         case moodSelected(String)
         case saveCompleted(User)
+        case saveFailed(AppError)
+        case dismissSaveError
 
         case delegate(Delegate)
 
@@ -64,6 +67,7 @@ public struct MongleCardEditFeature {
                 guard state.isValid else { return .none }
                 guard let user = state.user else { return .none }
                 state.isSaving = true
+                state.saveError = nil
                 let name = state.editedName.trimmingCharacters(in: .whitespacesAndNewlines)
                 let moodId = state.selectedMoodId
                 let updated = User(
@@ -77,8 +81,12 @@ public struct MongleCardEditFeature {
                     createdAt: user.createdAt
                 )
                 return .run { send in
-                    let saved = (try? await userRepository.update(updated)) ?? updated
-                    await send(.saveCompleted(saved))
+                    do {
+                        let saved = try await userRepository.update(updated)
+                        await send(.saveCompleted(saved))
+                    } catch {
+                        await send(.saveFailed(AppError.from(error)))
+                    }
                 }
 
             case .nameChanged(let name):
@@ -93,6 +101,15 @@ public struct MongleCardEditFeature {
                 state.isSaving = false
                 state.user = user
                 return .send(.delegate(.saved(user)))
+
+            case .saveFailed(let error):
+                state.isSaving = false
+                state.saveError = error
+                return .none
+
+            case .dismissSaveError:
+                state.saveError = nil
+                return .none
 
             case .delegate:
                 return .none
