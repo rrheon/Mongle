@@ -204,68 +204,6 @@ public struct NotificationFeature {
     }
 }
 
-// MARK: - Mock Data Generator
-private func generateMockNotifications() -> [MongleNotification] {
-    let calendar = Calendar.current
-    let userId = UUID()
-
-    return [
-        MongleNotification(
-            id: UUID(),
-            userId: userId,
-            type: .memberAnswered,
-            title: "Lily가 오늘의 질문에 답변했어요",
-            body: "Lily의 생각을 확인하고 하트를 보내보세요.",
-            isRead: false,
-            createdAt: Date()
-        ),
-        MongleNotification(
-            id: UUID(),
-            userId: userId,
-            type: .answerRequest,
-            title: "Dad가 Mom에게 재촉 알림을 보냈어요",
-            body: "Mom이 아직 답변하지 않았어요. 하트 1개가 사용됐어요.",
-            isRead: false,
-            createdAt: calendar.date(byAdding: .hour, value: -1, to: Date()) ?? Date()
-        ),
-        MongleNotification(
-            id: UUID(),
-            userId: userId,
-            type: .badgeEarned,
-            title: "Mom이 하트 5개를 선물했어요 🎁",
-            body: "하트 시스템에서 새 행동을 열어볼 수 있어요.",
-            isRead: false,
-            createdAt: calendar.date(byAdding: .hour, value: -3, to: Date()) ?? Date()
-        ),
-        MongleNotification(
-            id: UUID(),
-            userId: userId,
-            type: .allAnswered,
-            title: "오늘 모든 가족이 답변을 완료했어요! 🎉",
-            body: "가족의 답변을 둘러보고 오늘의 감정을 다시 기록해보세요.",
-            isRead: true,
-            createdAt: calendar.date(byAdding: .day, value: -1, to: Date()) ?? Date()
-        ),
-        MongleNotification(
-            id: UUID(),
-            userId: userId,
-            type: .memberAnswered,
-            title: "Mom이 오늘의 질문에 답변했어요",
-            body: "Mom의 답변을 보고 공감 버튼을 눌러보세요.",
-            isRead: true,
-            createdAt: calendar.date(byAdding: .day, value: -2, to: Date()) ?? Date()
-        ),
-        MongleNotification(
-            id: UUID(),
-            userId: userId,
-            type: .newQuestion,
-            title: "오늘의 질문이 도착했어요!",
-            body: "가족과 함께 한 가장 행복한 기억은 무엇인가요?",
-            isRead: true,
-            createdAt: calendar.date(byAdding: .day, value: -10, to: Date()) ?? Date()
-        ),
-    ]
-}
 
 private func extractMemberName(from title: String) -> String? {
     let separators = ["가", "이", "님"]
