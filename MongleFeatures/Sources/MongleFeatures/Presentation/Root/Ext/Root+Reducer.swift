@@ -6,6 +6,7 @@
 import Foundation
 import ComposableArchitecture
 import Domain
+import UserNotifications
 
 extension RootFeature {
 
@@ -29,18 +30,44 @@ extension RootFeature {
                     }
 
                 case .refreshHomeData:
-                    return .run { [currentUser = state.currentUser] send in
+                    return .run { send in
                         do {
+                            // 최신 사용자 정보 조회 (닉네임 변경 등 반영)
+                            let currentUser = try? await authRepository.getCurrentUser()
                             let familyResult = try await familyRepository.getMyFamily()
                             let family = familyResult?.0
                             let familyMembers = familyResult?.1 ?? []
                             let todayQuestion = try await questionRepository.getTodayQuestion()
+
+                            var memberAnswerStatus: [UUID: Bool] = [:]
+                            // 서버 /answers API는 Question.id 기준 (DailyQuestion.id 아님)
+                            if let questionId = todayQuestion?.id,
+                               todayQuestion?.dailyQuestionId != nil {
+                                let answers = (try? await answerRepository.getByDailyQuestion(dailyQuestionId: questionId)) ?? []
+                                for answer in answers {
+                                    memberAnswerStatus[answer.userId] = true
+                                }
+                            }
+                            // 서버 hasMyAnswer를 fallback으로 사용 (answers 로드 실패 시)
+                            let hasAnsweredToday: Bool
+                            if let userId = currentUser?.id, memberAnswerStatus[userId] != nil {
+                                hasAnsweredToday = memberAnswerStatus[userId] == true
+                            } else {
+                                hasAnsweredToday = todayQuestion?.hasMyAnswer ?? false
+                            }
+
+                            let streakDays = (try? await userRepository.getMyStreak()) ?? 0
+                            let allFamilies = (try? await familyRepository.getMyFamilies()) ?? []
+
                             let data = RootData(
                                 user: currentUser,
                                 question: todayQuestion,
                                 family: family,
                                 familyMembers: familyMembers,
-                                hasAnsweredToday: true // TODO: 실제 API 연동 시 제거
+                                hasAnsweredToday: hasAnsweredToday,
+                                memberAnswerStatus: memberAnswerStatus,
+                                streakDays: streakDays,
+                                allFamilies: allFamilies
                             )
                             await send(.loadDataResponse(.success(data)))
                         } catch {
@@ -58,8 +85,26 @@ extension RootFeature {
                         return .none
                     }
 
+                case .dismissHeartPopup:
+                    state.showHeartGrantedPopup = false
+                    return .none
+
                 case .loadDataResponse(.success(let data)):
                     state.currentUser = data.user
+
+                    // 하루 첫 접속 하트 팝업 체크
+                    let heartPopupKey = "mongle.lastHeartPopupDate"
+                    let todayStart = Calendar.current.startOfDay(for: Date())
+                    let lastPopupDate = UserDefaults.standard.object(forKey: heartPopupKey) as? Date
+                    let isFirstAccessToday = lastPopupDate == nil || Calendar.current.startOfDay(for: lastPopupDate!) < todayStart
+                    if isFirstAccessToday && data.user != nil {
+                        UserDefaults.standard.set(todayStart, forKey: heartPopupKey)
+                        state.showHeartGrantedPopup = true
+                    }
+
+                    // mainTab이 아직 없는 경우 = 자동 로그인(첫 로드)
+                    let isInitialLoad = state.mainTab == nil
+
                     let homeState = HomeFeature.State(
                         todayQuestion: data.question,
                         family: data.family,
@@ -68,25 +113,66 @@ extension RootFeature {
                         isLoading: false,
                         isRefreshing: false,
                         errorMessage: nil,
-                        hasAnsweredToday: data.hasAnsweredToday
+                        hasAnsweredToday: data.hasAnsweredToday,
+                        hearts: data.user?.hearts ?? 0,
+                        familyAnswerCount: data.question?.familyAnswerCount ?? 0,
+                        memberAnswerStatus: data.memberAnswerStatus,
+                        streakDays: data.streakDays,
+                        allFamilies: data.allFamilies
                     )
                     if state.mainTab != nil {
                         state.mainTab?.home = homeState
                         state.mainTab?.profile.user = data.user
+                        state.mainTab?.profile.familyId = data.family?.id
+                        state.mainTab?.profile.familyCreatedById = data.family?.createdBy
+                        if let familyId = data.family?.id {
+                            state.mainTab?.history.familyId = familyId
+                            state.mainTab?.history.familyMembers = data.familyMembers
+                        }
                     } else {
                         state.mainTab = MainTabFeature.State(
                             home: homeState,
-                            profile: ProfileEditFeature.State(user: data.user)
+                            history: HistoryFeature.State(
+                                familyId: data.family?.id,
+                                familyMembers: data.familyMembers
+                            ),
+                            notification: NotificationFeature.State(),
+                            profile: ProfileEditFeature.State(user: data.user, familyId: data.family?.id, familyCreatedById: data.family?.createdBy)
                         )
                     }
-                    state.appState = data.family == nil ? .groupSelection : .authenticated
+                    let newAppState: RootFeature.State.AppState = (data.family == nil || isInitialLoad) ? .groupSelection : .authenticated
+                    state.appState = newAppState
+                    // 최초 로그인 시 푸시 알림 권한 요청
+                    if newAppState == .authenticated {
+                        return .run { _ in
+                            let key = "mongle.didRequestPushPermission"
+                            guard !UserDefaults.standard.bool(forKey: key) else { return }
+                            UserDefaults.standard.set(true, forKey: key)
+                            _ = try? await UNUserNotificationCenter.current()
+                                .requestAuthorization(options: [.alert, .badge, .sound])
+                        }
+                    }
+                    if newAppState == .groupSelection {
+                        state.groupSelect.groups = data.allFamilies
+                        state.groupSelect.currentUserId = data.user?.id
+                        return .run { [familyRepository] send in
+                            await send(.loadGroupsResponse(
+                                Result { try await familyRepository.getMyFamilies() }
+                            ))
+                        }
+                    }
                     return .none
 
                 case .loadDataResponse(.failure(let error)):
+                    let appError = AppError.from(error)
+                    if appError.requiresLogin {
+                        return .send(.showLoginScreen)
+                    }
                     if state.mainTab != nil {
                         state.mainTab?.home.isLoading = false
                         state.mainTab?.home.isRefreshing = false
-                        state.mainTab?.home.errorMessage = error.localizedDescription
+                        state.mainTab?.home.appError = appError
+                        state.mainTab?.home.errorMessage = appError.userMessage
                     } else {
                         state.appState = .unauthenticated
                     }
@@ -100,13 +186,20 @@ extension RootFeature {
                     return .none
 
                 case .logout:
-                    state.appState = .unauthenticated
+                    state.mainTab?.path.removeAll()
+                    state.mainTab?.modal = nil
+                    state.mainTab?.profile.mongleCardEdit = nil
+                    state.mainTab?.profile.supportScreen = nil
+                    state.mainTab?.profile.accountManagement = nil
                     state.mainTab = nil
                     state.currentUser = nil
                     state.loginProviderType = nil
                     state.login = LoginFeature.State()
                     state.groupSelect = GroupSelectFeature.State()
-                    return .none
+                    state.appState = .unauthenticated
+                    return .run { [authRepository] _ in
+                        try? await authRepository.logout()
+                    }
 
                 // MARK: MainTab Delegate
                 case .mainTab(.delegate(.navigateToQuestionDetail)):
@@ -119,6 +212,37 @@ extension RootFeature {
                 case .mainTab(.delegate(.requestLogin)):
                     return .send(.showLoginScreen)
 
+                case .mainTab(.delegate(.groupSelected(let family))):
+                    return .send(.switchFamily(family))
+
+                case .mainTab(.delegate(.navigateToGroupSelect(let fromGroupLeft))):
+                    // GroupSelect 상태를 리셋하고 현재 그룹 목록을 사전 로드
+                    let existingFamilies = state.mainTab?.home.allFamilies ?? []
+                    state.groupSelect = GroupSelectFeature.State()
+                    state.groupSelect.groups = existingFamilies
+                    state.groupSelect.currentUserId = state.currentUser?.id
+                    state.groupSelect.showGroupLeftToast = fromGroupLeft
+                    state.appState = .groupSelection
+                    return .run { [familyRepository] send in
+                        await send(.loadGroupsResponse(
+                            Result { try await familyRepository.getMyFamilies() }
+                        ))
+                    }
+
+                case .switchFamily(let family):
+                    state.mainTab?.home.isLoading = true
+                    return .run { [familyRepository] send in
+                        do {
+                            _ = try await familyRepository.selectFamily(familyId: family.id)
+                            await send(.refreshHomeData)
+                        } catch {
+                            await send(.loadDataResponse(.failure(error)))
+                        }
+                    }
+
+                case .switchFamilyResponse:
+                    return .none
+
                 case .mainTab(.logout):
                     return .send(.logout)
 
@@ -127,6 +251,12 @@ extension RootFeature {
 
                 // MARK: Onboarding Delegate
                 case .onboarding(.delegate(.finished)):
+                    state.hasSeenOnboarding = true
+                    state.appState = .unauthenticated
+                    return .none
+
+                case .onboarding(.delegate(.neverShowAgain)):
+                    UserDefaults.standard.set(true, forKey: "mongle.hasSeenOnboarding")
                     state.hasSeenOnboarding = true
                     state.appState = .unauthenticated
                     return .none
@@ -151,14 +281,102 @@ extension RootFeature {
 
                 // MARK: GroupSelect Delegate
                 case .groupSelect(.delegate(.completed)):
-                    state.appState = .authenticated
+                    return .send(.refreshHomeData)
+
+                case .groupSelect(.delegate(.createFamily(let name, let nickname, let colorId))):
+                    return .run { [currentUser = state.currentUser] send in
+                        do {
+                            let family = try await familyRepository.create(MongleGroup(
+                                id: UUID(),
+                                name: name,
+                                memberIds: [],
+                                createdBy: currentUser?.id ?? UUID(),
+                                createdAt: Date(),
+                                inviteCode: ""
+                            ), nickname: nickname, colorId: colorId)
+                            await send(.groupSelect(.setInviteCode(family.inviteCode)))
+                        } catch {
+                            await send(.groupSelect(.setAppError(AppError.from(error))))
+                        }
+                    }
+
+                case .groupSelect(.delegate(.joinFamily(let code, let nickname, let colorId))):
+                    return .run { send in
+                        do {
+                            _ = try await familyRepository.joinFamily(inviteCode: code, nickname: nickname, colorId: colorId)
+                            await send(.groupSelect(.delegate(.completed)))
+                        } catch {
+                            let appError = AppError.from(error)
+                            if case .serverError(let statusCode) = appError {
+                                if statusCode == 409 {
+                                    await send(.groupSelect(.showJoinAlreadyMemberToast))
+                                    return
+                                } else if statusCode == 400 {
+                                    await send(.groupSelect(.showJoinInvalidCodeToast))
+                                    return
+                                }
+                            }
+                            await send(.groupSelect(.setAppError(appError)))
+                        }
+                    }
+
+                case .groupSelect(.delegate(.groupSelected(let family))):
+                    state.appState = .loading
+                    return .run { [familyRepository] send in
+                        do {
+                            _ = try await familyRepository.selectFamily(familyId: family.id)
+                            await send(.refreshHomeData)
+                        } catch {
+                            await send(.loadDataResponse(.failure(error)))
+                        }
+                    }
+
+                case .groupSelect(.delegate(.requestMembersForGroup(let group))):
+                    return .run { [familyRepository] send in
+                        do {
+                            let (_, members) = try await familyRepository.getGroupWithMembers(id: group.id)
+                            await send(.groupSelect(.setTransferCandidates(members)))
+                        } catch {
+                            await send(.groupSelect(.setAppError(AppError.from(error))))
+                        }
+                    }
+
+                case .groupSelect(.delegate(.leaveGroup)):
+                    return .run { [familyRepository] send in
+                        do {
+                            try await familyRepository.leaveFamily()
+                            await send(.groupSelect(.delegate(.completed)))
+                        } catch {
+                            await send(.groupSelect(.setAppError(AppError.from(error))))
+                        }
+                    }
+
+                case .groupSelect(.delegate(.transferCreatorAndLeave(let newCreatorId, _))):
+                    return .run { [familyRepository] send in
+                        do {
+                            try await familyRepository.transferCreator(newCreatorId: newCreatorId)
+                            try await familyRepository.leaveFamily()
+                            await send(.groupSelect(.delegate(.completed)))
+                        } catch {
+                            await send(.groupSelect(.setAppError(AppError.from(error))))
+                        }
+                    }
+
+                case .loadGroupsResponse(let result):
+                    return .send(.groupSelect(.loadGroupsResponse(result)))
+
+                case .pendingInviteCode(let code):
+                    if let code = code, state.appState == .groupSelection {
+                        state.groupSelect.joinCode = code
+                        state.groupSelect.step = .joinWithCode
+                    }
                     return .none
 
                 case .groupSelect:
                     return .none
 
                 // MARK: QuestionDetail Modal
-                case .questionDetail(.presented(.delegate(.answerSubmitted(_)))):
+                case .questionDetail(.presented(.delegate(.answerSubmitted(_, _)))):
                     state.mainTab?.home.hasAnsweredToday = true
                     return .none
 
@@ -212,7 +430,7 @@ extension RootFeature {
             ),
             history: HistoryFeature.State(),
             notification: NotificationFeature.State(),
-            profile: ProfileEditFeature.State()
+            profile: ProfileEditFeature.State(isGuest: true)
         )
     }
 }

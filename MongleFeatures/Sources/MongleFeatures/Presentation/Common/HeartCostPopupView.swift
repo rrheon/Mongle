@@ -59,10 +59,28 @@ public struct HeartCostPopupView: View {
             .padding(.horizontal, MongleSpacing.xs)
 
             if !store.hasEnoughHearts {
-                Text("하트가 부족해요. 답변을 완료하여 하트를 모아보세요!")
-                    .font(MongleFont.caption())
-                    .foregroundColor(MongleColor.error)
-                    .multilineTextAlignment(.center)
+                VStack(spacing: MongleSpacing.xs) {
+                    Text("하트가 부족해요.")
+                        .font(MongleFont.caption())
+                        .foregroundColor(MongleColor.error)
+
+                    Button {
+                        store.send(.watchAdTapped)
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "play.fill")
+                                .font(.system(size: 13))
+                            Text("광고 보고 하트 받기 💚")
+                                .font(MongleFont.captionBold())
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(MongleColor.primary)
+                        .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
             }
         }
     }

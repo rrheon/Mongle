@@ -87,10 +87,12 @@ public struct OnboardingFeature {
         case nextTapped
         case skipTapped
         case getStartedTapped
+        case neverShowAgainTapped
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
             case finished
+            case neverShowAgain
         }
     }
 
@@ -113,6 +115,9 @@ public struct OnboardingFeature {
 
             case .skipTapped, .getStartedTapped:
                 return .send(.delegate(.finished))
+
+            case .neverShowAgainTapped:
+                return .send(.delegate(.neverShowAgain))
 
             case .delegate:
                 return .none

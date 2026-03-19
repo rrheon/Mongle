@@ -19,6 +19,7 @@ extension MainTabFeature {
             case supportScreen(SupportScreenFeature.State)
             case questionSheet(QuestionSheetFeature.State)
             case heartCostPopup(HeartCostPopupFeature.State)
+            case heartInfoPopup(HeartInfoPopupFeature.State)
 
         }
 
@@ -29,6 +30,7 @@ extension MainTabFeature {
             case supportScreen(SupportScreenFeature.Action)
             case questionSheet(QuestionSheetFeature.Action)
             case heartCostPopup(HeartCostPopupFeature.Action)
+            case heartInfoPopup(HeartInfoPopupFeature.Action)
 
         }
 
@@ -52,6 +54,10 @@ extension MainTabFeature {
 
             Scope(state: \.heartCostPopup, action: \.heartCostPopup) {
                 HeartCostPopupFeature()
+            }
+
+            Scope(state: \.heartInfoPopup, action: \.heartInfoPopup) {
+                HeartInfoPopupFeature()
             }
         }
     }

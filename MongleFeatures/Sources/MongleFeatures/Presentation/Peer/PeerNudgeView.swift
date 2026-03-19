@@ -24,6 +24,10 @@ public struct PeerNudgeView: View {
             .background(MongleColor.background)
         }
         .background(MongleColor.background)
+        .mongleErrorBanner(
+            error: store.appError,
+            onDismiss: { store.send(.setAppError(nil)) }
+        )
     }
 
     // MARK: - Navigation Header

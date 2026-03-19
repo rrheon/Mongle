@@ -86,10 +86,11 @@ public struct NotificationFeature {
         public enum Delegate: Sendable, Equatable {
             case close
             case navigateToQuestion
-            case navigateToTree
             case navigateToPeerNotAnsweredNudge(String)
         }
     }
+
+    @Dependency(\.notificationRepository) var notificationRepository
 
     public init() {}
 
@@ -99,10 +100,9 @@ public struct NotificationFeature {
             case .onAppear:
                 guard state.notifications.isEmpty else { return .none }
                 state.isLoading = true
-                return .run { send in
-                    try await Task.sleep(nanoseconds: 500_000_000)
-                    let mockData = generateMockNotifications()
-                    await send(.notificationsLoaded(mockData))
+                return .run { [notificationRepository] send in
+                    let items = (try? await notificationRepository.getNotifications(limit: 50)) ?? []
+                    await send(.notificationsLoaded(items))
                 }
 
             case .backTapped:
@@ -110,10 +110,9 @@ public struct NotificationFeature {
 
             case .refresh:
                 state.isLoading = true
-                return .run { send in
-                    try await Task.sleep(nanoseconds: 500_000_000)
-                    let mockData = generateMockNotifications()
-                    await send(.notificationsLoaded(mockData))
+                return .run { [notificationRepository] send in
+                    let items = (try? await notificationRepository.getNotifications(limit: 50)) ?? []
+                    await send(.notificationsLoaded(items))
                 }
 
             case .notificationTapped(let notification):
@@ -128,13 +127,12 @@ public struct NotificationFeature {
                     let member = extractMemberName(from: notification.title) ?? "가족"
                     return .send(.delegate(.navigateToPeerNotAnsweredNudge(member)))
 
-                case .newQuestion, .allAnswered, .memberAnswered:
+                case .newQuestion, .allAnswered, .memberAnswered, .badgeEarned:
                     return .send(.delegate(.navigateToQuestion))
-                case .treeGrowth, .badgeEarned:
-                    return .send(.delegate(.navigateToTree))
                 }
 
             case .markAsRead(let notification):
+                // Optimistic update
                 if let index = state.notifications.firstIndex(where: { $0.id == notification.id }) {
                     let updated = MongleNotification(
                         id: notification.id,
@@ -147,7 +145,9 @@ public struct NotificationFeature {
                     )
                     state.notifications[index] = updated
                 }
-                return .none
+                return .run { [notificationRepository] _ in
+                    _ = try? await notificationRepository.markAsRead(id: notification.id)
+                }
 
             case .markAllAsRead:
                 state.notifications = state.notifications.map { notification in
@@ -161,7 +161,9 @@ public struct NotificationFeature {
                         createdAt: notification.createdAt
                     )
                 }
-                return .none
+                return .run { [notificationRepository] _ in
+                    _ = try? await notificationRepository.markAllAsRead()
+                }
 
             case .deleteNotification(let notification):
                 state.notifications.removeAll { $0.id == notification.id }
@@ -202,77 +204,6 @@ public struct NotificationFeature {
     }
 }
 
-// MARK: - Mock Data Generator
-private func generateMockNotifications() -> [MongleNotification] {
-    let calendar = Calendar.current
-    let userId = UUID()
-
-    return [
-        MongleNotification(
-            id: UUID(),
-            userId: userId,
-            type: .memberAnswered,
-            title: "Lily가 오늘의 질문에 답변했어요",
-            body: "Lily의 생각을 확인하고 하트를 보내보세요.",
-            isRead: false,
-            createdAt: Date()
-        ),
-        MongleNotification(
-            id: UUID(),
-            userId: userId,
-            type: .answerRequest,
-            title: "Dad가 Mom에게 재촉 알림을 보냈어요",
-            body: "Mom이 아직 답변하지 않았어요. 하트 1개가 사용됐어요.",
-            isRead: false,
-            createdAt: calendar.date(byAdding: .hour, value: -1, to: Date()) ?? Date()
-        ),
-        MongleNotification(
-            id: UUID(),
-            userId: userId,
-            type: .badgeEarned,
-            title: "Mom이 하트 5개를 선물했어요 🎁",
-            body: "하트 시스템에서 새 행동을 열어볼 수 있어요.",
-            isRead: false,
-            createdAt: calendar.date(byAdding: .hour, value: -3, to: Date()) ?? Date()
-        ),
-        MongleNotification(
-            id: UUID(),
-            userId: userId,
-            type: .allAnswered,
-            title: "오늘 모든 가족이 답변을 완료했어요! 🎉",
-            body: "가족의 답변을 둘러보고 오늘의 감정을 다시 기록해보세요.",
-            isRead: true,
-            createdAt: calendar.date(byAdding: .day, value: -1, to: Date()) ?? Date()
-        ),
-        MongleNotification(
-            id: UUID(),
-            userId: userId,
-            type: .memberAnswered,
-            title: "Mom이 오늘의 질문에 답변했어요",
-            body: "Mom의 답변을 보고 공감 버튼을 눌러보세요.",
-            isRead: true,
-            createdAt: calendar.date(byAdding: .day, value: -2, to: Date()) ?? Date()
-        ),
-        MongleNotification(
-            id: UUID(),
-            userId: userId,
-            type: .treeGrowth,
-            title: "우리만의 감정 공간이 자라고 있어요",
-            body: "가족 나무가 한 단계 성장했어요.",
-            isRead: true,
-            createdAt: calendar.date(byAdding: .day, value: -5, to: Date()) ?? Date()
-        ),
-        MongleNotification(
-            id: UUID(),
-            userId: userId,
-            type: .newQuestion,
-            title: "오늘의 질문이 도착했어요!",
-            body: "가족과 함께 한 가장 행복한 기억은 무엇인가요?",
-            isRead: true,
-            createdAt: calendar.date(byAdding: .day, value: -10, to: Date()) ?? Date()
-        ),
-    ]
-}
 
 private func extractMemberName(from title: String) -> String? {
     let separators = ["가", "이", "님"]

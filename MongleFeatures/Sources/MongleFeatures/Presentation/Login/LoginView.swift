@@ -39,12 +39,6 @@ struct LoginView: View {
         // 버튼 영역 - 하단 고정
         VStack(spacing: MongleSpacing.xs) {
           socialButtonGroup
-
-          if let errorMessage = store.errorMessage {
-            MongleErrorBanner(message: errorMessage) {
-              store.send(.dismissError)
-            }
-          }
         }
         .padding(.horizontal, MongleSpacing.xl)
         .padding(.bottom, MongleSpacing.xl)
@@ -62,6 +56,10 @@ struct LoginView: View {
       }
     }
     .background(MongleColor.background)
+    .mongleErrorBanner(
+      error: store.appError,
+      onDismiss: { store.send(.dismissError) }
+    )
     .animation(.easeInOut(duration: 0.2), value: store.isLoading)
     .animation(.easeInOut(duration: 0.2), value: store.errorMessage)
   }

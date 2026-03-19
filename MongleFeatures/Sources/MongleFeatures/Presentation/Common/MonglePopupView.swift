@@ -48,6 +48,7 @@ struct MonglePopupView<ExtraContent: View>: View {
         ZStack {
             Color.black.opacity(0.45)
                 .ignoresSafeArea()
+                .onTapGesture { onSecondary() }
 
             VStack(spacing: MongleSpacing.lg) {
                 iconCircle

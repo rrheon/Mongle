@@ -11,6 +11,7 @@ DerivedData/
 
 # Swift Package Manager
 .build/
+Domain/.build/
 Packages/
 .swiftpm/
 

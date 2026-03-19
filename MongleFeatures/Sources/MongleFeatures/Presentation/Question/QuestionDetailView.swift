@@ -67,6 +67,11 @@ struct QuestionDetailView: View {
         .background(MongleColor.background)
         .toolbar(.hidden, for: .navigationBar)
         .onAppear { store.send(.onAppear) }
+        .mongleErrorBanner(
+            error: store.appError,
+            onDismiss: { store.send(.dismissErrorTapped) },
+            onRetry: store.appError?.isRetryable == true ? { store.send(.onAppear) } : nil
+        )
         .alert(
             "오늘의 몽글을 선택해주세요",
             isPresented: Binding(

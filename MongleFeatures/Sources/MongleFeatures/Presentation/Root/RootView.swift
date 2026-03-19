@@ -45,9 +45,46 @@ public struct RootView: View {
         .onAppear {
             store.send(.onAppear)
         }
+        .overlay {
+            if store.showHeartGrantedPopup {
+                MonglePopupView(
+                    icon: MonglePopupView.Icon(
+                        systemName: "heart.fill",
+                        foregroundColor: .red,
+                        backgroundColor: Color.red.opacity(0.12)
+                    ),
+                    title: "하트 +1",
+                    description: "오늘 처음 접속하셨네요!\n하트 1개를 드렸어요 ❤️",
+                    primaryLabel: "확인",
+                    secondaryLabel: "닫기",
+                    onPrimary: { store.send(.dismissHeartPopup) },
+                    onSecondary: { store.send(.dismissHeartPopup) }
+                )
+                .transition(.identity)
+            }
+        }
+        .animation(.none, value: store.showHeartGrantedPopup)
+        .onOpenURL { url in
+            if let code = Self.extractInviteCode(from: url) {
+                store.send(.pendingInviteCode(code))
+            }
+        }
         .sheet(item: $store.scope(state: \.questionDetail, action: \.questionDetail)) { questionDetailStore in
             QuestionDetailView(store: questionDetailStore)
         }
+    }
+
+    static func extractInviteCode(from url: URL) -> String? {
+        // Handle monggle://join/{code}
+        if url.scheme == "monggle", url.host == "join" {
+            return url.pathComponents.dropFirst().first?.uppercased()
+        }
+        // Handle https://monggle.app/join/{code}
+        if url.host == "monggle.app", url.pathComponents.count >= 3,
+           url.pathComponents[1] == "join" {
+            return url.pathComponents[2].uppercased()
+        }
+        return nil
     }
 }
 
@@ -82,29 +119,3 @@ struct LoadingView: View {
     )
 }
 
-//#Preview("Root - Authenticated") {
-//    RootView(
-//        store: Store(
-//            initialState: RootFeature.State(
-//                appState: .authenticated,
-//                mainTab: MainTabFeature.State(
-//                    home: HomeFeature.State(
-//                        todayQuestion: Question(
-//                            id: UUID(),
-//                            content: "오늘 가장 감사했던 순간은 언제인가요?",
-//                            category: .gratitude,
-//                            order: 1
-//                        ),
-//                        familyTree: TreeProgress(
-//                            stage: .youngTree,
-//                            totalAnswers: 12,
-//                            consecutiveDays: 5
-//                        )
-//                    )
-//                )
-//            )
-//        ) {
-//            RootFeature()
-//        }
-//    )
-//}

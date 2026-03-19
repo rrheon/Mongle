@@ -144,6 +144,14 @@ public struct OnboardingView: View {
             MongleButtonPrimary(buttonTitle) {
                 store.send(store.isLastPage ? .getStartedTapped : .nextTapped)
             }
+
+            Button {
+                store.send(.neverShowAgainTapped)
+            } label: {
+                Text("다시 보지않기")
+                    .font(MongleFont.body2())
+                    .foregroundStyle(MongleColor.textHint)
+            }
         }
         .padding(.horizontal, MongleSpacing.md)
         .padding(.top, MongleSpacing.md)

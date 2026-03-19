@@ -65,7 +65,12 @@ public struct HistoryFeature {
         public var historyItems: [Date: HistoryItem] = [:]
         public var selectedItem: HistoryItem?
         public var isLoading = false
-        public var errorMessage: String?
+        public var errorMessage: String?   // 하위 호환 (기존 뷰에서 사용)
+        public var appError: AppError?     // 새 통합 에러 타입
+        public var familyId: UUID?
+        public var familyMembers: [User] = []
+        /// 이미 로드한 월 목록 (캐시). 같은 월은 재요청하지 않음.
+        public var loadedMonths: Set<String> = []
 
         // 달력에 표시할 날짜들
         public var calendarDays: [Date] {
@@ -89,10 +94,14 @@ public struct HistoryFeature {
 
         public init(
             selectedDate: Date = Date(),
-            currentMonth: Date = Date()
+            currentMonth: Date = Date(),
+            familyId: UUID? = nil,
+            familyMembers: [User] = []
         ) {
             self.selectedDate = selectedDate
             self.currentMonth = currentMonth
+            self.familyId = familyId
+            self.familyMembers = familyMembers
         }
 
         private func generateCalendarDays(for month: Date) -> [Date] {
@@ -156,6 +165,7 @@ public struct HistoryFeature {
         // MARK: - Internal Actions
         case setLoading(Bool)
         case setError(String?)
+        case setAppError(AppError?)
         case historyLoaded([Date: HistoryItem])
 
         // MARK: - Delegate Actions
@@ -167,6 +177,9 @@ public struct HistoryFeature {
         }
     }
 
+    @Dependency(\.questionRepository) var questionRepository
+    @Dependency(\.errorHandler) var errorHandler
+
     public init() {}
 
     public var body: some Reducer<State, Action> {
@@ -175,11 +188,45 @@ public struct HistoryFeature {
             case .onAppear:
                 guard state.historyItems.isEmpty else { return .none }
                 state.isLoading = true
-                // Mock 데이터 로드
-                return .run { send in
-                    try await Task.sleep(nanoseconds: 500_000_000)
-                    let mockData = generateMockHistoryData()
-                    await send(.historyLoaded(mockData))
+                guard state.familyId != nil else {
+                    // familyId 없으면 mock 데이터
+                    return .run { send in
+                        try await Task.sleep(nanoseconds: 500_000_000)
+                        let mockData = generateMockHistoryData()
+                        await send(.historyLoaded(mockData))
+                    }
+                }
+                let totalMembers = max(state.familyMembers.count, 1)
+                return .run { [questionRepository] send in
+                    do {
+                        // 단일 API 호출로 질문 + 답변 한꺼번에 가져오기 (N+1 제거)
+                        let historyQuestions = try await questionRepository.getHistory(page: 1, limit: 60)
+                        let calendar = Calendar.current
+                        var historyItems: [Date: HistoryItem] = [:]
+                        for hq in historyQuestions {
+                            let memberAnswers: [MemberAnswer] = hq.answers.map { answer in
+                                MemberAnswer(
+                                    memberName: answer.userName,
+                                    answerContent: answer.content,
+                                    colorIndex: colorIndexFromMoodId(answer.moodId)
+                                )
+                            }
+                            let item = HistoryItem(
+                                id: UUID(uuidString: hq.dailyQuestionId) ?? UUID(),
+                                date: hq.date,
+                                question: hq.question,
+                                answerCount: hq.familyAnswerCount,
+                                totalMembers: totalMembers,
+                                isCompleted: hq.familyAnswerCount >= totalMembers,
+                                userAnswered: hq.hasMyAnswer,
+                                memberAnswers: memberAnswers
+                            )
+                            historyItems[calendar.startOfDay(for: hq.date)] = item
+                        }
+                        await send(.historyLoaded(historyItems))
+                    } catch {
+                        await send(.setAppError(errorHandler(error, context: "HistoryFeature.onAppear")))
+                    }
                 }
 
             case .calendarTapped:
@@ -218,6 +265,7 @@ public struct HistoryFeature {
 
             case .dismissError:
                 state.errorMessage = nil
+                state.appError = nil
                 return .none
 
             case .setLoading(let isLoading):
@@ -226,6 +274,12 @@ public struct HistoryFeature {
 
             case .setError(let message):
                 state.errorMessage = message
+                state.isLoading = false
+                return .none
+
+            case .setAppError(let error):
+                state.appError = error
+                state.errorMessage = error?.userMessage
                 state.isLoading = false
                 return .none
 
@@ -242,6 +296,19 @@ public struct HistoryFeature {
                 return .none
             }
         }
+    }
+}
+
+// MARK: - Helpers
+
+private func colorIndexFromMoodId(_ moodId: String?) -> Int {
+    switch moodId {
+    case "calm":  return 0 // green
+    case "happy": return 1 // yellow
+    case "loved": return 2 // pink
+    case "sad":   return 3 // blue
+    case "tired": return 4 // orange
+    default:      return 2 // default: pink
     }
 }
 

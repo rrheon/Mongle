@@ -49,11 +49,13 @@ public struct HeartCostPopupFeature {
     public enum Action: Sendable, Equatable {
         case confirmTapped
         case cancelTapped
+        case watchAdTapped
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
             case confirmed(CostType)
             case cancelled
+            case watchAdRequested(CostType)
         }
     }
 
@@ -66,6 +68,8 @@ public struct HeartCostPopupFeature {
                 return .send(.delegate(.confirmed(state.costType)))
             case .cancelTapped:
                 return .send(.delegate(.cancelled))
+            case .watchAdTapped:
+                return .send(.delegate(.watchAdRequested(state.costType)))
             case .delegate:
                 return .none
             }

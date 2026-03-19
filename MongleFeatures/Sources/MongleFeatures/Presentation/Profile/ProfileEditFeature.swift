@@ -14,12 +14,22 @@ public struct ProfileEditFeature {
     @ObservableState
     public struct State: Equatable {
         public var user: User?
+        public var familyId: UUID?
+        public var familyCreatedById: UUID?
         public var isLoading = false
         public var errorMessage: String?
+        public var appError: AppError?
+        public var isGuest: Bool = false
+        public var showGuestLoginPrompt: Bool = false
         @Presents public var mongleCardEdit: MongleCardEditFeature.State?
+        @Presents public var supportScreen: SupportScreenFeature.State?
+        @Presents public var accountManagement: AccountManagementFeature.State?
 
-        public init(user: User? = nil) {
+        public init(user: User? = nil, familyId: UUID? = nil, familyCreatedById: UUID? = nil, isGuest: Bool = false) {
             self.user = user
+            self.familyId = familyId
+            self.familyCreatedById = familyCreatedById
+            self.isGuest = isGuest
         }
     }
 
@@ -33,21 +43,25 @@ public struct ProfileEditFeature {
         case groupManagementTapped
         case accountManagementTapped
         case dismissError
+        case guestLoginTapped
+        case guestLoginDismissed
 
         // MARK: - Internal Actions
         case userLoaded(User)
         case mongleCardEdit(PresentationAction<MongleCardEditFeature.Action>)
+        case supportScreen(PresentationAction<SupportScreenFeature.Action>)
+        case accountManagement(PresentationAction<AccountManagementFeature.Action>)
 
         // MARK: - Delegate Actions
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
-            case navigateToMoodSetting
-            case navigateToMoodHistory
-            case navigateToNotificationSettings
-            case navigateToGroupManagement
-            case navigateToAccountManagement
             case profileUpdated(User)
+            case logout
+            case groupLeft
+            case colorPreview(String)
+            case colorPreviewCancelled
+            case requestLogin
         }
     }
 
@@ -75,26 +89,49 @@ public struct ProfileEditFeature {
                 return .none
 
             case .profileCardTapped:
-                state.mongleCardEdit = MongleCardEditFeature.State(user: state.user)
                 return .none
 
             case .moodSettingTapped:
-                return .send(.delegate(.navigateToMoodSetting))
+                if state.isGuest { state.showGuestLoginPrompt = true; return .none }
+                state.mongleCardEdit = MongleCardEditFeature.State(user: state.user)
+                return .none
 
             case .moodHistoryTapped:
-                return .send(.delegate(.navigateToMoodHistory))
+                if state.isGuest { state.showGuestLoginPrompt = true; return .none }
+                state.supportScreen = SupportScreenFeature.State(screen: .moodHistory)
+                return .none
 
             case .notificationSettingsTapped:
-                return .send(.delegate(.navigateToNotificationSettings))
+                if state.isGuest { state.showGuestLoginPrompt = true; return .none }
+                state.supportScreen = SupportScreenFeature.State(screen: .notificationSettings)
+                return .none
 
             case .groupManagementTapped:
-                return .send(.delegate(.navigateToGroupManagement))
+                if state.isGuest { state.showGuestLoginPrompt = true; return .none }
+                state.supportScreen = SupportScreenFeature.State(
+                    screen: .groupManagement,
+                    familyId: state.familyId,
+                    currentUserId: state.user?.id,
+                    familyCreatedById: state.familyCreatedById
+                )
+                return .none
 
             case .accountManagementTapped:
-                return .send(.delegate(.navigateToAccountManagement))
+                if state.isGuest { state.showGuestLoginPrompt = true; return .none }
+                state.accountManagement = AccountManagementFeature.State()
+                return .none
+
+            case .guestLoginTapped:
+                state.showGuestLoginPrompt = false
+                return .send(.delegate(.requestLogin))
+
+            case .guestLoginDismissed:
+                state.showGuestLoginPrompt = false
+                return .none
 
             case .dismissError:
                 state.errorMessage = nil
+                state.appError = nil
                 return .none
 
             case .userLoaded(let user):
@@ -109,9 +146,38 @@ public struct ProfileEditFeature {
 
             case .mongleCardEdit(.presented(.delegate(.cancelled))):
                 state.mongleCardEdit = nil
-                return .none
+                return .send(.delegate(.colorPreviewCancelled))
+
+            case .mongleCardEdit(.presented(.delegate(.colorPreview(let moodId)))):
+                return .send(.delegate(.colorPreview(moodId)))
 
             case .mongleCardEdit:
+                return .none
+
+            case .supportScreen(.presented(.delegate(.close))):
+                state.supportScreen = nil
+                return .none
+
+            case .supportScreen(.presented(.delegate(.groupLeft))):
+                state.supportScreen = nil
+                return .send(.delegate(.groupLeft))
+
+            case .supportScreen:
+                return .none
+
+            case .accountManagement(.presented(.delegate(.close))):
+                state.accountManagement = nil
+                return .none
+
+            case .accountManagement(.presented(.delegate(.logout))):
+                state.accountManagement = nil
+                return .send(.delegate(.logout))
+
+            case .accountManagement(.presented(.delegate(.accountDeleted))):
+                state.accountManagement = nil
+                return .send(.delegate(.logout))
+
+            case .accountManagement:
                 return .none
 
             case .delegate:
@@ -120,6 +186,12 @@ public struct ProfileEditFeature {
         }
         .ifLet(\.$mongleCardEdit, action: \.mongleCardEdit) {
             MongleCardEditFeature()
+        }
+        .ifLet(\.$supportScreen, action: \.supportScreen) {
+            SupportScreenFeature()
+        }
+        .ifLet(\.$accountManagement, action: \.accountManagement) {
+            AccountManagementFeature()
         }
     }
 }

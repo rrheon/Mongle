@@ -3,6 +3,7 @@
 //  MongleFeatures
 //
 
+import Foundation
 import ComposableArchitecture
 import Domain
 
@@ -14,19 +15,28 @@ extension RootFeature {
         public let family: MongleGroup?
         public let familyMembers: [User]
         public let hasAnsweredToday: Bool
+        public let memberAnswerStatus: [UUID: Bool]
+        public let streakDays: Int
+        public let allFamilies: [MongleGroup]
 
         public init(
             user: User?,
             question: Question?,
             family: MongleGroup?,
             familyMembers: [User],
-            hasAnsweredToday: Bool = false
+            hasAnsweredToday: Bool = false,
+            memberAnswerStatus: [UUID: Bool] = [:],
+            streakDays: Int = 0,
+            allFamilies: [MongleGroup] = []
         ) {
             self.user = user
             self.question = question
             self.family = family
             self.familyMembers = familyMembers
             self.hasAnsweredToday = hasAnsweredToday
+            self.memberAnswerStatus = memberAnswerStatus
+            self.streakDays = streakDays
+            self.allFamilies = allFamilies
         }
     }
 
@@ -48,6 +58,9 @@ extension RootFeature {
         public var loginProviderType: SocialProviderType?
         public var selectedQuestion: Question?
 
+        // MARK: Heart Popup
+        public var showHeartGrantedPopup: Bool = false
+
         // MARK: Modal
         @Presents public var questionDetail: QuestionDetailFeature.State?
 
@@ -62,7 +75,7 @@ extension RootFeature {
 
         public init(
             appState: AppState = .loading,
-            hasSeenOnboarding: Bool = false,
+            hasSeenOnboarding: Bool = UserDefaults.standard.bool(forKey: "mongle.hasSeenOnboarding"),
             onboarding: OnboardingFeature.State = OnboardingFeature.State(),
             login: LoginFeature.State = LoginFeature.State(),
             groupSelect: GroupSelectFeature.State = GroupSelectFeature.State(),
@@ -70,6 +83,7 @@ extension RootFeature {
             currentUser: User? = nil,
             loginProviderType: SocialProviderType? = nil,
             selectedQuestion: Question? = nil,
+            showHeartGrantedPopup: Bool = false,
             questionDetail: QuestionDetailFeature.State? = nil
         ) {
             self.appState = appState
@@ -81,6 +95,7 @@ extension RootFeature {
             self.currentUser = currentUser
             self.loginProviderType = loginProviderType
             self.selectedQuestion = selectedQuestion
+            self.showHeartGrantedPopup = showHeartGrantedPopup
             self.questionDetail = questionDetail
         }
     }

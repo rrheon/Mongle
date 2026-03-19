@@ -11,36 +11,140 @@ public struct SupportScreenView: View {
     }
 
     public var body: some View {
-        NavigationStack {
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: MongleSpacing.lg) {
-                    switch store.screen {
-                    case .heartsSystem:
-                        heartsView
-                    case .historyCalendar:
-                        historyCalendarView
-                    case .notificationSettings:
-                        notificationSettingsView
-                    case .groupManagement:
-                        groupManagementView
-                    case .moodHistory:
-                        moodHistoryView
-                    }
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: MongleSpacing.lg) {
+                switch store.screen {
+                case .heartsSystem:
+                    heartsView
+                case .historyCalendar:
+                    historyCalendarView
+                case .notificationSettings:
+                    notificationSettingsView
+                case .groupManagement:
+                    groupManagementView
+                case .moodHistory:
+                    moodHistoryView
                 }
-                .padding(MongleSpacing.md)
-                .padding(.bottom, MongleSpacing.xl)
             }
-            .background(MongleColor.background)
-            .navigationTitle(store.screen.title)
+            .padding(MongleSpacing.md)
+            .padding(.bottom, MongleSpacing.xl)
+        }
+        .background(MongleColor.background)
+        .alert("그룹 나가기", isPresented: Binding(
+            get: { store.showLeaveConfirm },
+            set: { if !$0 { store.send(.leaveGroupAlertDismissed) } }
+        )) {
+            Button("나가기", role: .destructive) {
+                store.send(.leaveGroupConfirmed)
+            }
+            Button("취소", role: .cancel) {
+                store.send(.leaveGroupAlertDismissed)
+            }
+        } message: {
+            Text("그룹을 나가면 모든 가족과의 답변 기록이 연결 해제됩니다.")
+        }
+        .alert(
+            store.kickTargetMember.map { "\($0.name)님을 내보낼까요?" } ?? "멤버 내보내기",
+            isPresented: Binding(
+                get: { store.showKickConfirm },
+                set: { if !$0 { store.send(.kickMemberCancelled) } }
+            )
+        ) {
+            Button("내보내기", role: .destructive) {
+                store.send(.kickMemberConfirmed)
+            }
+            Button("취소", role: .cancel) {
+                store.send(.kickMemberCancelled)
+            }
+        } message: {
+            Text("해당 멤버는 그룹에서 제외됩니다.")
+        }
+        .sheet(isPresented: Binding(
+            get: { store.showTransferSheet },
+            set: { if !$0 { store.send(.dismissTransferSheet) } }
+        )) {
+            transferCreatorSheet
+        }
+        .navigationTitle(store.screen.title)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    store.send(.closeTapped)
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .foregroundColor(MongleColor.textPrimary)
+                }
+            }
+        }
+        .navigationBarBackButtonHidden(true)
+        .onAppear { store.send(.onAppear) }
+    }
+
+    private var transferCreatorSheet: some View {
+        NavigationStack {
+            VStack(spacing: MongleSpacing.md) {
+                Text("그룹을 나가기 전에 방장을 위임할 멤버를 선택해주세요.")
+                    .font(MongleFont.body2())
+                    .foregroundColor(MongleColor.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, MongleSpacing.md)
+
+                ScrollView {
+                    VStack(spacing: MongleSpacing.sm) {
+                        ForEach(Array(store.transferCandidates.enumerated()), id: \.element.id) { index, member in
+                            HStack(spacing: MongleSpacing.md) {
+                                MongleMonggle(color: monggleColor(for: index + 1), size: 40)
+
+                                Text(member.name)
+                                    .font(MongleFont.body2Bold())
+                                    .foregroundColor(MongleColor.textPrimary)
+
+                                Spacer()
+
+                                if store.selectedTransferMemberId == member.id {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(MongleColor.primary)
+                                }
+                            }
+                            .padding(MongleSpacing.md)
+                            .background(store.selectedTransferMemberId == member.id ? MongleColor.primaryLight : MongleColor.cardBackground)
+                            .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: MongleRadius.large)
+                                    .stroke(store.selectedTransferMemberId == member.id ? MongleColor.primary : MongleColor.borderWarm, lineWidth: 1)
+                            )
+                            .onTapGesture {
+                                store.send(.transferMemberSelected(member.id))
+                            }
+                        }
+                    }
+                    .padding(.horizontal, MongleSpacing.md)
+                }
+
+                Button {
+                    store.send(.confirmTransferAndLeave)
+                } label: {
+                    Text("위임하고 나가기")
+                        .font(MongleFont.body1Bold())
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(MongleSpacing.md)
+                        .background(store.selectedTransferMemberId != nil ? MongleColor.error : MongleColor.textHint)
+                        .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
+                }
+                .disabled(store.selectedTransferMemberId == nil)
+                .padding(.horizontal, MongleSpacing.md)
+                .padding(.bottom, MongleSpacing.md)
+            }
+            .navigationTitle("방장 위임")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        store.send(.closeTapped)
-                    } label: {
-                        Image(systemName: "chevron.left")
-                            .foregroundColor(MongleColor.textPrimary)
+                    Button("취소") {
+                        store.send(.dismissTransferSheet)
                     }
+                    .foregroundColor(MongleColor.textPrimary)
                 }
             }
         }
@@ -421,11 +525,9 @@ public struct SupportScreenView: View {
             VStack(alignment: .leading, spacing: MongleSpacing.sm) {
                 sectionTitle("멤버", subtitle: "현재 이 공간에 연결된 사람들")
 
-                ForEach(store.members) { member in
+                ForEach(Array(store.members.enumerated()), id: \.element.id) { index, member in
                     HStack(spacing: MongleSpacing.md) {
-                        Circle()
-                            .fill(Color(hex: member.colorHex))
-                            .frame(width: 40, height: 40)
+                        MongleMonggle(color: monggleColor(for: index), size: 40)
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text(member.name)
@@ -448,7 +550,19 @@ public struct SupportScreenView: View {
 
                         Spacer()
 
-                        if !member.isOwner {
+                        if store.isCurrentUserOwner && !member.isOwner {
+                            Button {
+                                store.send(.kickMemberTapped(member))
+                            } label: {
+                                Text("내보내기")
+                                    .font(MongleFont.captionBold())
+                                    .foregroundColor(MongleColor.error)
+                                    .padding(.horizontal, MongleSpacing.sm)
+                                    .padding(.vertical, MongleSpacing.xxs)
+                                    .background(MongleColor.error.opacity(0.1))
+                                    .clipShape(Capsule())
+                            }
+                        } else if !member.isOwner {
                             Image(systemName: "ellipsis")
                                 .foregroundColor(MongleColor.textHint)
                         }
@@ -478,63 +592,78 @@ public struct SupportScreenView: View {
     private var moodHistoryView: some View {
         VStack(spacing: MongleSpacing.md) {
             VStack(alignment: .leading, spacing: MongleSpacing.sm) {
-                sectionTitle("이번 달 기분 요약", subtitle: "3월에 가장 자주 남긴 감정을 확인해요")
+                sectionTitle("이번 달 기분 요약", subtitle: moodSummarySubtitle)
 
-            HStack(alignment: .center, spacing: MongleSpacing.lg) {
-                ZStack {
-                    Circle()
-                        .stroke(MongleColor.moodHappy.opacity(0.22), lineWidth: 16)
-                        .frame(width: 100, height: 100)
-                    Circle()
-                        .trim(from: 0.00, to: 0.35)
-                        .stroke(MongleColor.moodHappy, style: StrokeStyle(lineWidth: 16, lineCap: .round))
-                        .rotationEffect(.degrees(-90))
-                        .frame(width: 100, height: 100)
-                    Circle()
-                        .trim(from: 0.35, to: 0.60)
-                        .stroke(MongleColor.moodCalm, style: StrokeStyle(lineWidth: 16, lineCap: .round))
-                        .rotationEffect(.degrees(-90))
-                        .frame(width: 100, height: 100)
-                    Circle()
-                        .trim(from: 0.60, to: 0.75)
-                        .stroke(MongleColor.moodExcited, style: StrokeStyle(lineWidth: 16, lineCap: .round))
-                        .rotationEffect(.degrees(-90))
-                        .frame(width: 100, height: 100)
-                }
+            let pieData = moodPieData
+            if pieData.isEmpty {
+                Text("이번 달 기분 기록이 없어요")
+                    .font(MongleFont.body2())
+                    .foregroundColor(MongleColor.textHint)
+                    .frame(maxWidth: .infinity)
+                    .padding(MongleSpacing.xl)
+                    .background(MongleColor.cardBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: MongleRadius.large)
+                            .stroke(MongleColor.borderWarm, lineWidth: 1)
+                    )
+            } else {
+                HStack(alignment: .center, spacing: MongleSpacing.lg) {
+                    ZStack {
+                        Circle()
+                            .stroke(Color.gray.opacity(0.1), lineWidth: 16)
+                            .frame(width: 100, height: 100)
+                        ForEach(pieData, id: \.from) { segment in
+                            Circle()
+                                .trim(from: segment.from, to: segment.to)
+                                .stroke(segment.color, style: StrokeStyle(lineWidth: 16, lineCap: .round))
+                                .rotationEffect(.degrees(-90))
+                                .frame(width: 100, height: 100)
+                        }
+                    }
 
-                VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-                    legendRow(color: MongleColor.moodHappy, title: "기쁨", value: "35%")
-                    legendRow(color: MongleColor.moodCalm, title: "평온", value: "25%")
-                    legendRow(color: MongleColor.moodExcited, title: "설렘", value: "15%")
-                    legendRow(color: MongleColor.moodLoved, title: "사랑", value: "12%")
+                    VStack(alignment: .leading, spacing: MongleSpacing.xs) {
+                        ForEach(pieData.prefix(4), id: \.from) { segment in
+                            legendRow(color: segment.color, title: segment.label, value: segment.percentage)
+                        }
+                    }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(MongleSpacing.md)
+                .background(MongleColor.cardBackground)
+                .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
+                .overlay(
+                    RoundedRectangle(cornerRadius: MongleRadius.large)
+                        .stroke(MongleColor.borderWarm, lineWidth: 1)
+                )
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(MongleSpacing.md)
-            .background(MongleColor.cardBackground)
-            .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
-            .overlay(
-                RoundedRectangle(cornerRadius: MongleRadius.large)
-                    .stroke(MongleColor.borderWarm, lineWidth: 1)
-            )
             }
 
             VStack(alignment: .leading, spacing: MongleSpacing.sm) {
                 sectionTitle("기분 타임라인", subtitle: "최근 14일")
 
-                HStack(alignment: .bottom, spacing: 6) {
-                    ForEach(Array(store.moodRecords.enumerated()), id: \.offset) { index, item in
-                        VStack(spacing: 4) {
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color(hex: item.colorHex))
-                                .frame(width: 18, height: CGFloat(24 + ((store.moodRecords.count - index) * 6)))
-                            Circle()
-                                .fill(Color(hex: item.colorHex))
-                                .frame(width: 6, height: 6)
-                            Text(shortDate(item.date))
-                                .font(MongleFont.caption())
+                HStack {
+                    ForEach(0..<5, id: \.self) { index in
+                        Spacer()
+                        VStack(spacing: 6) {
+                            ZStack(alignment: .topTrailing) {
+                                MongleMonggle(color: monggleColor(for: index), size: 44)
+                                let count = moodFrequency(for: index)
+                                if count > 0 {
+                                    Text("\(count)")
+                                        .font(.system(size: 10, weight: .bold))
+                                        .foregroundColor(.white)
+                                        .frame(width: 18, height: 18)
+                                        .background(MongleColor.primary)
+                                        .clipShape(Circle())
+                                        .offset(x: 6, y: -6)
+                                }
+                            }
+                            Text(monggleMoodLabel(for: index))
+                                .font(.system(size: 10, weight: .medium))
                                 .foregroundColor(MongleColor.textSecondary)
                         }
+                        Spacer()
                     }
                 }
             }
@@ -552,13 +681,11 @@ public struct SupportScreenView: View {
 
                 ForEach(store.moodRecords) { record in
                     HStack(spacing: MongleSpacing.md) {
-                        Circle()
-                            .fill(Color(hex: record.colorHex))
-                            .frame(width: 32, height: 32)
+                        MongleMonggle(color: monggleColorForLabel(moodName(for: record.mood)), size: 32)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(record.label)
+                            Text(moodName(for: record.mood))
                                 .font(MongleFont.body2Bold())
-                                .foregroundColor(Color(hex: record.colorHex))
+                                .foregroundColor(colorForMoodID(record.mood))
                             Text(record.date.formatted(date: .abbreviated, time: .omitted))
                                 .font(MongleFont.caption())
                                 .foregroundColor(MongleColor.textSecondary)
@@ -579,6 +706,37 @@ public struct SupportScreenView: View {
                 RoundedRectangle(cornerRadius: MongleRadius.large)
                     .stroke(MongleColor.borderWarm, lineWidth: 1)
             )
+        }
+    }
+
+    private func monggleColor(for index: Int) -> Color {
+        let colors: [Color] = [
+            MongleColor.monggleYellow,
+            MongleColor.monggleGreen,
+            MongleColor.mongglePink,
+            MongleColor.monggleBlue,
+            MongleColor.monggleOrange
+        ]
+        return colors[index % colors.count]
+    }
+
+    private func monggleMoodLabel(for index: Int) -> String {
+        ["기쁨", "평온", "사랑", "우울", "지침"][index % 5]
+    }
+
+    private func moodFrequency(for index: Int) -> Int {
+        let moods = [["happy"], ["calm"], ["loved"], ["sad"], ["tired"]]
+        let targets = moods[index % moods.count]
+        return store.moodRecords.filter { targets.contains($0.mood) }.count
+    }
+
+    private func monggleColorForLabel(_ label: String) -> Color {
+        switch label {
+        case "기쁨": return MongleColor.monggleYellow
+        case "평온": return MongleColor.monggleGreen
+        case "사랑": return MongleColor.mongglePink
+        case "우울": return MongleColor.monggleBlue
+        default: return MongleColor.monggleOrange
         }
     }
 
@@ -744,6 +902,52 @@ public struct SupportScreenView: View {
 
     private func isCurrentMonth(_ date: Date) -> Bool {
         Calendar.current.isDate(date, equalTo: store.currentMonth, toGranularity: .month)
+    }
+
+    private var moodSummarySubtitle: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = "M월"
+        return "\(formatter.string(from: store.currentMonth))에 가장 자주 남긴 감정을 확인해요"
+    }
+
+    // (from, to, color, label, percentage)
+    private var moodPieData: [(from: Double, to: Double, color: Color, label: String, percentage: String)] {
+        let calendar = Calendar.current
+        let year = calendar.component(.year, from: store.currentMonth)
+        let month = calendar.component(.month, from: store.currentMonth)
+
+        var counts: [String: Int] = [:]
+        for record in store.moodRecords {
+            guard calendar.component(.year, from: record.date) == year,
+                  calendar.component(.month, from: record.date) == month else { continue }
+            counts[record.mood, default: 0] += 1
+        }
+
+        let total = counts.values.reduce(0, +)
+        guard total > 0 else { return [] }
+
+        let moodDefs: [(String, Color, String)] = [
+            ("happy", MongleColor.moodHappy, "기쁨"),
+            ("calm", MongleColor.moodCalm, "평온"),
+            ("loved", MongleColor.moodLoved, "사랑"),
+            ("sad", MongleColor.moodSad, "우울"),
+            ("tired", MongleColor.moodTired, "지침"),
+        ]
+
+        let sorted = moodDefs.filter { (counts[$0.0] ?? 0) > 0 }
+            .sorted { (counts[$0.0] ?? 0) > (counts[$1.0] ?? 0) }
+
+        var result: [(from: Double, to: Double, color: Color, label: String, percentage: String)] = []
+        var current = 0.0
+        for (id, color, label) in sorted {
+            let fraction = Double(counts[id] ?? 0) / Double(total)
+            let to = current + fraction
+            let pct = Int((fraction * 100).rounded())
+            result.append((from: current, to: to, color: color, label: label, percentage: "\(pct)%"))
+            current = to
+        }
+        return result
     }
 
     private func shortDate(_ date: Date) -> String {

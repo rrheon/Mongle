@@ -35,6 +35,8 @@ public protocol SocialLoginProvider {
 @MainActor
 public final class AppleLoginProvider: NSObject, SocialLoginProvider {
     private var continuation: CheckedContinuation<AppleLoginCredential, Error>?
+    // ASAuthorizationController을 strong reference로 유지해야 delegate 콜백이 호출됨
+    private var authController: ASAuthorizationController?
 
     public func authenticate() async throws -> AppleLoginCredential {
         return try await withCheckedThrowingContinuation { continuation in
@@ -47,6 +49,7 @@ public final class AppleLoginProvider: NSObject, SocialLoginProvider {
             let controller = ASAuthorizationController(authorizationRequests: [request])
             controller.delegate = self
             controller.presentationContextProvider = self
+            self.authController = controller  // 강한 참조 유지
             controller.performRequests()
         }
     }

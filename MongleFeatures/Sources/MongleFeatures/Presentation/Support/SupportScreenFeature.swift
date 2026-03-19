@@ -1,5 +1,7 @@
 import Foundation
 import ComposableArchitecture
+import Domain
+import UIKit
 
 @Reducer
 public struct SupportScreenFeature {
@@ -58,20 +60,6 @@ public struct SupportScreenFeature {
             }
         }
 
-        public struct MoodRecord: Equatable, Identifiable, Sendable {
-            public let id: UUID
-            public let date: Date
-            public let label: String
-            public let colorHex: String
-
-            public init(id: UUID = UUID(), date: Date, label: String, colorHex: String) {
-                self.id = id
-                self.date = date
-                self.label = label
-                self.colorHex = colorHex
-            }
-        }
-
         public var screen: Screen
         public var heartBalance: Int
         public var notificationItems: [ToggleItem]
@@ -82,63 +70,63 @@ public struct SupportScreenFeature {
         public var groupName: String
         public var inviteCode: String
         public var members: [GroupMember]
-        public var moodRecords: [MoodRecord]
+        public var moodRecords: [Domain.MoodRecord]
+        public var isMoodLoading: Bool = false
+        public var familyId: UUID?
+        public var currentUserId: UUID?
+        public var familyCreatedById: UUID?
+        public var showLeaveConfirm: Bool = false
+        public var isLeaving: Bool = false
+        public var kickTargetMember: GroupMember?
+        public var showKickConfirm: Bool = false
+        public var isKicking: Bool = false
 
-        public init(screen: Screen) {
-            let calendar = Calendar(identifier: .gregorian)
-            let baseDate = calendar.date(from: DateComponents(year: 2025, month: 3, day: 13)) ?? Date()
-            let previousDay = calendar.date(byAdding: .day, value: -1, to: baseDate) ?? baseDate
-            let twoDaysAgo = calendar.date(byAdding: .day, value: -2, to: baseDate) ?? baseDate
-            let threeDaysAgo = calendar.date(byAdding: .day, value: -3, to: baseDate) ?? baseDate
-            let fourDaysAgo = calendar.date(byAdding: .day, value: -4, to: baseDate) ?? baseDate
-            let fiveDaysAgo = calendar.date(byAdding: .day, value: -5, to: baseDate) ?? baseDate
-            let monthDate = calendar.date(from: DateComponents(year: 2025, month: 3, day: 1)) ?? baseDate
+        public var isCurrentUserOwner: Bool {
+            guard let currentUserId, let createdById = familyCreatedById else { return false }
+            return currentUserId == createdById
+        }
 
+        // MARK: - 방장 위임
+        public var transferCandidates: [GroupMember] = []
+        public var showTransferSheet: Bool = false
+        public var selectedTransferMemberId: UUID? = nil
+
+        public init(screen: Screen, familyId: UUID? = nil, currentUserId: UUID? = nil, familyCreatedById: UUID? = nil) {
+            self.familyId = familyId
+            self.currentUserId = currentUserId
+            self.familyCreatedById = familyCreatedById
             self.screen = screen
             self.heartBalance = 5
+            let ud = UserDefaults.standard
             self.notificationItems = [
-                .init(id: "r1", title: "가족이 답변했을 때", subtitle: "가족이 오늘의 질문에 답변하면 알림", isOn: true),
-                .init(id: "r2", title: "내 답변에 반응이 왔을 때", subtitle: "하트, 댓글 등의 반응 알림", isOn: true),
-                .init(id: "r3", title: "재촉 알림을 받았을 때", subtitle: "가족에게 답변 재촉 알림을 받으면 알림", isOn: true),
-                .init(id: "r4", title: "내가 재촉 알림을 보냈을 때 결과", subtitle: "재촉 후 상대방이 답변하면 알림", isOn: true),
-                .init(id: "r5", title: "새 질문 알림", subtitle: "매일 오전 새 질문이 등록되면 알림", isOn: true),
-                .init(id: "r6", title: "하트 관련 알림", subtitle: "하트를 받거나 소비했을 때 알림", isOn: true),
+                .init(id: "r1", title: "가족이 답변했을 때", subtitle: "가족이 오늘의 질문에 답변하면 알림",
+                      isOn: ud.object(forKey: "notification.r1") as? Bool ?? true),
+                .init(id: "r2", title: "내 답변에 반응이 왔을 때", subtitle: "하트, 댓글 등의 반응 알림",
+                      isOn: ud.object(forKey: "notification.r2") as? Bool ?? true),
+                .init(id: "r3", title: "재촉 알림을 받았을 때", subtitle: "가족에게 답변 재촉 알림을 받으면 알림",
+                      isOn: ud.object(forKey: "notification.r3") as? Bool ?? true),
+                .init(id: "r4", title: "내가 재촉 알림을 보냈을 때 결과", subtitle: "재촉 후 상대방이 답변하면 알림",
+                      isOn: ud.object(forKey: "notification.r4") as? Bool ?? true),
+                .init(id: "r5", title: "새 질문 알림", subtitle: "매일 오전 새 질문이 등록되면 알림",
+                      isOn: ud.object(forKey: "notification.r5") as? Bool ?? true),
+                .init(id: "r6", title: "하트 관련 알림", subtitle: "하트를 받거나 소비했을 때 알림",
+                      isOn: ud.object(forKey: "notification.r6") as? Bool ?? true),
             ]
             self.quietHours = "오후 10:00 - 오전 8:00"
-            self.currentMonth = monthDate
-            self.selectedDate = baseDate
-            self.moodCalendar = [
-                monthDate: "calm",
-                calendar.date(from: DateComponents(year: 2025, month: 3, day: 2)) ?? baseDate: "happy",
-                calendar.date(from: DateComponents(year: 2025, month: 3, day: 4)) ?? baseDate: "loved",
-                calendar.date(from: DateComponents(year: 2025, month: 3, day: 7)) ?? baseDate: "tired",
-                calendar.date(from: DateComponents(year: 2025, month: 3, day: 10)) ?? baseDate: "excited",
-                baseDate: "happy",
-                calendar.date(from: DateComponents(year: 2025, month: 3, day: 17)) ?? baseDate: "anxious",
-                calendar.date(from: DateComponents(year: 2025, month: 3, day: 22)) ?? baseDate: "calm",
-                calendar.date(from: DateComponents(year: 2025, month: 3, day: 27)) ?? baseDate: "loved",
-            ]
-            self.groupName = "우리 가족 💛"
-            self.inviteCode = "MONG-4729"
-            self.members = [
-                .init(name: "Mom (나)", subtitle: "방장", colorHex: "4DB6AC", isOwner: true),
-                .init(name: "Lily", subtitle: "2025년 1월 가입", colorHex: "F06292"),
-                .init(name: "Ben", subtitle: "2025년 2월 가입", colorHex: "42A5F5"),
-                .init(name: "Dad", subtitle: "2025년 2월 가입", colorHex: "FFD54F"),
-                .init(name: "Alex", subtitle: "2025년 2월 가입", colorHex: "AB47BC"),
-            ]
-            self.moodRecords = [
-                .init(date: baseDate, label: "기쁨", colorHex: "FFD54F"),
-                .init(date: previousDay, label: "평온", colorHex: "A8DFBC"),
-                .init(date: twoDaysAgo, label: "설렘", colorHex: "FF9800"),
-                .init(date: threeDaysAgo, label: "사랑", colorHex: "F48FB1"),
-                .init(date: fourDaysAgo, label: "지침", colorHex: "90A4AE"),
-                .init(date: fiveDaysAgo, label: "불안", colorHex: "BA68C8"),
-            ]
+            let today = Date()
+            let calendar = Calendar.current
+            self.currentMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: today)) ?? today
+            self.selectedDate = today
+            self.moodCalendar = [:]
+            self.groupName = ""
+            self.inviteCode = ""
+            self.members = []
+            self.moodRecords = []
         }
     }
 
     public enum Action: Sendable, Equatable {
+        case onAppear
         case closeTapped
         case previousMonthTapped
         case nextMonthTapped
@@ -146,18 +134,76 @@ public struct SupportScreenFeature {
         case toggleChanged(String, Bool)
         case inviteTapped
         case leaveGroupTapped
+        case leaveGroupConfirmed
+        case leaveGroupAlertDismissed
+        case kickMemberTapped(State.GroupMember)
+        case kickMemberConfirmed
+        case kickMemberCancelled
+        case kickMemberSuccess
+        case kickMemberFailure(AppError)
+        case moodLoaded([Domain.MoodRecord])
+        case groupDataLoaded(MongleGroup, [User])
+        case transferMemberSelected(UUID)
+        case confirmTransferAndLeave
+        case dismissTransferSheet
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
             case close
+            case groupLeft
         }
     }
+
+    @Dependency(\.familyRepository) var familyRepository
+    @Dependency(\.moodRepository) var moodRepository
 
     public init() {}
 
     public var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
+            case .onAppear:
+                if state.screen == .moodHistory || state.screen == .historyCalendar {
+                    state.isMoodLoading = true
+                    return .run { [moodRepository] send in
+                        let records = (try? await moodRepository.getRecentMoods(days: 31)) ?? []
+                        await send(.moodLoaded(records))
+                    }
+                }
+                if state.screen == .groupManagement {
+                    return .run { [familyRepository] send in
+                        if let result = try? await familyRepository.getMyFamily() {
+                            await send(.groupDataLoaded(result.0, result.1))
+                        }
+                    }
+                }
+                return .none
+
+            case .moodLoaded(let records):
+                state.isMoodLoading = false
+                state.moodRecords = records
+                var cal: [Date: String] = [:]
+                for record in records {
+                    cal[Calendar.current.startOfDay(for: record.date)] = record.mood
+                }
+                state.moodCalendar = cal
+                return .none
+
+            case .groupDataLoaded(let group, let users):
+                state.familyCreatedById = group.createdBy
+                state.familyId = group.id
+                state.groupName = group.name
+                state.inviteCode = group.inviteCode
+                let formatter = DateFormatter()
+                formatter.locale = Locale(identifier: "ko_KR")
+                formatter.dateFormat = "yyyy년 M월"
+                state.members = users.map { user in
+                    let isOwner = user.id == state.familyCreatedById
+                    let subtitle = isOwner ? "방장" : formatter.string(from: user.createdAt) + " 가입"
+                    return State.GroupMember(id: user.id, name: user.name, subtitle: subtitle, colorHex: "", isOwner: isOwner)
+                }
+                return .none
+
             case .closeTapped:
                 return .send(.delegate(.close))
 
@@ -180,10 +226,105 @@ public struct SupportScreenFeature {
             case .toggleChanged(let id, let isOn):
                 if let index = state.notificationItems.firstIndex(where: { $0.id == id }) {
                     state.notificationItems[index].isOn = isOn
+                    UserDefaults.standard.set(isOn, forKey: "notification.\(id)")
                 }
                 return .none
 
-            case .inviteTapped, .leaveGroupTapped, .delegate:
+            case .inviteTapped:
+                let code = state.inviteCode
+                return .run { _ in
+                    await MainActor.run {
+                        UIPasteboard.general.string = code
+                    }
+                }
+
+            case .leaveGroupTapped:
+                state.showLeaveConfirm = true
+                return .none
+
+            case .leaveGroupAlertDismissed:
+                state.showLeaveConfirm = false
+                return .none
+
+            case .leaveGroupConfirmed:
+                state.showLeaveConfirm = false
+                if state.isCurrentUserOwner {
+                    let candidates = state.members.filter { !$0.isOwner }
+                    if candidates.isEmpty {
+                        // 혼자인 경우 바로 나가기
+                        state.isLeaving = true
+                        return .run { [familyRepository] send in
+                            try? await familyRepository.leaveFamily()
+                            await send(.delegate(.groupLeft))
+                        }
+                    }
+                    state.transferCandidates = candidates
+                    state.showTransferSheet = true
+                    return .none
+                } else {
+                    state.isLeaving = true
+                    return .run { [familyRepository] send in
+                        try? await familyRepository.leaveFamily()
+                        await send(.delegate(.groupLeft))
+                    }
+                }
+
+            case .kickMemberTapped(let member):
+                state.kickTargetMember = member
+                state.showKickConfirm = true
+                return .none
+
+            case .kickMemberCancelled:
+                state.kickTargetMember = nil
+                state.showKickConfirm = false
+                return .none
+
+            case .kickMemberConfirmed:
+                guard let target = state.kickTargetMember else { return .none }
+                state.showKickConfirm = false
+                state.isKicking = true
+                return .run { [familyRepository] send in
+                    do {
+                        try await familyRepository.kickMember(memberId: target.id)
+                        await send(.kickMemberSuccess)
+                    } catch {
+                        await send(.kickMemberFailure(AppError.from(error)))
+                    }
+                }
+
+            case .kickMemberSuccess:
+                if let target = state.kickTargetMember {
+                    state.members.removeAll { $0.id == target.id }
+                }
+                state.kickTargetMember = nil
+                state.isKicking = false
+                return .none
+
+            case .kickMemberFailure:
+                state.kickTargetMember = nil
+                state.isKicking = false
+                return .none
+
+            case .transferMemberSelected(let id):
+                state.selectedTransferMemberId = id
+                return .none
+
+            case .confirmTransferAndLeave:
+                guard let newCreatorId = state.selectedTransferMemberId else { return .none }
+                state.showTransferSheet = false
+                state.isLeaving = true
+                return .run { [familyRepository] send in
+                    try? await familyRepository.transferCreator(newCreatorId: newCreatorId)
+                    try? await familyRepository.leaveFamily()
+                    await send(.delegate(.groupLeft))
+                }
+
+            case .dismissTransferSheet:
+                state.showTransferSheet = false
+                state.selectedTransferMemberId = nil
+                return .none
+
+            case .delegate:
                 return .none
             }
         }

@@ -36,9 +36,35 @@ struct MainTabView: View {
                 }
             }
             .animation(.none, value: store.modal?.heartCostPopup != nil)
-            .overlay(alignment: .top) {
+            .overlay {
+                if let popupStore = store.scope(state: \.modal?.heartInfoPopup, action: \.modal.heartInfoPopup) {
+                    HeartInfoPopupView(store: popupStore)
+                        .transition(.identity)
+                }
+            }
+            .animation(.none, value: store.modal?.heartInfoPopup != nil)
+            .overlay(alignment: .bottom) {
                 toastOverlay
             }
+            .overlay {
+                if store.showAnswerHeartPopup {
+                    MonglePopupView(
+                        icon: MonglePopupView.Icon(
+                            systemName: "heart.fill",
+                            foregroundColor: .red,
+                            backgroundColor: Color.red.opacity(0.12)
+                        ),
+                        title: "하트 +1",
+                        description: "오늘의 질문에 답변하셨네요!\n하트 1개를 드렸어요 ❤️",
+                        primaryLabel: "확인",
+                        secondaryLabel: "닫기",
+                        onPrimary: { store.send(.dismissAnswerHeartPopup) },
+                        onSecondary: { store.send(.dismissAnswerHeartPopup) }
+                    )
+                    .transition(.identity)
+                }
+            }
+            .animation(.none, value: store.showAnswerHeartPopup)
     }
 
     // MARK: - Tab Content
@@ -86,23 +112,77 @@ struct MainTabView: View {
 
     // MARK: - Subviews
 
+    private static let monggleColors: [Color] = [
+        MongleColor.monggleYellow,
+        MongleColor.monggleGreen,
+        MongleColor.mongglePink,
+        MongleColor.monggleBlue,
+        MongleColor.monggleOrange
+    ]
+
+    private static func monggleColor(for moodId: String?, fallback index: Int) -> Color {
+        switch moodId {
+        case "happy":  return MongleColor.monggleYellow
+        case "calm":   return MongleColor.monggleGreen
+        case "loved":  return MongleColor.mongglePink
+        case "sad":    return MongleColor.monggleBlue
+        case "tired":  return MongleColor.monggleOrange
+        default:       return monggleColors[index % monggleColors.count]
+        }
+    }
+
     private var homeViewSection: some View {
-        HomeView(
+        let currentUserId = store.home.currentUser?.id
+        let memberData: [(name: String, color: Color, hasAnswered: Bool)] = store.home.familyMembers
+            .enumerated()
+            .map { index, user in
+                let isCurrentUser = user.id == currentUserId
+                let moodId = isCurrentUser ? (store.previewMoodId ?? store.currentUserMoodId ?? user.moodId) : user.moodId
+                return (
+                    name: user.name,
+                    color: Self.monggleColor(for: moodId, fallback: index),
+                    hasAnswered: store.home.memberAnswerStatus[user.id] ?? false
+                )
+            }
+        return HomeView(
             topBarState: HomeTopBarState(
-                streakDays: 0,
+                streakDays: store.home.streakDays,
                 groupName: store.home.family?.name ?? "우리 가족",
                 hasNotification: false,
+                hearts: store.home.hearts,
                 todayQuestion: store.home.todayQuestion.map {
                     TopBarQuestion(id: $0.id, text: $0.content, isAnswered: store.home.hasAnsweredToday)
-                }
+                },
+                allFamilies: store.home.allFamilies
             ),
             hasCurrentUserAnswered: store.home.hasAnsweredToday,
-            onQuestionTap: { store.send(.home(.questionTapped)) },
-            onNotificationTap: { store.send(.home(.notificationTapped)) },
-            onHeartsTap: { store.send(.home(.heartsTapped)) },
-            onPeerAnswerTap: { store.send(.home(.peerAnswerTapped($0))) },
-            onPeerNudgeTap: { store.send(.home(.peerNudgeTapped($0))) }
+            members: memberData,
+            currentUserName: store.home.currentUser?.name,
+            actions: HomeViewActions(
+                onQuestionTap: { store.send(.home(.questionTapped)) },
+                onNotificationTap: { store.send(.home(.notificationTapped)) },
+                onHeartsTap: { store.send(.home(.heartsTapped)) },
+                onPeerAnswerTap: { store.send(.home(.peerAnswerTapped($0))) },
+                onPeerNudgeTap: { store.send(.home(.peerNudgeTapped($0))) },
+                onMyMonggleTap: { store.send(.home(.myMonggleTapped)) },
+                onGroupSelected: { store.send(.home(.groupSelected($0))) },
+                onNavigateToGroupSelect: { store.send(.home(.navigateToGroupSelectTapped)) }
+            )
         )
+        .mongleErrorBanner(
+            error: store.home.appError,
+            onDismiss: { store.send(.home(.dismissError)) },
+            onRetry: store.home.appError?.isRetryable == true ? { store.send(.home(.refreshData)) } : nil
+        )
+        .alert("로그인이 필요해요", isPresented: Binding(
+            get: { store.home.showGuestLoginPrompt },
+            set: { if !$0 { store.send(.home(.guestLoginDismissed)) } }
+        )) {
+            Button("로그인하기") { store.send(.home(.guestLoginTapped)) }
+            Button("취소", role: .cancel) { store.send(.home(.guestLoginDismissed)) }
+        } message: {
+            Text("이 기능을 이용하려면 로그인이 필요해요.")
+        }
     }
 
     // MARK: - Question Sheet
@@ -128,16 +208,31 @@ struct MainTabView: View {
         VStack(spacing: 8) {
             if store.showRefreshToast {
                 MongleToastView(type: .refreshQuestion)
-                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
             }
             if store.showWriteToast {
                 MongleToastView(type: .writeQuestion)
-                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+            if store.showNudgeToast {
+                MongleToastView(type: .nudge)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+            if store.showEditAnswerToast {
+                MongleToastView(type: .editAnswer)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+            if store.showAnswerSubmittedToast {
+                MongleToastView(type: .answerSubmitted)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .padding(.top, 60)
+        .padding(.bottom, 90)
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: store.showRefreshToast)
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: store.showWriteToast)
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: store.showNudgeToast)
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: store.showEditAnswerToast)
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: store.showAnswerSubmittedToast)
     }
 
     // MARK: - Peer Answer Sheet

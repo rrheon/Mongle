@@ -8,7 +8,7 @@
 import Foundation
 
 public protocol MongleRepositoryInterface: Sendable {
-    func create(_ family: MongleGroup) async throws -> MongleGroup
+    func create(_ family: MongleGroup, nickname: String?, colorId: String?) async throws -> MongleGroup
     func get(id: UUID) async throws -> MongleGroup
     func findByInviteCode(_ inviteCode: String) async throws -> MongleGroup?
     func getFamiliesByUserId(_ userId: UUID) async throws -> [MongleGroup]
@@ -20,6 +20,20 @@ public protocol MongleRepositoryInterface: Sendable {
     func isMember(userId: UUID, familyId: UUID) async throws -> Bool
     /// 현재 인증된 유저의 가족을 구성원 목록과 함께 조회. 가족이 없으면 nil.
     func getMyFamily() async throws -> (MongleGroup, [User])?
+    /// 초대 코드로 가족에 참여. 서버가 JWT 토큰의 userId를 멤버로 추가함.
+    func joinFamily(inviteCode: String, nickname: String?, colorId: String?) async throws -> MongleGroup
+    /// 방장이 특정 멤버를 가족에서 내보내기. DELETE /families/members/{memberId}
+    func kickMember(memberId: UUID) async throws
+    /// 내 모든 가족 목록 조회 (최대 3개)
+    func getMyFamilies() async throws -> [MongleGroup]
+    /// 활성 가족 전환
+    func selectFamily(familyId: UUID) async throws -> MongleGroup
+    /// 현재 활성 가족에서 나가기. DELETE /families/leave
+    func leaveFamily() async throws
+    /// 방장 위임 — 현재 방장이 다른 멤버에게 방장 권한을 넘김. PATCH /families/transfer-creator
+    func transferCreator(newCreatorId: UUID) async throws
+    /// 특정 그룹과 구성원 목록 함께 조회. GET /families/{familyId}
+    func getGroupWithMembers(id: UUID) async throws -> (MongleGroup, [User])
 }
 
 public enum MongleError: Error, Equatable, Sendable {
