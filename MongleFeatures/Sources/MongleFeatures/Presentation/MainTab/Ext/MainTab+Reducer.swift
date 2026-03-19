@@ -48,14 +48,13 @@ extension MainTabFeature {
                 case .home(.delegate(.navigateToMyAnswer)):
                     let questionText = state.home.todayQuestion?.content ?? ""
                     let memberName = state.home.currentUser?.name ?? ""
-                    let dailyQuestionIdString = state.home.todayQuestion?.dailyQuestionId
+                    let questionId = state.home.todayQuestion?.id
                     let currentUserId = state.home.currentUser?.id
                     return .run { send in
                         var answerText = ""
-                        if let dqIdString = dailyQuestionIdString,
-                           let dqId = UUID(uuidString: dqIdString),
+                        if let qId = questionId,
                            let userId = currentUserId {
-                            answerText = (try? await answerRepository.getByUserAndDailyQuestion(dailyQuestionId: dqId, userId: userId))?.content ?? ""
+                            answerText = (try? await answerRepository.getByUserAndDailyQuestion(dailyQuestionId: qId, userId: userId))?.content ?? ""
                         }
                         await send(.showMyAnswer(memberName: memberName, questionText: questionText, answerText: answerText))
                     }
@@ -71,13 +70,20 @@ extension MainTabFeature {
 
                 case .home(.delegate(.navigateToPeerAnswerSelfAnswered(let memberName))):
                     let questionText = state.home.todayQuestion?.content ?? ""
-                    state.modal = .peerAnswer(PeerAnswerFeature.State(
-                        memberName: memberName,
-                        questionText: questionText,
-                        peerAnswer: "",
-                        myAnswer: ""
-                    ))
-                    return .none
+                    let questionId = state.home.todayQuestion?.id
+                    let currentUserId = state.home.currentUser?.id
+                    let targetUser = state.home.familyMembers.first { $0.name == memberName }
+                    let targetUserId = targetUser?.id
+                    return .run { [answerRepository] send in
+                        var peerAnswer = ""
+                        var myAnswer = ""
+                        if let qId = questionId {
+                            let answers = (try? await answerRepository.getByDailyQuestion(dailyQuestionId: qId)) ?? []
+                            peerAnswer = answers.first { $0.userId == targetUserId }?.content ?? ""
+                            myAnswer = answers.first { $0.userId == currentUserId }?.content ?? ""
+                        }
+                        await send(.showPeerAnswer(memberName: memberName, questionText: questionText, peerAnswer: peerAnswer, myAnswer: myAnswer))
+                    }
 
                 case .home(.delegate(.navigateToPeerNotAnsweredNudge(let targetUser))):
                     let questionText = state.home.todayQuestion?.content ?? ""
@@ -107,6 +113,37 @@ extension MainTabFeature {
 
                 case .home(.delegate(.requestLogin)):
                     return .send(.delegate(.requestLogin))
+
+                case .home(.delegate(.groupSelected(let family))):
+                    state.currentUserMoodId = nil
+                    state.history.historyItems = [:]
+                    state.history.loadedMonths = []
+                    return .send(.delegate(.groupSelected(family)))
+
+                case .home(.delegate(.navigateToGroupSelect)):
+                    return .send(.delegate(.navigateToGroupSelect))
+
+                // MARK: - Profile Delegate
+
+                case .profile(.delegate(.profileUpdated(let user))):
+                    if let idx = state.home.familyMembers.firstIndex(where: { $0.id == user.id }) {
+                        state.home.familyMembers[idx] = user
+                    }
+                    state.home.currentUser = user
+                    state.currentUserMoodId = user.moodId
+                    state.previewMoodId = nil
+                    return .none
+
+                case .profile(.delegate(.colorPreview(let moodId))):
+                    state.previewMoodId = moodId
+                    return .none
+
+                case .profile(.delegate(.colorPreviewCancelled)):
+                    state.previewMoodId = nil
+                    return .none
+
+                case .profile(.delegate(.groupLeft)):
+                    return .send(.delegate(.navigateToGroupSelect))
 
                 // MARK: - QuestionSheet Delegate
 
@@ -242,6 +279,18 @@ extension MainTabFeature {
                         await send(.dismissWriteToast)
                     }
 
+                case .history(.delegate(.navigateToQuestionDetail(let question, _))):
+                    state.path.append(
+                        .questionDetail(
+                            QuestionDetailFeature.State(
+                                question: question,
+                                currentUser: state.home.currentUser,
+                                familyMembers: state.home.familyMembers
+                            )
+                        )
+                    )
+                    return .none
+
                 case .delegate(.navigateToQuestionDetail(let question)):
 
                     state.path.append(
@@ -256,24 +305,87 @@ extension MainTabFeature {
 
                     return .none
 
-                case .path(.element(id: _, action: .questionDetail(.delegate(.answerSubmitted(let answer))))):
+                case .path(.element(id: _, action: .questionDetail(.delegate(.answerSubmitted(_, let moodId))))):
                     state.home.hasAnsweredToday = true
                     if let userId = state.home.currentUser?.id {
                         state.home.memberAnswerStatus[userId] = true
                     }
+                    state.home.hearts += 1
+                    // moodId로 유저 객체 생성 (HomeView + 프로필 화면 즉시 반영용)
+                    let updatedUser: User? = {
+                        guard let moodId = moodId, let current = state.home.currentUser else { return nil }
+                        return User(
+                            id: current.id,
+                            email: current.email,
+                            name: current.name,
+                            profileImageURL: current.profileImageURL,
+                            role: current.role,
+                            hearts: current.hearts,
+                            moodId: moodId,
+                            createdAt: current.createdAt
+                        )
+                    }()
+                    if let updated = updatedUser {
+                        state.currentUserMoodId = updated.moodId
+                        state.home.currentUser = updated
+                        if let idx = state.home.familyMembers.firstIndex(where: { $0.id == updated.id }) {
+                            state.home.familyMembers[idx] = updated
+                        }
+                        state.profile.user = updated
+                    }
+                    state.history.historyItems = [:]
+                    state.history.loadedMonths = []
                     state.path.removeLast()
                     state.showAnswerSubmittedToast = true
-                    return .run { send in
-                        try await Task.sleep(nanoseconds: 3_000_000_000)
-                        await send(.dismissAnswerSubmittedToast)
-                    }
+                    state.showAnswerHeartPopup = true
+                    return .merge(
+                        .run { [userRepository] _ in
+                            guard let user = updatedUser else { return }
+                            _ = try? await userRepository.update(user)
+                        },
+                        .run { send in
+                            try await Task.sleep(nanoseconds: 3_000_000_000)
+                            await send(.dismissAnswerSubmittedToast)
+                        }
+                    )
 
-                case .path(.element(id: _, action: .questionDetail(.delegate(.answerEdited(_))))):
-                    state.showEditAnswerToast = true
-                    return .run { send in
-                        try await Task.sleep(nanoseconds: 3_000_000_000)
-                        await send(.dismissEditAnswerToast)
+                case .path(.element(id: _, action: .questionDetail(.delegate(.answerEdited(let answer, let moodId))))):
+                    state.history.historyItems = [:]
+                    state.history.loadedMonths = []
+                    // 오늘 질문 수정인 경우에만 색상 업데이트
+                    let isTodayQuestion = answer.dailyQuestionId == state.home.todayQuestion?.id
+                    let editUpdatedUser: User? = {
+                        guard isTodayQuestion, let moodId = moodId, let current = state.home.currentUser else { return nil }
+                        return User(
+                            id: current.id,
+                            email: current.email,
+                            name: current.name,
+                            profileImageURL: current.profileImageURL,
+                            role: current.role,
+                            hearts: current.hearts,
+                            moodId: moodId,
+                            createdAt: current.createdAt
+                        )
+                    }()
+                    if let updated = editUpdatedUser {
+                        state.currentUserMoodId = updated.moodId
+                        state.home.currentUser = updated
+                        if let idx = state.home.familyMembers.firstIndex(where: { $0.id == updated.id }) {
+                            state.home.familyMembers[idx] = updated
+                        }
+                        state.profile.user = updated
                     }
+                    state.showEditAnswerToast = true
+                    return .merge(
+                        .run { [userRepository] _ in
+                            guard let user = editUpdatedUser else { return }
+                            _ = try? await userRepository.update(user)
+                        },
+                        .run { send in
+                            try await Task.sleep(nanoseconds: 3_000_000_000)
+                            await send(.dismissEditAnswerToast)
+                        }
+                    )
 
                 case .path(.element(id: _, action: .questionDetail(.delegate(.closed)))):
                     state.path.removeLast()
@@ -299,6 +411,19 @@ extension MainTabFeature {
 
                 case .skipQuestionResponse(.failure(let error)):
                     state.home.appError = error
+                    return .none
+
+                case .dismissAnswerHeartPopup:
+                    state.showAnswerHeartPopup = false
+                    return .none
+
+                case .showPeerAnswer(let memberName, let questionText, let peerAnswer, let myAnswer):
+                    state.modal = .peerAnswer(PeerAnswerFeature.State(
+                        memberName: memberName,
+                        questionText: questionText,
+                        peerAnswer: peerAnswer,
+                        myAnswer: myAnswer
+                    ))
                     return .none
 
                 case .dismissRefreshToast:

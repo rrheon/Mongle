@@ -59,6 +59,12 @@ public struct SupportScreenView: View {
         } message: {
             Text("해당 멤버는 그룹에서 제외됩니다.")
         }
+        .sheet(isPresented: Binding(
+            get: { store.showTransferSheet },
+            set: { if !$0 { store.send(.dismissTransferSheet) } }
+        )) {
+            transferCreatorSheet
+        }
         .navigationTitle(store.screen.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -73,6 +79,75 @@ public struct SupportScreenView: View {
         }
         .navigationBarBackButtonHidden(true)
         .onAppear { store.send(.onAppear) }
+    }
+
+    private var transferCreatorSheet: some View {
+        NavigationStack {
+            VStack(spacing: MongleSpacing.md) {
+                Text("그룹을 나가기 전에 방장을 위임할 멤버를 선택해주세요.")
+                    .font(MongleFont.body2())
+                    .foregroundColor(MongleColor.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, MongleSpacing.md)
+
+                ScrollView {
+                    VStack(spacing: MongleSpacing.sm) {
+                        ForEach(Array(store.transferCandidates.enumerated()), id: \.element.id) { index, member in
+                            HStack(spacing: MongleSpacing.md) {
+                                MongleMonggle(color: monggleColor(for: index + 1), size: 40)
+
+                                Text(member.name)
+                                    .font(MongleFont.body2Bold())
+                                    .foregroundColor(MongleColor.textPrimary)
+
+                                Spacer()
+
+                                if store.selectedTransferMemberId == member.id {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(MongleColor.primary)
+                                }
+                            }
+                            .padding(MongleSpacing.md)
+                            .background(store.selectedTransferMemberId == member.id ? MongleColor.primaryLight : MongleColor.cardBackground)
+                            .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: MongleRadius.large)
+                                    .stroke(store.selectedTransferMemberId == member.id ? MongleColor.primary : MongleColor.borderWarm, lineWidth: 1)
+                            )
+                            .onTapGesture {
+                                store.send(.transferMemberSelected(member.id))
+                            }
+                        }
+                    }
+                    .padding(.horizontal, MongleSpacing.md)
+                }
+
+                Button {
+                    store.send(.confirmTransferAndLeave)
+                } label: {
+                    Text("위임하고 나가기")
+                        .font(MongleFont.body1Bold())
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(MongleSpacing.md)
+                        .background(store.selectedTransferMemberId != nil ? MongleColor.error : MongleColor.textHint)
+                        .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
+                }
+                .disabled(store.selectedTransferMemberId == nil)
+                .padding(.horizontal, MongleSpacing.md)
+                .padding(.bottom, MongleSpacing.md)
+            }
+            .navigationTitle("방장 위임")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("취소") {
+                        store.send(.dismissTransferSheet)
+                    }
+                    .foregroundColor(MongleColor.textPrimary)
+                }
+            }
+        }
     }
 
     private var heartsView: some View {

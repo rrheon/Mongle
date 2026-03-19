@@ -86,6 +86,11 @@ public struct SupportScreenFeature {
             return currentUserId == createdById
         }
 
+        // MARK: - 방장 위임
+        public var transferCandidates: [GroupMember] = []
+        public var showTransferSheet: Bool = false
+        public var selectedTransferMemberId: UUID? = nil
+
         public init(screen: Screen, familyId: UUID? = nil, currentUserId: UUID? = nil, familyCreatedById: UUID? = nil) {
             self.familyId = familyId
             self.currentUserId = currentUserId
@@ -130,15 +135,9 @@ public struct SupportScreenFeature {
                 calendar.date(from: DateComponents(year: 2025, month: 3, day: 22)) ?? baseDate: "calm",
                 calendar.date(from: DateComponents(year: 2025, month: 3, day: 27)) ?? baseDate: "loved",
             ]
-            self.groupName = "우리 가족 💛"
-            self.inviteCode = "MONG-4729"
-            self.members = [
-                .init(name: "Mom (나)", subtitle: "방장", colorHex: "4DB6AC", isOwner: true),
-                .init(name: "Lily", subtitle: "2025년 1월 가입", colorHex: "F06292"),
-                .init(name: "Ben", subtitle: "2025년 2월 가입", colorHex: "42A5F5"),
-                .init(name: "Dad", subtitle: "2025년 2월 가입", colorHex: "FFD54F"),
-                .init(name: "Alex", subtitle: "2025년 2월 가입", colorHex: "AB47BC"),
-            ]
+            self.groupName = ""
+            self.inviteCode = ""
+            self.members = []
             self.moodRecords = [
                 Domain.MoodRecord(id: UUID().uuidString, mood: "happy", note: nil, date: baseDate),
                 Domain.MoodRecord(id: UUID().uuidString, mood: "calm", note: nil, date: previousDay),
@@ -167,10 +166,15 @@ public struct SupportScreenFeature {
         case kickMemberSuccess
         case kickMemberFailure(AppError)
         case moodLoaded([Domain.MoodRecord])
+        case groupDataLoaded(MongleGroup, [User])
+        case transferMemberSelected(UUID)
+        case confirmTransferAndLeave
+        case dismissTransferSheet
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
             case close
+            case groupLeft
         }
     }
 
@@ -183,17 +187,41 @@ public struct SupportScreenFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                guard state.screen == .moodHistory else { return .none }
-                state.isMoodLoading = true
-                return .run { [moodRepository] send in
-                    let records = (try? await moodRepository.getRecentMoods(days: 14)) ?? []
-                    await send(.moodLoaded(records))
+                if state.screen == .moodHistory {
+                    state.isMoodLoading = true
+                    return .run { [moodRepository] send in
+                        let records = (try? await moodRepository.getRecentMoods(days: 14)) ?? []
+                        await send(.moodLoaded(records))
+                    }
                 }
+                if state.screen == .groupManagement {
+                    return .run { [familyRepository] send in
+                        if let result = try? await familyRepository.getMyFamily() {
+                            await send(.groupDataLoaded(result.0, result.1))
+                        }
+                    }
+                }
+                return .none
 
             case .moodLoaded(let records):
                 state.isMoodLoading = false
                 if !records.isEmpty {
                     state.moodRecords = records
+                }
+                return .none
+
+            case .groupDataLoaded(let group, let users):
+                state.familyCreatedById = group.createdBy
+                state.familyId = group.id
+                state.groupName = group.name
+                state.inviteCode = group.inviteCode
+                let formatter = DateFormatter()
+                formatter.locale = Locale(identifier: "ko_KR")
+                formatter.dateFormat = "yyyy년 M월"
+                state.members = users.map { user in
+                    let isOwner = user.id == state.familyCreatedById
+                    let subtitle = isOwner ? "방장" : formatter.string(from: user.createdAt) + " 가입"
+                    return State.GroupMember(id: user.id, name: user.name, subtitle: subtitle, colorHex: "", isOwner: isOwner)
                 }
                 return .none
 
@@ -240,14 +268,26 @@ public struct SupportScreenFeature {
                 return .none
 
             case .leaveGroupConfirmed:
-                guard let familyId = state.familyId, let userId = state.currentUserId else {
-                    return .send(.delegate(.close))
-                }
                 state.showLeaveConfirm = false
-                state.isLeaving = true
-                return .run { send in
-                    try? await familyRepository.removeMember(userId: userId, familyId: familyId)
-                    await send(.delegate(.close))
+                if state.isCurrentUserOwner {
+                    let candidates = state.members.filter { !$0.isOwner }
+                    if candidates.isEmpty {
+                        // 혼자인 경우 바로 나가기
+                        state.isLeaving = true
+                        return .run { [familyRepository] send in
+                            try? await familyRepository.leaveFamily()
+                            await send(.delegate(.groupLeft))
+                        }
+                    }
+                    state.transferCandidates = candidates
+                    state.showTransferSheet = true
+                    return .none
+                } else {
+                    state.isLeaving = true
+                    return .run { [familyRepository] send in
+                        try? await familyRepository.leaveFamily()
+                        await send(.delegate(.groupLeft))
+                    }
                 }
 
             case .kickMemberTapped(let member):
@@ -284,6 +324,25 @@ public struct SupportScreenFeature {
             case .kickMemberFailure:
                 state.kickTargetMember = nil
                 state.isKicking = false
+                return .none
+
+            case .transferMemberSelected(let id):
+                state.selectedTransferMemberId = id
+                return .none
+
+            case .confirmTransferAndLeave:
+                guard let newCreatorId = state.selectedTransferMemberId else { return .none }
+                state.showTransferSheet = false
+                state.isLeaving = true
+                return .run { [familyRepository] send in
+                    try? await familyRepository.transferCreator(newCreatorId: newCreatorId)
+                    try? await familyRepository.leaveFamily()
+                    await send(.delegate(.groupLeft))
+                }
+
+            case .dismissTransferSheet:
+                state.showTransferSheet = false
+                state.selectedTransferMemberId = nil
                 return .none
 
             case .delegate:

@@ -53,6 +53,9 @@ public struct ProfileEditFeature {
         public enum Delegate: Sendable, Equatable {
             case profileUpdated(User)
             case logout
+            case groupLeft
+            case colorPreview(String)
+            case colorPreviewCancelled
         }
     }
 
@@ -124,7 +127,10 @@ public struct ProfileEditFeature {
 
             case .mongleCardEdit(.presented(.delegate(.cancelled))):
                 state.mongleCardEdit = nil
-                return .none
+                return .send(.delegate(.colorPreviewCancelled))
+
+            case .mongleCardEdit(.presented(.delegate(.colorPreview(let moodId)))):
+                return .send(.delegate(.colorPreview(moodId)))
 
             case .mongleCardEdit:
                 return .none
@@ -132,6 +138,10 @@ public struct ProfileEditFeature {
             case .supportScreen(.presented(.delegate(.close))):
                 state.supportScreen = nil
                 return .none
+
+            case .supportScreen(.presented(.delegate(.groupLeft))):
+                state.supportScreen = nil
+                return .send(.delegate(.groupLeft))
 
             case .supportScreen:
                 return .none
