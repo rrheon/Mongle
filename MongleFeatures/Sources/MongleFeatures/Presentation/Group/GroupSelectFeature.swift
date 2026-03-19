@@ -42,6 +42,10 @@ public struct GroupSelectFeature {
         public var isLoadingGroups: Bool = false
         public var showMaxGroupsAlert: Bool = false
 
+        // MARK: - 참여 에러 토스트
+        public var showAlreadyMemberToast: Bool = false
+        public var showInvalidCodeToast: Bool = false
+
         // MARK: - 그룹 나가기
         public var showGroupLeftToast: Bool = false
         public var currentUserId: UUID? = nil
@@ -102,6 +106,10 @@ public struct GroupSelectFeature {
         case confirmTransferAndLeave
         case dismissTransferSheet
         case groupLeftToastDismissed
+        case showJoinAlreadyMemberToast
+        case showJoinInvalidCodeToast
+        case alreadyMemberToastDismissed
+        case invalidCodeToastDismissed
 
         case delegate(Delegate)
 
@@ -144,17 +152,17 @@ public struct GroupSelectFeature {
                 return .none
 
             case .groupNameChanged(let name):
-                state.groupName = name
+                state.groupName = String(name.prefix(15))
                 state.groupNameError = false
                 return .none
 
             case .nicknameChanged(let name):
-                state.nickname = name
+                state.nickname = String(name.prefix(10))
                 state.nicknameError = false
                 return .none
 
             case .joinCodeChanged(let code):
-                state.joinCode = code
+                state.joinCode = String(code.prefix(20))
                 state.joinCodeError = false
                 return .none
 
@@ -312,6 +320,24 @@ public struct GroupSelectFeature {
 
             case .groupLeftToastDismissed:
                 state.showGroupLeftToast = false
+                return .none
+
+            case .showJoinAlreadyMemberToast:
+                state.isLoading = false
+                state.showAlreadyMemberToast = true
+                return .none
+
+            case .showJoinInvalidCodeToast:
+                state.isLoading = false
+                state.showInvalidCodeToast = true
+                return .none
+
+            case .alreadyMemberToastDismissed:
+                state.showAlreadyMemberToast = false
+                return .none
+
+            case .invalidCodeToastDismissed:
+                state.showInvalidCodeToast = false
                 return .none
 
             case .delegate:

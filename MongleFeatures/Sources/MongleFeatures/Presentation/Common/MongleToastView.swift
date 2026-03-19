@@ -11,6 +11,8 @@ public enum ToastType {
     case editAnswer        // 답변수정하기 완료
     case answerSubmitted   // 답변 작성 완료
     case groupLeft         // 그룹 나가기 완료
+    case alreadyMember     // 이미 속해있는 그룹
+    case invalidInviteCode // 유효하지 않은 초대코드
 
     var icon: String {
         switch self {
@@ -20,6 +22,8 @@ public enum ToastType {
         case .editAnswer: return "checkmark.circle.fill"
         case .answerSubmitted: return "paperplane.fill"
         case .groupLeft: return "checkmark.circle.fill"
+        case .alreadyMember: return "person.crop.circle.badge.exclamationmark.fill"
+        case .invalidInviteCode: return "key.slash.fill"
         }
     }
 
@@ -31,6 +35,8 @@ public enum ToastType {
         case .editAnswer: return "답변을 수정했어요! ✅"
         case .answerSubmitted: return "마음을 남겼어요! 🌿"
         case .groupLeft: return "그룹에서 나왔어요"
+        case .alreadyMember: return "이미 속해있는 그룹이에요"
+        case .invalidInviteCode: return "초대코드를 다시 확인해주세요"
         }
     }
 
@@ -42,6 +48,8 @@ public enum ToastType {
         case .editAnswer: return MongleColor.primary
         case .answerSubmitted: return MongleColor.primary
         case .groupLeft: return MongleColor.primary
+        case .alreadyMember: return MongleColor.error
+        case .invalidInviteCode: return MongleColor.error
         }
     }
 }

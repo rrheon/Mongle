@@ -122,7 +122,11 @@ public extension AppError {
         case .timeout:              return .timeout
         case .unauthorized:         return .unauthorized
         case .notFound:             return .notFound
-        case .serverError(let code, _): return .serverError(statusCode: code)
+        case .serverError(let code, let message):
+            if code < 500, let msg = message, !msg.isEmpty {
+                return .domain(msg)
+            }
+            return .serverError(statusCode: code)
         case .networkError(let msg):  return .network(msg)
         case .decodingError:        return .decoding
         case .invalidURL, .invalidResponse, .unknown:

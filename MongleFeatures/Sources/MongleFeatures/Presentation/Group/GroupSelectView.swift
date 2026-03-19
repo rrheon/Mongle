@@ -45,25 +45,20 @@ public struct GroupSelectView: View {
         .font(MongleFont.captionBold())
         .foregroundColor(MongleColor.textSecondary)
 
-      HStack(spacing: MongleSpacing.sm) {
+      HStack(spacing: MongleSpacing.md) {
         ForEach(Self.colorOptions, id: \.id) { option in
           let isSelected = store.selectedColorId == option.id
           Button {
             store.send(.colorChanged(option.id))
           } label: {
-            Circle()
-              .fill(option.color)
-              .frame(width: 40, height: 40)
-              .overlay(
+            MongleMonggle(color: option.color, size: 48)
+              .padding(4)
+              .background(
                 Circle()
-                  .stroke(Color.white, lineWidth: isSelected ? 3 : 0)
+                  .stroke(isSelected ? option.color : Color.clear, lineWidth: 3)
+                  .frame(width: 60, height: 60)
               )
-              .overlay(
-                Circle()
-                  .stroke(option.color, lineWidth: isSelected ? 2 : 0)
-                  .padding(-2)
-              )
-              .scaleEffect(isSelected ? 1.15 : 1.0)
+              .scaleEffect(isSelected ? 1.1 : 1.0)
               .animation(.easeInOut(duration: 0.15), value: isSelected)
           }
           .buttonStyle(.plain)
@@ -149,6 +144,32 @@ public struct GroupSelectView: View {
       guard store.showGroupLeftToast else { return }
       try? await Task.sleep(for: .seconds(2))
       store.send(.groupLeftToastDismissed)
+    }
+    .overlay(alignment: .bottom) {
+      if store.showAlreadyMemberToast {
+        MongleToastView(type: .alreadyMember)
+          .transition(.move(edge: .bottom).combined(with: .opacity))
+          .padding(.bottom, MongleSpacing.lg)
+      }
+    }
+    .animation(.easeInOut(duration: 0.3), value: store.showAlreadyMemberToast)
+    .task(id: store.showAlreadyMemberToast) {
+      guard store.showAlreadyMemberToast else { return }
+      try? await Task.sleep(for: .seconds(2))
+      store.send(.alreadyMemberToastDismissed)
+    }
+    .overlay(alignment: .bottom) {
+      if store.showInvalidCodeToast {
+        MongleToastView(type: .invalidInviteCode)
+          .transition(.move(edge: .bottom).combined(with: .opacity))
+          .padding(.bottom, MongleSpacing.lg)
+      }
+    }
+    .animation(.easeInOut(duration: 0.3), value: store.showInvalidCodeToast)
+    .task(id: store.showInvalidCodeToast) {
+      guard store.showInvalidCodeToast else { return }
+      try? await Task.sleep(for: .seconds(2))
+      store.send(.invalidCodeToastDismissed)
     }
   }
 
@@ -246,17 +267,20 @@ public struct GroupSelectView: View {
       .background(Color.white.ignoresSafeArea(edges: .top))
     } else {
       HStack(alignment: .center) {
-        Button {
-          switch store.step {
-          case .createGroup: store.send(.createBackTapped)
-          case .groupCreated: store.send(.createBackTapped)
-          case .joinWithCode: store.send(.joinBackTapped)
-          default: break
+        if store.step != .groupCreated {
+          Button {
+            switch store.step {
+            case .createGroup: store.send(.createBackTapped)
+            case .joinWithCode: store.send(.joinBackTapped)
+            default: break
+            }
+          } label: {
+            Image(systemName: "chevron.left")
+              .font(.system(size: 17, weight: .medium))
+              .foregroundColor(MongleColor.textPrimary)
           }
-        } label: {
-          Image(systemName: "chevron.left")
-            .font(.system(size: 17, weight: .medium))
-            .foregroundColor(MongleColor.textPrimary)
+        } else {
+          Color.clear.frame(width: 28, height: 28)
         }
         Spacer()
         Text(navigationTitle)

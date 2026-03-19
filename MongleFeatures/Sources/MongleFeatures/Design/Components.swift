@@ -1107,7 +1107,7 @@ private struct RoundedCorner: Shape {
 public struct MongleCharacter: Identifiable {
     public let id = UUID()
     public let name: String
-    public let color: Color
+    public var color: Color
     public var hasAnswered: Bool
     public var position: CGPoint
     public var targetPosition: CGPoint
@@ -1304,6 +1304,24 @@ public struct MongleSceneView: View {
                 guard newSize.width > 0, newSize.height > 0 else { return }
                 if mongles.isEmpty { initMongles(size: newSize) }
                 if timer == nil { startTimer(size: newSize) }
+            }
+            .onChange(of: members.map { $0.name }) { _, _ in
+                guard geo.size.width > 0, geo.size.height > 0 else { return }
+                initMongles(size: geo.size)
+            }
+            .onChange(of: members.map { $0.hasAnswered }) { _, _ in
+                for i in mongles.indices {
+                    if let member = members.first(where: { $0.name == mongles[i].name }) {
+                        mongles[i].hasAnswered = member.hasAnswered
+                    }
+                }
+            }
+            .onChange(of: members.map { $0.color }) { _, _ in
+                for i in mongles.indices {
+                    if let member = members.first(where: { $0.name == mongles[i].name }) {
+                        mongles[i].color = member.color
+                    }
+                }
             }
             .onDisappear {
                 timer?.invalidate()
