@@ -19,7 +19,68 @@ public struct GroupSelectView: View {
     MongleColor.monggleOrange
   ]
 
+  private static let colorOptions: [(id: String, color: Color, label: String)] = [
+    ("calm",  MongleColor.monggleGreen,  "초록"),
+    ("happy", MongleColor.monggleYellow, "노랑"),
+    ("loved", MongleColor.mongglePink,   "분홍"),
+    ("sad",   MongleColor.monggleBlue,   "파랑"),
+    ("tired", MongleColor.monggleOrange, "주황"),
+  ]
+
+  private static func monggleColor(for moodId: String) -> Color {
+    switch moodId {
+    case "happy":  return MongleColor.monggleYellow
+    case "calm":   return MongleColor.monggleGreen
+    case "loved":  return MongleColor.mongglePink
+    case "sad":    return MongleColor.monggleBlue
+    case "tired":  return MongleColor.monggleOrange
+    default:       return MongleColor.mongglePink
+    }
+  }
+
+  @ViewBuilder
+  private func monggleColorPicker() -> some View {
+    VStack(alignment: .leading, spacing: MongleSpacing.xs) {
+      Text("내 몽글 색상")
+        .font(MongleFont.captionBold())
+        .foregroundColor(MongleColor.textSecondary)
+
+      HStack(spacing: MongleSpacing.sm) {
+        ForEach(Self.colorOptions, id: \.id) { option in
+          let isSelected = store.selectedColorId == option.id
+          Button {
+            store.send(.colorChanged(option.id))
+          } label: {
+            Circle()
+              .fill(option.color)
+              .frame(width: 40, height: 40)
+              .overlay(
+                Circle()
+                  .stroke(Color.white, lineWidth: isSelected ? 3 : 0)
+              )
+              .overlay(
+                Circle()
+                  .stroke(option.color, lineWidth: isSelected ? 2 : 0)
+                  .padding(-2)
+              )
+              .scaleEffect(isSelected ? 1.15 : 1.0)
+              .animation(.easeInOut(duration: 0.15), value: isSelected)
+          }
+          .buttonStyle(.plain)
+        }
+        Spacer()
+      }
+
+      Text("다른 멤버에게 보여지는 몽글 캐릭터 색상이에요")
+        .font(MongleFont.caption())
+        .foregroundColor(MongleColor.textHint)
+    }
+  }
+
   private func memberColors(for group: MongleGroup) -> [Color] {
+    if !group.memberMoodIds.isEmpty {
+      return group.memberMoodIds.map { Self.monggleColor(for: $0) }
+    }
     let count = max(group.memberIds.count, 1)
     return (0..<count).map { Self.monggleColors[$0 % Self.monggleColors.count] }
   }
@@ -29,7 +90,7 @@ public struct GroupSelectView: View {
   }
 
   public var body: some View {
-    NavigationStack {
+    NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
       VStack(spacing: 0) {
         customHeader
 
@@ -61,6 +122,12 @@ public struct GroupSelectView: View {
         onDismiss: { store.send(.dismissError) },
         onRetry: store.appError?.isRetryable == true ? { store.send(store.step == .createGroup ? .createNextTapped : .joinTapped) } : nil
       )
+    } destination: { store in
+      switch store.case {
+      case let .notification(notificationStore):
+        NotificationView(store: notificationStore)
+          .navigationBarBackButtonHidden(true)
+      }
     }
     .sheet(isPresented: Binding(
       get: { store.showActionSheet },
@@ -69,6 +136,19 @@ public struct GroupSelectView: View {
       actionSheetContent
         .presentationDetents([.height(240)])
         .presentationDragIndicator(.visible)
+    }
+    .overlay(alignment: .bottom) {
+      if store.showGroupLeftToast {
+        MongleToastView(type: .groupLeft)
+          .transition(.move(edge: .bottom).combined(with: .opacity))
+          .padding(.bottom, MongleSpacing.lg)
+      }
+    }
+    .animation(.easeInOut(duration: 0.3), value: store.showGroupLeftToast)
+    .task(id: store.showGroupLeftToast) {
+      guard store.showGroupLeftToast else { return }
+      try? await Task.sleep(for: .seconds(2))
+      store.send(.groupLeftToastDismissed)
     }
   }
 
@@ -222,10 +302,15 @@ public struct GroupSelectView: View {
             MongleCardGroup(
               groupName: group.name,
               memberColors: memberColors(for: group),
-              streakDays: 0
+              streakDays: 0,
+              onTap: { store.send(.groupTapped(group)) }
             )
-            .onTapGesture {
-              store.send(.groupTapped(group))
+            .contextMenu {
+              Button(role: .destructive) {
+                store.send(.leaveGroupTapped(group))
+              } label: {
+                Label("그룹 나가기", systemImage: "rectangle.portrait.and.arrow.right")
+              }
             }
           }
         }
@@ -241,6 +326,98 @@ public struct GroupSelectView: View {
     } message: {
       Text("그룹은 최대 3개까지 참여할 수 있어요.")
     }
+    .alert("그룹 나가기", isPresented: Binding(
+      get: { store.showLeaveConfirmation },
+      set: { if !$0 { store.send(.cancelLeaveConfirmation) } }
+    )) {
+      Button("나가기", role: .destructive) { store.send(.confirmLeave) }
+      Button("취소", role: .cancel) { store.send(.cancelLeaveConfirmation) }
+    } message: {
+      Text("\(store.groupToLeave?.name ?? "그룹")에서 나가시겠어요?\n그룹 관련 데이터가 삭제되지만 작성한 답변은 유지됩니다.")
+    }
+    .sheet(isPresented: Binding(
+      get: { store.showTransferSheet },
+      set: { if !$0 { store.send(.dismissTransferSheet) } }
+    )) {
+      transferCreatorSheet
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
+    }
+  }
+
+  // MARK: - 방장 위임 시트
+
+  private var transferCreatorSheet: some View {
+    VStack(alignment: .leading, spacing: 0) {
+      VStack(alignment: .leading, spacing: MongleSpacing.xs) {
+        Text("방장 위임")
+          .font(MongleFont.body1Bold())
+          .foregroundColor(MongleColor.textPrimary)
+        Text("그룹을 나가기 전에 방장을 위임할 멤버를 선택해주세요.")
+          .font(MongleFont.body2())
+          .foregroundColor(MongleColor.textSecondary)
+          .lineSpacing(3)
+      }
+      .padding(.horizontal, MongleSpacing.lg)
+      .padding(.top, MongleSpacing.lg)
+      .padding(.bottom, MongleSpacing.md)
+
+      ScrollView(showsIndicators: false) {
+        VStack(spacing: 0) {
+          ForEach(store.transferCandidates, id: \.id) { member in
+            let isSelected = store.selectedTransferMemberId == member.id
+            Button {
+              store.send(.transferMemberSelected(member.id))
+            } label: {
+              HStack(spacing: MongleSpacing.md) {
+                Circle()
+                  .fill(MongleColor.primaryLight)
+                  .frame(width: 40, height: 40)
+                  .overlay(
+                    Text(String(member.name.prefix(1)))
+                      .font(MongleFont.body2Bold())
+                      .foregroundColor(MongleColor.primary)
+                  )
+
+                Text(member.name)
+                  .font(MongleFont.body2())
+                  .foregroundColor(MongleColor.textPrimary)
+
+                Spacer()
+
+                if isSelected {
+                  Image(systemName: "checkmark.circle.fill")
+                    .foregroundColor(MongleColor.primary)
+                }
+              }
+              .padding(.horizontal, MongleSpacing.lg)
+              .padding(.vertical, MongleSpacing.md)
+              .background(isSelected ? MongleColor.primaryLight.opacity(0.3) : Color.clear)
+              .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            Divider().padding(.leading, MongleSpacing.lg + 40 + MongleSpacing.md)
+          }
+        }
+      }
+
+      VStack(spacing: MongleSpacing.sm) {
+        MongleButtonPrimary("위임하고 나가기") {
+          store.send(.confirmTransferAndLeave)
+        }
+        .disabled(store.selectedTransferMemberId == nil)
+        .opacity(store.selectedTransferMemberId == nil ? 0.5 : 1)
+
+        Button("취소") {
+          store.send(.dismissTransferSheet)
+        }
+        .font(MongleFont.body2())
+        .foregroundColor(MongleColor.textSecondary)
+      }
+      .padding(.horizontal, MongleSpacing.md)
+      .padding(.vertical, MongleSpacing.md)
+    }
+    .background(MongleColor.background)
   }
 
   private var newSpaceButton: some View {
@@ -442,6 +619,9 @@ public struct GroupSelectView: View {
             .foregroundColor(MongleColor.textHint)
         }
       }
+
+      // 색상 선택
+      monggleColorPicker()
     }
   }
 
@@ -634,6 +814,9 @@ public struct GroupSelectView: View {
             .foregroundColor(MongleColor.textHint)
         }
       }
+
+      // 색상 선택
+      monggleColorPicker()
     }
   }
 

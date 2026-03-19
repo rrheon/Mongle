@@ -4,6 +4,14 @@ import Domain
 
 @Reducer
 public struct GroupSelectFeature {
+
+    // MARK: - Path (Push Navigation)
+
+    @Reducer(state: .equatable, action: .equatable)
+    public enum Path {
+        case notification(NotificationFeature)
+    }
+
     @ObservableState
     public struct State: Equatable {
         public enum Step: Equatable, Sendable {
@@ -14,11 +22,13 @@ public struct GroupSelectFeature {
         }
 
         public var step: Step = .select
+        public var path = StackState<Path.State>()
         public var showActionSheet: Bool = false
         public var groupName: String = ""
         public var nickname: String = ""
         public var inviteCode: String = ""
         public var joinCode: String = ""
+        public var selectedColorId: String = "loved"
 
         public var groupNameError: Bool = false
         public var nicknameError: Bool = false
@@ -31,6 +41,16 @@ public struct GroupSelectFeature {
         public var groups: [MongleGroup] = []
         public var isLoadingGroups: Bool = false
         public var showMaxGroupsAlert: Bool = false
+
+        // MARK: - 그룹 나가기
+        public var showGroupLeftToast: Bool = false
+        public var currentUserId: UUID? = nil
+        public var groupToLeave: MongleGroup? = nil
+        public var showLeaveConfirmation: Bool = false
+        public var transferCandidates: [User] = []
+        public var showTransferSheet: Bool = false
+        public var selectedTransferMemberId: UUID? = nil
+        public var isProcessingLeave: Bool = false
 
         public init(
             step: Step = .select,
@@ -56,6 +76,7 @@ public struct GroupSelectFeature {
         case groupNameChanged(String)
         case nicknameChanged(String)
         case joinCodeChanged(String)
+        case colorChanged(String)
         case createNextTapped
         case createBackTapped
         case completeTapped
@@ -70,14 +91,28 @@ public struct GroupSelectFeature {
         case loadGroupsResponse(Result<[MongleGroup], Error>)
         case groupTapped(MongleGroup)
         case dismissMaxGroupsAlert
+        case path(StackActionOf<Path>)
+
+        // MARK: - 그룹 나가기
+        case leaveGroupTapped(MongleGroup)
+        case confirmLeave
+        case cancelLeaveConfirmation
+        case setTransferCandidates([User])
+        case transferMemberSelected(UUID)
+        case confirmTransferAndLeave
+        case dismissTransferSheet
+        case groupLeftToastDismissed
+
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
             case completed
-            case notificationTapped
-            case createFamily(name: String, nickname: String)
-            case joinFamily(inviteCode: String, nickname: String)
+            case createFamily(name: String, nickname: String, colorId: String)
+            case joinFamily(inviteCode: String, nickname: String, colorId: String)
             case groupSelected(MongleGroup)
+            case leaveGroup(MongleGroup)
+            case transferCreatorAndLeave(newCreatorId: UUID, group: MongleGroup)
+            case requestMembersForGroup(MongleGroup)
         }
     }
 
@@ -105,7 +140,8 @@ public struct GroupSelectFeature {
                 return .none
 
             case .notificationTapped:
-                return .send(.delegate(.notificationTapped))
+                state.path.append(.notification(NotificationFeature.State()))
+                return .none
 
             case .groupNameChanged(let name):
                 state.groupName = name
@@ -122,6 +158,10 @@ public struct GroupSelectFeature {
                 state.joinCodeError = false
                 return .none
 
+            case .colorChanged(let colorId):
+                state.selectedColorId = colorId
+                return .none
+
             case .createNextTapped:
                 guard state.groups.count < 3 else {
                     state.showMaxGroupsAlert = true
@@ -133,12 +173,13 @@ public struct GroupSelectFeature {
                 state.nicknameError = nickEmpty
                 guard !nameEmpty && !nickEmpty else { return .none }
                 state.isLoading = true
-                return .send(.delegate(.createFamily(name: state.groupName, nickname: state.nickname)))
+                return .send(.delegate(.createFamily(name: state.groupName, nickname: state.nickname, colorId: state.selectedColorId)))
 
             case .createBackTapped:
                 state.step = .select
                 state.groupName = ""
                 state.nickname = ""
+                state.selectedColorId = "loved"
                 state.groupNameError = false
                 state.nicknameError = false
                 state.errorMessage = nil
@@ -151,6 +192,7 @@ public struct GroupSelectFeature {
                 state.step = .select
                 state.joinCode = ""
                 state.nickname = ""
+                state.selectedColorId = "loved"
                 state.joinCodeError = false
                 state.nicknameError = false
                 state.errorMessage = nil
@@ -167,7 +209,7 @@ public struct GroupSelectFeature {
                 state.nicknameError = nickEmpty
                 guard !codeEmpty && !nickEmpty else { return .none }
                 state.isLoading = true
-                return .send(.delegate(.joinFamily(inviteCode: state.joinCode, nickname: state.nickname)))
+                return .send(.delegate(.joinFamily(inviteCode: state.joinCode, nickname: state.nickname, colorId: state.selectedColorId)))
 
             case .setLoading(let loading):
                 state.isLoading = loading
@@ -215,9 +257,67 @@ public struct GroupSelectFeature {
                 state.showMaxGroupsAlert = false
                 return .none
 
+            case .path(.element(id: _, action: .notification(.delegate(.close)))):
+                state.path.removeLast()
+                return .none
+
+            case .path:
+                return .none
+
+            // MARK: - 그룹 나가기
+
+            case .leaveGroupTapped(let group):
+                state.groupToLeave = group
+                if let userId = state.currentUserId, group.createdBy == userId {
+                    // 방장: 먼저 위임할 멤버 목록 요청
+                    return .send(.delegate(.requestMembersForGroup(group)))
+                } else {
+                    // 일반 멤버: 확인 알림 표시
+                    state.showLeaveConfirmation = true
+                    return .none
+                }
+
+            case .confirmLeave:
+                state.showLeaveConfirmation = false
+                guard let group = state.groupToLeave else { return .none }
+                state.isProcessingLeave = true
+                return .send(.delegate(.leaveGroup(group)))
+
+            case .cancelLeaveConfirmation:
+                state.showLeaveConfirmation = false
+                state.groupToLeave = nil
+                return .none
+
+            case .setTransferCandidates(let users):
+                state.transferCandidates = users.filter { $0.id != state.currentUserId }
+                state.showTransferSheet = true
+                return .none
+
+            case .transferMemberSelected(let id):
+                state.selectedTransferMemberId = id
+                return .none
+
+            case .confirmTransferAndLeave:
+                guard let group = state.groupToLeave,
+                      let newCreatorId = state.selectedTransferMemberId else { return .none }
+                state.showTransferSheet = false
+                state.isProcessingLeave = true
+                return .send(.delegate(.transferCreatorAndLeave(newCreatorId: newCreatorId, group: group)))
+
+            case .dismissTransferSheet:
+                state.showTransferSheet = false
+                state.groupToLeave = nil
+                state.selectedTransferMemberId = nil
+                return .none
+
+            case .groupLeftToastDismissed:
+                state.showGroupLeftToast = false
+                return .none
+
             case .delegate:
                 return .none
             }
         }
+        .forEach(\.path, action: \.path)
     }
 }

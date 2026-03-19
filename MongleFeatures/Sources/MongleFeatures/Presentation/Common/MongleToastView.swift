@@ -10,6 +10,7 @@ public enum ToastType {
     case nudge             // 재촉하기 완료
     case editAnswer        // 답변수정하기 완료
     case answerSubmitted   // 답변 작성 완료
+    case groupLeft         // 그룹 나가기 완료
 
     var icon: String {
         switch self {
@@ -18,6 +19,7 @@ public enum ToastType {
         case .nudge: return "heart.fill"
         case .editAnswer: return "checkmark.circle.fill"
         case .answerSubmitted: return "paperplane.fill"
+        case .groupLeft: return "checkmark.circle.fill"
         }
     }
 
@@ -28,6 +30,7 @@ public enum ToastType {
         case .nudge: return "재촉 메시지를 보냈어요! 💌"
         case .editAnswer: return "답변을 수정했어요! ✅"
         case .answerSubmitted: return "마음을 남겼어요! 🌿"
+        case .groupLeft: return "그룹에서 나왔어요"
         }
     }
 
@@ -38,6 +41,7 @@ public enum ToastType {
         case .nudge: return MongleColor.heartRed
         case .editAnswer: return MongleColor.primary
         case .answerSubmitted: return MongleColor.primary
+        case .groupLeft: return MongleColor.primary
         }
     }
 }
