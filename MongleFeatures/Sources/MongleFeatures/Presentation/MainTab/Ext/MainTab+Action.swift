@@ -44,6 +44,12 @@ extension MainTabFeature {
         case dismissEditAnswerToast
         case dismissAnswerSubmittedToast
 
+        // MARK: Answer Heart Popup
+        case dismissAnswerHeartPopup
+
+        // MARK: Peer Answer
+        case showPeerAnswer(memberName: String, questionText: String, peerAnswer: String, myAnswer: String)
+
         // MARK: Auth
         case logout
 
@@ -54,6 +60,8 @@ extension MainTabFeature {
             case navigateToQuestionDetail(Question)
             case requestRefresh
             case requestLogin
+            case groupSelected(MongleGroup)
+            case navigateToGroupSelect(fromGroupLeft: Bool = false)
         }
     }
 }

@@ -17,6 +17,7 @@ extension RootFeature {
         public let hasAnsweredToday: Bool
         public let memberAnswerStatus: [UUID: Bool]
         public let streakDays: Int
+        public let allFamilies: [MongleGroup]
 
         public init(
             user: User?,
@@ -25,7 +26,8 @@ extension RootFeature {
             familyMembers: [User],
             hasAnsweredToday: Bool = false,
             memberAnswerStatus: [UUID: Bool] = [:],
-            streakDays: Int = 0
+            streakDays: Int = 0,
+            allFamilies: [MongleGroup] = []
         ) {
             self.user = user
             self.question = question
@@ -34,6 +36,7 @@ extension RootFeature {
             self.hasAnsweredToday = hasAnsweredToday
             self.memberAnswerStatus = memberAnswerStatus
             self.streakDays = streakDays
+            self.allFamilies = allFamilies
         }
     }
 

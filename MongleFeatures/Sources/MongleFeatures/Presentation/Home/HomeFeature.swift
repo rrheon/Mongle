@@ -29,6 +29,7 @@ public struct HomeFeature {
         public var memberAnswerStatus: [UUID: Bool] = [:]
         public var showGuestLoginPrompt: Bool = false
         public var streakDays: Int = 0
+        public var allFamilies: [MongleGroup] = []
 
         public var isGuest: Bool { currentUser == nil }
 
@@ -45,7 +46,8 @@ public struct HomeFeature {
             hearts: Int = 5,
             familyAnswerCount: Int = 0,
             memberAnswerStatus: [UUID: Bool] = [:],
-            streakDays: Int = 0
+            streakDays: Int = 0,
+            allFamilies: [MongleGroup] = []
         ) {
             self.todayQuestion = todayQuestion
             self.family = family
@@ -60,6 +62,7 @@ public struct HomeFeature {
             self.familyAnswerCount = familyAnswerCount
             self.memberAnswerStatus = memberAnswerStatus
             self.streakDays = streakDays
+            self.allFamilies = allFamilies
         }
     }
 
@@ -78,6 +81,8 @@ public struct HomeFeature {
         case dismissError
         case guestLoginTapped
         case guestLoginDismissed
+        case groupSelected(MongleGroup)
+        case navigateToGroupSelectTapped
 
         // MARK: - Internal Actions
         case setLoading(Bool)
@@ -99,6 +104,8 @@ public struct HomeFeature {
             case showNudgeUnavailablePopup(String)
             case requestRefresh
             case requestLogin
+            case groupSelected(MongleGroup)
+            case navigateToGroupSelect
         }
     }
 
@@ -147,6 +154,10 @@ public struct HomeFeature {
                 }
 
             case .peerAnswerTapped(let memberName):
+                if state.isGuest {
+                    state.showGuestLoginPrompt = true
+                    return .none
+                }
                 return .send(.delegate(.navigateToPeerAnswerSelfAnswered(memberName)))
 
             case .answerRequiredTapped(let memberName):
@@ -189,6 +200,20 @@ public struct HomeFeature {
             case .guestLoginDismissed:
                 state.showGuestLoginPrompt = false
                 return .none
+
+            case .groupSelected(let family):
+                if state.isGuest {
+                    state.showGuestLoginPrompt = true
+                    return .none
+                }
+                return .send(.delegate(.groupSelected(family)))
+
+            case .navigateToGroupSelectTapped:
+                if state.isGuest {
+                    state.showGuestLoginPrompt = true
+                    return .none
+                }
+                return .send(.delegate(.navigateToGroupSelect))
 
             // MARK: - Internal Actions
             case .setLoading(let isLoading):

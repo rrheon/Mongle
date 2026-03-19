@@ -158,14 +158,16 @@ struct MainTabView: View {
             hasCurrentUserAnswered: store.home.hasAnsweredToday,
             members: memberData,
             currentUserName: store.home.currentUser?.name,
-            onQuestionTap: { store.send(.home(.questionTapped)) },
-            onNotificationTap: { store.send(.home(.notificationTapped)) },
-            onHeartsTap: { store.send(.home(.heartsTapped)) },
-            onPeerAnswerTap: { store.send(.home(.peerAnswerTapped($0))) },
-            onPeerNudgeTap: { store.send(.home(.peerNudgeTapped($0))) },
-            onMyMonggleTap: { store.send(.home(.myMonggleTapped)) },
-            onGroupSelected: { store.send(.home(.groupSelected($0))) },
-            onNavigateToGroupSelect: { store.send(.home(.navigateToGroupSelectTapped)) }
+            actions: HomeViewActions(
+                onQuestionTap: { store.send(.home(.questionTapped)) },
+                onNotificationTap: { store.send(.home(.notificationTapped)) },
+                onHeartsTap: { store.send(.home(.heartsTapped)) },
+                onPeerAnswerTap: { store.send(.home(.peerAnswerTapped($0))) },
+                onPeerNudgeTap: { store.send(.home(.peerNudgeTapped($0))) },
+                onMyMonggleTap: { store.send(.home(.myMonggleTapped)) },
+                onGroupSelected: { store.send(.home(.groupSelected($0))) },
+                onNavigateToGroupSelect: { store.send(.home(.navigateToGroupSelectTapped)) }
+            )
         )
         .mongleErrorBanner(
             error: store.home.appError,

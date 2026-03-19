@@ -121,9 +121,12 @@ extension MainTabFeature {
                     return .send(.delegate(.groupSelected(family)))
 
                 case .home(.delegate(.navigateToGroupSelect)):
-                    return .send(.delegate(.navigateToGroupSelect))
+                  return .send(.delegate(.navigateToGroupSelect()))
 
                 // MARK: - Profile Delegate
+
+                case .profile(.delegate(.requestLogin)):
+                    return .send(.delegate(.requestLogin))
 
                 case .profile(.delegate(.profileUpdated(let user))):
                     if let idx = state.home.familyMembers.firstIndex(where: { $0.id == user.id }) {
@@ -143,7 +146,7 @@ extension MainTabFeature {
                     return .none
 
                 case .profile(.delegate(.groupLeft)):
-                    return .send(.delegate(.navigateToGroupSelect))
+                    return .send(.delegate(.navigateToGroupSelect(fromGroupLeft: true)))
 
                 // MARK: - QuestionSheet Delegate
 

@@ -197,7 +197,9 @@ extension RootFeature {
                     state.login = LoginFeature.State()
                     state.groupSelect = GroupSelectFeature.State()
                     state.appState = .unauthenticated
-                    return .none
+                    return .run { [authRepository] _ in
+                        try? await authRepository.logout()
+                    }
 
                 // MARK: MainTab Delegate
                 case .mainTab(.delegate(.navigateToQuestionDetail)):
@@ -213,13 +215,13 @@ extension RootFeature {
                 case .mainTab(.delegate(.groupSelected(let family))):
                     return .send(.switchFamily(family))
 
-                case .mainTab(.delegate(.navigateToGroupSelect)):
+                case .mainTab(.delegate(.navigateToGroupSelect(let fromGroupLeft))):
                     // GroupSelect 상태를 리셋하고 현재 그룹 목록을 사전 로드
                     let existingFamilies = state.mainTab?.home.allFamilies ?? []
                     state.groupSelect = GroupSelectFeature.State()
                     state.groupSelect.groups = existingFamilies
                     state.groupSelect.currentUserId = state.currentUser?.id
-                    state.groupSelect.showGroupLeftToast = true
+                    state.groupSelect.showGroupLeftToast = fromGroupLeft
                     state.appState = .groupSelection
                     return .run { [familyRepository] send in
                         await send(.loadGroupsResponse(
@@ -304,7 +306,17 @@ extension RootFeature {
                             _ = try await familyRepository.joinFamily(inviteCode: code, nickname: nickname, colorId: colorId)
                             await send(.groupSelect(.delegate(.completed)))
                         } catch {
-                            await send(.groupSelect(.setAppError(AppError.from(error))))
+                            let appError = AppError.from(error)
+                            if case .serverError(let statusCode) = appError {
+                                if statusCode == 409 {
+                                    await send(.groupSelect(.showJoinAlreadyMemberToast))
+                                    return
+                                } else if statusCode == 400 {
+                                    await send(.groupSelect(.showJoinInvalidCodeToast))
+                                    return
+                                }
+                            }
+                            await send(.groupSelect(.setAppError(appError)))
                         }
                     }
 
@@ -418,7 +430,7 @@ extension RootFeature {
             ),
             history: HistoryFeature.State(),
             notification: NotificationFeature.State(),
-            profile: ProfileEditFeature.State()
+            profile: ProfileEditFeature.State(isGuest: true)
         )
     }
 }

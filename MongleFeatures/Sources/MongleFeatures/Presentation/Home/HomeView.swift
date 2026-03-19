@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Domain
 
 // MARK: - TopBar State Models
 
@@ -15,6 +16,23 @@ struct HomeTopBarState {
   var hasNotification: Bool
   var hearts: Int
   var todayQuestion: TopBarQuestion?
+  var allFamilies: [MongleGroup]
+
+  init(
+    streakDays: Int,
+    groupName: String,
+    hasNotification: Bool,
+    hearts: Int,
+    todayQuestion: TopBarQuestion? = nil,
+    allFamilies: [MongleGroup] = []
+  ) {
+    self.streakDays = streakDays
+    self.groupName = groupName
+    self.hasNotification = hasNotification
+    self.hearts = hearts
+    self.todayQuestion = todayQuestion
+    self.allFamilies = allFamilies
+  }
 
   static let preview = HomeTopBarState(
     streakDays: 5,
@@ -35,78 +53,106 @@ struct TopBarQuestion: Identifiable {
   let isAnswered: Bool
 }
 
+// MARK: - HomeView Actions
+
+struct HomeViewActions {
+    var onQuestionTap: () -> Void = {}
+    var onNotificationTap: () -> Void = {}
+    var onHeartsTap: () -> Void = {}
+    var onPeerAnswerTap: (String) -> Void = { _ in }
+    var onPeerNudgeTap: (String) -> Void = { _ in }
+    var onMyMonggleTap: () -> Void = {}
+    var onGroupSelected: (MongleGroup) -> Void = { _ in }
+    var onNavigateToGroupSelect: () -> Void = {}
+}
+
 // MARK: - Main View
 
 struct HomeView: View {
-  let topBarState: HomeTopBarState
-  let hasCurrentUserAnswered: Bool
-  let members: [(name: String, color: Color, hasAnswered: Bool)]
-  var currentUserName: String?
-  var onQuestionTap: () -> Void
-  var onNotificationTap: () -> Void
-  var onHeartsTap: () -> Void
-  var onPeerAnswerTap: (String) -> Void   // 화면이동: 답변 보기
-  var onPeerNudgeTap: (String) -> Void    // 화면이동: 재촉하기
-  var onMyMonggleTap: () -> Void          // 나의 몽글 탭
+    let topBarState: HomeTopBarState
+    let hasCurrentUserAnswered: Bool
+    let members: [(name: String, color: Color, hasAnswered: Bool)]
+    var currentUserName: String?
+    var actions: HomeViewActions
 
-  init(
-    topBarState: HomeTopBarState = .preview,
-    hasCurrentUserAnswered: Bool = false,
-    members: [(name: String, color: Color, hasAnswered: Bool)] = [],
-    currentUserName: String? = nil,
-    onQuestionTap: @escaping () -> Void = {},
-    onNotificationTap: @escaping () -> Void = {},
-    onHeartsTap: @escaping () -> Void = {},
-    onPeerAnswerTap: @escaping (String) -> Void = { _ in },
-    onPeerNudgeTap: @escaping (String) -> Void = { _ in },
-    onMyMonggleTap: @escaping () -> Void = {}
-  ) {
-    self.topBarState = topBarState
-    self.hasCurrentUserAnswered = hasCurrentUserAnswered
-    self.members = members
-    self.currentUserName = currentUserName
-    self.onQuestionTap = onQuestionTap
-    self.onNotificationTap = onNotificationTap
-    self.onHeartsTap = onHeartsTap
-    self.onPeerAnswerTap = onPeerAnswerTap
-    self.onPeerNudgeTap = onPeerNudgeTap
-    self.onMyMonggleTap = onMyMonggleTap
-  }
-  
-  var body: some View {
-    ZStack {
-      MongleBackground()
+    @State private var showGroupDropdown = false
 
-      VStack(spacing: 0) {
-        // TopBar
-        TopBarView(
-          state: topBarState,
-          onQuestionTap: onQuestionTap,
-          onNotificationTap: onNotificationTap,
-          onHeartsTap: onHeartsTap
-        )
-
-        // Mongle Scene
-        MongleSceneView(
-          hasCurrentUserAnswered: hasCurrentUserAnswered,
-          members: members,
-          currentUserName: currentUserName,
-          onViewAnswer: onPeerAnswerTap,
-          onNudge: onPeerNudgeTap,
-          onSelfTap: onMyMonggleTap
-        )
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-      }
-      .frame(maxWidth: .infinity, maxHeight: .infinity)
-      .ignoresSafeArea(edges: .top)
+    init(
+        topBarState: HomeTopBarState = .preview,
+        hasCurrentUserAnswered: Bool = false,
+        members: [(name: String, color: Color, hasAnswered: Bool)] = [],
+        currentUserName: String? = nil,
+        actions: HomeViewActions = HomeViewActions()
+    ) {
+        self.topBarState = topBarState
+        self.hasCurrentUserAnswered = hasCurrentUserAnswered
+        self.members = members
+        self.currentUserName = currentUserName
+        self.actions = actions
     }
-  }
+
+    var body: some View {
+        ZStack(alignment: .top) {
+            MongleBackground()
+
+            VStack(spacing: 0) {
+                // TopBar
+                TopBarView(
+                    state: topBarState,
+                    showGroupDropdown: $showGroupDropdown,
+                    onQuestionTap: actions.onQuestionTap,
+                    onNotificationTap: actions.onNotificationTap,
+                    onHeartsTap: actions.onHeartsTap
+                )
+
+                // Mongle Scene
+                MongleSceneView(
+                    hasCurrentUserAnswered: hasCurrentUserAnswered,
+                    members: members,
+                    currentUserName: currentUserName,
+                    onViewAnswer: actions.onPeerAnswerTap,
+                    onNudge: actions.onPeerNudgeTap,
+                    onSelfTap: actions.onMyMonggleTap
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .ignoresSafeArea(edges: .top)
+
+            // 그룹 드롭다운 오버레이 (헤더 바로 아래, safe area 무시)
+            if showGroupDropdown {
+                // 반투명 배경 (터치 시 닫기)
+                Color.black.opacity(0.3)
+                    .ignoresSafeArea()
+                    .onTapGesture { withAnimation(.easeInOut(duration: 0.15)) { showGroupDropdown = false } }
+
+                GroupDropdownView(
+                    families: topBarState.allFamilies,
+                    currentGroupName: topBarState.groupName,
+                    onGroupSelected: { family in
+                        withAnimation(.easeInOut(duration: 0.15)) { showGroupDropdown = false }
+                        actions.onGroupSelected(family)
+                    },
+                    onNavigateToGroupSelect: {
+                        withAnimation(.easeInOut(duration: 0.15)) { showGroupDropdown = false }
+                        actions.onNavigateToGroupSelect()
+                    }
+                )
+                // ZStack이 safe area를 포함하도록 ignoresSafeArea 적용 후
+                // 헤더 높이(safeArea 포함 116pt)만큼 top padding
+                .ignoresSafeArea(edges: .top)
+                .padding(.top, 116)
+            }
+        }
+        .ignoresSafeArea(edges: .top)
+    }
 }
 
 // MARK: - TopBar View
 
 struct TopBarView: View {
   let state: HomeTopBarState
+  @Binding var showGroupDropdown: Bool
   var onQuestionTap: () -> Void = { print("질문 카드 탭") }
   var onNotificationTap: () -> Void = { print("알림 탭") }
   var onHeartsTap: () -> Void = {}
@@ -128,9 +174,23 @@ struct TopBarView: View {
 
   private var headerView: some View {
     HStack(spacing: 12) {
-      Text(state.groupName)
-        .font(MongleFont.heading3().weight(.bold))
-        .foregroundColor(MongleColor.textPrimary)
+      Button {
+        withAnimation(.easeInOut(duration: 0.2)) {
+          showGroupDropdown.toggle()
+        }
+      } label: {
+        HStack(spacing: 4) {
+          Text(state.groupName)
+            .font(MongleFont.heading3().weight(.bold))
+            .foregroundColor(MongleColor.textPrimary)
+          Image(systemName: "chevron.down")
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundColor(MongleColor.textSecondary)
+            .rotationEffect(.degrees(showGroupDropdown ? 180 : 0))
+            .animation(.easeInOut(duration: 0.2), value: showGroupDropdown)
+        }
+      }
+      .buttonStyle(.plain)
 
       Spacer()
 
@@ -320,6 +380,86 @@ private struct TodayQuestionCard: View {
               .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
               .animation(.easeInOut(duration: 0.12), value: configuration.isPressed)
       }
+  }
+}
+
+// MARK: - Group Dropdown View
+
+private struct GroupDropdownView: View {
+  let families: [MongleGroup]
+  let currentGroupName: String
+  var onGroupSelected: (MongleGroup) -> Void
+  var onNavigateToGroupSelect: () -> Void
+
+  var body: some View {
+    VStack(spacing: 0) {
+      VStack(spacing: 0) {
+        // 그룹 목록
+        ForEach(families, id: \.id) { family in
+          Button {
+            onGroupSelected(family)
+          } label: {
+            HStack {
+              Text(family.name)
+                .font(MongleFont.body1())
+                .foregroundColor(
+                  family.name == currentGroupName
+                    ? MongleColor.primary
+                    : MongleColor.textPrimary
+                )
+              Spacer()
+              if family.name == currentGroupName {
+                Image(systemName: "checkmark")
+                  .font(.system(size: 13, weight: .semibold))
+                  .foregroundColor(MongleColor.primary)
+              }
+            }
+            .contentShape(Rectangle())
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+          }
+          .buttonStyle(.plain)
+
+          if family.id != families.last?.id {
+            Divider()
+              .padding(.horizontal, 16)
+          }
+        }
+
+        if !families.isEmpty {
+          Divider()
+        }
+
+        // 그룹선택화면 이동 버튼
+        Button {
+          onNavigateToGroupSelect()
+        } label: {
+          HStack {
+            Image(systemName: "person.2.fill")
+              .font(.system(size: 13))
+              .foregroundColor(MongleColor.textSecondary)
+            Text("그룹 관리")
+              .font(MongleFont.body1())
+              .foregroundColor(MongleColor.textSecondary)
+            Spacer()
+            Image(systemName: "chevron.right")
+              .font(.system(size: 12))
+              .foregroundColor(MongleColor.textSecondary)
+          }
+          .padding(.horizontal, 16)
+          .padding(.vertical, 14)
+        }
+        .buttonStyle(.plain)
+      }
+      .background(Color.white)
+      .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
+      .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 4)
+      .frame(width: UIScreen.main.bounds.width / 2)
+      .padding(.leading, 16)
+
+      Spacer()
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
   }
 }
 
