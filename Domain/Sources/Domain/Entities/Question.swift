@@ -19,6 +19,8 @@ public struct Question: Equatable, Sendable {
     public let familyAnswerCount: Int
     /// 현재 유저가 이미 답변했는지 (GET /questions/today 응답의 hasMyAnswer)
     public let hasMyAnswer: Bool
+    /// 현재 유저가 오늘 질문을 패스했는지 (GET /questions/today 응답의 hasMySkipped)
+    public let hasMySkipped: Bool
 
     public init(
         id: UUID,
@@ -28,7 +30,8 @@ public struct Question: Equatable, Sendable {
         createdAt: Date = Date(),
         dailyQuestionId: String? = nil,
         familyAnswerCount: Int = 0,
-        hasMyAnswer: Bool = false
+        hasMyAnswer: Bool = false,
+        hasMySkipped: Bool = false
     ) {
         self.id = id
         self.content = content
@@ -38,6 +41,7 @@ public struct Question: Equatable, Sendable {
         self.dailyQuestionId = dailyQuestionId
         self.familyAnswerCount = familyAnswerCount
         self.hasMyAnswer = hasMyAnswer
+        self.hasMySkipped = hasMySkipped
     }
 }
 

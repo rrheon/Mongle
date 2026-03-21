@@ -156,6 +156,7 @@ struct MainTabView: View {
                 allFamilies: store.home.allFamilies
             ),
             hasCurrentUserAnswered: store.home.hasAnsweredToday,
+            hasCurrentUserSkipped: store.home.hasSkippedToday,
             members: memberData,
             currentUserName: store.home.currentUser?.name,
             actions: HomeViewActions(

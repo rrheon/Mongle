@@ -7,7 +7,7 @@ import ComposableArchitecture
 public struct HeartCostPopupFeature {
     public enum CostType: Equatable, Sendable {
         case writeQuestion   // 나만의 질문 작성하기 - 하트 3개
-        case refreshQuestion // 질문 다시받기 - 하트 3개
+        case refreshQuestion // 질문 넘기기 (개인 패스) - 하트 3개
     }
 
     @ObservableState
@@ -20,21 +20,21 @@ public struct HeartCostPopupFeature {
         public var title: String {
             switch costType {
             case .writeQuestion: return "나만의 질문 작성하기"
-            case .refreshQuestion: return "질문 다시 받기"
+            case .refreshQuestion: return "질문 넘기기"
             }
         }
 
         public var description: String {
             switch costType {
             case .writeQuestion: return "나만의 질문을 등록하면\n하트 3개가 소모됩니다."
-            case .refreshQuestion: return "새로운 질문을 받으면\n하트 3개가 소모됩니다."
+            case .refreshQuestion: return "이 질문을 넘기면 하트 3개가 소모됩니다.\n다른 가족의 답변을 바로 볼 수 있어요."
             }
         }
 
         public var confirmLabel: String {
             switch costType {
             case .writeQuestion: return "작성하러 가기"
-            case .refreshQuestion: return "질문 다시 받기"
+            case .refreshQuestion: return "질문 넘기기"
             }
         }
 

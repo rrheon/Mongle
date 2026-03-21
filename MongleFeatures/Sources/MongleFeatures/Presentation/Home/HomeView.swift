@@ -71,6 +71,7 @@ struct HomeViewActions {
 struct HomeView: View {
     let topBarState: HomeTopBarState
     let hasCurrentUserAnswered: Bool
+    let hasCurrentUserSkipped: Bool
     let members: [(name: String, color: Color, hasAnswered: Bool)]
     var currentUserName: String?
     var actions: HomeViewActions
@@ -80,12 +81,14 @@ struct HomeView: View {
     init(
         topBarState: HomeTopBarState = .preview,
         hasCurrentUserAnswered: Bool = false,
+        hasCurrentUserSkipped: Bool = false,
         members: [(name: String, color: Color, hasAnswered: Bool)] = [],
         currentUserName: String? = nil,
         actions: HomeViewActions = HomeViewActions()
     ) {
         self.topBarState = topBarState
         self.hasCurrentUserAnswered = hasCurrentUserAnswered
+        self.hasCurrentUserSkipped = hasCurrentUserSkipped
         self.members = members
         self.currentUserName = currentUserName
         self.actions = actions
@@ -108,6 +111,7 @@ struct HomeView: View {
                 // Mongle Scene
                 MongleSceneView(
                     hasCurrentUserAnswered: hasCurrentUserAnswered,
+                    hasCurrentUserSkipped: hasCurrentUserSkipped,
                     members: members,
                     currentUserName: currentUserName,
                     onViewAnswer: actions.onPeerAnswerTap,

@@ -134,11 +134,11 @@ public struct QuestionSheetView: View {
                 store.send(.writeQuestionTapped)
             }
 
-            // 질문 다시 받기
+            // 질문 넘기기
             actionRow(
-                icon: "arrow.clockwise.circle",
-                title: "질문 다시 받기",
-                subtitle: "하트 3개 소모",
+                icon: "arrow.right.circle",
+                title: "질문 넘기기",
+                subtitle: "하트 3개 소모 · 다른 가족 답변 열람 가능",
                 iconColor: MongleColor.secondary
             ) {
                 store.send(.refreshQuestionTapped)

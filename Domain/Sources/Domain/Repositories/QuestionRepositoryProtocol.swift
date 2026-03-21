@@ -17,8 +17,9 @@ public protocol QuestionRepositoryInterface: Sendable {
     func delete(id: UUID) async throws
     /// 오늘의 질문을 조회. 질문이 없으면 nil.
     func getTodayQuestion() async throws -> Question?
-    /// 오늘 질문을 건너뛰고 새 질문 반환 (하트 1개 차감). POST /questions/skip
-    func skipTodayQuestion() async throws -> Question?
+    /// 오늘 질문을 개인 패스 (하트 3개 차감, 질문 변경 없음). POST /questions/skip
+    /// - returns: 남은 하트 수
+    func skipTodayQuestion() async throws -> Int
     /// 가족 질문 히스토리 (답변 포함). GET /questions?page=&limit=
     func getHistory(page: Int, limit: Int) async throws -> [HistoryQuestion]
     /// 나만의 질문 등록 (하트 3개 차감). POST /questions/custom

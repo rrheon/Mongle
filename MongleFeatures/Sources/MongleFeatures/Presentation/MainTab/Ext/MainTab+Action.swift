@@ -29,7 +29,7 @@ extension MainTabFeature {
         case modal(PresentationAction<Modal.Action>)
 
         // MARK: Skip Question
-        case skipQuestionResponse(Result<Question?, AppError>)
+        case skipQuestionResponse(Result<Int, AppError>)
 
         // MARK: My Answer
         case showMyAnswer(memberName: String, questionText: String, answerText: String)

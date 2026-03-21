@@ -29,7 +29,7 @@ public enum ToastType {
 
     var message: String {
         switch self {
-        case .refreshQuestion: return "새로운 질문을 받았어요! 🎉"
+        case .refreshQuestion: return "질문을 넘겼어요. 다른 가족 답변을 확인해보세요! 👀"
         case .writeQuestion: return "나만의 질문을 등록했어요! ✏️"
         case .nudge: return "재촉 메시지를 보냈어요! 💌"
         case .editAnswer: return "답변을 수정했어요! ✅"

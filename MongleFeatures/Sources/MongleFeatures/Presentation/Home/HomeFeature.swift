@@ -23,6 +23,7 @@ public struct HomeFeature {
         public var appError: AppError?
         public var hasFamily: Bool { family != nil }
         public var hasAnsweredToday: Bool = false
+        public var hasSkippedToday: Bool = false
         public var hearts: Int = 5
         public var familyAnswerCount: Int
         // 각 멤버별 답변 상태 (userId: hasAnswered)
@@ -43,6 +44,7 @@ public struct HomeFeature {
             errorMessage: String? = nil,
             appError: AppError? = nil,
             hasAnsweredToday: Bool = false,
+            hasSkippedToday: Bool = false,
             hearts: Int = 5,
             familyAnswerCount: Int = 0,
             memberAnswerStatus: [UUID: Bool] = [:],
@@ -58,6 +60,7 @@ public struct HomeFeature {
             self.errorMessage = errorMessage
             self.appError = appError
             self.hasAnsweredToday = hasAnsweredToday
+            self.hasSkippedToday = hasSkippedToday
             self.hearts = hearts
             self.familyAnswerCount = familyAnswerCount
             self.memberAnswerStatus = memberAnswerStatus
@@ -149,6 +152,7 @@ public struct HomeFeature {
                 if state.hasAnsweredToday {
                     return .send(.delegate(.navigateToMyAnswer))
                 } else {
+                    // 패스한 경우에도 질문 시트를 보여줌 (답변 가능 + 다른 사람 답변 열람 가능)
                     guard let question = state.todayQuestion else { return .none }
                     return .send(.delegate(.showQuestionSheet(question)))
                 }

@@ -145,6 +145,9 @@ extension MainTabFeature {
                     state.previewMoodId = nil
                     return .none
 
+                case .profile(.delegate(.logout)):
+                    return .send(.logout)
+
                 case .profile(.delegate(.groupLeft)):
                     return .send(.delegate(.navigateToGroupSelect(fromGroupLeft: true)))
 
@@ -183,8 +186,8 @@ extension MainTabFeature {
                         state.modal = nil
                         return .run { [questionRepository] send in
                             do {
-                                let newQuestion = try await questionRepository.skipTodayQuestion()
-                                await send(.skipQuestionResponse(.success(newQuestion)))
+                                let heartsRemaining = try await questionRepository.skipTodayQuestion()
+                                await send(.skipQuestionResponse(.success(heartsRemaining)))
                             } catch {
                                 await send(.skipQuestionResponse(.failure(AppError.from(error))))
                             }
@@ -215,8 +218,8 @@ extension MainTabFeature {
                     case .refreshQuestion:
                         return .run { [questionRepository] send in
                             do {
-                                let newQuestion = try await questionRepository.skipTodayQuestion()
-                                await send(.skipQuestionResponse(.success(newQuestion)))
+                                let heartsRemaining = try await questionRepository.skipTodayQuestion()
+                                await send(.skipQuestionResponse(.success(heartsRemaining)))
                             } catch {
                                 await send(.skipQuestionResponse(.failure(AppError.from(error))))
                             }
@@ -276,6 +279,9 @@ extension MainTabFeature {
                     state.home.memberAnswerStatus = [:]
                     state.home.hasAnsweredToday = false
                     state.home.familyAnswerCount = 0
+                    // 오늘 질문이 바뀌었으므로 히스토리 캐시 무효화
+                    state.history.historyItems = [:]
+                    state.history.loadedMonths = []
                     state.showWriteToast = true
                     return .run { send in
                         try await Task.sleep(nanoseconds: 3_000_000_000)
@@ -398,14 +404,10 @@ extension MainTabFeature {
                     state.path.removeLast()
                     return .none
 
-                case .skipQuestionResponse(.success(let question)):
-                    if let question = question {
-                        state.home.todayQuestion = question
-                        state.home.hearts = max(0, state.home.hearts - 1)
-                        state.home.memberAnswerStatus = [:]
-                        state.home.hasAnsweredToday = false
-                        state.home.familyAnswerCount = 0
-                    }
+                case .skipQuestionResponse(.success(let heartsRemaining)):
+                    // 개인 패스: 질문 유지, 하트 차감, 패스 상태 기록
+                    state.home.hearts = heartsRemaining
+                    state.home.hasSkippedToday = true
                     state.showRefreshToast = true
                     return .run { send in
                         try await Task.sleep(nanoseconds: 3_000_000_000)
