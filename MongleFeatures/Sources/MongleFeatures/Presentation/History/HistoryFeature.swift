@@ -258,6 +258,7 @@ public struct HistoryFeature {
             case .goToToday:
                 state.currentMonth = Date()
                 state.selectedDate = Date()
+                state.selectedItem = state.historyItems[Calendar.current.startOfDay(for: Date())]
                 return .none
 
             case .itemTapped(let item):
@@ -286,10 +287,7 @@ public struct HistoryFeature {
             case .historyLoaded(let items):
                 state.historyItems = items
                 state.isLoading = false
-                // 선택된 날짜의 아이템 업데이트
-                if let item = items[Calendar.current.startOfDay(for: state.selectedDate)] {
-                    state.selectedItem = item
-                }
+                state.selectedItem = items[Calendar.current.startOfDay(for: state.selectedDate)]
                 return .none
 
             case .delegate:
