@@ -159,7 +159,6 @@ public struct ProfileEditFeature {
                 return .none
 
             case .supportScreen(.presented(.delegate(.groupLeft))):
-                state.supportScreen = nil
                 return .send(.delegate(.groupLeft))
 
             case .supportScreen:

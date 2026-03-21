@@ -59,12 +59,15 @@ extension RootFeature {
                             let streakDays = (try? await userRepository.getMyStreak()) ?? 0
                             let allFamilies = (try? await familyRepository.getMyFamilies()) ?? []
 
+                            let hasSkippedToday = todayQuestion?.hasMySkipped ?? false
+
                             let data = RootData(
                                 user: currentUser,
                                 question: todayQuestion,
                                 family: family,
                                 familyMembers: familyMembers,
                                 hasAnsweredToday: hasAnsweredToday,
+                                hasSkippedToday: hasSkippedToday,
                                 memberAnswerStatus: memberAnswerStatus,
                                 streakDays: streakDays,
                                 allFamilies: allFamilies
@@ -92,14 +95,16 @@ extension RootFeature {
                 case .loadDataResponse(.success(let data)):
                     state.currentUser = data.user
 
-                    // 하루 첫 접속 하트 팝업 체크
-                    let heartPopupKey = "mongle.lastHeartPopupDate"
-                    let todayStart = Calendar.current.startOfDay(for: Date())
-                    let lastPopupDate = UserDefaults.standard.object(forKey: heartPopupKey) as? Date
-                    let isFirstAccessToday = lastPopupDate == nil || Calendar.current.startOfDay(for: lastPopupDate!) < todayStart
-                    if isFirstAccessToday && data.user != nil {
-                        UserDefaults.standard.set(todayStart, forKey: heartPopupKey)
-                        state.showHeartGrantedPopup = true
+                    // 하루 첫 접속 하트 팝업 체크 (그룹별)
+                    if let familyId = data.family?.id, data.user != nil {
+                        let heartPopupKey = "mongle.lastHeartPopupDate.\(familyId)"
+                        let todayStart = Calendar.current.startOfDay(for: Date())
+                        let lastPopupDate = UserDefaults.standard.object(forKey: heartPopupKey) as? Date
+                        let isFirstAccessToday = lastPopupDate == nil || Calendar.current.startOfDay(for: lastPopupDate!) < todayStart
+                        if isFirstAccessToday {
+                            UserDefaults.standard.set(todayStart, forKey: heartPopupKey)
+                            state.showHeartGrantedPopup = true
+                        }
                     }
 
                     // mainTab이 아직 없는 경우 = 자동 로그인(첫 로드)
@@ -114,6 +119,7 @@ extension RootFeature {
                         isRefreshing: false,
                         errorMessage: nil,
                         hasAnsweredToday: data.hasAnsweredToday,
+                        hasSkippedToday: data.hasSkippedToday,
                         hearts: data.user?.hearts ?? 0,
                         familyAnswerCount: data.question?.familyAnswerCount ?? 0,
                         memberAnswerStatus: data.memberAnswerStatus,
@@ -126,6 +132,11 @@ extension RootFeature {
                         state.mainTab?.profile.familyId = data.family?.id
                         state.mainTab?.profile.familyCreatedById = data.family?.createdBy
                         if let familyId = data.family?.id {
+                            // 그룹이 바뀐 경우 히스토리 캐시 무효화
+                            if state.mainTab?.history.familyId != familyId {
+                                state.mainTab?.history.historyItems = [:]
+                                state.mainTab?.history.loadedMonths = []
+                            }
                             state.mainTab?.history.familyId = familyId
                             state.mainTab?.history.familyMembers = data.familyMembers
                         }
@@ -140,7 +151,13 @@ extension RootFeature {
                             profile: ProfileEditFeature.State(user: data.user, familyId: data.family?.id, familyCreatedById: data.family?.createdBy)
                         )
                     }
+                    let wasOnGroupSelect = state.appState == .groupSelection
                     let newAppState: RootFeature.State.AppState = (data.family == nil || isInitialLoad) ? .groupSelection : .authenticated
+                    // 그룹 선택 화면에서 인증 완료 전환 시 HomeTab으로 리셋
+                    if wasOnGroupSelect && newAppState == .authenticated {
+                        state.mainTab?.selectedTab = .home
+                        state.mainTab?.path.removeAll()
+                    }
                     state.appState = newAppState
                     // 최초 로그인 시 푸시 알림 권한 요청
                     if newAppState == .authenticated {
@@ -222,6 +239,10 @@ extension RootFeature {
                     state.groupSelect.groups = existingFamilies
                     state.groupSelect.currentUserId = state.currentUser?.id
                     state.groupSelect.showGroupLeftToast = fromGroupLeft
+                    // 프로필 modal 상태 초기화 (그룹나가기 시 남아있는 supportScreen 정리)
+                    state.mainTab?.profile.supportScreen = nil
+                    state.mainTab?.profile.mongleCardEdit = nil
+                    state.mainTab?.profile.accountManagement = nil
                     state.appState = .groupSelection
                     return .run { [familyRepository] send in
                         await send(.loadGroupsResponse(
