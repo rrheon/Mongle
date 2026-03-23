@@ -57,9 +57,7 @@ struct MainTabView: View {
                         title: "하트 +1",
                         description: "오늘의 질문에 답변하셨네요!\n하트 1개를 드렸어요 ❤️",
                         primaryLabel: "확인",
-                        secondaryLabel: "닫기",
-                        onPrimary: { store.send(.dismissAnswerHeartPopup) },
-                        onSecondary: { store.send(.dismissAnswerHeartPopup) }
+                        onPrimary: { store.send(.dismissAnswerHeartPopup) }
                     )
                     .transition(.identity)
                 }

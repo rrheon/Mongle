@@ -64,8 +64,8 @@ public struct MongleErrorBanner: View {
             .clipShape(RoundedRectangle(cornerRadius: MongleRadius.medium))
             .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
             .padding(.horizontal, MongleSpacing.md)
-            .padding(.top, MongleSpacing.sm)
-            .transition(.move(edge: .top).combined(with: .opacity))
+            .padding(.bottom, MongleSpacing.sm)
+            .transition(.move(edge: .bottom).combined(with: .opacity))
             .animation(.spring(response: 0.35, dampingFraction: 0.8), value: error)
         }
     }
@@ -152,7 +152,7 @@ private struct MongleErrorBannerModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .overlay(alignment: .top) {
+            .overlay(alignment: .bottom) {
                 MongleErrorBanner(error: error, onDismiss: onDismiss, onRetry: onRetry)
             }
     }

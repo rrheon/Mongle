@@ -46,7 +46,7 @@ public struct RootView: View {
             store.send(.onAppear)
         }
         .overlay {
-            if store.showHeartGrantedPopup {
+            if store.showHeartGrantedPopup && store.appState == .authenticated {
                 MonglePopupView(
                     icon: MonglePopupView.Icon(
                         systemName: "heart.fill",
@@ -56,9 +56,7 @@ public struct RootView: View {
                     title: "하트 +1",
                     description: "오늘 처음 접속하셨네요!\n하트 1개를 드렸어요 ❤️",
                     primaryLabel: "확인",
-                    secondaryLabel: "닫기",
-                    onPrimary: { store.send(.dismissHeartPopup) },
-                    onSecondary: { store.send(.dismissHeartPopup) }
+                    onPrimary: { store.send(.dismissHeartPopup) }
                 )
                 .transition(.identity)
             }
