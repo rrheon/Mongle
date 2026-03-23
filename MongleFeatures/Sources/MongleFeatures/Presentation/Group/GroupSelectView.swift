@@ -112,10 +112,9 @@ public struct GroupSelectView: View {
       }
       .background(MongleColor.background)
       .toolbar(.hidden, for: .navigationBar)
-      .mongleErrorBanner(
+      .mongleErrorToast(
         error: store.appError,
-        onDismiss: { store.send(.dismissError) },
-        onRetry: store.appError?.isRetryable == true ? { store.send(store.step == .createGroup ? .createNextTapped : .joinTapped) } : nil
+        onDismiss: { store.send(.dismissError) }
       )
     } destination: { store in
       switch store.case {

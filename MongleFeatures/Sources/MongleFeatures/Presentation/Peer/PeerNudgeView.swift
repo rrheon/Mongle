@@ -24,7 +24,7 @@ public struct PeerNudgeView: View {
             .background(MongleColor.background)
         }
         .background(MongleColor.background)
-        .mongleErrorBanner(
+        .mongleErrorToast(
             error: store.appError,
             onDismiss: { store.send(.setAppError(nil)) }
         )

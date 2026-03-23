@@ -56,7 +56,7 @@ struct LoginView: View {
       }
     }
     .background(MongleColor.background)
-    .mongleErrorBanner(
+    .mongleErrorToast(
       error: store.appError,
       onDismiss: { store.send(.dismissError) }
     )

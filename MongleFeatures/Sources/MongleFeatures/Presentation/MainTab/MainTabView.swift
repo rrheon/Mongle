@@ -168,10 +168,9 @@ struct MainTabView: View {
                 onNavigateToGroupSelect: { store.send(.home(.navigateToGroupSelectTapped)) }
             )
         )
-        .mongleErrorBanner(
+        .mongleErrorToast(
             error: store.home.appError,
-            onDismiss: { store.send(.home(.dismissError)) },
-            onRetry: store.home.appError?.isRetryable == true ? { store.send(.home(.refreshData)) } : nil
+            onDismiss: { store.send(.home(.dismissError)) }
         )
         .alert("로그인이 필요해요", isPresented: Binding(
             get: { store.home.showGuestLoginPrompt },

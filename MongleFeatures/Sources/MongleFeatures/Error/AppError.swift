@@ -33,6 +33,21 @@ public enum AppError: Error, Equatable, Sendable {
 
     // MARK: - User-facing Properties
 
+    /// 토스트에 표시할 짧은 한 줄 메시지
+    public var toastMessage: String {
+        switch self {
+        case .offline:              return "인터넷 연결을 확인해주세요"
+        case .timeout:              return "서버 응답이 오래 걸리고 있어요"
+        case .unauthorized:         return "로그인이 필요해요"
+        case .notFound:             return "요청한 데이터를 찾을 수 없어요"
+        case .serverError(let code): return "서버 오류가 발생했어요 (\(code))"
+        case .network:              return "네트워크 오류가 발생했어요"
+        case .decoding:             return "데이터를 읽는 중 오류가 발생했어요"
+        case .domain(let msg):      return msg
+        case .unknown(let msg):     return msg.isEmpty ? "알 수 없는 오류가 발생했어요" : msg
+        }
+    }
+
     /// 사용자에게 표시할 한국어 메시지
     public var userMessage: String {
         switch self {

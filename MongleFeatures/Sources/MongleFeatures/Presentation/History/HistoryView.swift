@@ -60,10 +60,9 @@ public struct HistoryView: View {
         }
         .background(MongleColor.background)
         .onAppear { store.send(.onAppear) }
-        .mongleErrorBanner(
+        .mongleErrorToast(
             error: store.appError,
-            onDismiss: { store.send(.dismissError) },
-            onRetry: store.appError?.isRetryable == true ? { store.send(.onAppear) } : nil
+            onDismiss: { store.send(.dismissError) }
         )
     }
 
