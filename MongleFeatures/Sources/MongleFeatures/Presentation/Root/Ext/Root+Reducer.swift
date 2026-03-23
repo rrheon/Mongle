@@ -190,13 +190,10 @@ extension RootFeature {
                         }
                     }
                     if newAppState == .groupSelection {
+                        // data.allFamilies는 이미 loadData에서 받아온 최신 데이터이므로
+                        // 별도 getMyFamilies() 재호출 불필요. 동일 프레임 내 중복 업데이트 방지.
                         state.groupSelect.groups = data.allFamilies
                         state.groupSelect.currentUserId = data.user?.id
-                        return .run { [familyRepository] send in
-                            await send(.loadGroupsResponse(
-                                Result { try await familyRepository.getMyFamilies() }
-                            ))
-                        }
                     }
                     return .none
 
@@ -209,7 +206,6 @@ extension RootFeature {
                         state.mainTab?.home.isLoading = false
                         state.mainTab?.home.isRefreshing = false
                         state.mainTab?.home.appError = appError
-                        state.mainTab?.home.errorMessage = appError.userMessage
                     } else {
                         state.appState = .unauthenticated
                     }
@@ -260,7 +256,9 @@ extension RootFeature {
                     state.groupSelect.currentUserId = state.currentUser?.id
                     state.groupSelect.showGroupLeftToast = fromGroupLeft
                     state.appState = .groupSelection
+                    // Task.yield()으로 한 프레임 양보 후 갱신 → NavigationStack 마운트 완료 후 업데이트
                     return .run { [familyRepository] send in
+                        await Task.yield()
                         await send(.loadGroupsResponse(
                             Result { try await familyRepository.getMyFamilies() }
                         ))
