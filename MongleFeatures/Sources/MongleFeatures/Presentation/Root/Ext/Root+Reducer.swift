@@ -7,6 +7,7 @@ import Foundation
 import ComposableArchitecture
 import Domain
 import UserNotifications
+import UIKit
 
 extension RootFeature {
 
@@ -128,12 +129,17 @@ extension RootFeature {
                     )
                     if state.mainTab != nil {
                         state.mainTab?.home = homeState
-                        state.mainTab?.profile.user = data.user
-                        state.mainTab?.profile.familyId = data.family?.id
-                        state.mainTab?.profile.familyCreatedById = data.family?.createdBy
+                        // profile 전체 재생성: supportScreen 등 modal 상태 초기화 포함
+                        state.mainTab?.profile = ProfileEditFeature.State(
+                            user: data.user,
+                            familyId: data.family?.id,
+                            familyCreatedById: data.family?.createdBy
+                        )
                         if let familyId = data.family?.id {
-                            // 그룹이 바뀐 경우 히스토리 캐시 무효화
-                            if state.mainTab?.history.familyId != familyId {
+                            // 그룹이 바뀐 경우 또는 오늘 날짜 히스토리가 캐시에 없는 경우 무효화
+                            let today = Calendar.current.startOfDay(for: Date())
+                            let isTodayMissing = state.mainTab?.history.historyItems[today] == nil
+                            if state.mainTab?.history.familyId != familyId || isTodayMissing {
                                 state.mainTab?.history.historyItems = [:]
                                 state.mainTab?.history.loadedMonths = []
                             }
@@ -159,14 +165,28 @@ extension RootFeature {
                         state.mainTab?.path.removeAll()
                     }
                     state.appState = newAppState
-                    // 최초 로그인 시 푸시 알림 권한 요청
+                    // 최초 로그인 시 푸시 알림 권한 요청 + APNs 등록
                     if newAppState == .authenticated {
+                        // pendingOpenQuestion 처리: 데이터가 로드되면 질문 화면으로 이동
+                        if state.pendingOpenQuestion, let question = data.question {
+                            state.pendingOpenQuestion = false
+                            state.mainTab?.path.append(.questionDetail(QuestionDetailFeature.State(
+                                question: question,
+                                currentUser: data.user,
+                                familyMembers: data.familyMembers
+                            )))
+                        }
                         return .run { _ in
                             let key = "mongle.didRequestPushPermission"
-                            guard !UserDefaults.standard.bool(forKey: key) else { return }
-                            UserDefaults.standard.set(true, forKey: key)
-                            _ = try? await UNUserNotificationCenter.current()
-                                .requestAuthorization(options: [.alert, .badge, .sound])
+                            if !UserDefaults.standard.bool(forKey: key) {
+                                UserDefaults.standard.set(true, forKey: key)
+                                _ = try? await UNUserNotificationCenter.current()
+                                    .requestAuthorization(options: [.alert, .badge, .sound])
+                            }
+                            // 항상 APNs 토큰 등록 갱신
+                            await MainActor.run {
+                                UIApplication.shared.registerForRemoteNotifications()
+                            }
                         }
                     }
                     if newAppState == .groupSelection {
@@ -239,10 +259,6 @@ extension RootFeature {
                     state.groupSelect.groups = existingFamilies
                     state.groupSelect.currentUserId = state.currentUser?.id
                     state.groupSelect.showGroupLeftToast = fromGroupLeft
-                    // 프로필 modal 상태 초기화 (그룹나가기 시 남아있는 supportScreen 정리)
-                    state.mainTab?.profile.supportScreen = nil
-                    state.mainTab?.profile.mongleCardEdit = nil
-                    state.mainTab?.profile.accountManagement = nil
                     state.appState = .groupSelection
                     return .run { [familyRepository] send in
                         await send(.loadGroupsResponse(
@@ -410,6 +426,32 @@ extension RootFeature {
                 case .dismissQuestionDetail:
                     state.selectedQuestion = nil
                     state.questionDetail = nil
+                    return .none
+
+                // MARK: Push Notification
+
+                case .deviceTokenReceived(let data):
+                    let token = data.map { String(format: "%02x", $0) }.joined()
+                    return .run { [userRepository] _ in
+                        try? await userRepository.registerDeviceToken(token: token)
+                    }
+
+                case .openQuestion:
+                    // 이미 데이터가 로드된 경우 즉시 질문 화면으로 이동
+                    if let question = state.mainTab?.home.todayQuestion,
+                       state.appState == .authenticated {
+                        let currentUser = state.mainTab?.home.currentUser
+                        let familyMembers = state.mainTab?.home.familyMembers ?? []
+                        state.mainTab?.path.removeAll()
+                        state.mainTab?.path.append(.questionDetail(QuestionDetailFeature.State(
+                            question: question,
+                            currentUser: currentUser,
+                            familyMembers: familyMembers
+                        )))
+                    } else {
+                        // 아직 데이터 로딩 중 → 로딩 완료 후 이동
+                        state.pendingOpenQuestion = true
+                    }
                     return .none
                 }
             }

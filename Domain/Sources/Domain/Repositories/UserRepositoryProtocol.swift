@@ -12,6 +12,7 @@ public protocol UserRepositoryInterface: Sendable {
     func update(_ user: User) async throws -> User
     func updateName(_ name: String) async throws
     func getMyStreak() async throws -> Int
+    func registerDeviceToken(token: String) async throws
 }
 
 public enum UserError: Error, Equatable, Sendable {

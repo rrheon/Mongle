@@ -64,6 +64,9 @@ extension RootFeature {
         // MARK: Heart Popup
         public var showHeartGrantedPopup: Bool = false
 
+        // MARK: Push Navigation
+        public var pendingOpenQuestion: Bool = false
+
         // MARK: Modal
         @Presents public var questionDetail: QuestionDetailFeature.State?
 
