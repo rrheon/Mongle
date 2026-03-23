@@ -148,7 +148,8 @@ public struct GroupSelectFeature {
                 return .none
 
             case .notificationTapped:
-                state.path.append(.notification(NotificationFeature.State()))
+                let groupNameMap = Dictionary(uniqueKeysWithValues: state.groups.map { ($0.id, $0.name) })
+                state.path.append(.notification(NotificationFeature.State(mode: .grouped, groupNameMap: groupNameMap)))
                 return .none
 
             case .groupNameChanged(let name):
@@ -267,6 +268,13 @@ public struct GroupSelectFeature {
 
             case .path(.element(id: _, action: .notification(.delegate(.close)))):
                 state.path.removeLast()
+                return .none
+
+            case .path(.element(id: _, action: .notification(.delegate(.navigateToGroup(let familyId))))):
+                state.path.removeAll()
+                if let group = state.groups.first(where: { $0.id == familyId }) {
+                    return .send(.delegate(.groupSelected(group)))
+                }
                 return .none
 
             case .path:

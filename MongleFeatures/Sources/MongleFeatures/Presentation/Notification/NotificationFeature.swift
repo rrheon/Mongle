@@ -14,8 +14,23 @@ public typealias MongleNotification = Domain.Notification
 
 @Reducer
 public struct NotificationFeature {
+
+    // MARK: - Mode
+
+    public enum Mode: Equatable, Sendable {
+        /// HomeView에서 진입: 특정 그룹 알림만 필터해서 날짜별 표시
+        case filtered(familyId: UUID, familyName: String)
+        /// GroupSelect에서 진입: 모든 그룹 알림을 그룹명 섹션으로 표시
+        case grouped
+        /// 기본(하위 호환)
+        case all
+    }
+
     @ObservableState
     public struct State: Equatable {
+        public var mode: Mode = .all
+        /// .grouped 모드에서 familyId → 그룹명 매핑
+        public var groupNameMap: [UUID: String] = [:]
         public var notifications: [MongleNotification] = []
         public var isLoading = false
         public var errorMessage: String?
@@ -28,8 +43,43 @@ public struct NotificationFeature {
             unreadCount > 0
         }
 
-        // 그룹화된 알림 (오늘, 이번 주, 이전)
+        /// 모드에 따라 다른 방식으로 그룹화된 알림 반환
         public var groupedNotifications: [(String, [MongleNotification])] {
+            switch mode {
+            case .filtered(let familyId, _):
+                let filtered = notifications.filter { $0.familyId == familyId }
+                return dateGrouped(filtered)
+
+            case .grouped:
+                var byFamily: [UUID: [MongleNotification]] = [:]
+                var noFamily: [MongleNotification] = []
+                for n in notifications {
+                    if let fid = n.familyId {
+                        byFamily[fid, default: []].append(n)
+                    } else {
+                        noFamily.append(n)
+                    }
+                }
+                var result: [(String, [MongleNotification])] = []
+                // 최신 알림 기준으로 그룹 정렬
+                let sortedFamilies = byFamily.sorted {
+                    ($0.value.first?.createdAt ?? .distantPast) > ($1.value.first?.createdAt ?? .distantPast)
+                }
+                for (familyId, items) in sortedFamilies {
+                    let name = groupNameMap[familyId] ?? "기타 그룹"
+                    result.append((name, items.sorted { $0.createdAt > $1.createdAt }))
+                }
+                if !noFamily.isEmpty {
+                    result.append(("기타", noFamily.sorted { $0.createdAt > $1.createdAt }))
+                }
+                return result
+
+            case .all:
+                return dateGrouped(notifications)
+            }
+        }
+
+        private func dateGrouped(_ items: [MongleNotification]) -> [(String, [MongleNotification])] {
             let calendar = Calendar.current
             let today = calendar.startOfDay(for: Date())
             let weekAgo = calendar.date(byAdding: .day, value: -7, to: today) ?? today
@@ -38,14 +88,14 @@ public struct NotificationFeature {
             var thisWeekItems: [MongleNotification] = []
             var olderItems: [MongleNotification] = []
 
-            for notification in notifications {
-                let notificationDay = calendar.startOfDay(for: notification.createdAt)
-                if notificationDay == today {
-                    todayItems.append(notification)
-                } else if notificationDay > weekAgo {
-                    thisWeekItems.append(notification)
+            for n in items {
+                let day = calendar.startOfDay(for: n.createdAt)
+                if day == today {
+                    todayItems.append(n)
+                } else if day > weekAgo {
+                    thisWeekItems.append(n)
                 } else {
-                    olderItems.append(notification)
+                    olderItems.append(n)
                 }
             }
 
@@ -53,12 +103,17 @@ public struct NotificationFeature {
             if !todayItems.isEmpty { result.append(("오늘", todayItems)) }
             if !thisWeekItems.isEmpty { result.append(("이번 주", thisWeekItems)) }
             if !olderItems.isEmpty { result.append(("이전", olderItems)) }
-
             return result
         }
 
-        public init(notifications: [MongleNotification] = []) {
+        public init(
+            notifications: [MongleNotification] = [],
+            mode: Mode = .all,
+            groupNameMap: [UUID: String] = [:]
+        ) {
             self.notifications = notifications
+            self.mode = mode
+            self.groupNameMap = groupNameMap
         }
     }
 
@@ -86,6 +141,7 @@ public struct NotificationFeature {
         public enum Delegate: Sendable, Equatable {
             case close
             case navigateToQuestion
+            case navigateToGroup(UUID)
             case navigateToPeerNotAnsweredNudge(String)
         }
     }
@@ -116,49 +172,52 @@ public struct NotificationFeature {
                 }
 
             case .notificationTapped(let notification):
-                // 읽음 처리
-                if !notification.isRead {
-                    return .send(.markAsRead(notification))
-                }
+                // 읽음 처리 + 네비게이션 동시 처리
+                let navigateEffect: Effect<Action> = {
+                    switch state.mode {
+                    case .grouped:
+                        guard let familyId = notification.familyId else { return .none }
+                        return .send(.delegate(.navigateToGroup(familyId)))
+                    default:
+                        return .send(.delegate(.navigateToQuestion))
+                    }
+                }()
 
-                // 타입에 따라 네비게이션
-                switch notification.type {
-                case .answerRequest:
-                    let member = extractMemberName(from: notification.title) ?? "가족"
-                    return .send(.delegate(.navigateToPeerNotAnsweredNudge(member)))
-
-                case .newQuestion, .allAnswered, .memberAnswered, .badgeEarned:
-                    return .send(.delegate(.navigateToQuestion))
+                if notification.isRead {
+                    return navigateEffect
+                } else {
+                    return .merge(.send(.markAsRead(notification)), navigateEffect)
                 }
 
             case .markAsRead(let notification):
                 // Optimistic update
                 if let index = state.notifications.firstIndex(where: { $0.id == notification.id }) {
-                    let updated = MongleNotification(
+                    state.notifications[index] = MongleNotification(
                         id: notification.id,
                         userId: notification.userId,
+                        familyId: notification.familyId,
                         type: notification.type,
                         title: notification.title,
                         body: notification.body,
                         isRead: true,
                         createdAt: notification.createdAt
                     )
-                    state.notifications[index] = updated
                 }
                 return .run { [notificationRepository] _ in
                     _ = try? await notificationRepository.markAsRead(id: notification.id)
                 }
 
             case .markAllAsRead:
-                state.notifications = state.notifications.map { notification in
+                state.notifications = state.notifications.map { n in
                     MongleNotification(
-                        id: notification.id,
-                        userId: notification.userId,
-                        type: notification.type,
-                        title: notification.title,
-                        body: notification.body,
+                        id: n.id,
+                        userId: n.userId,
+                        familyId: n.familyId,
+                        type: n.type,
+                        title: n.title,
+                        body: n.body,
                         isRead: true,
-                        createdAt: notification.createdAt
+                        createdAt: n.createdAt
                     )
                 }
                 return .run { [notificationRepository] _ in
@@ -202,18 +261,4 @@ public struct NotificationFeature {
             }
         }
     }
-}
-
-
-private func extractMemberName(from title: String) -> String? {
-    let separators = ["가", "이", "님"]
-    for separator in separators {
-        if let range = title.range(of: separator) {
-            let name = String(title[..<range.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
-            if !name.isEmpty {
-                return name
-            }
-        }
-    }
-    return nil
 }

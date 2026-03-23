@@ -42,7 +42,14 @@ extension MainTabFeature {
                 // MARK: - Home Delegate
 
                 case .home(.delegate(.navigateToNotifications)):
-                    state.path.append(.notification(NotificationFeature.State()))
+                    if let familyId = state.home.family?.id,
+                       let familyName = state.home.family?.name {
+                        state.path.append(.notification(NotificationFeature.State(
+                            mode: .filtered(familyId: familyId, familyName: familyName)
+                        )))
+                    } else {
+                        state.path.append(.notification(NotificationFeature.State()))
+                    }
                     return .none
 
                 case .home(.delegate(.navigateToMyAnswer)):
@@ -402,6 +409,16 @@ extension MainTabFeature {
 
                 case .path(.element(id: _, action: .notification(.delegate(.close)))):
                     state.path.removeLast()
+                    return .none
+
+                case .path(.element(id: _, action: .notification(.delegate(.navigateToQuestion)))):
+                    state.path.removeLast()
+                    guard let question = state.home.todayQuestion else { return .none }
+                    state.path.append(.questionDetail(QuestionDetailFeature.State(
+                        question: question,
+                        currentUser: state.home.currentUser,
+                        familyMembers: state.home.familyMembers
+                    )))
                     return .none
 
                 case .skipQuestionResponse(.success(let heartsRemaining)):
