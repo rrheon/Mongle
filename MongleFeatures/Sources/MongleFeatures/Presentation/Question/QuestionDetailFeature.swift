@@ -173,6 +173,7 @@ public struct QuestionDetailFeature {
                 let existingAnswer = state.myAnswer
                 // Question.id를 사용 (서버 /answers API는 Question 테이블 ID 기준)
                 let questionId = state.question.id
+                let selectedMoodId = state.selectedMoodIndex.map { MoodOption.defaults[$0].id }
 
                 return .run { [answerRepository] send in
                     do {
@@ -197,7 +198,7 @@ public struct QuestionDetailFeature {
                                 imageURL: nil,
                                 createdAt: Date()
                             )
-                            result = try await answerRepository.create(newAnswer)
+                            result = try await answerRepository.create(newAnswer, moodId: selectedMoodId)
                         }
                         await send(.submitAnswerResponse(.success(result)))
                     } catch {
