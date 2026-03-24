@@ -70,8 +70,10 @@ public struct QuestionSheetView: View {
                 Image(systemName: "xmark")
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(MongleColor.textHint)
-                    .padding(MongleSpacing.sm)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
+            .buttonStyle(MongleScaleButtonStyle())
         }
     }
 
@@ -107,11 +109,11 @@ public struct QuestionSheetView: View {
         }
         .padding(MongleSpacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(MongleColor.primaryLight.opacity(0.15))
-        .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
-        .overlay(
-            RoundedRectangle(cornerRadius: MongleRadius.large)
-                .stroke(MongleColor.primary.opacity(0.3), lineWidth: 1)
+        .monglePanel(
+            background: MongleColor.primaryLight.opacity(0.15),
+            cornerRadius: MongleRadius.large,
+            borderColor: MongleColor.primary.opacity(0.3),
+            shadowOpacity: 0
         )
     }
 
@@ -174,13 +176,13 @@ public struct QuestionSheetView: View {
             }
             .padding(.vertical, MongleSpacing.sm)
             .padding(.horizontal, MongleSpacing.md)
-            .background(MongleColor.cardGlass)
-            .clipShape(RoundedRectangle(cornerRadius: MongleRadius.medium))
-            .overlay(
-                RoundedRectangle(cornerRadius: MongleRadius.medium)
-                    .stroke(MongleColor.border, lineWidth: 1)
+            .monglePanel(
+                background: MongleColor.cardGlass,
+                cornerRadius: MongleRadius.medium,
+                borderColor: MongleColor.border,
+                shadowOpacity: 0.04
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(MongleScaleButtonStyle())
     }
 }

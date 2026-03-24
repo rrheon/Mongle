@@ -9,7 +9,6 @@ import Domain
 
 public struct MongleCardEditView: View {
     @Bindable var store: StoreOf<MongleCardEditFeature>
-    @State private var selectedMood: MoodOption?
 
     public init(store: StoreOf<MongleCardEditFeature>) {
         self.store = store
@@ -30,15 +29,6 @@ public struct MongleCardEditView: View {
         } message: {
             Text(store.saveError?.userMessage ?? "")
         }
-        .onAppear {
-            selectedMood = MoodOption.defaults.first(where: { $0.id == store.selectedMoodId })
-                ?? MoodOption.defaults.first(where: { $0.id == "loved" })
-        }
-        .onChange(of: selectedMood) { _, newMood in
-            if let id = newMood?.id {
-                store.send(.moodSelected(id))
-            }
-        }
     }
 
     // MARK: - Header
@@ -51,12 +41,15 @@ public struct MongleCardEditView: View {
                 Image(systemName: "arrow.left")
                     .font(.system(size: 20, weight: .medium))
                     .foregroundColor(MongleColor.textPrimary)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
+            .buttonStyle(MongleScaleButtonStyle())
 
             Spacer()
 
             Text("프로필 편집")
-                .font(.custom("Outfit", size: 18).weight(.semibold))
+                .font(MongleFont.heading3())
                 .foregroundColor(MongleColor.textPrimary)
 
             Spacer()
@@ -65,9 +58,12 @@ public struct MongleCardEditView: View {
                 store.send(.saveTapped)
             } label: {
                 Text("저장")
-                    .font(.custom("Outfit", size: 15).weight(.bold))
+                    .font(MongleFont.body1Bold())
                     .foregroundColor(store.isValid ? MongleColor.primarySoft : MongleColor.textHint)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
+            .buttonStyle(MongleScaleButtonStyle())
             .disabled(!store.isValid || store.isSaving)
         }
         .frame(height: 56)
@@ -123,25 +119,13 @@ public struct MongleCardEditView: View {
     private var nameSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("이름")
-                .font(.custom("Outfit", size: 14).weight(.semibold))
+                .font(MongleFont.body1Bold())
                 .foregroundColor(MongleColor.textPrimary)
 
-            HStack(spacing: 8) {
-                Image(systemName: "person.fill")
-                    .font(.system(size: 16))
-                    .foregroundColor(MongleColor.primary)
-
-                TextField("이름 입력", text: $store.editedName.sending(\.nameChanged))
-                    .font(.custom("Outfit", size: 16).weight(.medium))
-                    .foregroundColor(MongleColor.textPrimary)
-            }
-            .frame(height: 52)
-            .padding(.horizontal, MongleSpacing.md)
-            .background(MongleColor.cardBackgroundSolid)
-            .clipShape(RoundedRectangle(cornerRadius: MongleRadius.medium))
-            .overlay(
-                RoundedRectangle(cornerRadius: MongleRadius.medium)
-                    .stroke(MongleColor.moodCalm, lineWidth: 1.5)
+            MongleInputText(
+                placeholder: "이름 입력",
+                text: $store.editedName.sending(\.nameChanged),
+                icon: "person.fill"
             )
 
             Text("다른 멤버에게 보여지는 이름이에요")
@@ -155,10 +139,14 @@ public struct MongleCardEditView: View {
     private var moodSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("오늘의 기분")
-                .font(.custom("Outfit", size: 14).weight(.semibold))
+                .font(MongleFont.body1Bold())
                 .foregroundColor(MongleColor.textPrimary)
 
-            MongleMoodSelector(selected: $selectedMood)
+            let moodBinding = Binding<MoodOption?>(
+                get: { MoodOption.defaults.first { $0.id == store.selectedMoodId } },
+                set: { if let newId = $0?.id { store.send(.moodSelected(newId)) } }
+            )
+            MongleMoodSelector(selected: moodBinding)
         }
     }
 }

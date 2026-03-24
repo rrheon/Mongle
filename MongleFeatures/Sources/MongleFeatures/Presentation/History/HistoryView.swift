@@ -83,7 +83,7 @@ public struct HistoryView: View {
                         .foregroundColor(MongleColor.textPrimary)
                         .frame(width: 28, height: 28)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(MongleScaleButtonStyle())
 
                 Text(store.monthTitle)
                     .font(MongleFont.captionBold())
@@ -95,7 +95,7 @@ public struct HistoryView: View {
                         .foregroundColor(MongleColor.textPrimary)
                         .frame(width: 28, height: 28)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(MongleScaleButtonStyle())
             }
         }
         .frame(height: 56)
@@ -185,7 +185,7 @@ public struct HistoryView: View {
             .frame(maxWidth: .infinity)
             .frame(height: 54)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(MongleScaleButtonStyle())
     }
 
     // MARK: - Question Card
@@ -212,12 +212,7 @@ public struct HistoryView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
-        .background(Color.white)
-        .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(MongleColor.primary, lineWidth: 1.5)
-        )
+        .monglePanel(background: Color.white, cornerRadius: 16, borderColor: MongleColor.primary, shadowOpacity: 0.05)
         .contentShape(Rectangle())
 //        .onTapGesture { store.send(.itemTapped(item)) }
     }
@@ -245,12 +240,7 @@ public struct HistoryView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
-        .background(Color.white)
-        .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(MongleColor.border, lineWidth: 1)
-        )
+        .monglePanel(background: Color.white, cornerRadius: 16, borderColor: MongleColor.border, shadowOpacity: 0.03)
     }
 
     private var emptyDateCard: some View {
@@ -273,12 +263,7 @@ public struct HistoryView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 36)
-        .background(Color.white)
-        .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(MongleColor.border, lineWidth: 1)
-        )
+        .monglePanel(background: Color.white, cornerRadius: 16, borderColor: MongleColor.border, shadowOpacity: 0.03)
     }
 
     private var emptyAnswersCard: some View {
@@ -292,12 +277,7 @@ public struct HistoryView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(20)
-        .background(Color.white)
-        .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(MongleColor.border, lineWidth: 1)
-        )
+        .monglePanel(background: Color.white, cornerRadius: 16, borderColor: MongleColor.border, shadowOpacity: 0.03)
     }
 
     // MARK: - Mood Timeline Section
@@ -305,7 +285,7 @@ public struct HistoryView: View {
     private var moodTimelineSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("최근 14일 기분")
-                .font(.custom("Outfit", size: 14).weight(.semibold))
+                .font(MongleFont.body2Bold())
                 .foregroundColor(MongleColor.textPrimary)
 
             HStack {
@@ -335,12 +315,7 @@ public struct HistoryView: View {
             }
         }
         .padding(16)
-        .background(Color.white)
-        .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(MongleColor.border, lineWidth: 1)
-        )
+        .monglePanel(background: Color.white, cornerRadius: 16, borderColor: MongleColor.border, shadowOpacity: 0.03)
     }
 
     private var moodFrequency14Days: [Int] {
@@ -375,18 +350,26 @@ public struct HistoryView: View {
 
     // MARK: - Helpers
 
-    private func dayString(_ date: Date) -> String {
+    private static let dayFormatter: DateFormatter = {
         let f = DateFormatter()
         f.locale = Locale(identifier: "ko_KR")
         f.dateFormat = "d"
-        return f.string(from: date)
-    }
+        return f
+    }()
 
-    private var selectedDateLabel: String {
+    private static let selectedDateFormatter: DateFormatter = {
         let f = DateFormatter()
         f.locale = Locale(identifier: "ko_KR")
         f.dateFormat = "M월 d일 EEEE"
-        return f.string(from: store.selectedDate)
+        return f
+    }()
+
+    private func dayString(_ date: Date) -> String {
+        Self.dayFormatter.string(from: date)
+    }
+
+    private var selectedDateLabel: String {
+        Self.selectedDateFormatter.string(from: store.selectedDate)
     }
 }
 

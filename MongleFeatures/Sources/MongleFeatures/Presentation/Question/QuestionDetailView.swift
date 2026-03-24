@@ -10,7 +10,6 @@ import Domain
 struct QuestionDetailView: View {
     @Bindable var store: StoreOf<QuestionDetailFeature>
     @FocusState private var isAnswerFocused: Bool
-    @State private var answerEditorHeight: CGFloat = 120
 
     private let moods: [(emoji: String, color: Color)] = [
         ("😊", MongleColor.monggleYellow),
@@ -95,7 +94,7 @@ struct QuestionDetailView: View {
                         .foregroundColor(MongleColor.textPrimary)
                         .frame(width: 44, height: 44)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(MongleScaleButtonStyle())
                 Spacer()
             }
         }
@@ -120,9 +119,7 @@ struct QuestionDetailView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(MongleSpacing.lg)
-        .background(Color.white)
-        .cornerRadius(MongleRadius.xl)
-        .overlay(RoundedRectangle(cornerRadius: MongleRadius.xl).stroke(MongleColor.border, lineWidth: 1))
+        .monglePanel(background: Color.white, cornerRadius: MongleRadius.xl, borderColor: MongleColor.border, shadowOpacity: 0)
     }
 
     // MARK: - Mood Picker
@@ -149,9 +146,7 @@ struct QuestionDetailView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(MongleSpacing.lg)
-        .background(Color.white)
-        .cornerRadius(MongleRadius.xl)
-        .overlay(RoundedRectangle(cornerRadius: MongleRadius.xl).stroke(MongleColor.border, lineWidth: 1))
+        .monglePanel(background: Color.white, cornerRadius: MongleRadius.xl, borderColor: MongleColor.border, shadowOpacity: 0)
     }
 
     private func moodCell(index: Int) -> some View {
@@ -186,55 +181,24 @@ struct QuestionDetailView: View {
     // MARK: - Answer Input
 
     private var answerInputSection: some View {
-        ZStack(alignment: .topLeading) {
-            // 높이 측정용 숨김 텍스트
-            Text(store.answerText.isEmpty ? " " : store.answerText)
-                .font(MongleFont.body2())
-                .lineSpacing(4)
-                .padding(MongleSpacing.md)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .opacity(0)
-                .background(
-                    GeometryReader { geo in
-                        Color.clear.onAppear {
-                            answerEditorHeight = max(120, geo.size.height)
-                        }.onChange(of: store.answerText) { _, _ in
-                            answerEditorHeight = max(120, geo.size.height)
-                        }
-                    }
-                )
-
-            TextEditor(text: Binding(
-                get: { store.answerText },
-                set: { store.send(.answerTextChanged($0)) }
-            ))
-            .font(MongleFont.body2())
-            .scrollContentBackground(.hidden)
-            .scrollDisabled(true)
-            .frame(height: answerEditorHeight)
-            .padding(MongleSpacing.md)
-            .focused($isAnswerFocused)
-
-            if store.answerText.isEmpty {
-                Text("오늘의 감정을 자유롭게 적어보세요.\n어떤 이야기든 좋아요.")
-                    .font(MongleFont.body2())
-                    .foregroundColor(MongleColor.textHint)
-                    .lineSpacing(4)
-                    .padding(.horizontal, MongleSpacing.md + 4)
-                    .padding(.vertical, MongleSpacing.md + 8)
-                    .allowsHitTesting(false)
-            }
-        }
-        .background(MongleColor.cardBackgroundSolid)
-        .cornerRadius(MongleRadius.large)
-        .overlay(
-            RoundedRectangle(cornerRadius: MongleRadius.large)
-                .stroke(
-                    isAnswerFocused ? MongleColor.primary : MongleColor.border,
-                    lineWidth: isAnswerFocused ? 1.5 : 1
-                )
+        TextField("오늘의 감정을 자유롭게 적어보세요.\n어떤 이야기든 좋아요.", text: Binding(
+            get: { store.answerText },
+            set: { store.send(.answerTextChanged($0)) }
+        ), axis: .vertical)
+        .font(MongleFont.body2())
+        .foregroundColor(MongleColor.textPrimary)
+        .lineSpacing(4)
+        .lineLimit(5...10)
+        .focused($isAnswerFocused)
+        .padding(MongleSpacing.md)
+        .frame(minHeight: 120, alignment: .topLeading)
+        .monglePanel(
+            background: MongleColor.cardBackgroundSolid,
+            cornerRadius: MongleRadius.large,
+            borderColor: isAnswerFocused ? MongleColor.primary : MongleColor.border,
+            shadowOpacity: 0.04
         )
-        .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
+        .animation(.easeInOut(duration: 0.2), value: isAnswerFocused)
     }
 
     // MARK: - CTA Button
@@ -263,80 +227,13 @@ struct QuestionDetailView: View {
             .clipShape(Capsule())
             .shadow(color: MongleColor.primaryGradientStart.opacity(0.4), radius: 16, x: 0, y: 6)
         }
+        .buttonStyle(MongleScaleButtonStyle())
         .disabled(!store.isValidAnswer || store.isSubmitting)
         .opacity((!store.isValidAnswer || store.isSubmitting) ? 0.6 : 1)
         .padding(.horizontal, 20)
         .padding(.top, 12)
         .padding(.bottom, 32)
         .background(MongleColor.background)
-    }
-
-    // MARK: - Family Answers
-
-    private var familyAnswersSection: some View {
-        VStack(alignment: .leading, spacing: MongleSpacing.md) {
-            HStack {
-                Text("가족의 답변")
-                    .font(MongleFont.body1Bold())
-                    .foregroundColor(MongleColor.textPrimary)
-                Text("\(store.familyAnswers.count)")
-                    .font(MongleFont.captionBold())
-                    .foregroundColor(.white)
-                    .padding(.horizontal, MongleSpacing.xs)
-                    .padding(.vertical, 2)
-                    .background(MongleColor.primary)
-                    .clipShape(Capsule())
-                Spacer()
-            }
-
-            ForEach(store.familyAnswers) { familyAnswer in
-                familyAnswerCard(familyAnswer)
-            }
-        }
-    }
-
-    private func familyAnswerCard(_ item: QuestionDetailFeature.State.FamilyAnswer) -> some View {
-        VStack(alignment: .leading, spacing: MongleSpacing.sm) {
-            HStack(spacing: MongleSpacing.sm) {
-                Circle()
-                    .fill(MongleColor.primaryLight)
-                    .frame(width: 36, height: 36)
-                    .overlay(
-                        Text(String(item.user.name.prefix(1)))
-                            .font(MongleFont.body2Bold())
-                            .foregroundColor(MongleColor.primary)
-                    )
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(item.user.name)
-                        .font(MongleFont.body2Bold())
-                        .foregroundColor(MongleColor.textPrimary)
-                    Text(item.user.role.rawValue)
-                        .font(MongleFont.caption())
-                        .foregroundColor(MongleColor.textHint)
-                }
-                Spacer()
-                Text(timeAgoString(from: item.answer.createdAt))
-                    .font(MongleFont.caption())
-                    .foregroundColor(MongleColor.textHint)
-            }
-
-            Text(item.answer.content)
-                .font(MongleFont.body2())
-                .foregroundColor(MongleColor.textPrimary)
-                .lineSpacing(4)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .padding(MongleSpacing.md)
-        .background(Color.white)
-        .cornerRadius(MongleRadius.large)
-        .overlay(RoundedRectangle(cornerRadius: MongleRadius.large).stroke(MongleColor.border, lineWidth: 1))
-    }
-
-    private func timeAgoString(from date: Date) -> String {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.locale = Locale(identifier: "ko_KR")
-        formatter.unitsStyle = .short
-        return formatter.localizedString(for: date, relativeTo: Date())
     }
 }
 

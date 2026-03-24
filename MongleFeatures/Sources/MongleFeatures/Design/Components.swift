@@ -972,7 +972,14 @@ public struct MongleSheetAnswer: View {
         .padding(.horizontal, 20)
         .padding(.bottom, 32)
         .background(Color.white)
-        .cornerRadius(24, corners: [.topLeft, .topRight])
+        .clipShape(
+            .rect(
+                topLeadingRadius: 24,
+                bottomLeadingRadius: 0,
+                bottomTrailingRadius: 0,
+                topTrailingRadius: 24
+            )
+        )
         .shadow(color: MongleColor.textPrimary.opacity(0.1), radius: 20, x: 0, y: -4)
     }
 }
@@ -997,26 +1004,24 @@ extension View {
     }
 }
 
-// MARK: - Helpers
+// MARK: - Button Styles
 
-extension View {
-    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
-        clipShape(RoundedCorner(radius: radius, corners: corners))
+public struct MongleScaleButtonStyle: ButtonStyle {
+    public init() {}
+    public func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
+            .opacity(configuration.isPressed ? 0.9 : 1.0)
+            .animation(.spring(response: 0.2, dampingFraction: 0.6), value: configuration.isPressed)
     }
 }
 
-private struct RoundedCorner: Shape {
-    var radius: CGFloat
-    var corners: UIRectCorner
-
-    func path(in rect: CGRect) -> Path {
-        let path = UIBezierPath(
-            roundedRect: rect,
-            byRoundingCorners: corners,
-            cornerRadii: CGSize(width: radius, height: radius)
-        )
-        return Path(path.cgPath)
+struct MongleRowButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(configuration.isPressed ? Color.black.opacity(0.05) : Color.clear)
     }
+}
 }
 
 // MARK: - Previews

@@ -49,7 +49,7 @@ public struct NotificationView: View {
                         .foregroundColor(MongleColor.textPrimary)
                         .frame(width: 44, height: 44)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(MongleScaleButtonStyle())
 
                 Spacer()
 
@@ -62,7 +62,7 @@ public struct NotificationView: View {
                                 .font(MongleFont.captionBold())
                                 .foregroundColor(MongleColor.textSecondary)
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(MongleScaleButtonStyle())
 
                         Button {
                             store.send(.deleteAll)
@@ -71,7 +71,7 @@ public struct NotificationView: View {
                                 .font(MongleFont.captionBold())
                                 .foregroundColor(MongleColor.error)
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(MongleScaleButtonStyle())
                     }
                 }
             }
@@ -262,11 +262,15 @@ private struct NotificationCard: View {
         }
     }
 
-    private var timeAgo: String {
+    private static let relativeFormatter: RelativeDateTimeFormatter = {
         let formatter = RelativeDateTimeFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
         formatter.unitsStyle = .abbreviated
-        return formatter.localizedString(for: notification.createdAt, relativeTo: Date())
+        return formatter
+    }()
+
+    private var timeAgo: String {
+        Self.relativeFormatter.localizedString(for: notification.createdAt, relativeTo: Date())
     }
 
     private var eye: some View {

@@ -127,13 +127,12 @@ public struct ProfileEditView: View {
             Spacer()
         }
         .padding(MongleSpacing.md)
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: MongleRadius.xl))
-        .overlay(
-            RoundedRectangle(cornerRadius: MongleRadius.xl)
-                .stroke(MongleColor.border.opacity(0.3), lineWidth: 1)
+        .monglePanel(
+            background: Color.white.opacity(0.85),
+            cornerRadius: MongleRadius.xl,
+            borderColor: MongleColor.border.opacity(0.3),
+            shadowOpacity: 0.04
         )
-        .shadow(color: .black.opacity(0.04), radius: 16, x: 0, y: 4)
     }
 
 
@@ -257,7 +256,7 @@ public struct ProfileEditView: View {
                       SettingsRowView(row: row)
                           .frame(minHeight: 56)
                   }
-                  .buttonStyle(PlainButtonStyle())
+                  .buttonStyle(MongleRowButtonStyle())
 
                   // 마지막 항목이 아닐 때만 구분선 표시
                   if index < rows.count - 1 {
@@ -266,8 +265,12 @@ public struct ProfileEditView: View {
                   }
               }
           }
-          .background(MongleColor.cardBackgroundSolid)
-          .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
+          .monglePanel(
+              background: MongleColor.cardBackgroundSolid,
+              cornerRadius: MongleRadius.large,
+              borderColor: MongleColor.border,
+              shadowOpacity: 0.03
+          )
       }
   }
 }

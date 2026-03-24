@@ -359,12 +359,7 @@ public struct SupportScreenView: View {
                 }
             }
             .padding(MongleSpacing.md)
-            .background(MongleColor.cardBackground)
-            .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
-            .overlay(
-                RoundedRectangle(cornerRadius: MongleRadius.large)
-                    .stroke(MongleColor.borderWarm, lineWidth: 1)
-            )
+            .monglePanel(background: MongleColor.cardBackground, cornerRadius: MongleRadius.large, borderColor: MongleColor.borderWarm, shadowOpacity: 0)
 
             VStack(alignment: .leading, spacing: MongleSpacing.sm) {
                 Text("선택한 날짜")
@@ -384,12 +379,7 @@ public struct SupportScreenView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(MongleSpacing.md)
-            .background(MongleColor.cardBackground)
-            .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
-            .overlay(
-                RoundedRectangle(cornerRadius: MongleRadius.large)
-                    .stroke(MongleColor.borderWarm, lineWidth: 1)
-            )
+            .monglePanel(background: MongleColor.cardBackground, cornerRadius: MongleRadius.large, borderColor: MongleColor.borderWarm, shadowOpacity: 0)
 
             HStack(spacing: MongleSpacing.xs) {
                 invitePill("야간 차단")
@@ -423,12 +413,7 @@ public struct SupportScreenView: View {
                     .foregroundColor(MongleColor.textHint)
             }
             .padding(MongleSpacing.md)
-            .background(MongleColor.cardBackground)
-            .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
-            .overlay(
-                RoundedRectangle(cornerRadius: MongleRadius.large)
-                    .stroke(MongleColor.borderWarm, lineWidth: 1)
-            )
+            .monglePanel(background: MongleColor.cardBackground, cornerRadius: MongleRadius.large, borderColor: MongleColor.borderWarm, shadowOpacity: 0)
 
             infoStrip(
                 icon: "chart.line.uptrend.xyaxis",
@@ -474,12 +459,7 @@ public struct SupportScreenView: View {
                     }
                 }
             }
-            .background(MongleColor.cardBackground)
-            .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
-            .overlay(
-                RoundedRectangle(cornerRadius: MongleRadius.large)
-                    .stroke(MongleColor.borderWarm, lineWidth: 1)
-            )
+            .monglePanel(background: MongleColor.cardBackground, cornerRadius: MongleRadius.large, borderColor: MongleColor.borderWarm, shadowOpacity: 0)
         }
     }
 
@@ -498,14 +478,37 @@ public struct SupportScreenView: View {
                         Text(store.groupName)
                             .font(MongleFont.heading3())
                             .foregroundColor(MongleColor.textPrimary)
-                        Text("코드: \(store.inviteCode)")
-                            .font(MongleFont.caption())
-                            .foregroundColor(MongleColor.textSecondary)
-                    }
-                }
 
-                MongleButtonSecondary("새 멤버 초대하기") {
-                    store.send(.inviteTapped)
+                        Button {
+                            UIPasteboard.general.string = store.inviteCode
+                        } label: {
+                            HStack(spacing: 4) {
+                                Text("초대 코드: \(store.inviteCode)")
+                                    .font(MongleFont.body2Bold())
+                                Image(systemName: "doc.on.doc")
+                                    .font(.system(size: 12))
+                            }
+                            .foregroundColor(MongleColor.primaryDark)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(MongleColor.primaryLight.opacity(0.5))
+                            .clipShape(Capsule())
+                        }
+                        .buttonStyle(MongleScaleButtonStyle())
+                    }
+
+                    Spacer()
+
+                    ShareLink(
+                        item: "몽글에서 가족 통신망을 만들었어요! 초대 코드 [\(store.inviteCode)]를 입력하세요."
+                    ) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundColor(MongleColor.primary)
+                            .padding(8)
+                            .background(MongleColor.primaryLight.opacity(0.3))
+                            .clipShape(Circle())
+                    }
                 }
 
                 HStack(spacing: MongleSpacing.xs) {
@@ -515,12 +518,7 @@ public struct SupportScreenView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(MongleSpacing.md)
-            .background(MongleColor.cardBackground)
-            .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
-            .overlay(
-                RoundedRectangle(cornerRadius: MongleRadius.large)
-                    .stroke(MongleColor.borderWarm, lineWidth: 1)
-            )
+            .monglePanel(background: MongleColor.cardBackground, cornerRadius: MongleRadius.large, borderColor: MongleColor.borderWarm, shadowOpacity: 0)
 
             VStack(alignment: .leading, spacing: MongleSpacing.sm) {
                 sectionTitle("멤버", subtitle: "현재 이 공간에 연결된 사람들")
@@ -568,12 +566,7 @@ public struct SupportScreenView: View {
                         }
                     }
                     .padding(MongleSpacing.md)
-                    .background(MongleColor.cardBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: MongleRadius.large)
-                            .stroke(MongleColor.borderWarm, lineWidth: 1)
-                    )
+                    .monglePanel(background: MongleColor.cardBackground, cornerRadius: MongleRadius.large, borderColor: MongleColor.borderWarm, shadowOpacity: 0)
                 }
             }
 
@@ -669,12 +662,7 @@ public struct SupportScreenView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(MongleSpacing.md)
-            .background(MongleColor.cardBackground)
-            .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
-            .overlay(
-                RoundedRectangle(cornerRadius: MongleRadius.large)
-                    .stroke(MongleColor.borderWarm, lineWidth: 1)
-            )
+            .monglePanel(background: MongleColor.cardBackground, cornerRadius: MongleRadius.large, borderColor: MongleColor.borderWarm, shadowOpacity: 0)
 
             VStack(alignment: .leading, spacing: MongleSpacing.sm) {
                 sectionTitle("최근 기분 기록", subtitle: "날짜별로 남긴 감정")
@@ -700,12 +688,7 @@ public struct SupportScreenView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(MongleSpacing.md)
-            .background(MongleColor.cardBackground)
-            .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
-            .overlay(
-                RoundedRectangle(cornerRadius: MongleRadius.large)
-                    .stroke(MongleColor.borderWarm, lineWidth: 1)
-            )
+            .monglePanel(background: MongleColor.cardBackground, cornerRadius: MongleRadius.large, borderColor: MongleColor.borderWarm, shadowOpacity: 0)
         }
     }
 
@@ -798,18 +781,26 @@ public struct SupportScreenView: View {
         }
     }
 
-    private var monthTitle: String {
+    private static let monthFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
         formatter.dateFormat = "yyyy년 M월"
-        return formatter.string(from: store.currentMonth)
-    }
+        return formatter
+    }()
 
-    private var selectedDateTitle: String {
+    private static let selectedDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
         formatter.dateFormat = "M월 d일 EEEE"
-        return formatter.string(from: store.selectedDate)
+        return formatter
+    }()
+
+    private var monthTitle: String {
+        Self.monthFormatter.string(from: store.currentMonth)
+    }
+
+    private var selectedDateTitle: String {
+        Self.selectedDateFormatter.string(from: store.selectedDate)
     }
 
     private var selectedMoodLabel: String {
@@ -904,11 +895,15 @@ public struct SupportScreenView: View {
         Calendar.current.isDate(date, equalTo: store.currentMonth, toGranularity: .month)
     }
 
-    private var moodSummarySubtitle: String {
+    private static let moodSummaryFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
         formatter.dateFormat = "M월"
-        return "\(formatter.string(from: store.currentMonth))에 가장 자주 남긴 감정을 확인해요"
+        return formatter
+    }()
+
+    private var moodSummarySubtitle: String {
+        "\(Self.moodSummaryFormatter.string(from: store.currentMonth))에 가장 자주 남긴 감정을 확인해요"
     }
 
     // (from, to, color, label, percentage)
