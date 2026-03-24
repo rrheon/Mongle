@@ -13,6 +13,8 @@ public protocol UserRepositoryInterface: Sendable {
     func updateName(_ name: String) async throws
     func getMyStreak() async throws -> Int
     func registerDeviceToken(token: String) async throws
+    /// 광고 시청 보상으로 하트를 지급하고 남은 하트 수를 반환합니다.
+    func grantAdHearts(amount: Int) async throws -> Int
 }
 
 public enum UserError: Error, Equatable, Sendable {

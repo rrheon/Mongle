@@ -110,12 +110,49 @@ public struct PeerNudgeView: View {
 
             heartRow
 
+            if store.hearts <= 0 && !store.isSent {
+                insufficientHeartsSection
+            }
+
             nudgeButton
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(MongleColor.cardGlass)
         .clipShape(RoundedRectangle(cornerRadius: MongleRadius.xl))
+    }
+
+    private var insufficientHeartsSection: some View {
+        VStack(spacing: MongleSpacing.xs) {
+            Text("하트가 부족해요.")
+                .font(MongleFont.caption())
+                .foregroundColor(MongleColor.error)
+
+            Button {
+                store.send(.watchAdTapped)
+            } label: {
+                HStack(spacing: 6) {
+                    if store.isWatchingAd {
+                        ProgressView()
+                            .tint(.white)
+                            .scaleEffect(0.8)
+                    } else {
+                        Image(systemName: "play.fill")
+                            .font(.system(size: 13))
+                        Text("광고 보고 재촉하기 💚")
+                            .font(MongleFont.captionBold())
+                    }
+                }
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                .background(MongleColor.primary)
+                .clipShape(Capsule())
+                .opacity(store.isWatchingAd ? 0.7 : 1)
+            }
+            .buttonStyle(.plain)
+            .disabled(store.isWatchingAd)
+        }
     }
 
     private var heartRow: some View {
