@@ -2,6 +2,16 @@ import Foundation
 import ComposableArchitecture
 import Domain
 
+public enum CreateGroupFocusField: Equatable, Sendable {
+    case groupName
+    case nickname
+}
+
+public enum JoinGroupFocusField: Equatable, Sendable {
+    case joinCode
+    case nickname
+}
+
 @Reducer
 public struct GroupSelectFeature {
 
@@ -42,15 +52,26 @@ public struct GroupSelectFeature {
         public var isLoadingGroups: Bool = false
         public var showMaxGroupsAlert: Bool = false
 
+        // MARK: - 알림 배지
+        public var hasUnreadNotifications: Bool = false
+
         // MARK: - 참여 에러 토스트
         public var showAlreadyMemberToast: Bool = false
         public var showInvalidCodeToast: Bool = false
+        public var showMaxGroupsToast: Bool = false
+
+        // MARK: - 그룹 생성 폼
+        public var createGroupFocusField: CreateGroupFocusField? = nil
+        public var joinGroupFocusField: JoinGroupFocusField? = nil
+        public var isColorExplicitlySelected: Bool = false
 
         // MARK: - 그룹 나가기
         public var showGroupLeftToast: Bool = false
         public var currentUserId: UUID? = nil
         public var groupToLeave: MongleGroup? = nil
         public var showLeaveConfirmation: Bool = false
+        public var showLeaveTooSoonAlert: Bool = false   // 24시간 미경과 안내
+        public var leaveTooSoonMessage: String = ""
         public var transferCandidates: [User] = []
         public var showTransferSheet: Bool = false
         public var selectedTransferMemberId: UUID? = nil
@@ -92,6 +113,7 @@ public struct GroupSelectFeature {
         case setAppError(AppError?)
         case dismissError
         case onAppear
+        case unreadNotificationsLoaded(Bool)
         case loadGroupsResponse(Result<[MongleGroup], Error>)
         case groupTapped(MongleGroup)
         case dismissMaxGroupsAlert
@@ -101,6 +123,7 @@ public struct GroupSelectFeature {
         case leaveGroupTapped(MongleGroup)
         case confirmLeave
         case cancelLeaveConfirmation
+        case dismissLeaveTooSoonAlert
         case setTransferCandidates([User])
         case transferMemberSelected(UUID)
         case confirmTransferAndLeave
@@ -110,6 +133,9 @@ public struct GroupSelectFeature {
         case showJoinInvalidCodeToast
         case alreadyMemberToastDismissed
         case invalidCodeToastDismissed
+        case maxGroupsToastDismissed
+        case createGroupFocusFieldHandled
+        case joinGroupFocusFieldHandled
 
         case delegate(Delegate)
 
@@ -123,6 +149,8 @@ public struct GroupSelectFeature {
             case requestMembersForGroup(MongleGroup)
         }
     }
+
+    @Dependency(\.notificationRepository) var notificationRepository
 
     public init() {}
 
@@ -139,11 +167,19 @@ public struct GroupSelectFeature {
 
             case .actionSheetNewSpaceTapped:
                 state.showActionSheet = false
+                guard state.groups.count < 3 else {
+                    state.showMaxGroupsToast = true
+                    return .none
+                }
                 state.step = .createGroup
                 return .none
 
             case .actionSheetJoinSpaceTapped:
                 state.showActionSheet = false
+                guard state.groups.count < 3 else {
+                    state.showMaxGroupsToast = true
+                    return .none
+                }
                 state.step = .joinWithCode
                 return .none
 
@@ -169,6 +205,7 @@ public struct GroupSelectFeature {
 
             case .colorChanged(let colorId):
                 state.selectedColorId = colorId
+                state.isColorExplicitlySelected = true
                 return .none
 
             case .createNextTapped:
@@ -180,7 +217,20 @@ public struct GroupSelectFeature {
                 let nickEmpty = state.nickname.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                 state.groupNameError = nameEmpty
                 state.nicknameError = nickEmpty
-                guard !nameEmpty && !nickEmpty else { return .none }
+                if nameEmpty {
+                    state.appError = .domain("공간 이름을 입력해주세요")
+                    state.createGroupFocusField = .groupName
+                    return .none
+                }
+                if nickEmpty {
+                    state.appError = .domain("닉네임을 입력해주세요")
+                    state.createGroupFocusField = .nickname
+                    return .none
+                }
+                if !state.isColorExplicitlySelected {
+                    let colorIds = ["calm", "happy", "loved", "sad", "tired"]
+                    state.selectedColorId = colorIds.randomElement() ?? "loved"
+                }
                 state.isLoading = true
                 return .send(.delegate(.createFamily(name: state.groupName, nickname: state.nickname, colorId: state.selectedColorId)))
 
@@ -192,6 +242,8 @@ public struct GroupSelectFeature {
                 state.groupNameError = false
                 state.nicknameError = false
                 state.errorMessage = nil
+                state.isColorExplicitlySelected = false
+                state.createGroupFocusField = nil
                 return .none
 
             case .completeTapped:
@@ -205,6 +257,8 @@ public struct GroupSelectFeature {
                 state.joinCodeError = false
                 state.nicknameError = false
                 state.errorMessage = nil
+                state.isColorExplicitlySelected = false
+                state.joinGroupFocusField = nil
                 return .none
 
             case .joinTapped:
@@ -216,7 +270,20 @@ public struct GroupSelectFeature {
                 let nickEmpty = state.nickname.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                 state.joinCodeError = codeEmpty
                 state.nicknameError = nickEmpty
-                guard !codeEmpty && !nickEmpty else { return .none }
+                if codeEmpty {
+                    state.appError = .domain("초대 코드를 입력해주세요")
+                    state.joinGroupFocusField = .joinCode
+                    return .none
+                }
+                if nickEmpty {
+                    state.appError = .domain("닉네임을 입력해주세요")
+                    state.joinGroupFocusField = .nickname
+                    return .none
+                }
+                if !state.isColorExplicitlySelected {
+                    let colorIds = ["calm", "happy", "loved", "sad", "tired"]
+                    state.selectedColorId = colorIds.randomElement() ?? "loved"
+                }
                 state.isLoading = true
                 return .send(.delegate(.joinFamily(inviteCode: state.joinCode, nickname: state.nickname, colorId: state.selectedColorId)))
 
@@ -248,6 +315,14 @@ public struct GroupSelectFeature {
 
             case .onAppear:
                 state.isLoadingGroups = true
+                return .run { [notificationRepository] send in
+                    let items = (try? await notificationRepository.getNotifications(limit: 50)) ?? []
+                    let hasUnread = items.contains { !$0.isRead }
+                    await send(.unreadNotificationsLoaded(hasUnread))
+                }
+
+            case .unreadNotificationsLoaded(let hasUnread):
+                state.hasUnreadNotifications = hasUnread
                 return .none
 
             case .loadGroupsResponse(.success(let groups)):
@@ -266,7 +341,10 @@ public struct GroupSelectFeature {
                 state.showMaxGroupsAlert = false
                 return .none
 
-            case .path(.element(id: _, action: .notification(.delegate(.close)))):
+            case .path(.element(id: let id, action: .notification(.delegate(.close)))):
+                if case let .notification(notifState) = state.path[id: id] {
+                    state.hasUnreadNotifications = notifState.hasUnread
+                }
                 state.path.removeLast()
                 return .none
 
@@ -283,6 +361,14 @@ public struct GroupSelectFeature {
             // MARK: - 그룹 나가기
 
             case .leaveGroupTapped(let group):
+                // 그룹 생성 후 24시간 이내에는 해제 불가
+                let hoursSinceCreation = Date().timeIntervalSince(group.createdAt) / 3600
+                if hoursSinceCreation < 24 {
+                    let hoursLeft = Int(ceil(24 - hoursSinceCreation))
+                    state.leaveTooSoonMessage = "그룹 생성 후 24시간이 지나야 해제할 수 있어요.\n\(hoursLeft)시간 후에 다시 시도해 주세요."
+                    state.showLeaveTooSoonAlert = true
+                    return .none
+                }
                 state.groupToLeave = group
                 if let userId = state.currentUserId, group.createdBy == userId {
                     // 방장: 먼저 위임할 멤버 목록 요청
@@ -292,6 +378,10 @@ public struct GroupSelectFeature {
                     state.showLeaveConfirmation = true
                     return .none
                 }
+
+            case .dismissLeaveTooSoonAlert:
+                state.showLeaveTooSoonAlert = false
+                return .none
 
             case .confirmLeave:
                 state.showLeaveConfirmation = false
@@ -346,6 +436,18 @@ public struct GroupSelectFeature {
 
             case .invalidCodeToastDismissed:
                 state.showInvalidCodeToast = false
+                return .none
+
+            case .maxGroupsToastDismissed:
+                state.showMaxGroupsToast = false
+                return .none
+
+            case .createGroupFocusFieldHandled:
+                state.createGroupFocusField = nil
+                return .none
+
+            case .joinGroupFocusFieldHandled:
+                state.joinGroupFocusField = nil
                 return .none
 
             case .delegate:
