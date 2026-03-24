@@ -172,8 +172,25 @@ struct TopBarView: View {
           .padding(.horizontal, 20)
           .padding(.top, 12)
           .padding(.bottom, 8)
+      } else if isBeforeNoon {
+        // 오전에는 비활성 안내 카드 표시 (탭 불가)
+        let placeholder = TopBarQuestion(
+          id: UUID(),
+          text: "오후 12시에 다시 질문을 받을 수 있어요",
+          isAnswered: false
+        )
+        TodayQuestionCard(question: placeholder, onTap: nil)
+          .padding(.horizontal, 20)
+          .padding(.top, 12)
+          .padding(.bottom, 8)
       }
     }
+  }
+
+  private var isBeforeNoon: Bool {
+    let cal = Calendar.current
+    let noon = cal.date(bySettingHour: 12, minute: 0, second: 0, of: Date()) ?? Date()
+    return Date() < noon
   }
 
   private var headerView: some View {
@@ -326,34 +343,40 @@ private struct NotificationButtonView: View {
 
 private struct TodayQuestionCard: View {
     let question: TopBarQuestion
-    var onTap: () -> Void
-    
+    var onTap: (() -> Void)?  // nil이면 비활성 카드 (탭 이벤트 없음)
+
     var body: some View {
-        Button(action: onTap) {
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    // 타이틀 및 완료 체크마크
-                    headerView
-                    
-                    // 질문 텍스트
-                    Text(question.text)
-                        .font(.subheadline.bold())
-                        .foregroundColor(.primary)
-                        .lineLimit(2)
-                        .multilineTextAlignment(.leading)
-                }
-                
-                Spacer()
-                
+        let cardContent = HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                // 타이틀 및 완료 체크마크
+                headerView
+
+                // 질문 텍스트
+                Text(question.text)
+                    .font(.subheadline.bold())
+                    .foregroundColor(onTap != nil ? .primary : .secondary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+            }
+
+            Spacer()
+
+            if onTap != nil {
                 Image(systemName: "chevron.right")
                     .font(.caption.bold())
                     .foregroundColor(.secondary)
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .background(cardBackground)
         }
-        .buttonStyle(CardButtonStyle()) // 커스텀 스타일 적용
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .background(cardBackground)
+
+        if let onTap = onTap {
+            Button(action: onTap) { cardContent }
+                .buttonStyle(CardButtonStyle())
+        } else {
+            cardContent
+        }
     }
     
     // 헤더뷰

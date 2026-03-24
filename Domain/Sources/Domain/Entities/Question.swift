@@ -21,6 +21,8 @@ public struct Question: Equatable, Sendable {
     public let hasMyAnswer: Bool
     /// 현재 유저가 오늘 질문을 패스했는지 (GET /questions/today 응답의 hasMySkipped)
     public let hasMySkipped: Bool
+    /// 사용자가 직접 작성한 나만의 질문인지 여부
+    public let isCustom: Bool
 
     public init(
         id: UUID,
@@ -31,7 +33,8 @@ public struct Question: Equatable, Sendable {
         dailyQuestionId: String? = nil,
         familyAnswerCount: Int = 0,
         hasMyAnswer: Bool = false,
-        hasMySkipped: Bool = false
+        hasMySkipped: Bool = false,
+        isCustom: Bool = false
     ) {
         self.id = id
         self.content = content
@@ -42,6 +45,7 @@ public struct Question: Equatable, Sendable {
         self.familyAnswerCount = familyAnswerCount
         self.hasMyAnswer = hasMyAnswer
         self.hasMySkipped = hasMySkipped
+        self.isCustom = isCustom
     }
 }
 
