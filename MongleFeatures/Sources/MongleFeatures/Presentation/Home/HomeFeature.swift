@@ -31,6 +31,7 @@ public struct HomeFeature {
         public var showGuestLoginPrompt: Bool = false
         public var streakDays: Int = 0
         public var allFamilies: [MongleGroup] = []
+        public var hasUnreadNotifications: Bool = false
 
         public var isGuest: Bool { currentUser == nil }
 
@@ -49,7 +50,8 @@ public struct HomeFeature {
             familyAnswerCount: Int = 0,
             memberAnswerStatus: [UUID: Bool] = [:],
             streakDays: Int = 0,
-            allFamilies: [MongleGroup] = []
+            allFamilies: [MongleGroup] = [],
+            hasUnreadNotifications: Bool = false
         ) {
             self.todayQuestion = todayQuestion
             self.family = family
@@ -66,6 +68,7 @@ public struct HomeFeature {
             self.memberAnswerStatus = memberAnswerStatus
             self.streakDays = streakDays
             self.allFamilies = allFamilies
+            self.hasUnreadNotifications = hasUnreadNotifications
         }
     }
 
@@ -92,6 +95,7 @@ public struct HomeFeature {
         case setRefreshing(Bool)
         case setError(String?)
         case setAppError(AppError?)
+        case unreadNotificationsLoaded(Bool)
 
         // MARK: - Delegate Actions (상위 Feature에서 처리)
         case delegate(Delegate)
@@ -242,6 +246,10 @@ public struct HomeFeature {
                 state.errorMessage = error?.userMessage
                 state.isLoading = false
                 state.isRefreshing = false
+                return .none
+
+            case .unreadNotificationsLoaded(let hasUnread):
+                state.hasUnreadNotifications = hasUnread
                 return .none
 
             // MARK: - Delegate Actions

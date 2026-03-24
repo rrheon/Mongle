@@ -126,6 +126,7 @@ public struct NotificationFeature {
         case markAsRead(MongleNotification)
         case markAllAsRead
         case deleteNotification(MongleNotification)
+        case deleteAll
         case dismissError
 
         // MARK: - Internal Actions
@@ -226,7 +227,16 @@ public struct NotificationFeature {
 
             case .deleteNotification(let notification):
                 state.notifications.removeAll { $0.id == notification.id }
-                return .none
+                return .run { [notificationRepository] _ in
+                    _ = try? await notificationRepository.delete(id: notification.id)
+                }
+
+            case .deleteAll:
+                state.notifications = []
+                return .run { [notificationRepository] _ in
+                    _ = try? await notificationRepository.markAllAsRead()
+                    _ = try? await notificationRepository.deleteAll()
+                }
 
             case .dismissError:
                 state.errorMessage = nil
