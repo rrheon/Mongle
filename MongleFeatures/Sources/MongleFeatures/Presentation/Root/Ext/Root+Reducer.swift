@@ -38,7 +38,13 @@ extension RootFeature {
                             let familyResult = try await familyRepository.getMyFamily()
                             let family = familyResult?.0
                             let familyMembers = familyResult?.1 ?? []
-                            let todayQuestion = try await questionRepository.getTodayQuestion()
+                            // 오전 12시(정오) 이전에는 오늘의 질문을 가져오지 않음
+                            let calendar = Calendar.current
+                            let now = Date()
+                            let noon = calendar.date(bySettingHour: 12, minute: 0, second: 0, of: now) ?? now
+                            let todayQuestion: Question? = now >= noon
+                                ? try await questionRepository.getTodayQuestion()
+                                : nil
 
                             var memberAnswerStatus: [UUID: Bool] = [:]
                             // 서버 /answers API는 Question.id 기준 (DailyQuestion.id 아님)
@@ -62,6 +68,9 @@ extension RootFeature {
 
                             let hasSkippedToday = todayQuestion?.hasMySkipped ?? false
 
+                            let notifications = (try? await notificationRepository.getNotifications(limit: 50)) ?? []
+                            let hasUnreadNotifications = notifications.contains { !$0.isRead }
+
                             let data = RootData(
                                 user: currentUser,
                                 question: todayQuestion,
@@ -71,7 +80,8 @@ extension RootFeature {
                                 hasSkippedToday: hasSkippedToday,
                                 memberAnswerStatus: memberAnswerStatus,
                                 streakDays: streakDays,
-                                allFamilies: allFamilies
+                                allFamilies: allFamilies,
+                                hasUnreadNotifications: hasUnreadNotifications
                             )
                             await send(.loadDataResponse(.success(data)))
                         } catch {
@@ -125,7 +135,8 @@ extension RootFeature {
                         familyAnswerCount: data.question?.familyAnswerCount ?? 0,
                         memberAnswerStatus: data.memberAnswerStatus,
                         streakDays: data.streakDays,
-                        allFamilies: data.allFamilies
+                        allFamilies: data.allFamilies,
+                        hasUnreadNotifications: data.hasUnreadNotifications
                     )
                     if state.mainTab != nil {
                         state.mainTab?.home = homeState

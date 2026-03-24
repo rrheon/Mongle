@@ -17,6 +17,7 @@ public struct RootFeature {
     @Dependency(\.questionRepository) var questionRepository
     @Dependency(\.answerRepository) var answerRepository
     @Dependency(\.userRepository) var userRepository
+    @Dependency(\.notificationRepository) var notificationRepository
 
     public init() {}
 

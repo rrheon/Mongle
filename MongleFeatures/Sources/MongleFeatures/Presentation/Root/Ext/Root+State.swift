@@ -19,6 +19,7 @@ extension RootFeature {
         public let memberAnswerStatus: [UUID: Bool]
         public let streakDays: Int
         public let allFamilies: [MongleGroup]
+        public let hasUnreadNotifications: Bool
 
         public init(
             user: User?,
@@ -29,7 +30,8 @@ extension RootFeature {
             hasSkippedToday: Bool = false,
             memberAnswerStatus: [UUID: Bool] = [:],
             streakDays: Int = 0,
-            allFamilies: [MongleGroup] = []
+            allFamilies: [MongleGroup] = [],
+            hasUnreadNotifications: Bool = false
         ) {
             self.user = user
             self.question = question
@@ -40,6 +42,7 @@ extension RootFeature {
             self.memberAnswerStatus = memberAnswerStatus
             self.streakDays = streakDays
             self.allFamilies = allFamilies
+            self.hasUnreadNotifications = hasUnreadNotifications
         }
     }
 
