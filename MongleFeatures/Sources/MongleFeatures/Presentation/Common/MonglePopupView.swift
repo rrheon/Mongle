@@ -14,10 +14,10 @@ struct MonglePopupView<ExtraContent: View>: View {
     let description: String
     let note: String?
     let primaryLabel: String
-    let secondaryLabel: String
+    let secondaryLabel: String?
     let isPrimaryEnabled: Bool
     let onPrimary: () -> Void
-    let onSecondary: () -> Void
+    let onSecondary: (() -> Void)?
     let extraContent: () -> ExtraContent
 
     init(
@@ -26,10 +26,10 @@ struct MonglePopupView<ExtraContent: View>: View {
         description: String,
         note: String? = nil,
         primaryLabel: String,
-        secondaryLabel: String,
+        secondaryLabel: String? = nil,
         isPrimaryEnabled: Bool = true,
         onPrimary: @escaping () -> Void,
-        onSecondary: @escaping () -> Void,
+        onSecondary: (() -> Void)? = nil,
         @ViewBuilder extraContent: @escaping () -> ExtraContent
     ) {
         self.icon = icon
@@ -48,7 +48,7 @@ struct MonglePopupView<ExtraContent: View>: View {
         ZStack {
             Color.black.opacity(0.45)
                 .ignoresSafeArea()
-                .onTapGesture { onSecondary() }
+                .onTapGesture { onSecondary?() }
 
             VStack(spacing: MongleSpacing.lg) {
                 iconCircle
@@ -102,11 +102,13 @@ struct MonglePopupView<ExtraContent: View>: View {
             .opacity(isPrimaryEnabled ? 1 : 0.5)
             .disabled(!isPrimaryEnabled)
 
-            Button(secondaryLabel) {
-                onSecondary()
+            if let secondaryLabel, let onSecondary {
+                Button(secondaryLabel) {
+                    onSecondary()
+                }
+                .font(MongleFont.body2())
+                .foregroundColor(MongleColor.textHint)
             }
-            .font(MongleFont.body2())
-            .foregroundColor(MongleColor.textHint)
         }
     }
 }
@@ -120,10 +122,10 @@ extension MonglePopupView where ExtraContent == EmptyView {
         description: String,
         note: String? = nil,
         primaryLabel: String,
-        secondaryLabel: String,
+        secondaryLabel: String? = nil,
         isPrimaryEnabled: Bool = true,
         onPrimary: @escaping () -> Void,
-        onSecondary: @escaping () -> Void
+        onSecondary: (() -> Void)? = nil
     ) {
         self.init(
             icon: icon,

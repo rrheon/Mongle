@@ -11,6 +11,7 @@ public struct PeerNudgeFeature {
         public var hearts: Int
         public var isSent: Bool
         public var isLoading: Bool
+        public var isWatchingAd: Bool
         public var appError: AppError?
 
         public init(
@@ -26,12 +27,15 @@ public struct PeerNudgeFeature {
             self.hearts = hearts
             self.isSent = isSent
             self.isLoading = false
+            self.isWatchingAd = false
         }
     }
 
     public enum Action: Sendable, Equatable {
         case nudgeTapped
         case nudgeResponse(Result<Int, AppError>)  // heartsRemaining
+        case watchAdTapped
+        case adWatchCompleted(Bool)
         case setAppError(AppError?)
         case closeTapped
         case delegate(Delegate)
@@ -43,6 +47,8 @@ public struct PeerNudgeFeature {
     }
 
     @Dependency(\.nudgeRepository) var nudgeRepository
+    @Dependency(\.userRepository) var userRepository
+    @Dependency(\.adClient) var adClient
     @Dependency(\.errorHandler) var errorHandler
 
     public init() {}
@@ -58,6 +64,33 @@ public struct PeerNudgeFeature {
                 let targetUserId = state.targetUserId
                 return .run { [nudgeRepository] send in
                     do {
+                        let heartsRemaining = try await nudgeRepository.sendNudge(targetUserId: targetUserId)
+                        await send(.nudgeResponse(.success(heartsRemaining)))
+                    } catch {
+                        await send(.nudgeResponse(.failure(AppError.from(error))))
+                    }
+                }
+
+            case .watchAdTapped:
+                guard !state.isWatchingAd, !state.isSent else { return .none }
+                state.isWatchingAd = true
+                return .run { send in
+                    let earned = await adClient.showRewardedAd()
+                    await send(.adWatchCompleted(earned))
+                }
+
+            case .adWatchCompleted(let earned):
+                state.isWatchingAd = false
+                guard earned, !state.isSent, !state.isLoading else { return .none }
+                guard !state.targetUserId.isEmpty else { return .none }
+                state.isLoading = true
+                state.appError = nil
+                let targetUserId = state.targetUserId
+                return .run { [nudgeRepository, userRepository] send in
+                    do {
+                        // 광고 보상 하트 지급 (재촉하기 비용 1개)
+                        _ = try await userRepository.grantAdHearts(amount: 1)
+                        // 재촉 전송
                         let heartsRemaining = try await nudgeRepository.sendNudge(targetUserId: targetUserId)
                         await send(.nudgeResponse(.success(heartsRemaining)))
                     } catch {

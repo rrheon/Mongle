@@ -10,6 +10,7 @@ import Foundation
 public struct Notification: Equatable, Sendable {
     public let id: UUID
     public let userId: UUID
+    public let familyId: UUID?
     public let type: NotificationType
     public let title: String
     public let body: String
@@ -19,6 +20,7 @@ public struct Notification: Equatable, Sendable {
     public init(
         id: UUID,
         userId: UUID,
+        familyId: UUID? = nil,
         type: NotificationType,
         title: String,
         body: String,
@@ -27,6 +29,7 @@ public struct Notification: Equatable, Sendable {
     ) {
         self.id = id
         self.userId = userId
+        self.familyId = familyId
         self.type = type
         self.title = title
         self.body = body

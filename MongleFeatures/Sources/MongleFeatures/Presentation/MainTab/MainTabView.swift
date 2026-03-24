@@ -57,9 +57,7 @@ struct MainTabView: View {
                         title: "하트 +1",
                         description: "오늘의 질문에 답변하셨네요!\n하트 1개를 드렸어요 ❤️",
                         primaryLabel: "확인",
-                        secondaryLabel: "닫기",
-                        onPrimary: { store.send(.dismissAnswerHeartPopup) },
-                        onSecondary: { store.send(.dismissAnswerHeartPopup) }
+                        onPrimary: { store.send(.dismissAnswerHeartPopup) }
                     )
                     .transition(.identity)
                 }
@@ -75,6 +73,9 @@ struct MainTabView: View {
             HistoryView(store: store.scope(state: \.history, action: \.history))
                 .tabItem { Label("HISTORY", systemImage: "book") }
                 .tag(MainTabFeature.State.Tab.history)
+            SearchHistoryView(store: store.scope(state: \.search, action: \.search))
+                .tabItem { Label("SEARCH", systemImage: "magnifyingglass") }
+                .tag(MainTabFeature.State.Tab.search)
 //            NotificationView(store: store.scope(state: \.notification, action: \.notification))
 //                .tabItem { Label("NOTICE", systemImage: "bell") }
 //                .tag(MainTabFeature.State.Tab.notification)
@@ -148,7 +149,7 @@ struct MainTabView: View {
             topBarState: HomeTopBarState(
                 streakDays: store.home.streakDays,
                 groupName: store.home.family?.name ?? "우리 가족",
-                hasNotification: false,
+                hasNotification: store.home.hasUnreadNotifications,
                 hearts: store.home.hearts,
                 todayQuestion: store.home.todayQuestion.map {
                     TopBarQuestion(id: $0.id, text: $0.content, isAnswered: store.home.hasAnsweredToday)
@@ -156,6 +157,7 @@ struct MainTabView: View {
                 allFamilies: store.home.allFamilies
             ),
             hasCurrentUserAnswered: store.home.hasAnsweredToday,
+            hasCurrentUserSkipped: store.home.hasSkippedToday,
             members: memberData,
             currentUserName: store.home.currentUser?.name,
             actions: HomeViewActions(
@@ -169,10 +171,9 @@ struct MainTabView: View {
                 onNavigateToGroupSelect: { store.send(.home(.navigateToGroupSelectTapped)) }
             )
         )
-        .mongleErrorBanner(
+        .mongleErrorToast(
             error: store.home.appError,
-            onDismiss: { store.send(.home(.dismissError)) },
-            onRetry: store.home.appError?.isRetryable == true ? { store.send(.home(.refreshData)) } : nil
+            onDismiss: { store.send(.home(.dismissError)) }
         )
         .alert("로그인이 필요해요", isPresented: Binding(
             get: { store.home.showGuestLoginPrompt },

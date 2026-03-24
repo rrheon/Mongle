@@ -8,77 +8,11 @@ import Domain
 /// 몽글 그룹 선택 View
 public struct GroupSelectView: View {
   @Bindable var store: StoreOf<GroupSelectFeature>
-  @State private var codeCopied = false
-  @State private var linkCopied = false
+  @State var codeCopied = false
+  @State var linkCopied = false
 
-  private static let monggleColors: [Color] = [
-    MongleColor.monggleGreen,
-    MongleColor.monggleYellow,
-    MongleColor.monggleBlue,
-    MongleColor.mongglePink,
-    MongleColor.monggleOrange
-  ]
-
-  private static let colorOptions: [(id: String, color: Color, label: String)] = [
-    ("calm",  MongleColor.monggleGreen,  "초록"),
-    ("happy", MongleColor.monggleYellow, "노랑"),
-    ("loved", MongleColor.mongglePink,   "분홍"),
-    ("sad",   MongleColor.monggleBlue,   "파랑"),
-    ("tired", MongleColor.monggleOrange, "주황"),
-  ]
-
-  private static func monggleColor(for moodId: String) -> Color {
-    switch moodId {
-    case "happy":  return MongleColor.monggleYellow
-    case "calm":   return MongleColor.monggleGreen
-    case "loved":  return MongleColor.mongglePink
-    case "sad":    return MongleColor.monggleBlue
-    case "tired":  return MongleColor.monggleOrange
-    default:       return MongleColor.mongglePink
-    }
-  }
-
-  @ViewBuilder
-  private func monggleColorPicker() -> some View {
-    VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-      Text("내 몽글 색상")
-        .font(MongleFont.captionBold())
-        .foregroundColor(MongleColor.textSecondary)
-
-      HStack(spacing: MongleSpacing.md) {
-        ForEach(Self.colorOptions, id: \.id) { option in
-          let isSelected = store.selectedColorId == option.id
-          Button {
-            store.send(.colorChanged(option.id))
-          } label: {
-            MongleMonggle(color: option.color, size: 48)
-              .padding(4)
-              .background(
-                Circle()
-                  .stroke(isSelected ? option.color : Color.clear, lineWidth: 3)
-                  .frame(width: 60, height: 60)
-              )
-              .scaleEffect(isSelected ? 1.1 : 1.0)
-              .animation(.easeInOut(duration: 0.15), value: isSelected)
-          }
-          .buttonStyle(.plain)
-        }
-        Spacer()
-      }
-
-      Text("다른 멤버에게 보여지는 몽글 캐릭터 색상이에요")
-        .font(MongleFont.caption())
-        .foregroundColor(MongleColor.textHint)
-    }
-  }
-
-  private func memberColors(for group: MongleGroup) -> [Color] {
-    if !group.memberMoodIds.isEmpty {
-      return group.memberMoodIds.map { Self.monggleColor(for: $0) }
-    }
-    let count = max(group.memberIds.count, 1)
-    return (0..<count).map { Self.monggleColors[$0 % Self.monggleColors.count] }
-  }
+  @FocusState var createGroupFocus: CreateGroupFocusField?
+  @FocusState var joinGroupFocus: JoinGroupFocusField?
 
   public init(store: StoreOf<GroupSelectFeature>) {
     self.store = store
@@ -112,10 +46,9 @@ public struct GroupSelectView: View {
       }
       .background(MongleColor.background)
       .toolbar(.hidden, for: .navigationBar)
-      .mongleErrorBanner(
+      .mongleErrorToast(
         error: store.appError,
-        onDismiss: { store.send(.dismissError) },
-        onRetry: store.appError?.isRetryable == true ? { store.send(store.step == .createGroup ? .createNextTapped : .joinTapped) } : nil
+        onDismiss: { store.send(.dismissError) }
       )
     } destination: { store in
       switch store.case {
@@ -171,12 +104,41 @@ public struct GroupSelectView: View {
       try? await Task.sleep(for: .seconds(2))
       store.send(.invalidCodeToastDismissed)
     }
+    .overlay(alignment: .bottom) {
+      if store.showMaxGroupsToast {
+        MongleToastView(type: .maxGroupsReached)
+          .transition(.move(edge: .bottom).combined(with: .opacity))
+          .padding(.bottom, MongleSpacing.lg)
+      }
+    }
+    .animation(.easeInOut(duration: 0.3), value: store.showMaxGroupsToast)
+    .task(id: store.showMaxGroupsToast) {
+      guard store.showMaxGroupsToast else { return }
+      try? await Task.sleep(for: .seconds(2))
+      store.send(.maxGroupsToastDismissed)
+    }
+    .onChange(of: store.createGroupFocusField) { _, newValue in
+      guard let field = newValue else { return }
+      switch field {
+      case .groupName: createGroupFocus = .groupName
+      case .nickname:  createGroupFocus = .nickname
+      }
+      store.send(.createGroupFocusFieldHandled)
+    }
+    .onChange(of: store.joinGroupFocusField) { _, newValue in
+      guard let field = newValue else { return }
+      switch field {
+      case .joinCode: joinGroupFocus = .joinCode
+      case .nickname: joinGroupFocus = .nickname
+      }
+      store.send(.joinGroupFocusFieldHandled)
+    }
   }
 
   // MARK: - Bottom Button Bar
 
   @ViewBuilder
-  private var bottomButtonBar: some View {
+  var bottomButtonBar: some View {
     switch store.step {
     case .createGroup:
       MongleButtonPrimary("다음") {
@@ -232,7 +194,7 @@ public struct GroupSelectView: View {
   // MARK: - Custom Header
 
   @ViewBuilder
-  private var customHeader: some View {
+  var customHeader: some View {
     if store.step == .select {
       HStack(spacing: 12) {
         Text("몽글")
@@ -253,10 +215,12 @@ public struct GroupSelectView: View {
               .background(MongleColor.primaryLight)
               .clipShape(Capsule())
 
-            Circle()
-              .fill(Color.red)
-              .frame(width: 8, height: 8)
-              .offset(x: -2, y: 2)
+            if store.hasUnreadNotifications {
+              Circle()
+                .fill(Color.red)
+                .frame(width: 8, height: 8)
+                .offset(x: -2, y: 2)
+            }
           }
         }
         .buttonStyle(.plain)
@@ -295,555 +259,14 @@ public struct GroupSelectView: View {
     }
   }
 
-  private var navigationTitle: String {
+  var navigationTitle: String {
     switch store.step {
-    case .select:      return ""
-    case .createGroup: return "새 공간 만들기"
+    case .select:       return ""
+    case .createGroup:  return "새 공간 만들기"
     case .groupCreated: return "새 공간 만들기"
-    case .joinWithCode:   return "초대코드로 참여하기"
+    case .joinWithCode: return "초대코드로 참여하기"
     }
   }
-
-  // MARK: - Select View
-
-  private var selectView: some View {
-    VStack(alignment: .leading, spacing: MongleSpacing.lg) {
-      if store.isLoadingGroups {
-        ProgressView()
-          .tint(MongleColor.primary)
-          .frame(maxWidth: .infinity, alignment: .center)
-          .padding(.vertical, MongleSpacing.md)
-      } else if store.groups.isEmpty {
-        Text("참여 중인 그룹이 없어요.\n새 공간을 만들거나 초대코드로 참여해보세요.")
-          .font(MongleFont.body2())
-          .foregroundColor(MongleColor.textSecondary)
-          .multilineTextAlignment(.center)
-          .frame(maxWidth: .infinity)
-          .padding(.vertical, MongleSpacing.lg)
-      } else {
-        VStack(spacing: MongleSpacing.md) {
-          ForEach(store.groups, id: \.id) { group in
-            MongleCardGroup(
-              groupName: group.name,
-              memberColors: memberColors(for: group),
-              streakDays: 0,
-              onTap: { store.send(.groupTapped(group)) }
-            )
-            .contextMenu {
-              Button(role: .destructive) {
-                store.send(.leaveGroupTapped(group))
-              } label: {
-                Label("그룹 나가기", systemImage: "rectangle.portrait.and.arrow.right")
-              }
-            }
-          }
-        }
-      }
-
-      newSpaceButton
-    }
-    .alert("그룹 한도 초과", isPresented: Binding(
-      get: { store.showMaxGroupsAlert },
-      set: { _ in store.send(.dismissMaxGroupsAlert) }
-    )) {
-      Button("확인", role: .cancel) { store.send(.dismissMaxGroupsAlert) }
-    } message: {
-      Text("그룹은 최대 3개까지 참여할 수 있어요.")
-    }
-    .alert("그룹 나가기", isPresented: Binding(
-      get: { store.showLeaveConfirmation },
-      set: { if !$0 { store.send(.cancelLeaveConfirmation) } }
-    )) {
-      Button("나가기", role: .destructive) { store.send(.confirmLeave) }
-      Button("취소", role: .cancel) { store.send(.cancelLeaveConfirmation) }
-    } message: {
-      Text("\(store.groupToLeave?.name ?? "그룹")에서 나가시겠어요?\n그룹 관련 데이터가 삭제되지만 작성한 답변은 유지됩니다.")
-    }
-    .sheet(isPresented: Binding(
-      get: { store.showTransferSheet },
-      set: { if !$0 { store.send(.dismissTransferSheet) } }
-    )) {
-      transferCreatorSheet
-        .presentationDetents([.medium])
-        .presentationDragIndicator(.visible)
-    }
-  }
-
-  // MARK: - 방장 위임 시트
-
-  private var transferCreatorSheet: some View {
-    VStack(alignment: .leading, spacing: 0) {
-      VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-        Text("방장 위임")
-          .font(MongleFont.body1Bold())
-          .foregroundColor(MongleColor.textPrimary)
-        Text("그룹을 나가기 전에 방장을 위임할 멤버를 선택해주세요.")
-          .font(MongleFont.body2())
-          .foregroundColor(MongleColor.textSecondary)
-          .lineSpacing(3)
-      }
-      .padding(.horizontal, MongleSpacing.lg)
-      .padding(.top, MongleSpacing.lg)
-      .padding(.bottom, MongleSpacing.md)
-
-      ScrollView(showsIndicators: false) {
-        VStack(spacing: 0) {
-          ForEach(store.transferCandidates, id: \.id) { member in
-            let isSelected = store.selectedTransferMemberId == member.id
-            Button {
-              store.send(.transferMemberSelected(member.id))
-            } label: {
-              HStack(spacing: MongleSpacing.md) {
-                Circle()
-                  .fill(MongleColor.primaryLight)
-                  .frame(width: 40, height: 40)
-                  .overlay(
-                    Text(String(member.name.prefix(1)))
-                      .font(MongleFont.body2Bold())
-                      .foregroundColor(MongleColor.primary)
-                  )
-
-                Text(member.name)
-                  .font(MongleFont.body2())
-                  .foregroundColor(MongleColor.textPrimary)
-
-                Spacer()
-
-                if isSelected {
-                  Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(MongleColor.primary)
-                }
-              }
-              .padding(.horizontal, MongleSpacing.lg)
-              .padding(.vertical, MongleSpacing.md)
-              .background(isSelected ? MongleColor.primaryLight.opacity(0.3) : Color.clear)
-              .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            Divider().padding(.leading, MongleSpacing.lg + 40 + MongleSpacing.md)
-          }
-        }
-      }
-
-      VStack(spacing: MongleSpacing.sm) {
-        MongleButtonPrimary("위임하고 나가기") {
-          store.send(.confirmTransferAndLeave)
-        }
-        .disabled(store.selectedTransferMemberId == nil)
-        .opacity(store.selectedTransferMemberId == nil ? 0.5 : 1)
-
-        Button("취소") {
-          store.send(.dismissTransferSheet)
-        }
-        .font(MongleFont.body2())
-        .foregroundColor(MongleColor.textSecondary)
-      }
-      .padding(.horizontal, MongleSpacing.md)
-      .padding(.vertical, MongleSpacing.md)
-    }
-    .background(MongleColor.background)
-  }
-
-  private var newSpaceButton: some View {
-    HStack(spacing: MongleSpacing.md) {
-      Image(systemName: "plus")
-        .font(.system(size: 16, weight: .bold))
-        .foregroundColor(.white)
-        .frame(width: 36, height: 36)
-        .background(MongleColor.primaryLight)
-        .clipShape(Circle())
-
-      VStack(alignment: .leading, spacing: 2) {
-        Text("새 공간 만들기")
-          .font(MongleFont.body2Bold())
-          .foregroundColor(MongleColor.textPrimary)
-        Text("초대코드로 참여하기")
-          .font(MongleFont.caption())
-          .foregroundColor(MongleColor.textSecondary)
-      }
-
-      Spacer()
-    }
-    .padding(MongleSpacing.md)
-    .background(Color.white)
-    .cornerRadius(MongleRadius.xl)
-    .overlay(RoundedRectangle(cornerRadius: MongleRadius.xl).stroke(MongleColor.border, lineWidth: 1))
-    .contentShape(Rectangle())
-    .onTapGesture {
-      store.send(.newSpaceButtonTapped)
-    }
-  }
-
-  // MARK: - Action Sheet (Bottom Sheet)
-
-  private var actionSheetContent: some View {
-    VStack(alignment: .leading, spacing: 0) {
-      Text("무엇을 하시겠어요?")
-        .font(MongleFont.body1Bold())
-        .foregroundColor(MongleColor.textPrimary)
-        .padding(.horizontal, MongleSpacing.lg)
-        .padding(.top, MongleSpacing.lg)
-        .padding(.bottom, MongleSpacing.md)
-
-      VStack(spacing: 0) {
-        actionSheetRow(
-          icon: "sparkles",
-          iconColor: MongleColor.primary,
-          title: "새 공간 만들기",
-          subtitle: "우리만의 공간을 직접 만들어요"
-        ) {
-          store.send(.actionSheetNewSpaceTapped)
-        }
-
-        Divider().padding(.leading, 60)
-
-        actionSheetRow(
-          icon: "person.badge.key",
-          iconColor: MongleColor.secondary,
-          title: "초대코드로 참여하기",
-          subtitle: "받은 초대코드로 참여하세요"
-        ) {
-          store.send(.actionSheetJoinSpaceTapped)
-        }
-      }
-      .background(Color.white)
-      .cornerRadius(MongleRadius.xl)
-      .padding(.horizontal, MongleSpacing.md)
-
-      Spacer()
-    }
-    .background(MongleColor.background)
-  }
-
-  private func actionSheetRow(
-    icon: String,
-    iconColor: Color,
-    title: String,
-    subtitle: String,
-    action: @escaping () -> Void
-  ) -> some View {
-    Button(action: action) {
-      HStack(spacing: MongleSpacing.md) {
-        Image(systemName: icon)
-          .font(.system(size: 20))
-          .foregroundColor(iconColor)
-          .frame(width: 44, height: 44)
-          .background(iconColor.opacity(0.1))
-          .clipShape(Circle())
-
-        VStack(alignment: .leading, spacing: 2) {
-          Text(title)
-            .font(MongleFont.body2Bold())
-            .foregroundColor(MongleColor.textPrimary)
-          Text(subtitle)
-            .font(MongleFont.caption())
-            .foregroundColor(MongleColor.textSecondary)
-        }
-
-        Spacer()
-
-        Image(systemName: "chevron.right")
-          .font(.system(size: 14))
-          .foregroundColor(MongleColor.textHint)
-      }
-      .padding(.horizontal, MongleSpacing.md)
-      .padding(.vertical, MongleSpacing.md)
-    }
-    .buttonStyle(.plain)
-  }
-
-  // MARK: - 새로운 그룹 만들기
-
-  private var createGroupView: some View {
-    VStack(spacing: MongleSpacing.lg) {
-      // 프로세스 진행 UI
-      HStack(spacing: MongleSpacing.xs) {
-        Capsule()
-          .fill(MongleColor.moodCalm)
-          .frame(height: 4)
-        Capsule()
-          .fill(MongleColor.moodCalm.opacity(0.3))
-          .frame(height: 4)
-      }
-      .padding(.bottom, MongleSpacing.sm)
-
-      // 몽글 로고
-      MongleLogo(size: .large, type: .MongleLogo)
-
-      VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-        Text("우리만의 몽글 공간을 만들어요")
-          .font(MongleFont.heading2())
-          .foregroundColor(MongleColor.textPrimary)
-        Text("가족이나 친구와 함께 마음을 나눠보세요")
-          .font(MongleFont.body2())
-          .foregroundColor(MongleColor.textSecondary)
-      }
-      .frame(maxWidth: .infinity, alignment: .leading)
-
-      // 공간 이름 필드
-      VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-        Text("공간 이름")
-          .font(MongleFont.captionBold())
-          .foregroundColor(MongleColor.textSecondary)
-
-        HStack(spacing: MongleSpacing.sm) {
-          Image(systemName: "house")
-            .font(.system(size: 16))
-            .foregroundColor(MongleColor.textHint)
-          TextField("김씨네 가족", text: $store.groupName.sending(\.groupNameChanged))
-            .font(MongleFont.body2())
-        }
-        .padding(MongleSpacing.md)
-        .background(Color.white)
-        .cornerRadius(MongleRadius.large)
-        .overlay(
-          RoundedRectangle(cornerRadius: MongleRadius.large)
-            .stroke(store.groupNameError ? MongleColor.error : MongleColor.border, lineWidth: 1)
-        )
-
-        if store.groupNameError {
-          Text("공간 이름을 입력해주세요")
-            .font(MongleFont.caption())
-            .foregroundColor(MongleColor.error)
-        } else {
-          Text("가족, 친한 친구, 커플 등 자유롭게!")
-            .font(MongleFont.caption())
-            .foregroundColor(MongleColor.textHint)
-        }
-      }
-
-      // 닉네임 필드
-      VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-        Text("내 닉네임")
-          .font(MongleFont.captionBold())
-          .foregroundColor(MongleColor.textSecondary)
-
-        HStack(spacing: MongleSpacing.sm) {
-          Image(systemName: "person")
-            .font(.system(size: 16))
-            .foregroundColor(MongleColor.textHint)
-          TextField("엄마", text: $store.nickname.sending(\.nicknameChanged))
-            .font(MongleFont.body2())
-        }
-        .padding(MongleSpacing.md)
-        .background(Color.white)
-        .cornerRadius(MongleRadius.large)
-        .overlay(
-          RoundedRectangle(cornerRadius: MongleRadius.large)
-            .stroke(store.nicknameError ? MongleColor.error : MongleColor.border, lineWidth: 1)
-        )
-
-        if store.nicknameError {
-          Text("닉네임을 입력해주세요")
-            .font(MongleFont.caption())
-            .foregroundColor(MongleColor.error)
-        } else {
-          Text("다른 멤버에게 보여지는 이름이에요")
-            .font(MongleFont.caption())
-            .foregroundColor(MongleColor.textHint)
-        }
-      }
-
-      // 색상 선택
-      monggleColorPicker()
-    }
-  }
-
-  // MARK: - 초대코드로 참여하기
-
-  private var inviteLink: String {
-    "https://monggle.app/join/\(store.inviteCode.lowercased())"
-  }
-
-  private var shareText: String {
-    "몽글에서 함께해요! 🌿\n초대코드: \(store.inviteCode)\n링크: \(inviteLink)"
-  }
-
-  private var groupCreatedView: some View {
-    VStack(alignment: .leading, spacing: MongleSpacing.lg) {
-      // 프로세스 진행 UI
-      HStack(spacing: MongleSpacing.xs) {
-        Capsule()
-          .fill(MongleColor.moodCalm)
-          .frame(height: 4)
-        Capsule()
-          .fill(MongleColor.moodCalm)
-          .frame(height: 4)
-      }
-      .padding(.bottom, MongleSpacing.sm)
-
-      // 공간이 만들어졌다는 문구
-      VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-        Text("공간이 만들어졌어요! 🎉")
-          .font(MongleFont.heading2())
-          .foregroundColor(MongleColor.textPrimary)
-        Text("아래 코드나 링크로 친구를 초대해보세요")
-          .font(MongleFont.body2())
-          .foregroundColor(MongleColor.textSecondary)
-      }
-      .frame(maxWidth: .infinity, alignment: .leading)
-
-      // 초대코드 카드
-      VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-        Text("초대 코드")
-          .font(MongleFont.captionBold())
-          .foregroundColor(MongleColor.textSecondary)
-
-        HStack {
-          Text(store.inviteCode)
-            .font(MongleFont.heading3())
-            .foregroundColor(MongleColor.primary)
-
-          Spacer()
-
-          Button {
-            UIPasteboard.general.string = store.inviteCode
-            codeCopied = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { codeCopied = false }
-          } label: {
-            Label(codeCopied ? "복사됨" : "복사", systemImage: codeCopied ? "checkmark" : "doc.on.doc")
-              .font(MongleFont.captionBold())
-              .foregroundColor(codeCopied ? MongleColor.success : MongleColor.primary)
-              .padding(.horizontal, MongleSpacing.sm)
-              .padding(.vertical, MongleSpacing.xxs)
-              .background(codeCopied ? MongleColor.success.opacity(0.12) : MongleColor.primaryLight)
-              .clipShape(Capsule())
-          }
-          .animation(.easeInOut(duration: 0.2), value: codeCopied)
-        }
-        .padding(MongleSpacing.md)
-        .background(Color.white)
-        .cornerRadius(MongleRadius.large)
-        .overlay(RoundedRectangle(cornerRadius: MongleRadius.large).stroke(MongleColor.border, lineWidth: 1))
-      }
-
-      // 초대 링크
-      VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-        Text("초대 링크")
-          .font(MongleFont.captionBold())
-          .foregroundColor(MongleColor.textSecondary)
-
-        HStack {
-          Text(inviteLink)
-            .font(MongleFont.caption())
-            .foregroundColor(MongleColor.textPrimary)
-            .lineLimit(1)
-            .truncationMode(.middle)
-
-          Spacer()
-
-          Button {
-            UIPasteboard.general.string = inviteLink
-            linkCopied = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { linkCopied = false }
-          } label: {
-            Label(linkCopied ? "복사됨" : "복사", systemImage: linkCopied ? "checkmark" : "doc.on.doc")
-              .font(MongleFont.captionBold())
-              .foregroundColor(linkCopied ? MongleColor.success : MongleColor.primary)
-              .padding(.horizontal, MongleSpacing.sm)
-              .padding(.vertical, MongleSpacing.xxs)
-              .background(linkCopied ? MongleColor.success.opacity(0.12) : MongleColor.primaryLight)
-              .clipShape(Capsule())
-          }
-          .animation(.easeInOut(duration: 0.2), value: linkCopied)
-        }
-        .padding(MongleSpacing.md)
-        .background(Color.white)
-        .cornerRadius(MongleRadius.large)
-        .overlay(RoundedRectangle(cornerRadius: MongleRadius.large).stroke(MongleColor.border, lineWidth: 1))
-      }
-    }
-  }
-
-  // MARK: - Join With Code
-
-  private var joinWithCodeView: some View {
-    VStack(spacing: MongleSpacing.lg) {
-      MongleLogo(size: .large, type: .MongleLogo)
-
-      VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-        Text("초대코드를 입력해주세요.")
-          .font(MongleFont.heading2())
-          .foregroundColor(MongleColor.textPrimary)
-
-        Text("친구나 가족에게 받은 코드를 입력하면\n함께 공간에 참여할 수 있어요")
-          .font(MongleFont.body2())
-          .foregroundColor(MongleColor.textSecondary)
-          .lineSpacing(3)
-      }
-      .frame(maxWidth: .infinity, alignment: .leading)
-
-      // 초대 코드 필드
-      VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-        Text("초대 코드")
-          .font(MongleFont.captionBold())
-          .foregroundColor(MongleColor.textSecondary)
-
-        HStack(spacing: MongleSpacing.sm) {
-          Image(systemName: "key")
-            .font(.system(size: 16))
-            .foregroundColor(MongleColor.textHint)
-          TextField("MONG-4729", text: $store.joinCode.sending(\.joinCodeChanged))
-            .font(MongleFont.body2())
-            .textCase(.uppercase)
-            .autocorrectionDisabled()
-        }
-        .padding(MongleSpacing.md)
-        .background(Color.white)
-        .cornerRadius(MongleRadius.large)
-        .overlay(
-          RoundedRectangle(cornerRadius: MongleRadius.large)
-            .stroke(store.joinCodeError ? MongleColor.error : MongleColor.border, lineWidth: 1)
-        )
-
-        if store.joinCodeError {
-          Text("초대 코드를 입력해주세요")
-            .font(MongleFont.caption())
-            .foregroundColor(MongleColor.error)
-        } else {
-          Text("대문자와 숫자로 이루어진 코드에요")
-            .font(MongleFont.caption())
-            .foregroundColor(MongleColor.textHint)
-        }
-      }
-
-      // 닉네임 필드
-      VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-        Text("내 닉네임")
-          .font(MongleFont.captionBold())
-          .foregroundColor(MongleColor.textSecondary)
-
-        HStack(spacing: MongleSpacing.sm) {
-          Image(systemName: "person")
-            .font(.system(size: 16))
-            .foregroundColor(MongleColor.textHint)
-          TextField("엄마", text: $store.nickname.sending(\.nicknameChanged))
-            .font(MongleFont.body2())
-        }
-        .padding(MongleSpacing.md)
-        .background(Color.white)
-        .cornerRadius(MongleRadius.large)
-        .overlay(
-          RoundedRectangle(cornerRadius: MongleRadius.large)
-            .stroke(store.nicknameError ? MongleColor.error : MongleColor.border, lineWidth: 1)
-        )
-
-        if store.nicknameError {
-          Text("닉네임을 입력해주세요")
-            .font(MongleFont.caption())
-            .foregroundColor(MongleColor.error)
-        } else {
-          Text("다른 멤버에게 보여지는 이름이에요")
-            .font(MongleFont.caption())
-            .foregroundColor(MongleColor.textHint)
-        }
-      }
-
-      // 색상 선택
-      monggleColorPicker()
-    }
-  }
-
 }
 
 #Preview("Group Select") {

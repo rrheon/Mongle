@@ -60,10 +60,9 @@ public struct HistoryView: View {
         }
         .background(MongleColor.background)
         .onAppear { store.send(.onAppear) }
-        .mongleErrorBanner(
+        .mongleErrorToast(
             error: store.appError,
-            onDismiss: { store.send(.dismissError) },
-            onRetry: store.appError?.isRetryable == true ? { store.send(.onAppear) } : nil
+            onDismiss: { store.send(.dismissError) }
         )
     }
 
@@ -255,11 +254,17 @@ public struct HistoryView: View {
     }
 
     private var emptyDateCard: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "calendar.badge.exclamationmark")
+        let isToday = cal.isDateInToday(store.selectedDate)
+        let noon = cal.date(bySettingHour: 12, minute: 0, second: 0, of: Date()) ?? Date()
+        let isBeforeNoon = Date() < noon
+        let message = (isToday && isBeforeNoon) ? "아직 질문을 받아오지 않았어요" : "이 날의 기록이 없어요"
+        let icon = (isToday && isBeforeNoon) ? "clock" : "calendar.badge.exclamationmark"
+
+        return VStack(spacing: 12) {
+            Image(systemName: icon)
                 .font(.system(size: 32))
                 .foregroundColor(MongleColor.textHint)
-            Text("이 날의 기록이 없어요")
+            Text(message)
                 .font(MongleFont.body2Bold())
                 .foregroundColor(MongleColor.textHint)
             Text(selectedDateLabel)

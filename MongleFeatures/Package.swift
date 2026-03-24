@@ -59,5 +59,14 @@ let package = Package(
                 .process("Fonts")
             ]
         ),
+        .testTarget(
+            name: "MongleFeaturesTests",
+            dependencies: [
+                "MongleFeatures",
+                "Domain",
+                .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+            ],
+            path: "Tests/MongleFeaturesTests"
+        ),
     ]
 )

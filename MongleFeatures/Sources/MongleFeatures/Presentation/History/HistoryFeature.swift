@@ -202,8 +202,17 @@ public struct HistoryFeature {
                         // 단일 API 호출로 질문 + 답변 한꺼번에 가져오기 (N+1 제거)
                         let historyQuestions = try await questionRepository.getHistory(page: 1, limit: 60)
                         let calendar = Calendar.current
+                        let now = Date()
+                        // 오전 12시 (정오) 기준: 그 전까지는 오늘의 일반 질문 숨김
+                        let noon = calendar.date(bySettingHour: 12, minute: 0, second: 0, of: now) ?? now
+                        let isBeforeNoon = now < noon
                         var historyItems: [Date: HistoryItem] = [:]
                         for hq in historyQuestions {
+                            let isToday = calendar.isDateInToday(hq.date)
+                            // 오전이고, 오늘 날짜이고, 커스텀 질문이 아니면 히스토리에 포함하지 않음
+                            if isBeforeNoon && isToday && !hq.question.isCustom {
+                                continue
+                            }
                             let memberAnswers: [MemberAnswer] = hq.answers.map { answer in
                                 MemberAnswer(
                                     memberName: answer.userName,
@@ -258,6 +267,7 @@ public struct HistoryFeature {
             case .goToToday:
                 state.currentMonth = Date()
                 state.selectedDate = Date()
+                state.selectedItem = state.historyItems[Calendar.current.startOfDay(for: Date())]
                 return .none
 
             case .itemTapped(let item):
@@ -286,10 +296,7 @@ public struct HistoryFeature {
             case .historyLoaded(let items):
                 state.historyItems = items
                 state.isLoading = false
-                // 선택된 날짜의 아이템 업데이트
-                if let item = items[Calendar.current.startOfDay(for: state.selectedDate)] {
-                    state.selectedItem = item
-                }
+                state.selectedItem = items[Calendar.current.startOfDay(for: state.selectedDate)]
                 return .none
 
             case .delegate:

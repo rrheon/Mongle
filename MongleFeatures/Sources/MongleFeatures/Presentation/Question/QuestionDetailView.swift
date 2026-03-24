@@ -36,10 +36,6 @@ struct QuestionDetailView: View {
                             moodPickerSection
                             answerInputSection
 
-                            if let errorMessage = store.errorMessage {
-                                errorBanner(errorMessage)
-                            }
-
                             Color.clear.frame(height: 1).id("answerBottom")
                         }
                         .padding(.horizontal, 20)
@@ -67,10 +63,9 @@ struct QuestionDetailView: View {
         .background(MongleColor.background)
         .toolbar(.hidden, for: .navigationBar)
         .onAppear { store.send(.onAppear) }
-        .mongleErrorBanner(
+        .mongleErrorToast(
             error: store.appError,
-            onDismiss: { store.send(.dismissErrorTapped) },
-            onRetry: store.appError?.isRetryable == true ? { store.send(.onAppear) } : nil
+            onDismiss: { store.send(.dismissErrorTapped) }
         )
         .alert(
             "오늘의 몽글을 선택해주세요",
@@ -274,27 +269,6 @@ struct QuestionDetailView: View {
         .padding(.top, 12)
         .padding(.bottom, 32)
         .background(MongleColor.background)
-    }
-
-    // MARK: - Error Banner
-
-    private func errorBanner(_ message: String) -> some View {
-        HStack(spacing: MongleSpacing.sm) {
-            Image(systemName: "exclamationmark.circle.fill")
-                .foregroundColor(MongleColor.error)
-            Text(message)
-                .font(MongleFont.body2())
-                .foregroundColor(MongleColor.error)
-            Spacer()
-            Button { store.send(.dismissErrorTapped) } label: {
-                Image(systemName: "xmark")
-                    .foregroundColor(MongleColor.textSecondary)
-            }
-        }
-        .padding(MongleSpacing.md)
-        .background(MongleColor.bgErrorSoft)
-        .cornerRadius(MongleRadius.large)
-        .overlay(RoundedRectangle(cornerRadius: MongleRadius.large).stroke(MongleColor.error.opacity(0.12), lineWidth: 1))
     }
 
     // MARK: - Family Answers

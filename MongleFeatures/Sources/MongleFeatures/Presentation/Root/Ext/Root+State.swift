@@ -15,9 +15,11 @@ extension RootFeature {
         public let family: MongleGroup?
         public let familyMembers: [User]
         public let hasAnsweredToday: Bool
+        public let hasSkippedToday: Bool
         public let memberAnswerStatus: [UUID: Bool]
         public let streakDays: Int
         public let allFamilies: [MongleGroup]
+        public let hasUnreadNotifications: Bool
 
         public init(
             user: User?,
@@ -25,18 +27,22 @@ extension RootFeature {
             family: MongleGroup?,
             familyMembers: [User],
             hasAnsweredToday: Bool = false,
+            hasSkippedToday: Bool = false,
             memberAnswerStatus: [UUID: Bool] = [:],
             streakDays: Int = 0,
-            allFamilies: [MongleGroup] = []
+            allFamilies: [MongleGroup] = [],
+            hasUnreadNotifications: Bool = false
         ) {
             self.user = user
             self.question = question
             self.family = family
             self.familyMembers = familyMembers
             self.hasAnsweredToday = hasAnsweredToday
+            self.hasSkippedToday = hasSkippedToday
             self.memberAnswerStatus = memberAnswerStatus
             self.streakDays = streakDays
             self.allFamilies = allFamilies
+            self.hasUnreadNotifications = hasUnreadNotifications
         }
     }
 
@@ -60,6 +66,9 @@ extension RootFeature {
 
         // MARK: Heart Popup
         public var showHeartGrantedPopup: Bool = false
+
+        // MARK: Push Navigation
+        public var pendingOpenQuestion: Bool = false
 
         // MARK: Modal
         @Presents public var questionDetail: QuestionDetailFeature.State?

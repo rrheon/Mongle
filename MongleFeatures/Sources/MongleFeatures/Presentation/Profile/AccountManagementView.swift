@@ -24,7 +24,7 @@ public struct AccountManagementView: View {
             .background(MongleColor.background)
         }
         .toolbar(.hidden, for: .navigationBar)
-        .mongleErrorBanner(
+        .mongleErrorToast(
             error: store.appError,
             onDismiss: { store.send(.dismissError) }
         )

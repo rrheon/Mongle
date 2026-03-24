@@ -1131,6 +1131,7 @@ public struct MongleView: View {
     public let color: Color
     public let hasAnswered: Bool
     public let hasCurrentUserAnswered: Bool
+    public let hasCurrentUserSkipped: Bool
     public let isCurrentUser: Bool
     public let onViewAnswer: () -> Void
     public let onNudge: () -> Void
@@ -1142,6 +1143,7 @@ public struct MongleView: View {
     @State private var showAnswerFirstToNudgeAlert = false
 
     public init(name: String, color: Color, hasAnswered: Bool, hasCurrentUserAnswered: Bool,
+                hasCurrentUserSkipped: Bool = false,
                 isCurrentUser: Bool = false,
                 onViewAnswer: @escaping () -> Void,
                 onNudge: @escaping () -> Void,
@@ -1150,6 +1152,7 @@ public struct MongleView: View {
         self.color = color
         self.hasAnswered = hasAnswered
         self.hasCurrentUserAnswered = hasCurrentUserAnswered
+        self.hasCurrentUserSkipped = hasCurrentUserSkipped
         self.isCurrentUser = isCurrentUser
         self.onViewAnswer = onViewAnswer
         self.onNudge = onNudge
@@ -1163,16 +1166,19 @@ public struct MongleView: View {
           return
       }
 
-      // 상대의 답변여부, 나의 답변여부
-      switch (hasAnswered, hasCurrentUserAnswered) {
+      // 패스했거나 답변한 경우 → 상대 답변 볼 수 있음
+      let canView = hasCurrentUserAnswered || hasCurrentUserSkipped
+
+      // 상대의 답변여부, 내가 볼 수 있는지
+      switch (hasAnswered, canView) {
       case (true, true):
-          onViewAnswer() // 둘 다 답변 완료 -> 답변 보기
+          onViewAnswer() // 상대 답변 완료 + 내가 볼 수 있음 -> 답변 보기
 
       case (true, false):
           showAnswerFirstToViewAlert = true  // 상대만 완료 -> 내가 먼저 써야 함 (팝업)
 
       case (false, true):
-          onNudge()  // 나만 완료 -> 상대에게 재촉하기
+          onNudge()  // 내가 볼 수 있음 + 상대 미답변 -> 재촉하기
 
       case (false, false):
           showAnswerFirstToNudgeAlert = true // 둘 다 미완료 -> 내가 먼저 써야 재촉 가능 (팝업)
@@ -1202,15 +1208,18 @@ public struct MongleView: View {
     @ViewBuilder
     private var statusBadge: some View {
         if isCurrentUser {
+            let icon: String = hasAnswered ? "checkmark.circle.fill" : (hasCurrentUserSkipped ? "arrow.right.circle.fill" : "pencil.circle")
+            let label: String = hasAnswered ? "답변완료" : (hasCurrentUserSkipped ? "질문 넘김" : "답변하기")
+            let bgColor: Color = hasAnswered ? MongleColor.primary.opacity(0.85) : (hasCurrentUserSkipped ? Color.purple.opacity(0.7) : MongleColor.accentOrange.opacity(0.85))
             HStack(spacing: 4) {
-                Image(systemName: hasAnswered ? "checkmark.circle.fill" : "pencil.circle")
+                Image(systemName: icon)
                     .font(.system(size: 10, weight: .bold))
-                Text(hasAnswered ? "답변완료" : "답변하기")
+                Text(label)
                     .font(.caption2.bold())
             }
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
-            .background(hasAnswered ? MongleColor.primary.opacity(0.85) : MongleColor.accentOrange.opacity(0.85))
+            .background(bgColor)
             .foregroundColor(.white)
             .clipShape(Capsule())
         } else {
@@ -1233,6 +1242,7 @@ public struct MongleView: View {
 
 public struct MongleSceneView: View {
     public var hasCurrentUserAnswered: Bool = false
+    public var hasCurrentUserSkipped: Bool = false
     public var members: [(name: String, color: Color, hasAnswered: Bool)]
     public var currentUserName: String?
     public var onViewAnswer: (String) -> Void = { _ in }
@@ -1258,12 +1268,14 @@ public struct MongleSceneView: View {
     ]
 
     public init(hasCurrentUserAnswered: Bool = false,
+                hasCurrentUserSkipped: Bool = false,
                 members: [(name: String, color: Color, hasAnswered: Bool)] = [],
                 currentUserName: String? = nil,
                 onViewAnswer: @escaping (String) -> Void = { _ in },
                 onNudge: @escaping (String) -> Void = { _ in },
                 onSelfTap: @escaping () -> Void = {}) {
         self.hasCurrentUserAnswered = hasCurrentUserAnswered
+        self.hasCurrentUserSkipped = hasCurrentUserSkipped
         self.members = members
         self.currentUserName = currentUserName
         self.onViewAnswer = onViewAnswer
@@ -1285,6 +1297,7 @@ public struct MongleSceneView: View {
                         color: h.color,
                         hasAnswered: h.hasAnswered,
                         hasCurrentUserAnswered: hasCurrentUserAnswered,
+                        hasCurrentUserSkipped: hasCurrentUserSkipped,
                         isCurrentUser: currentUserName != nil && h.name == currentUserName,
                         onViewAnswer: { onViewAnswer(h.name) },
                         onNudge: { onNudge(h.name) },

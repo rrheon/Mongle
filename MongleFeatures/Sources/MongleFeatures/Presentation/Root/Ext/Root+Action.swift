@@ -3,6 +3,7 @@
 //  MongleFeatures
 //
 
+import Foundation
 import ComposableArchitecture
 import Domain
 
@@ -33,5 +34,9 @@ extension RootFeature {
         // MARK: Modal
         case questionDetail(PresentationAction<QuestionDetailFeature.Action>)
         case dismissQuestionDetail
+
+        // MARK: Push Notification
+        case deviceTokenReceived(Data)
+        case openQuestion
     }
 }

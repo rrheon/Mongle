@@ -19,6 +19,7 @@ extension MainTabFeature {
         // MARK: Child Feature
         case home(HomeFeature.Action)
         case history(HistoryFeature.Action)
+        case search(SearchHistoryFeature.Action)
         case notification(NotificationFeature.Action)
         case profile(ProfileEditFeature.Action)
 
@@ -29,13 +30,13 @@ extension MainTabFeature {
         case modal(PresentationAction<Modal.Action>)
 
         // MARK: Skip Question
-        case skipQuestionResponse(Result<Question?, AppError>)
+        case skipQuestionResponse(Result<Int, AppError>)
 
         // MARK: My Answer
         case showMyAnswer(memberName: String, questionText: String, answerText: String)
 
         // MARK: Ad Reward
-        case adRewardEarned(HeartCostPopupFeature.CostType)
+        case adRewardEarned(HeartCostPopupFeature.CostType, heartsRemaining: Int)
 
         // MARK: Toast
         case dismissRefreshToast

@@ -53,15 +53,26 @@ public struct NotificationView: View {
 
                 Spacer()
 
-                if store.hasUnread {
-                    Button {
-                        store.send(.markAllAsRead)
-                    } label: {
-                        Text("모두 읽음")
-                            .font(MongleFont.captionBold())
-                            .foregroundColor(MongleColor.textSecondary)
+                if !store.notifications.isEmpty {
+                    HStack(spacing: MongleSpacing.md) {
+                        Button {
+                            store.send(.markAllAsRead)
+                        } label: {
+                            Text("모두 읽음")
+                                .font(MongleFont.captionBold())
+                                .foregroundColor(MongleColor.textSecondary)
+                        }
+                        .buttonStyle(.plain)
+
+                        Button {
+                            store.send(.deleteAll)
+                        } label: {
+                            Text("모두 제거")
+                                .font(MongleFont.captionBold())
+                                .foregroundColor(MongleColor.error)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
             }
         }

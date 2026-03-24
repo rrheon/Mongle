@@ -17,6 +17,7 @@ extension MainTabFeature {
 
             Scope(state: \.home, action: \.home) { HomeFeature() }
             Scope(state: \.history, action: \.history) { HistoryFeature() }
+            Scope(state: \.search, action: \.search) { SearchHistoryFeature() }
             Scope(state: \.notification, action: \.notification) { NotificationFeature() }
             Scope(state: \.profile, action: \.profile) { ProfileEditFeature() }
 
@@ -42,7 +43,14 @@ extension MainTabFeature {
                 // MARK: - Home Delegate
 
                 case .home(.delegate(.navigateToNotifications)):
-                    state.path.append(.notification(NotificationFeature.State()))
+                    if let familyId = state.home.family?.id,
+                       let familyName = state.home.family?.name {
+                        state.path.append(.notification(NotificationFeature.State(
+                            mode: .filtered(familyId: familyId, familyName: familyName)
+                        )))
+                    } else {
+                        state.path.append(.notification(NotificationFeature.State()))
+                    }
                     return .none
 
                 case .home(.delegate(.navigateToMyAnswer)):
@@ -145,6 +153,9 @@ extension MainTabFeature {
                     state.previewMoodId = nil
                     return .none
 
+                case .profile(.delegate(.logout)):
+                    return .send(.logout)
+
                 case .profile(.delegate(.groupLeft)):
                     return .send(.delegate(.navigateToGroupSelect(fromGroupLeft: true)))
 
@@ -164,11 +175,11 @@ extension MainTabFeature {
                     }
 
                 case .modal(.presented(.questionSheet(.delegate(.showWriteQuestionCost)))):
-                    state.modal = .heartCostPopup(HeartCostPopupFeature.State(costType: .writeQuestion))
+                    state.modal = .heartCostPopup(HeartCostPopupFeature.State(costType: .writeQuestion, hearts: state.home.hearts))
                     return .none
 
                 case .modal(.presented(.questionSheet(.delegate(.showRefreshQuestionCost)))):
-                    state.modal = .heartCostPopup(HeartCostPopupFeature.State(costType: .refreshQuestion))
+                    state.modal = .heartCostPopup(HeartCostPopupFeature.State(costType: .refreshQuestion, hearts: state.home.hearts))
                     return .none
 
                 // MARK: - HeartCostPopup Delegate
@@ -183,8 +194,8 @@ extension MainTabFeature {
                         state.modal = nil
                         return .run { [questionRepository] send in
                             do {
-                                let newQuestion = try await questionRepository.skipTodayQuestion()
-                                await send(.skipQuestionResponse(.success(newQuestion)))
+                                let heartsRemaining = try await questionRepository.skipTodayQuestion()
+                                await send(.skipQuestionResponse(.success(heartsRemaining)))
                             } catch {
                                 await send(.skipQuestionResponse(.failure(AppError.from(error))))
                             }
@@ -196,18 +207,28 @@ extension MainTabFeature {
                     return .none
 
                 case .modal(.presented(.heartCostPopup(.delegate(.watchAdRequested(let costType))))):
-                    // 팝업 닫고 광고 재생 → 시청 완료 시 작업 수행
+                    // 팝업 닫고 광고 재생 → 시청 완료 시 서버에서 하트 지급 후 작업 수행
                     state.modal = nil
-                    return .run { [costType] send in
+                    let cost = costType.cost
+                    return .run { [costType, cost] send in
                         let earned = await adClient.showRewardedAd()
-                        if earned {
-                            await send(.adRewardEarned(costType))
+                        guard earned else { return }
+                        do {
+                            let heartsRemaining = try await userRepository.grantAdHearts(amount: cost)
+                            await send(.adRewardEarned(costType, heartsRemaining: heartsRemaining))
+                        } catch {
+                            // 서버 지급 실패 시 로컬에서 cost만큼 임시 추가 (fallback)
+                            await send(.adRewardEarned(costType, heartsRemaining: -1))
                         }
                     }
 
-                case .adRewardEarned(let costType):
-                    // 광고 시청 완료 → 하트 +1 지급 후 요청 작업 수행
-                    state.home.hearts += 1
+                case .adRewardEarned(let costType, let heartsRemaining):
+                    // 광고 시청 완료 → 하트 업데이트 후 요청 작업 수행
+                    if heartsRemaining >= 0 {
+                        state.home.hearts = heartsRemaining
+                    } else {
+                        state.home.hearts += costType.cost
+                    }
                     switch costType {
                     case .writeQuestion:
                         state.path.append(.writeQuestion(WriteQuestionFeature.State()))
@@ -215,8 +236,8 @@ extension MainTabFeature {
                     case .refreshQuestion:
                         return .run { [questionRepository] send in
                             do {
-                                let newQuestion = try await questionRepository.skipTodayQuestion()
-                                await send(.skipQuestionResponse(.success(newQuestion)))
+                                let heartsRemaining = try await questionRepository.skipTodayQuestion()
+                                await send(.skipQuestionResponse(.success(heartsRemaining)))
                             } catch {
                                 await send(.skipQuestionResponse(.failure(AppError.from(error))))
                             }
@@ -276,6 +297,9 @@ extension MainTabFeature {
                     state.home.memberAnswerStatus = [:]
                     state.home.hasAnsweredToday = false
                     state.home.familyAnswerCount = 0
+                    // 오늘 질문이 바뀌었으므로 히스토리 캐시 무효화
+                    state.history.historyItems = [:]
+                    state.history.loadedMonths = []
                     state.showWriteToast = true
                     return .run { send in
                         try await Task.sleep(nanoseconds: 3_000_000_000)
@@ -394,18 +418,27 @@ extension MainTabFeature {
                     state.path.removeLast()
                     return .none
 
-                case .path(.element(id: _, action: .notification(.delegate(.close)))):
+                case .path(.element(id: let id, action: .notification(.delegate(.close)))):
+                    if case let .notification(notifState) = state.path[id: id] {
+                        state.home.hasUnreadNotifications = notifState.hasUnread
+                    }
                     state.path.removeLast()
                     return .none
 
-                case .skipQuestionResponse(.success(let question)):
-                    if let question = question {
-                        state.home.todayQuestion = question
-                        state.home.hearts = max(0, state.home.hearts - 1)
-                        state.home.memberAnswerStatus = [:]
-                        state.home.hasAnsweredToday = false
-                        state.home.familyAnswerCount = 0
-                    }
+                case .path(.element(id: _, action: .notification(.delegate(.navigateToQuestion)))):
+                    state.path.removeLast()
+                    guard let question = state.home.todayQuestion else { return .none }
+                    state.path.append(.questionDetail(QuestionDetailFeature.State(
+                        question: question,
+                        currentUser: state.home.currentUser,
+                        familyMembers: state.home.familyMembers
+                    )))
+                    return .none
+
+                case .skipQuestionResponse(.success(let heartsRemaining)):
+                    // 개인 패스: 질문 유지, 하트 차감, 패스 상태 기록
+                    state.home.hearts = heartsRemaining
+                    state.home.hasSkippedToday = true
                     state.showRefreshToast = true
                     return .run { send in
                         try await Task.sleep(nanoseconds: 3_000_000_000)

@@ -30,7 +30,7 @@ public struct WriteQuestionView: View {
         .onTapGesture {
             isTextEditorFocused = false
         }
-        .mongleErrorBanner(
+        .mongleErrorToast(
             error: store.appError,
             onDismiss: { store.send(.setAppError(nil)) }
         )

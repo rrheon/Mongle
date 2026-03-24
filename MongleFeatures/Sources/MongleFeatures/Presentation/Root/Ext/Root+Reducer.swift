@@ -7,6 +7,7 @@ import Foundation
 import ComposableArchitecture
 import Domain
 import UserNotifications
+import UIKit
 
 extension RootFeature {
 
@@ -37,7 +38,13 @@ extension RootFeature {
                             let familyResult = try await familyRepository.getMyFamily()
                             let family = familyResult?.0
                             let familyMembers = familyResult?.1 ?? []
-                            let todayQuestion = try await questionRepository.getTodayQuestion()
+                            // 오전 12시(정오) 이전에는 오늘의 질문을 가져오지 않음
+                            let calendar = Calendar.current
+                            let now = Date()
+                            let noon = calendar.date(bySettingHour: 12, minute: 0, second: 0, of: now) ?? now
+                            let todayQuestion: Question? = now >= noon
+                                ? try await questionRepository.getTodayQuestion()
+                                : nil
 
                             var memberAnswerStatus: [UUID: Bool] = [:]
                             // 서버 /answers API는 Question.id 기준 (DailyQuestion.id 아님)
@@ -59,15 +66,22 @@ extension RootFeature {
                             let streakDays = (try? await userRepository.getMyStreak()) ?? 0
                             let allFamilies = (try? await familyRepository.getMyFamilies()) ?? []
 
+                            let hasSkippedToday = todayQuestion?.hasMySkipped ?? false
+
+                            let notifications = (try? await notificationRepository.getNotifications(limit: 50)) ?? []
+                            let hasUnreadNotifications = notifications.contains { !$0.isRead }
+
                             let data = RootData(
                                 user: currentUser,
                                 question: todayQuestion,
                                 family: family,
                                 familyMembers: familyMembers,
                                 hasAnsweredToday: hasAnsweredToday,
+                                hasSkippedToday: hasSkippedToday,
                                 memberAnswerStatus: memberAnswerStatus,
                                 streakDays: streakDays,
-                                allFamilies: allFamilies
+                                allFamilies: allFamilies,
+                                hasUnreadNotifications: hasUnreadNotifications
                             )
                             await send(.loadDataResponse(.success(data)))
                         } catch {
@@ -92,14 +106,16 @@ extension RootFeature {
                 case .loadDataResponse(.success(let data)):
                     state.currentUser = data.user
 
-                    // 하루 첫 접속 하트 팝업 체크
-                    let heartPopupKey = "mongle.lastHeartPopupDate"
-                    let todayStart = Calendar.current.startOfDay(for: Date())
-                    let lastPopupDate = UserDefaults.standard.object(forKey: heartPopupKey) as? Date
-                    let isFirstAccessToday = lastPopupDate == nil || Calendar.current.startOfDay(for: lastPopupDate!) < todayStart
-                    if isFirstAccessToday && data.user != nil {
-                        UserDefaults.standard.set(todayStart, forKey: heartPopupKey)
-                        state.showHeartGrantedPopup = true
+                    // 하루 첫 접속 하트 팝업 체크 (그룹별)
+                    if let familyId = data.family?.id, data.user != nil {
+                        let heartPopupKey = "mongle.lastHeartPopupDate.\(familyId)"
+                        let todayStart = Calendar.current.startOfDay(for: Date())
+                        let lastPopupDate = UserDefaults.standard.object(forKey: heartPopupKey) as? Date
+                        let isFirstAccessToday = lastPopupDate == nil || Calendar.current.startOfDay(for: lastPopupDate!) < todayStart
+                        if isFirstAccessToday {
+                            UserDefaults.standard.set(todayStart, forKey: heartPopupKey)
+                            state.showHeartGrantedPopup = true
+                        }
                     }
 
                     // mainTab이 아직 없는 경우 = 자동 로그인(첫 로드)
@@ -114,18 +130,30 @@ extension RootFeature {
                         isRefreshing: false,
                         errorMessage: nil,
                         hasAnsweredToday: data.hasAnsweredToday,
+                        hasSkippedToday: data.hasSkippedToday,
                         hearts: data.user?.hearts ?? 0,
                         familyAnswerCount: data.question?.familyAnswerCount ?? 0,
                         memberAnswerStatus: data.memberAnswerStatus,
                         streakDays: data.streakDays,
-                        allFamilies: data.allFamilies
+                        allFamilies: data.allFamilies,
+                        hasUnreadNotifications: data.hasUnreadNotifications
                     )
                     if state.mainTab != nil {
                         state.mainTab?.home = homeState
-                        state.mainTab?.profile.user = data.user
-                        state.mainTab?.profile.familyId = data.family?.id
-                        state.mainTab?.profile.familyCreatedById = data.family?.createdBy
+                        // profile 전체 재생성: supportScreen 등 modal 상태 초기화 포함
+                        state.mainTab?.profile = ProfileEditFeature.State(
+                            user: data.user,
+                            familyId: data.family?.id,
+                            familyCreatedById: data.family?.createdBy
+                        )
                         if let familyId = data.family?.id {
+                            // 그룹이 바뀐 경우 또는 오늘 날짜 히스토리가 캐시에 없는 경우 무효화
+                            let today = Calendar.current.startOfDay(for: Date())
+                            let isTodayMissing = state.mainTab?.history.historyItems[today] == nil
+                            if state.mainTab?.history.familyId != familyId || isTodayMissing {
+                                state.mainTab?.history.historyItems = [:]
+                                state.mainTab?.history.loadedMonths = []
+                            }
                             state.mainTab?.history.familyId = familyId
                             state.mainTab?.history.familyMembers = data.familyMembers
                         }
@@ -140,26 +168,43 @@ extension RootFeature {
                             profile: ProfileEditFeature.State(user: data.user, familyId: data.family?.id, familyCreatedById: data.family?.createdBy)
                         )
                     }
+                    let wasOnGroupSelect = state.appState == .groupSelection
                     let newAppState: RootFeature.State.AppState = (data.family == nil || isInitialLoad) ? .groupSelection : .authenticated
+                    // 그룹 선택 화면에서 인증 완료 전환 시 HomeTab으로 리셋
+                    if wasOnGroupSelect && newAppState == .authenticated {
+                        state.mainTab?.selectedTab = .home
+                        state.mainTab?.path.removeAll()
+                    }
                     state.appState = newAppState
-                    // 최초 로그인 시 푸시 알림 권한 요청
+                    // 최초 로그인 시 푸시 알림 권한 요청 + APNs 등록
                     if newAppState == .authenticated {
+                        // pendingOpenQuestion 처리: 데이터가 로드되면 질문 화면으로 이동
+                        if state.pendingOpenQuestion, let question = data.question {
+                            state.pendingOpenQuestion = false
+                            state.mainTab?.path.append(.questionDetail(QuestionDetailFeature.State(
+                                question: question,
+                                currentUser: data.user,
+                                familyMembers: data.familyMembers
+                            )))
+                        }
                         return .run { _ in
                             let key = "mongle.didRequestPushPermission"
-                            guard !UserDefaults.standard.bool(forKey: key) else { return }
-                            UserDefaults.standard.set(true, forKey: key)
-                            _ = try? await UNUserNotificationCenter.current()
-                                .requestAuthorization(options: [.alert, .badge, .sound])
+                            if !UserDefaults.standard.bool(forKey: key) {
+                                UserDefaults.standard.set(true, forKey: key)
+                                _ = try? await UNUserNotificationCenter.current()
+                                    .requestAuthorization(options: [.alert, .badge, .sound])
+                            }
+                            // 항상 APNs 토큰 등록 갱신
+                            await MainActor.run {
+                                UIApplication.shared.registerForRemoteNotifications()
+                            }
                         }
                     }
                     if newAppState == .groupSelection {
+                        // data.allFamilies는 이미 loadData에서 받아온 최신 데이터이므로
+                        // 별도 getMyFamilies() 재호출 불필요. 동일 프레임 내 중복 업데이트 방지.
                         state.groupSelect.groups = data.allFamilies
                         state.groupSelect.currentUserId = data.user?.id
-                        return .run { [familyRepository] send in
-                            await send(.loadGroupsResponse(
-                                Result { try await familyRepository.getMyFamilies() }
-                            ))
-                        }
                     }
                     return .none
 
@@ -172,7 +217,6 @@ extension RootFeature {
                         state.mainTab?.home.isLoading = false
                         state.mainTab?.home.isRefreshing = false
                         state.mainTab?.home.appError = appError
-                        state.mainTab?.home.errorMessage = appError.userMessage
                     } else {
                         state.appState = .unauthenticated
                     }
@@ -223,7 +267,9 @@ extension RootFeature {
                     state.groupSelect.currentUserId = state.currentUser?.id
                     state.groupSelect.showGroupLeftToast = fromGroupLeft
                     state.appState = .groupSelection
+                    // Task.yield()으로 한 프레임 양보 후 갱신 → NavigationStack 마운트 완료 후 업데이트
                     return .run { [familyRepository] send in
+                        await Task.yield()
                         await send(.loadGroupsResponse(
                             Result { try await familyRepository.getMyFamilies() }
                         ))
@@ -389,6 +435,32 @@ extension RootFeature {
                 case .dismissQuestionDetail:
                     state.selectedQuestion = nil
                     state.questionDetail = nil
+                    return .none
+
+                // MARK: Push Notification
+
+                case .deviceTokenReceived(let data):
+                    let token = data.map { String(format: "%02x", $0) }.joined()
+                    return .run { [userRepository] _ in
+                        try? await userRepository.registerDeviceToken(token: token)
+                    }
+
+                case .openQuestion:
+                    // 이미 데이터가 로드된 경우 즉시 질문 화면으로 이동
+                    if let question = state.mainTab?.home.todayQuestion,
+                       state.appState == .authenticated {
+                        let currentUser = state.mainTab?.home.currentUser
+                        let familyMembers = state.mainTab?.home.familyMembers ?? []
+                        state.mainTab?.path.removeAll()
+                        state.mainTab?.path.append(.questionDetail(QuestionDetailFeature.State(
+                            question: question,
+                            currentUser: currentUser,
+                            familyMembers: familyMembers
+                        )))
+                    } else {
+                        // 아직 데이터 로딩 중 → 로딩 완료 후 이동
+                        state.pendingOpenQuestion = true
+                    }
                     return .none
                 }
             }

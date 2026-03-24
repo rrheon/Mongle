@@ -32,7 +32,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		EE964BA02EE97EF200AD2760 /* Exceptions for "Mongle" folder in "Mongle" target */ = {
+		EEA021C92F540B52007CCD3B /* Exceptions for "Mongle" folder in "Mongle" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -45,7 +45,7 @@
 		EE964B922EE97EF000AD2760 /* Mongle */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				EE964BA02EE97EF200AD2760 /* Exceptions for "Mongle" folder in "Mongle" target */,
+				EEA021C92F540B52007CCD3B /* Exceptions for "Mongle" folder in "Mongle" target */,
 			);
 			path = Mongle;
 			sourceTree = "<group>";
@@ -300,6 +300,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Mongle/Mongle.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = YQC68LN7U3;
@@ -333,6 +334,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Mongle/Mongle.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = YQC68LN7U3;

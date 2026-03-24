@@ -22,7 +22,6 @@ public struct QuestionDetailFeature {
         public var selectedMoodIndex: Int? = nil
         public var isLoading: Bool = false
         public var isSubmitting: Bool = false
-        public var errorMessage: String?
         public var appError: AppError?
         public var showMoodRequiredAlert: Bool = false
 
@@ -52,8 +51,7 @@ public struct QuestionDetailFeature {
             answerText: String = "",
             selectedMoodIndex: Int? = nil,
             isLoading: Bool = false,
-            isSubmitting: Bool = false,
-            errorMessage: String? = nil
+            isSubmitting: Bool = false
         ) {
             self.question = question
             self.currentUser = currentUser
@@ -64,7 +62,6 @@ public struct QuestionDetailFeature {
             self.selectedMoodIndex = selectedMoodIndex
             self.isLoading = isLoading
             self.isSubmitting = isSubmitting
-            self.errorMessage = errorMessage
         }
     }
 
@@ -143,7 +140,7 @@ public struct QuestionDetailFeature {
 
             case .answerTextChanged(let text):
                 state.answerText = text
-                state.errorMessage = nil
+                state.appError = nil
                 return .none
 
             case .moodSelected(let index):
@@ -160,22 +157,23 @@ public struct QuestionDetailFeature {
                     return .none
                 }
                 guard state.isValidAnswer else {
-                    state.errorMessage = "답변을 입력해주세요."
+                    state.appError = .domain("답변을 입력해주세요.")
                     return .none
                 }
                 guard state.question.dailyQuestionId != nil else {
-                    state.errorMessage = "질문 정보를 불러올 수 없습니다."
+                    state.appError = .domain("질문 정보를 불러올 수 없습니다.")
                     return .none
                 }
 
                 state.isSubmitting = true
-                state.errorMessage = nil
+                state.appError = nil
 
                 let answerText = state.answerText.trimmingCharacters(in: .whitespacesAndNewlines)
                 let userId = state.currentUser?.id ?? UUID()
                 let existingAnswer = state.myAnswer
                 // Question.id를 사용 (서버 /answers API는 Question 테이블 ID 기준)
                 let questionId = state.question.id
+                let selectedMoodId = state.selectedMoodIndex.map { MoodOption.defaults[$0].id }
 
                 return .run { [answerRepository] send in
                     do {
@@ -200,7 +198,7 @@ public struct QuestionDetailFeature {
                                 imageURL: nil,
                                 createdAt: Date()
                             )
-                            result = try await answerRepository.create(newAnswer)
+                            result = try await answerRepository.create(newAnswer, moodId: selectedMoodId)
                         }
                         await send(.submitAnswerResponse(.success(result)))
                     } catch {
@@ -209,7 +207,6 @@ public struct QuestionDetailFeature {
                 }
 
             case .dismissErrorTapped:
-                state.errorMessage = nil
                 state.appError = nil
                 return .none
 
@@ -241,12 +238,10 @@ public struct QuestionDetailFeature {
             case .submitAnswerResponse(.failure(let error)):
                 state.isSubmitting = false
                 state.appError = error
-                state.errorMessage = error.userMessage
                 return .none
 
             case .setAppError(let error):
                 state.appError = error
-                state.errorMessage = error?.userMessage
                 state.isLoading = false
                 state.isSubmitting = false
                 return .none
