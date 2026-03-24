@@ -8,6 +8,8 @@ public struct HeartCostPopupFeature {
     public enum CostType: Equatable, Sendable {
         case writeQuestion   // 나만의 질문 작성하기 - 하트 3개
         case refreshQuestion // 질문 넘기기 (개인 패스) - 하트 3개
+
+        public var cost: Int { 3 }
     }
 
     @ObservableState

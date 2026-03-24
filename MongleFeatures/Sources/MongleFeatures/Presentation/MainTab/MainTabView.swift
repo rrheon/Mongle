@@ -73,6 +73,9 @@ struct MainTabView: View {
             HistoryView(store: store.scope(state: \.history, action: \.history))
                 .tabItem { Label("HISTORY", systemImage: "book") }
                 .tag(MainTabFeature.State.Tab.history)
+            SearchHistoryView(store: store.scope(state: \.search, action: \.search))
+                .tabItem { Label("SEARCH", systemImage: "magnifyingglass") }
+                .tag(MainTabFeature.State.Tab.search)
 //            NotificationView(store: store.scope(state: \.notification, action: \.notification))
 //                .tabItem { Label("NOTICE", systemImage: "bell") }
 //                .tag(MainTabFeature.State.Tab.notification)
@@ -146,7 +149,7 @@ struct MainTabView: View {
             topBarState: HomeTopBarState(
                 streakDays: store.home.streakDays,
                 groupName: store.home.family?.name ?? "우리 가족",
-                hasNotification: false,
+                hasNotification: store.home.hasUnreadNotifications,
                 hearts: store.home.hearts,
                 todayQuestion: store.home.todayQuestion.map {
                     TopBarQuestion(id: $0.id, text: $0.content, isAnswered: store.home.hasAnsweredToday)

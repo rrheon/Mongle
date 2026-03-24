@@ -19,6 +19,7 @@ extension MainTabFeature {
         // MARK: Child Feature
         case home(HomeFeature.Action)
         case history(HistoryFeature.Action)
+        case search(SearchHistoryFeature.Action)
         case notification(NotificationFeature.Action)
         case profile(ProfileEditFeature.Action)
 
@@ -35,7 +36,7 @@ extension MainTabFeature {
         case showMyAnswer(memberName: String, questionText: String, answerText: String)
 
         // MARK: Ad Reward
-        case adRewardEarned(HeartCostPopupFeature.CostType)
+        case adRewardEarned(HeartCostPopupFeature.CostType, heartsRemaining: Int)
 
         // MARK: Toast
         case dismissRefreshToast

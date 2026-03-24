@@ -22,6 +22,7 @@ extension MainTabFeature {
         // MARK: Child Features
         public var home = HomeFeature.State()
         public var history = HistoryFeature.State()
+        public var search = SearchHistoryFeature.State()
         public var notification = NotificationFeature.State()
         public var profile = ProfileEditFeature.State()
 
@@ -47,6 +48,7 @@ extension MainTabFeature {
         public enum Tab: Hashable {
             case home
             case history
+            case search
             case notification
             case settings
         }
@@ -55,12 +57,14 @@ extension MainTabFeature {
             selectedTab: Tab = .home,
             home: HomeFeature.State = HomeFeature.State(),
             history: HistoryFeature.State = HistoryFeature.State(),
+            search: SearchHistoryFeature.State = SearchHistoryFeature.State(),
             notification: NotificationFeature.State = NotificationFeature.State(),
             profile: ProfileEditFeature.State = ProfileEditFeature.State()
         ) {
             self.selectedTab = selectedTab
             self.home = home
             self.history = history
+            self.search = search
             self.notification = notification
             self.profile = profile
         }

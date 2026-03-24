@@ -17,6 +17,7 @@ extension MainTabFeature {
 
             Scope(state: \.home, action: \.home) { HomeFeature() }
             Scope(state: \.history, action: \.history) { HistoryFeature() }
+            Scope(state: \.search, action: \.search) { SearchHistoryFeature() }
             Scope(state: \.notification, action: \.notification) { NotificationFeature() }
             Scope(state: \.profile, action: \.profile) { ProfileEditFeature() }
 
@@ -174,11 +175,11 @@ extension MainTabFeature {
                     }
 
                 case .modal(.presented(.questionSheet(.delegate(.showWriteQuestionCost)))):
-                    state.modal = .heartCostPopup(HeartCostPopupFeature.State(costType: .writeQuestion))
+                    state.modal = .heartCostPopup(HeartCostPopupFeature.State(costType: .writeQuestion, hearts: state.home.hearts))
                     return .none
 
                 case .modal(.presented(.questionSheet(.delegate(.showRefreshQuestionCost)))):
-                    state.modal = .heartCostPopup(HeartCostPopupFeature.State(costType: .refreshQuestion))
+                    state.modal = .heartCostPopup(HeartCostPopupFeature.State(costType: .refreshQuestion, hearts: state.home.hearts))
                     return .none
 
                 // MARK: - HeartCostPopup Delegate
@@ -206,18 +207,28 @@ extension MainTabFeature {
                     return .none
 
                 case .modal(.presented(.heartCostPopup(.delegate(.watchAdRequested(let costType))))):
-                    // 팝업 닫고 광고 재생 → 시청 완료 시 작업 수행
+                    // 팝업 닫고 광고 재생 → 시청 완료 시 서버에서 하트 지급 후 작업 수행
                     state.modal = nil
-                    return .run { [costType] send in
+                    let cost = costType.cost
+                    return .run { [costType, cost] send in
                         let earned = await adClient.showRewardedAd()
-                        if earned {
-                            await send(.adRewardEarned(costType))
+                        guard earned else { return }
+                        do {
+                            let heartsRemaining = try await userRepository.grantAdHearts(amount: cost)
+                            await send(.adRewardEarned(costType, heartsRemaining: heartsRemaining))
+                        } catch {
+                            // 서버 지급 실패 시 로컬에서 cost만큼 임시 추가 (fallback)
+                            await send(.adRewardEarned(costType, heartsRemaining: -1))
                         }
                     }
 
-                case .adRewardEarned(let costType):
-                    // 광고 시청 완료 → 하트 +1 지급 후 요청 작업 수행
-                    state.home.hearts += 1
+                case .adRewardEarned(let costType, let heartsRemaining):
+                    // 광고 시청 완료 → 하트 업데이트 후 요청 작업 수행
+                    if heartsRemaining >= 0 {
+                        state.home.hearts = heartsRemaining
+                    } else {
+                        state.home.hearts += costType.cost
+                    }
                     switch costType {
                     case .writeQuestion:
                         state.path.append(.writeQuestion(WriteQuestionFeature.State()))
@@ -407,7 +418,10 @@ extension MainTabFeature {
                     state.path.removeLast()
                     return .none
 
-                case .path(.element(id: _, action: .notification(.delegate(.close)))):
+                case .path(.element(id: let id, action: .notification(.delegate(.close)))):
+                    if case let .notification(notifState) = state.path[id: id] {
+                        state.home.hasUnreadNotifications = notifState.hasUnread
+                    }
                     state.path.removeLast()
                     return .none
 
