@@ -154,6 +154,7 @@ public struct HistoryFeature {
     public enum Action: Sendable, Equatable {
         // MARK: - View Actions
         case onAppear
+        case forceReload
         case calendarTapped
         case selectDate(Date)
         case previousMonth
@@ -187,6 +188,11 @@ public struct HistoryFeature {
             switch action {
             case .onAppear:
                 guard state.historyItems.isEmpty else { return .none }
+                return .send(.forceReload)
+
+            case .forceReload:
+                state.historyItems = [:]
+                state.loadedMonths = []
                 state.isLoading = true
                 guard state.familyId != nil else {
                     // familyId 없으면 mock 데이터
@@ -199,17 +205,14 @@ public struct HistoryFeature {
                 let totalMembers = max(state.familyMembers.count, 1)
                 return .run { [questionRepository] send in
                     do {
-                        // 단일 API 호출로 질문 + 답변 한꺼번에 가져오기 (N+1 제거)
                         let historyQuestions = try await questionRepository.getHistory(page: 1, limit: 60)
                         let calendar = Calendar.current
                         let now = Date()
-                        // 오전 12시 (정오) 기준: 그 전까지는 오늘의 일반 질문 숨김
                         let noon = calendar.date(bySettingHour: 12, minute: 0, second: 0, of: now) ?? now
                         let isBeforeNoon = now < noon
                         var historyItems: [Date: HistoryItem] = [:]
                         for hq in historyQuestions {
                             let isToday = calendar.isDateInToday(hq.date)
-                            // 오전이고, 오늘 날짜이고, 커스텀 질문이 아니면 히스토리에 포함하지 않음
                             if isBeforeNoon && isToday && !hq.question.isCustom {
                                 continue
                             }
@@ -234,7 +237,7 @@ public struct HistoryFeature {
                         }
                         await send(.historyLoaded(historyItems))
                     } catch {
-                        await send(.setAppError(errorHandler(error, context: "HistoryFeature.onAppear")))
+                        await send(.setAppError(errorHandler(error, context: "HistoryFeature.forceReload")))
                     }
                 }
 

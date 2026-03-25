@@ -105,11 +105,8 @@ struct HomeView: View {
                     showGroupDropdown: $showGroupDropdown,
                     onQuestionTap: actions.onQuestionTap,
                     onNotificationTap: actions.onNotificationTap,
-                    onHeartsTap: actions.onHeartsTap,
-                    onGroupSelected: actions.onGroupSelected,
-                    onNavigateToGroupSelect: actions.onNavigateToGroupSelect
+                    onHeartsTap: actions.onHeartsTap
                 )
-                .zIndex(1)
 
                 // Mongle Scene
                 MongleSceneView(
@@ -126,11 +123,27 @@ struct HomeView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .ignoresSafeArea(edges: .top)
 
-            // 그룹 드롭다운 반투명 배경 (터치 시 닫기)
+            // 그룹 드롭다운
             if showGroupDropdown {
+                GroupDropdownView(
+                    families: topBarState.allFamilies,
+                    currentGroupName: topBarState.groupName,
+                    onGroupSelected: { family in
+                        withAnimation(.easeInOut(duration: 0.15)) { showGroupDropdown = false }
+                        actions.onGroupSelected(family)
+                    },
+                    onNavigateToGroupSelect: {
+                        withAnimation(.easeInOut(duration: 0.15)) { showGroupDropdown = false }
+                        actions.onNavigateToGroupSelect()
+                    }
+                )
+                .padding(.top, 116)
+
+                // 반투명 배경 (터치 시 닫기) — 드롭다운 아래 레이어
                 Color.black.opacity(0.3)
                     .ignoresSafeArea()
                     .onTapGesture { withAnimation(.easeInOut(duration: 0.15)) { showGroupDropdown = false } }
+                    .zIndex(-1)
             }
         }
         .ignoresSafeArea(edges: .top)
@@ -145,8 +158,6 @@ struct TopBarView: View {
   var onQuestionTap: () -> Void = { print("질문 카드 탭") }
   var onNotificationTap: () -> Void = { print("알림 탭") }
   var onHeartsTap: () -> Void = {}
-  var onGroupSelected: (MongleGroup) -> Void = { _ in }
-  var onNavigateToGroupSelect: () -> Void = {}
 
   var body: some View {
     VStack(spacing: 0) {
@@ -209,22 +220,6 @@ struct TopBarView: View {
     .padding(.horizontal, 20)
     .padding(.top, 60)
     .background(Color.white.ignoresSafeArea(edges: .top))
-    .overlay(alignment: .bottomLeading) {
-      if showGroupDropdown {
-        GroupDropdownView(
-          families: state.allFamilies,
-          currentGroupName: state.groupName,
-          onGroupSelected: { family in
-            withAnimation(.easeInOut(duration: 0.15)) { showGroupDropdown = false }
-            onGroupSelected(family)
-          },
-          onNavigateToGroupSelect: {
-            withAnimation(.easeInOut(duration: 0.15)) { showGroupDropdown = false }
-            onNavigateToGroupSelect()
-          }
-        )
-      }
-    }
   }
 }
 
