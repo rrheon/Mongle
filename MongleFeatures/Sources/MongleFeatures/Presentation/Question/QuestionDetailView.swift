@@ -77,6 +77,11 @@ struct QuestionDetailView: View {
         } message: {
             Text("지금 기분과 가장 비슷한 몽글 캐릭터를 골라보세요 🌿")
         }
+        .fullScreenCover(
+            item: $store.scope(state: \.editCostPopup, action: \.editCostPopup)
+        ) { popupStore in
+            HeartCostPopupView(store: popupStore)
+        }
     }
 
     // MARK: - Header
@@ -183,7 +188,10 @@ struct QuestionDetailView: View {
     private var answerInputSection: some View {
         TextField("오늘의 감정을 자유롭게 적어보세요.\n어떤 이야기든 좋아요.", text: Binding(
             get: { store.answerText },
-            set: { store.send(.answerTextChanged($0)) }
+            set: { newValue in
+                guard !store.isSubmitting else { return }
+                store.send(.answerTextChanged(newValue))
+            }
         ), axis: .vertical)
         .font(MongleFont.body2())
         .foregroundColor(MongleColor.textPrimary)
