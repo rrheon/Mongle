@@ -55,7 +55,7 @@ extension GroupSelectView {
             MongleCardGroup(
               groupName: group.name,
               memberColors: memberColors(for: group),
-              streakDays: 0,
+              streakDays: group.streakDays > 0 ? group.streakDays : nil,
               onTap: { store.send(.groupTapped(group)) }
             )
             .contextMenu {
