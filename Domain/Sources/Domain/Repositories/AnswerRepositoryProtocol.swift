@@ -14,13 +14,16 @@ public protocol AnswerRepositoryInterface: Sendable {
     func getByUserAndDailyQuestion(dailyQuestionId: UUID, userId: UUID) async throws -> Answer?
     func hasUserAnswered(dailyQuestionId: UUID, userId: UUID) async throws -> Bool
     func getByUser(userId: UUID) async throws -> [Answer]
-    func update(_ answer: Answer) async throws -> Answer
+    func update(_ answer: Answer, moodId: String?) async throws -> Answer
     func delete(id: UUID) async throws
 }
 
 public extension AnswerRepositoryInterface {
     func create(_ answer: Answer) async throws -> Answer {
         try await create(answer, moodId: nil)
+    }
+    func update(_ answer: Answer) async throws -> Answer {
+        try await update(answer, moodId: nil)
     }
 }
 
