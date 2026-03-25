@@ -177,7 +177,7 @@ struct MainTabView: View {
         )
         .alert("로그인이 필요해요", isPresented: Binding(
             get: { store.home.showGuestLoginPrompt },
-            set: { if !$0 { store.send(.home(.guestLoginDismissed)) } }
+            set: { _ in }
         )) {
             Button("로그인하기") { store.send(.home(.guestLoginTapped)) }
             Button("취소", role: .cancel) { store.send(.home(.guestLoginDismissed)) }

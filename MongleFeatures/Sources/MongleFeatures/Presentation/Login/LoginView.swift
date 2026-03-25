@@ -26,6 +26,7 @@ struct LoginView: View {
 
           Text("몽글")
             .font(MongleFont.heading1())
+            .foregroundStyle(.black)
             
           Text("오늘의 마음은 어떤 색인가요?")
             .font(MongleFont.body1())
