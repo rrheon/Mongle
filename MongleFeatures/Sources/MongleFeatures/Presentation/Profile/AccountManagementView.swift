@@ -63,7 +63,7 @@ public struct AccountManagementView: View {
                         .foregroundColor(MongleColor.textPrimary)
                         .frame(width: 44, height: 44)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(MongleScaleButtonStyle())
                 Spacer()
             }
         }

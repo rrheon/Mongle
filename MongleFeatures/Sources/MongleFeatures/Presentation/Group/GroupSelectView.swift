@@ -240,9 +240,11 @@ public struct GroupSelectView: View {
             }
           } label: {
             Image(systemName: "chevron.left")
-              .font(.system(size: 17, weight: .medium))
+              .font(.system(size: 18, weight: .medium))
               .foregroundColor(MongleColor.textPrimary)
+              .frame(width: 44, height: 44)
           }
+          .buttonStyle(MongleScaleButtonStyle())
         } else {
           Color.clear.frame(width: 28, height: 28)
         }

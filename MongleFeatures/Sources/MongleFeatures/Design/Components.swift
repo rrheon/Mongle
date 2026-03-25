@@ -1022,7 +1022,7 @@ struct MongleRowButtonStyle: ButtonStyle {
             .background(configuration.isPressed ? Color.black.opacity(0.05) : Color.clear)
     }
 }
-}
+
 
 // MARK: - Previews
 

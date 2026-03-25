@@ -73,8 +73,11 @@ public struct SupportScreenView: View {
                     store.send(.closeTapped)
                 } label: {
                     Image(systemName: "chevron.left")
+                        .font(.system(size: 18, weight: .medium))
                         .foregroundColor(MongleColor.textPrimary)
+                        .frame(width: 44, height: 44)
                 }
+                .buttonStyle(MongleScaleButtonStyle())
             }
         }
         .navigationBarBackButtonHidden(true)

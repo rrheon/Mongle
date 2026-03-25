@@ -43,11 +43,12 @@ public struct WriteQuestionView: View {
             Button {
                 store.send(.closeTapped)
             } label: {
-                Image(systemName: "chevron.backward")
-                    .font(.system(size: 17, weight: .semibold))
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 18, weight: .medium))
                     .foregroundColor(MongleColor.textPrimary)
-                    .frame(width: 24, height: 24)
+                    .frame(width: 44, height: 44)
             }
+            .buttonStyle(MongleScaleButtonStyle())
             Spacer()
             Text("나만의 질문 작성하기")
                 .font(MongleFont.heading3())

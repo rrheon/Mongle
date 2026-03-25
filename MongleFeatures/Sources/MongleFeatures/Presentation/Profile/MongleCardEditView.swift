@@ -38,8 +38,8 @@ public struct MongleCardEditView: View {
             Button {
                 store.send(.backTapped)
             } label: {
-                Image(systemName: "arrow.left")
-                    .font(.system(size: 20, weight: .medium))
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 18, weight: .medium))
                     .foregroundColor(MongleColor.textPrimary)
                     .frame(width: 44, height: 44)
                     .contentShape(Rectangle())
