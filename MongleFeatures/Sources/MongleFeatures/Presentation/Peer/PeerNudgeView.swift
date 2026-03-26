@@ -33,26 +33,11 @@ public struct PeerNudgeView: View {
     // MARK: - Navigation Header
 
     private var navigationHeader: some View {
-        HStack {
-            Button {
-                store.send(.closeTapped)
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 18, weight: .medium))
-                    .foregroundColor(MongleColor.textPrimary)
-                    .frame(width: 44, height: 44)
-            }
-            .buttonStyle(MongleScaleButtonStyle())
-            Spacer()
-            Text("답변 재촉하기")
-                .font(MongleFont.heading3())
-                .foregroundColor(MongleColor.textPrimary)
-            Spacer()
-            Color.clear.frame(width: 24, height: 24)
+        MongleNavigationHeader(title: "답변 재촉하기") {
+            MongleBackButton { store.send(.closeTapped) }
+        } right: {
+            EmptyView()
         }
-        .padding(.horizontal, 20)
-        .frame(height: 56)
-        .background(Color.white)
     }
 
     // MARK: - Question Card

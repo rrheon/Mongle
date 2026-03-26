@@ -35,50 +35,28 @@ public struct NotificationView: View {
     }
 
     private var headerView: some View {
-        ZStack {
-            Text("알림")
-                .font(MongleFont.heading3().weight(.bold))
-                .foregroundColor(MongleColor.textPrimary)
-
-            HStack {
-                Button {
-                    store.send(.backTapped)
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(MongleColor.textPrimary)
-                        .frame(width: 44, height: 44)
-                }
-                .buttonStyle(MongleScaleButtonStyle())
-
-                Spacer()
-
-                if !store.notifications.isEmpty {
-                    HStack(spacing: MongleSpacing.md) {
-                        Button {
-                            store.send(.markAllAsRead)
-                        } label: {
-                            Text("모두 읽음")
-                                .font(MongleFont.captionBold())
-                                .foregroundColor(MongleColor.textSecondary)
-                        }
-                        .buttonStyle(MongleScaleButtonStyle())
-
-                        Button {
-                            store.send(.deleteAll)
-                        } label: {
-                            Text("모두 제거")
-                                .font(MongleFont.captionBold())
-                                .foregroundColor(MongleColor.error)
-                        }
-                        .buttonStyle(MongleScaleButtonStyle())
+        MongleNavigationHeader(title: "알림") {
+            MongleBackButton { store.send(.backTapped) }
+        } right: {
+            if !store.notifications.isEmpty {
+                HStack(spacing: MongleSpacing.md) {
+                    Button { store.send(.markAllAsRead) } label: {
+                        Text("모두 읽음")
+                            .font(MongleFont.captionBold())
+                            .foregroundColor(MongleColor.textSecondary)
                     }
+                    .buttonStyle(MongleScaleButtonStyle())
+
+                    Button { store.send(.deleteAll) } label: {
+                        Text("모두 제거")
+                            .font(MongleFont.captionBold())
+                            .foregroundColor(MongleColor.error)
+                    }
+                    .buttonStyle(MongleScaleButtonStyle())
                 }
+                .padding(.trailing, MongleSpacing.xs)
             }
         }
-        .frame(height: 56)
-        .padding(.horizontal, 8)
-        .background(Color.white)
     }
 
     private var notificationList: some View {

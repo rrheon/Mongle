@@ -10,14 +10,9 @@ import Domain
 struct QuestionDetailView: View {
     @Bindable var store: StoreOf<QuestionDetailFeature>
     @FocusState private var isAnswerFocused: Bool
+    @State private var isClosing = false
 
-    private let moods: [(emoji: String, color: Color)] = [
-        ("😊", MongleColor.monggleYellow),
-        ("😌", MongleColor.monggleGreen),
-        ("🥰", MongleColor.mongglePink),
-        ("😢", MongleColor.monggleBlue),
-        ("😴", MongleColor.monggleOrange)
-    ]
+    private let moods = MoodOption.defaults
 
     var body: some View {
         VStack(spacing: 0) {
@@ -66,16 +61,22 @@ struct QuestionDetailView: View {
             error: store.appError,
             onDismiss: { store.send(.dismissErrorTapped) }
         )
-        .alert(
-            "오늘의 몽글을 선택해주세요",
-            isPresented: Binding(
-                get: { store.showMoodRequiredAlert },
-                set: { _ in }
-            )
-        ) {
-            Button("확인") { store.send(.moodRequiredAlertDismissed) }
-        } message: {
-            Text("지금 기분과 가장 비슷한 몽글 캐릭터를 골라보세요 🌿")
+        .overlay {
+            if store.showMoodRequiredAlert {
+                MonglePopupView(
+                    icon: .init(
+                        systemName: "face.smiling.fill",
+                        foregroundColor: MongleColor.primary,
+                        backgroundColor: MongleColor.primaryLight
+                    ),
+                    title: "오늘의 몽글을 선택해주세요",
+                    description: "지금 기분과 가장 비슷한 몽글 캐릭터를 골라보세요",
+                    primaryLabel: "확인",
+                    onPrimary: { store.send(.moodRequiredAlertDismissed) }
+                )
+                .transition(.opacity)
+                .animation(.easeInOut(duration: 0.2), value: store.showMoodRequiredAlert)
+            }
         }
         .fullScreenCover(
             item: $store.scope(state: \.editCostPopup, action: \.editCostPopup)
@@ -87,25 +88,14 @@ struct QuestionDetailView: View {
     // MARK: - Header
 
     private var customHeader: some View {
-        ZStack {
-            Text("마음 남기기")
-                .font(MongleFont.body1Bold())
-                .foregroundColor(MongleColor.textPrimary)
-
-            HStack {
-                Button { store.send(.closeTapped) } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(MongleColor.textPrimary)
-                        .frame(width: 44, height: 44)
-                }
-                .buttonStyle(MongleScaleButtonStyle())
-                Spacer()
+        MongleNavigationHeader(title: "마음 남기기") {
+            MongleBackButton {
+                isClosing = true
+                store.send(.closeTapped)
             }
+        } right: {
+            EmptyView()
         }
-        .frame(height: 56)
-        .padding(.horizontal, 8)
-        .background(Color.white)
     }
 
     // MARK: - Question Section
@@ -167,7 +157,7 @@ struct QuestionDetailView: View {
                     .scaleEffect(isSelected ? 1.08 : 1.0)
                     .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
 
-                Text(mood.emoji)
+                Text(mood.label)
                     .font(.system(size: 12))
 
                 Circle()
@@ -189,7 +179,7 @@ struct QuestionDetailView: View {
         TextField("오늘의 감정을 자유롭게 적어보세요.\n어떤 이야기든 좋아요.", text: Binding(
             get: { store.answerText },
             set: { newValue in
-                guard !store.isSubmitting else { return }
+                guard !store.isSubmitting, !isClosing else { return }
                 store.send(.answerTextChanged(newValue))
             }
         ), axis: .vertical)

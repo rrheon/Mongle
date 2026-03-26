@@ -39,36 +39,21 @@ public struct WriteQuestionView: View {
     // MARK: - Navigation Header
 
     private var navigationHeader: some View {
-        HStack {
-            Button {
-                store.send(.closeTapped)
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 18, weight: .medium))
-                    .foregroundColor(MongleColor.textPrimary)
-                    .frame(width: 44, height: 44)
-            }
-            .buttonStyle(MongleScaleButtonStyle())
-            Spacer()
-            Text("나만의 질문 작성하기")
-                .font(MongleFont.heading3())
-                .foregroundColor(MongleColor.textPrimary)
-            Spacer()
-            Color.clear.frame(width: 24, height: 24)
+        MongleNavigationHeader(title: "질문 작성하기") {
+            MongleBackButton { store.send(.closeTapped) }
+        } right: {
+            EmptyView()
         }
-        .padding(.horizontal, MongleSpacing.md)
-        .frame(height: 56)
-        .background(Color.white)
     }
 
     // MARK: - Description
 
     private var descriptionSection: some View {
         VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-            Text("가족에게 묻고 싶은 질문을 작성해요")
+            Text("나만의 질문을 작성해요")
                 .font(MongleFont.body1Bold())
                 .foregroundColor(MongleColor.textPrimary)
-            Text("작성한 질문은 오늘의 질문으로 등록돼요.\n가족 모두가 답변할 수 있어요 🌿")
+            Text("작성한 질문은 오늘의 질문으로 등록돼요.")
                 .font(MongleFont.body2())
                 .foregroundColor(MongleColor.textSecondary)
                 .lineSpacing(3)
