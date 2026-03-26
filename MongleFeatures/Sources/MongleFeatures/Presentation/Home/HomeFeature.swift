@@ -8,6 +8,8 @@
 import Foundation
 import ComposableArchitecture
 import Domain
+import UserNotifications
+import UIKit
 
 @Reducer
 public struct HomeFeature {
@@ -32,6 +34,7 @@ public struct HomeFeature {
         public var streakDays: Int = 0
         public var allFamilies: [MongleGroup] = []
         public var hasUnreadNotifications: Bool = false
+        public var showNotificationPermission: Bool = false
 
         public var isGuest: Bool { currentUser == nil }
 
@@ -96,6 +99,8 @@ public struct HomeFeature {
         case setError(String?)
         case setAppError(AppError?)
         case unreadNotificationsLoaded(Bool)
+        case notificationPermissionAllowed
+        case notificationPermissionSkipped
 
         // MARK: - Delegate Actions (상위 Feature에서 처리)
         case delegate(Delegate)
@@ -123,6 +128,13 @@ public struct HomeFeature {
             switch action {
             // MARK: - View Actions
             case .onAppear:
+                // 그룹별 알림 허용 체크
+                if let family = state.family {
+                    let key = "mongle.notifSetup.\(family.id.uuidString)"
+                    if !UserDefaults.standard.bool(forKey: key) {
+                        state.showNotificationPermission = true
+                    }
+                }
                 // 데이터가 없으면 로딩 요청
                 if state.todayQuestion == nil && !state.isLoading {
                     state.isLoading = true
@@ -250,6 +262,26 @@ public struct HomeFeature {
 
             case .unreadNotificationsLoaded(let hasUnread):
                 state.hasUnreadNotifications = hasUnread
+                return .none
+
+            case .notificationPermissionAllowed:
+                if let family = state.family {
+                    UserDefaults.standard.set(true, forKey: "mongle.notifSetup.\(family.id.uuidString)")
+                }
+                state.showNotificationPermission = false
+                return .run { _ in
+                    _ = try? await UNUserNotificationCenter.current()
+                        .requestAuthorization(options: [.alert, .badge, .sound])
+                    await MainActor.run {
+                        UIApplication.shared.registerForRemoteNotifications()
+                    }
+                }
+
+            case .notificationPermissionSkipped:
+                if let family = state.family {
+                    UserDefaults.standard.set(true, forKey: "mongle.notifSetup.\(family.id.uuidString)")
+                }
+                state.showNotificationPermission = false
                 return .none
 
             // MARK: - Delegate Actions

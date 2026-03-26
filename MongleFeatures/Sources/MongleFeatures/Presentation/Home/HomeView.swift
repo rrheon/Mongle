@@ -64,6 +64,10 @@ struct HomeViewActions {
     var onMyMonggleTap: () -> Void = {}
     var onGroupSelected: (MongleGroup) -> Void = { _ in }
     var onNavigateToGroupSelect: () -> Void = {}
+    var onNotificationPermissionAllowed: () -> Void = {}
+    var onNotificationPermissionSkipped: () -> Void = {}
+    var onAnswerRequiredTap: (String) -> Void = { _ in }
+    var onNudgeUnavailableTap: (String) -> Void = { _ in }
 }
 
 // MARK: - Main View
@@ -75,6 +79,7 @@ struct HomeView: View {
     let members: [(name: String, color: Color, hasAnswered: Bool)]
     var currentUserName: String?
     var actions: HomeViewActions
+    var showNotificationPermission: Bool = false
 
     @State private var showGroupDropdown = false
 
@@ -84,7 +89,8 @@ struct HomeView: View {
         hasCurrentUserSkipped: Bool = false,
         members: [(name: String, color: Color, hasAnswered: Bool)] = [],
         currentUserName: String? = nil,
-        actions: HomeViewActions = HomeViewActions()
+        actions: HomeViewActions = HomeViewActions(),
+        showNotificationPermission: Bool = false
     ) {
         self.topBarState = topBarState
         self.hasCurrentUserAnswered = hasCurrentUserAnswered
@@ -92,6 +98,7 @@ struct HomeView: View {
         self.members = members
         self.currentUserName = currentUserName
         self.actions = actions
+        self.showNotificationPermission = showNotificationPermission
     }
 
     var body: some View {
@@ -116,7 +123,9 @@ struct HomeView: View {
                     currentUserName: currentUserName,
                     onViewAnswer: actions.onPeerAnswerTap,
                     onNudge: actions.onPeerNudgeTap,
-                    onSelfTap: actions.onMyMonggleTap
+                    onSelfTap: actions.onMyMonggleTap,
+                    onAnswerFirstToView: actions.onAnswerRequiredTap,
+                    onAnswerFirstToNudge: actions.onNudgeUnavailableTap
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
@@ -125,6 +134,11 @@ struct HomeView: View {
 
             // 그룹 드롭다운
             if showGroupDropdown {
+                // 반투명 배경 (터치 시 닫기) — 드롭다운 아래 레이어
+                Color.black.opacity(0.3)
+                    .ignoresSafeArea()
+                    .onTapGesture { withAnimation(.easeInOut(duration: 0.15)) { showGroupDropdown = false } }
+
                 GroupDropdownView(
                     families: topBarState.allFamilies,
                     currentGroupName: topBarState.groupName,
@@ -138,15 +152,27 @@ struct HomeView: View {
                     }
                 )
                 .padding(.top, 116)
-
-                // 반투명 배경 (터치 시 닫기) — 드롭다운 아래 레이어
-                Color.black.opacity(0.3)
-                    .ignoresSafeArea()
-                    .onTapGesture { withAnimation(.easeInOut(duration: 0.15)) { showGroupDropdown = false } }
-                    .zIndex(-1)
             }
         }
         .ignoresSafeArea(edges: .top)
+        .overlay {
+            if showNotificationPermission {
+                MonglePopupView(
+                    icon: .init(
+                        systemName: "bell.fill",
+                        foregroundColor: MongleColor.primary,
+                        backgroundColor: MongleColor.primaryLight
+                    ),
+                    title: "알림을 허용해 주세요",
+                    description: "가족의 소식을 놓치지 않을 수 있어요.",
+                    primaryLabel: "허용하기",
+                    secondaryLabel: "나중에",
+                    onPrimary: { actions.onNotificationPermissionAllowed() },
+                    onSecondary: { actions.onNotificationPermissionSkipped() }
+                )
+                .transition(.opacity.animation(.easeInOut(duration: 0.2)))
+            }
+        }
     }
 }
 
@@ -243,7 +269,7 @@ private struct HeartsButtonView: View {
       }
       .padding(.vertical, 6)
       .padding(.horizontal, 10)
-      .background(MongleColor.heartRedLight)
+      .background(MongleColor.bgNeutral)
       .clipShape(Capsule())
     }
     .buttonStyle(MongleScaleButtonStyle())
@@ -279,7 +305,7 @@ private struct HeartCalloutView: View {
       Divider()
 
       HStack(spacing: 4) {
-        Image(systemName: "sun.rise.fill")
+        Image(systemName: "sun.min.fill")
           .foregroundColor(MongleColor.primary)
           .font(.system(size: 11))
         Text("매일 오전 +1 · 답변 완료 +3")
@@ -322,7 +348,7 @@ private struct NotificationButtonView: View {
           .foregroundColor(MongleColor.primary)
           .padding(.vertical, 6)
           .padding(.horizontal, 10)
-          .background(MongleColor.primaryLight)
+          .background(MongleColor.bgNeutral)
           .clipShape(Capsule())
 
         if hasNotification {
