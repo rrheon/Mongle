@@ -42,9 +42,15 @@ extension GroupSelectView {
 
       // 공간 이름 필드
       VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-        Text("공간 이름")
-          .font(MongleFont.captionBold())
-          .foregroundColor(MongleColor.textSecondary)
+        HStack {
+          Text("공간 이름")
+            .font(MongleFont.captionBold())
+            .foregroundColor(MongleColor.textSecondary)
+          Spacer()
+          Text("\(store.groupName.count)/10")
+            .font(MongleFont.caption())
+            .foregroundColor(store.groupName.count >= 10 ? MongleColor.error : MongleColor.textHint)
+        }
 
         HStack(spacing: MongleSpacing.sm) {
           Image(systemName: "house")
@@ -72,7 +78,7 @@ extension GroupSelectView {
             .font(MongleFont.caption())
             .foregroundColor(MongleColor.error)
         } else {
-          Text("가족, 친한 친구, 커플 등 자유롭게!")
+          Text("가족, 친한 친구, 커플 등 자유롭게! (최대 10자)")
             .font(MongleFont.caption())
             .foregroundColor(MongleColor.textHint)
         }

@@ -30,6 +30,10 @@ public struct GroupSelectView: View {
               selectView
             case .createGroup:
               createGroupView
+            case .notificationPermission:
+              notificationPermissionView
+            case .quietHoursPermission:
+              quietHoursPermissionView
             case .groupCreated:
               groupCreatedView
             case .joinWithCode:
@@ -149,6 +153,40 @@ public struct GroupSelectView: View {
       .padding(.bottom, MongleSpacing.lg)
       .background(MongleColor.background)
 
+    case .notificationPermission:
+      VStack(spacing: MongleSpacing.sm) {
+        MongleButtonPrimary("허용하기") {
+          store.send(.notificationPermissionAllowed)
+        }
+        Button("나중에") {
+          store.send(.notificationPermissionSkipped)
+        }
+        .frame(height: 44)
+        .font(MongleFont.body2())
+        .foregroundColor(MongleColor.textSecondary)
+      }
+      .padding(.horizontal, MongleSpacing.md)
+      .padding(.top, MongleSpacing.sm)
+      .padding(.bottom, MongleSpacing.lg)
+      .background(MongleColor.background)
+
+    case .quietHoursPermission:
+      VStack(spacing: MongleSpacing.sm) {
+        MongleButtonPrimary("사용하기") {
+          store.send(.quietHoursPermissionEnabled)
+        }
+        Button("건너뛰기") {
+          store.send(.quietHoursPermissionSkipped)
+        }
+        .frame(height: 44)
+        .font(MongleFont.body2())
+        .foregroundColor(MongleColor.textSecondary)
+      }
+      .padding(.horizontal, MongleSpacing.md)
+      .padding(.top, MongleSpacing.sm)
+      .padding(.bottom, MongleSpacing.lg)
+      .background(MongleColor.background)
+
     case .groupCreated:
       VStack(spacing: MongleSpacing.sm) {
         ShareLink(item: shareText) {
@@ -195,79 +233,81 @@ public struct GroupSelectView: View {
 
   @ViewBuilder
   var customHeader: some View {
-    if store.step == .select {
-      HStack(spacing: 12) {
-        Text("몽글")
-          .font(MongleFont.heading3().weight(.bold))
-          .foregroundColor(MongleColor.textPrimary)
-
-        Spacer()
-
-        Button {
-          store.send(.notificationTapped)
-        } label: {
-          ZStack(alignment: .topTrailing) {
-            Image(systemName: "bell.fill")
-              .font(.system(size: 13))
-              .foregroundColor(MongleColor.primary)
-              .padding(.vertical, 6)
-              .padding(.horizontal, 10)
-              .background(MongleColor.primaryLight)
-              .clipShape(Capsule())
-
-            if store.hasUnreadNotifications {
-              Circle()
-                .fill(Color.red)
-                .frame(width: 8, height: 8)
-                .offset(x: -2, y: 2)
-            }
+    switch store.step {
+    case .select:
+      MongleNavigationHeader(
+          left: {
+            Text("몽글")
+                .font(MongleFont.heading3())
+                .foregroundColor(MongleColor.textPrimary)
+                .padding(.horizontal)
+                .disabled(true)
+          },
+          right: {
+            notificationButton
+              .padding(.horizontal)
           }
-        }
-        .buttonStyle(.plain)
+      )
+
+    case .createGroup:
+      MongleNavigationHeader(title: "새 공간 만들기") {
+        MongleBackButton { store.send(.createBackTapped) }
+      } right: {
+        EmptyView()
       }
-      .frame(height: 56)
-      .padding(.top, 20)
-      .padding(.horizontal, 20)
-      .background(Color.white.ignoresSafeArea(edges: .top))
-    } else {
-      HStack(alignment: .center) {
-        if store.step != .groupCreated {
-          Button {
-            switch store.step {
-            case .createGroup: store.send(.createBackTapped)
-            case .joinWithCode: store.send(.joinBackTapped)
-            default: break
-            }
-          } label: {
-            Image(systemName: "chevron.left")
-              .font(.system(size: 18, weight: .medium))
-              .foregroundColor(MongleColor.textPrimary)
-              .frame(width: 44, height: 44)
-          }
-          .buttonStyle(MongleScaleButtonStyle())
-        } else {
-          Color.clear.frame(width: 28, height: 28)
-        }
-        Spacer()
-        Text(navigationTitle)
-          .font(MongleFont.body2Bold())
-          .foregroundColor(MongleColor.textPrimary)
-        Spacer()
-        Color.clear.frame(width: 28, height: 28)
+
+    case .joinWithCode:
+      MongleNavigationHeader(title: "초대코드로 참여하기") {
+        MongleBackButton { store.send(.joinBackTapped) }
+      } right: {
+        EmptyView()
       }
-      .padding(.horizontal, MongleSpacing.md)
-      .padding(.vertical, MongleSpacing.md)
-      .background(MongleColor.background)
+
+    case .groupCreated:
+      MongleNavigationHeader(title: "새 공간 만들기") {
+        EmptyView()
+      } right: {
+        EmptyView()
+      }
+
+    case .notificationPermission:
+      MongleNavigationHeader(title: "알림 설정") {
+        EmptyView()
+      } right: {
+        EmptyView()
+      }
+
+    case .quietHoursPermission:
+      MongleNavigationHeader(title: "방해 금지 시간") {
+        EmptyView()
+      } right: {
+        EmptyView()
+      }
     }
   }
 
-  var navigationTitle: String {
-    switch store.step {
-    case .select:       return ""
-    case .createGroup:  return "새 공간 만들기"
-    case .groupCreated: return "새 공간 만들기"
-    case .joinWithCode: return "초대코드로 참여하기"
+  private var notificationButton: some View {
+    Button {
+      store.send(.notificationTapped)
+    } label: {
+      ZStack(alignment: .topTrailing) {
+        Image(systemName: "bell.fill")
+          .font(.system(size: 13))
+          .foregroundColor(MongleColor.primary)
+          .padding(.vertical, 6)
+          .padding(.horizontal, 10)
+          .background(MongleColor.bgNeutral)
+          .clipShape(Capsule())
+
+        if store.hasUnreadNotifications {
+          Circle()
+            .fill(Color.red)
+            .frame(width: 8, height: 8)
+            .offset(x: -2, y: 2)
+        }
+      }
     }
+    .buttonStyle(.plain)
   }
 }
 

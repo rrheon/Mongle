@@ -71,30 +71,54 @@ extension GroupSelectView {
 
       newSpaceButton
     }
-    .alert("그룹 한도 초과", isPresented: Binding(
-      get: { store.showMaxGroupsAlert },
-      set: { _ in store.send(.dismissMaxGroupsAlert) }
-    )) {
-      Button("확인", role: .cancel) { store.send(.dismissMaxGroupsAlert) }
-    } message: {
-      Text("그룹은 최대 3개까지 참여할 수 있어요.")
-    }
-    .alert("그룹 나가기", isPresented: Binding(
-      get: { store.showLeaveConfirmation },
-      set: { if !$0 { store.send(.cancelLeaveConfirmation) } }
-    )) {
-      Button("나가기", role: .destructive) { store.send(.confirmLeave) }
-      Button("취소", role: .cancel) { store.send(.cancelLeaveConfirmation) }
-    } message: {
-      Text("\(store.groupToLeave?.name ?? "그룹")에서 나가시겠어요?\n그룹 관련 데이터가 삭제되지만 작성한 답변은 유지됩니다.")
-    }
-    .alert("그룹 해제 불가", isPresented: Binding(
-      get: { store.showLeaveTooSoonAlert },
-      set: { if !$0 { store.send(.dismissLeaveTooSoonAlert) } }
-    )) {
-      Button("확인", role: .cancel) { store.send(.dismissLeaveTooSoonAlert) }
-    } message: {
-      Text(store.leaveTooSoonMessage)
+    .overlay {
+      if store.showMaxGroupsAlert {
+        MonglePopupView(
+          icon: .init(
+            systemName: "exclamationmark.circle.fill",
+            foregroundColor: MongleColor.accentOrange,
+            backgroundColor: MongleColor.bgWarm
+          ),
+          title: "그룹 한도 초과",
+          description: "그룹은 최대 3개까지 참여할 수 있어요.",
+          primaryLabel: "확인",
+          onPrimary: { store.send(.dismissMaxGroupsAlert) }
+        )
+        .transition(.opacity)
+        .animation(.easeInOut(duration: 0.2), value: store.showMaxGroupsAlert)
+      }
+      if store.showLeaveConfirmation {
+        MonglePopupView(
+          icon: .init(
+            systemName: "rectangle.portrait.and.arrow.right.fill",
+            foregroundColor: MongleColor.error,
+            backgroundColor: MongleColor.bgErrorSoft
+          ),
+          title: "그룹 나가기",
+          description: "\(store.groupToLeave?.name ?? "그룹")에서 나가시겠어요?\n그룹 관련 데이터가 삭제되지만 작성한 답변은 유지됩니다.",
+          primaryLabel: "나가기",
+          secondaryLabel: "취소",
+          onPrimary: { store.send(.confirmLeave) },
+          onSecondary: { store.send(.cancelLeaveConfirmation) }
+        )
+        .transition(.opacity)
+        .animation(.easeInOut(duration: 0.2), value: store.showLeaveConfirmation)
+      }
+      if store.showLeaveTooSoonAlert {
+        MonglePopupView(
+          icon: .init(
+            systemName: "clock.fill",
+            foregroundColor: MongleColor.primary,
+            backgroundColor: MongleColor.primaryLight
+          ),
+          title: "그룹 해제 불가",
+          description: store.leaveTooSoonMessage,
+          primaryLabel: "확인",
+          onPrimary: { store.send(.dismissLeaveTooSoonAlert) }
+        )
+        .transition(.opacity)
+        .animation(.easeInOut(duration: 0.2), value: store.showLeaveTooSoonAlert)
+      }
     }
     .sheet(isPresented: Binding(
       get: { store.showTransferSheet },

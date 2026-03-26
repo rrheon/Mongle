@@ -37,31 +37,43 @@ struct SettingsTabView: View {
             .background(MongleColor.background)
             .navigationTitle("설정")
             .navigationBarTitleDisplayMode(.inline)
-            .alert(
-                "로그아웃",
-                isPresented: Binding(
-                    get: { store.showLogoutConfirmation },
-                    set: { _ in store.send(.logoutCancelled) }
-                )
-            ) {
-                Button("취소", role: .cancel) { store.send(.logoutCancelled) }
-                Button("로그아웃", role: .destructive) { store.send(.logoutConfirmed) }
-            } message: {
-                Text("정말 로그아웃 하시겠습니까?")
-            }
-            .alert(
-                "회원탈퇴",
-                isPresented: Binding(
-                    get: { store.showDeleteAccountConfirmation },
-                    set: { _ in store.send(.deleteAccountCancelled) }
-                )
-            ) {
-                Button("취소", role: .cancel) { store.send(.deleteAccountCancelled) }
-                Button("탈퇴하기", role: .destructive) { store.send(.deleteAccountConfirmed) }
-            } message: {
-                Text("계정을 삭제하면 모든 데이터가 영구적으로 삭제됩니다.\n정말 탈퇴하시겠습니까?")
-            }
             .onAppear { store.send(.onAppear) }
+            .overlay {
+                if store.showLogoutConfirmation {
+                    MonglePopupView(
+                        icon: .init(
+                            systemName: "arrow.right.square.fill",
+                            foregroundColor: MongleColor.primary,
+                            backgroundColor: MongleColor.primaryLight
+                        ),
+                        title: "로그아웃",
+                        description: "정말 로그아웃 하시겠습니까?",
+                        primaryLabel: "로그아웃",
+                        secondaryLabel: "취소",
+                        onPrimary: { store.send(.logoutConfirmed) },
+                        onSecondary: { store.send(.logoutCancelled) }
+                    )
+                    .transition(.opacity)
+                    .animation(.easeInOut(duration: 0.2), value: store.showLogoutConfirmation)
+                }
+                if store.showDeleteAccountConfirmation {
+                    MonglePopupView(
+                        icon: .init(
+                            systemName: "trash.fill",
+                            foregroundColor: MongleColor.error,
+                            backgroundColor: MongleColor.bgErrorSoft
+                        ),
+                        title: "회원탈퇴",
+                        description: "계정을 삭제하면 모든 데이터가\n영구적으로 삭제됩니다.",
+                        primaryLabel: "탈퇴하기",
+                        secondaryLabel: "취소",
+                        onPrimary: { store.send(.deleteAccountConfirmed) },
+                        onSecondary: { store.send(.deleteAccountCancelled) }
+                    )
+                    .transition(.opacity)
+                    .animation(.easeInOut(duration: 0.2), value: store.showDeleteAccountConfirmation)
+                }
+            }
         }
     }
 
@@ -87,7 +99,7 @@ struct SettingsTabView: View {
                         Text(store.currentUser?.name ?? "Mongle User")
                             .font(MongleFont.heading3())
                             .foregroundColor(MongleColor.textPrimary)
-                        Text("오늘의 기분: 🥰 사랑")
+                        Text("오늘의 기분: 사랑")
                             .font(MongleFont.body2())
                             .foregroundColor(MongleColor.textSecondary)
                     }
