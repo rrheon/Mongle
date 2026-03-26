@@ -207,13 +207,11 @@ public struct HistoryFeature {
                     do {
                         let historyQuestions = try await questionRepository.getHistory(page: 1, limit: 60)
                         let calendar = Calendar.current
-                        let now = Date()
-                        let noon = calendar.date(bySettingHour: 12, minute: 0, second: 0, of: now) ?? now
-                        let isBeforeNoon = now < noon
                         var historyItems: [Date: HistoryItem] = [:]
                         for hq in historyQuestions {
                             let isToday = calendar.isDateInToday(hq.date)
-                            if isBeforeNoon && isToday && !hq.question.isCustom {
+                            // 오늘 날짜는 내가 답변한 경우에만 노출
+                            if isToday && !hq.hasMyAnswer {
                                 continue
                             }
                             let memberAnswers: [MemberAnswer] = hq.answers.map { answer in
