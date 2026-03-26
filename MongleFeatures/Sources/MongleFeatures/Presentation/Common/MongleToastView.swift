@@ -12,6 +12,7 @@ public enum ToastType {
     case editAnswer        // 답변수정하기 완료
     case answerSubmitted   // 답변 작성 완료
     case groupLeft         // 그룹 나가기 완료
+    case inviteCodeCopied  // 초대 코드 복사 완료
     // MARK: Error
     case maxGroupsReached  // 그룹 3개 한도 초과
     case alreadyMember     // 이미 속해있는 그룹
@@ -26,6 +27,7 @@ public enum ToastType {
         case .editAnswer:       return "checkmark.circle.fill"
         case .answerSubmitted:  return "paperplane.fill"
         case .groupLeft:        return "checkmark.circle.fill"
+        case .inviteCodeCopied: return "doc.on.doc.fill"
         case .maxGroupsReached: return "exclamationmark.circle.fill"
         case .alreadyMember:    return "person.crop.circle.badge.exclamationmark.fill"
         case .invalidInviteCode: return "key.slash.fill"
@@ -41,6 +43,7 @@ public enum ToastType {
         case .editAnswer:       return "답변을 수정했어요! ✅"
         case .answerSubmitted:  return "마음을 남겼어요! 🌿"
         case .groupLeft:        return "그룹에서 나왔어요"
+        case .inviteCodeCopied: return "초대 코드가 복사되었습니다"
         case .maxGroupsReached: return "그룹은 최대 3개까지 만들 수 있어요"
         case .alreadyMember:    return "이미 속해있는 그룹이에요"
         case .invalidInviteCode: return "초대코드를 다시 확인해주세요"
@@ -56,6 +59,7 @@ public enum ToastType {
         case .editAnswer:       return MongleColor.primary
         case .answerSubmitted:  return MongleColor.primary
         case .groupLeft:        return MongleColor.primary
+        case .inviteCodeCopied: return MongleColor.primary
         case .maxGroupsReached: return MongleColor.error
         case .alreadyMember:    return MongleColor.error
         case .invalidInviteCode: return MongleColor.error
