@@ -153,8 +153,8 @@ extension MainTabFeature {
                     state.modal = .answerFirstPopup(AnswerFirstPopupFeature.State(memberName: memberName, popupType: .viewAnswer))
                     return .none
 
-                case .home(.delegate(.showNudgeUnavailablePopup(_))):
-                    // MongleView에서 로컬 alert으로 처리
+                case .home(.delegate(.showNudgeUnavailablePopup(let memberName))):
+                    state.modal = .answerFirstPopup(AnswerFirstPopupFeature.State(memberName: memberName, popupType: .nudge))
                     return .none
 
                 case .home(.delegate(.navigateToHeartsSystem)):

@@ -168,21 +168,36 @@ struct MainTabView: View {
                 onPeerNudgeTap: { store.send(.home(.peerNudgeTapped($0))) },
                 onMyMonggleTap: { store.send(.home(.myMonggleTapped)) },
                 onGroupSelected: { store.send(.home(.groupSelected($0))) },
-                onNavigateToGroupSelect: { store.send(.home(.navigateToGroupSelectTapped)) }
-            )
+                onNavigateToGroupSelect: { store.send(.home(.navigateToGroupSelectTapped)) },
+                onNotificationPermissionAllowed: { store.send(.home(.notificationPermissionAllowed)) },
+                onNotificationPermissionSkipped: { store.send(.home(.notificationPermissionSkipped)) },
+                onAnswerRequiredTap: { store.send(.home(.answerRequiredTapped($0))) },
+                onNudgeUnavailableTap: { store.send(.home(.nudgeUnavailableTapped($0))) }
+            ),
+            showNotificationPermission: store.home.showNotificationPermission
         )
         .mongleErrorToast(
             error: store.home.appError,
             onDismiss: { store.send(.home(.dismissError)) }
         )
-        .alert("로그인이 필요해요", isPresented: Binding(
-            get: { store.home.showGuestLoginPrompt },
-            set: { _ in }
-        )) {
-            Button("로그인하기") { store.send(.home(.guestLoginTapped)) }
-            Button("취소", role: .cancel) { store.send(.home(.guestLoginDismissed)) }
-        } message: {
-            Text("이 기능을 이용하려면 로그인이 필요해요.")
+        .overlay {
+            if store.home.showGuestLoginPrompt {
+                MonglePopupView(
+                    icon: .init(
+                        systemName: "person.crop.circle.badge.exclamationmark.fill",
+                        foregroundColor: MongleColor.primary,
+                        backgroundColor: MongleColor.primaryLight
+                    ),
+                    title: "로그인이 필요해요",
+                    description: "이 기능을 이용하려면 로그인이 필요해요.",
+                    primaryLabel: "로그인하기",
+                    secondaryLabel: "취소",
+                    onPrimary: { store.send(.home(.guestLoginTapped)) },
+                    onSecondary: { store.send(.home(.guestLoginDismissed)) }
+                )
+                .transition(.opacity)
+                .animation(.easeInOut(duration: 0.2), value: store.home.showGuestLoginPrompt)
+            }
         }
     }
 

@@ -16,7 +16,6 @@ extension MainTabFeature {
 
             case peerAnswer(PeerAnswerFeature.State)
             case answerFirstPopup(AnswerFirstPopupFeature.State)
-            case supportScreen(SupportScreenFeature.State)
             case questionSheet(QuestionSheetFeature.State)
             case heartCostPopup(HeartCostPopupFeature.State)
             case heartInfoPopup(HeartInfoPopupFeature.State)
@@ -27,7 +26,6 @@ extension MainTabFeature {
 
             case peerAnswer(PeerAnswerFeature.Action)
             case answerFirstPopup(AnswerFirstPopupFeature.Action)
-            case supportScreen(SupportScreenFeature.Action)
             case questionSheet(QuestionSheetFeature.Action)
             case heartCostPopup(HeartCostPopupFeature.Action)
             case heartInfoPopup(HeartInfoPopupFeature.Action)
@@ -42,10 +40,6 @@ extension MainTabFeature {
 
             Scope(state: \.answerFirstPopup, action: \.answerFirstPopup) {
                 AnswerFirstPopupFeature()
-            }
-
-            Scope(state: \.supportScreen, action: \.supportScreen) {
-                SupportScreenFeature()
             }
 
             Scope(state: \.questionSheet, action: \.questionSheet) {

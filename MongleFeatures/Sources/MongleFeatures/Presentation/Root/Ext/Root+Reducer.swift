@@ -233,7 +233,6 @@ extension RootFeature {
                     state.mainTab?.path.removeAll()
                     state.mainTab?.modal = nil
                     state.mainTab?.profile.mongleCardEdit = nil
-                    state.mainTab?.profile.supportScreen = nil
                     state.mainTab?.profile.accountManagement = nil
                     state.mainTab = nil
                     state.currentUser = nil
@@ -350,7 +349,7 @@ extension RootFeature {
                     return .run { send in
                         do {
                             _ = try await familyRepository.joinFamily(inviteCode: code, nickname: nickname, colorId: colorId)
-                            await send(.groupSelect(.delegate(.completed)))
+                            await send(.groupSelect(.setJoinSuccess))
                         } catch {
                             let appError = AppError.from(error)
                             if case .serverError(let statusCode) = appError {
