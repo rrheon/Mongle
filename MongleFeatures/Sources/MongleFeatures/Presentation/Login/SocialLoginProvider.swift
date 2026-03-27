@@ -154,6 +154,7 @@ public final class KakaoLoginProvider: SocialLoginProvider {
         let (name, email) = try await fetchUserInfo()
         return KakaoLoginCredential(
             accessToken: token.accessToken,
+            idToken: token.idToken,
             name: name,
             email: email
         )
