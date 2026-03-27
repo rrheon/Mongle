@@ -157,7 +157,7 @@ public struct QuestionDetailFeature {
 
             case .answerTextChanged(let text):
                 guard !state.isSubmitting else { return .none }
-                state.answerText = text
+                state.answerText = String(text.prefix(200))
                 state.appError = nil
                 return .none
 

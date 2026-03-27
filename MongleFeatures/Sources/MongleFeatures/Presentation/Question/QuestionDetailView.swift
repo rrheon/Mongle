@@ -78,10 +78,12 @@ struct QuestionDetailView: View {
                 .animation(.easeInOut(duration: 0.2), value: store.showMoodRequiredAlert)
             }
         }
-        .fullScreenCover(
-            item: $store.scope(state: \.editCostPopup, action: \.editCostPopup)
-        ) { popupStore in
-            HeartCostPopupView(store: popupStore)
+        .overlay {
+            if let popupStore = store.scope(state: \.editCostPopup, action: \.editCostPopup) {
+                HeartCostPopupView(store: popupStore)
+                    .transition(.opacity)
+                    .animation(.easeInOut(duration: 0.2), value: store.editCostPopup != nil)
+            }
         }
     }
 
@@ -102,7 +104,7 @@ struct QuestionDetailView: View {
 
     private var questionSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("🌿 Today's Question")
+            Text("오늘의 질문")
                 .font(MongleFont.captionBold())
                 .foregroundColor(MongleColor.primary)
 
@@ -176,27 +178,34 @@ struct QuestionDetailView: View {
     // MARK: - Answer Input
 
     private var answerInputSection: some View {
-        TextField("오늘의 감정을 자유롭게 적어보세요.\n어떤 이야기든 좋아요.", text: Binding(
-            get: { store.answerText },
-            set: { newValue in
-                guard !store.isSubmitting, !isClosing else { return }
-                store.send(.answerTextChanged(newValue))
-            }
-        ), axis: .vertical)
-        .font(MongleFont.body2())
-        .foregroundColor(MongleColor.textPrimary)
-        .lineSpacing(4)
-        .lineLimit(5...10)
-        .focused($isAnswerFocused)
-        .padding(MongleSpacing.md)
-        .frame(minHeight: 120, alignment: .topLeading)
-        .monglePanel(
-            background: MongleColor.cardBackgroundSolid,
-            cornerRadius: MongleRadius.large,
-            borderColor: isAnswerFocused ? MongleColor.primary : MongleColor.border,
-            shadowOpacity: 0.04
-        )
-        .animation(.easeInOut(duration: 0.2), value: isAnswerFocused)
+        VStack(alignment: .trailing, spacing: 6) {
+            TextField("오늘의 감정을 자유롭게 적어보세요.\n어떤 이야기든 좋아요.", text: Binding(
+                get: { store.answerText },
+                set: { newValue in
+                    guard !store.isSubmitting, !isClosing else { return }
+                    if newValue.count > 200 { return }
+                    store.send(.answerTextChanged(newValue))
+                }
+            ), axis: .vertical)
+            .font(MongleFont.body2())
+            .foregroundColor(MongleColor.textPrimary)
+            .lineSpacing(4)
+            .lineLimit(5...10)
+            .focused($isAnswerFocused)
+            .padding(MongleSpacing.md)
+            .frame(minHeight: 120, alignment: .topLeading)
+            .monglePanel(
+                background: MongleColor.cardBackgroundSolid,
+                cornerRadius: MongleRadius.large,
+                borderColor: isAnswerFocused ? MongleColor.primary : MongleColor.border,
+                shadowOpacity: 0.04
+            )
+            .animation(.easeInOut(duration: 0.2), value: isAnswerFocused)
+
+            Text("\(store.answerText.count)/200")
+                .font(MongleFont.caption())
+                .foregroundColor(store.answerText.count >= 200 ? MongleColor.error : MongleColor.textHint)
+        }
     }
 
     // MARK: - CTA Button
@@ -209,7 +218,7 @@ struct QuestionDetailView: View {
                 Image(systemName: "paperplane.fill")
                     .font(.system(size: 16))
                     .foregroundColor(.white)
-                Text(store.hasMyAnswer ? "답변 수정하기" : "마음 남기기")
+                Text(store.hasMyAnswer ? "답변 수정하기" : "답변 남기기")
                     .font(MongleFont.button())
                     .foregroundColor(.white)
             }
