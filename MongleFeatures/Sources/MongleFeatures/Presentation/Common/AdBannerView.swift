@@ -28,11 +28,6 @@ public struct AdBannerSection: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("후원")
-                .font(MongleFont.captionBold())
-                .foregroundColor(MongleColor.textSecondary)
-                .padding(.horizontal, MongleSpacing.xxs)
-
             AdBannerView()
                 .frame(height: 50)
                 .frame(maxWidth: .infinity)

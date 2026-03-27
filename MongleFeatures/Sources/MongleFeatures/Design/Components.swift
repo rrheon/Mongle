@@ -522,10 +522,10 @@ public struct MongleXPBar: View {
 public struct MongleCardQuestion: View {
     let question: String
     var emoji: String = "🌿"
-    var label: String = "Today's Question"
+    var label: String = "오늘의 질문"
     var onTap: (() -> Void)? = nil
 
-    public init(question: String, emoji: String = "🌿", label: String = "Today's Question", onTap: (() -> Void)? = nil) {
+    public init(question: String, emoji: String = "🌿", label: String = "오늘의 질문", onTap: (() -> Void)? = nil) {
         self.question = question
         self.emoji = emoji
         self.label = label
@@ -609,18 +609,15 @@ public struct MongleCardGlass<Content: View>: View {
 public struct MongleCardGroup: View {
     let groupName: String
     let memberColors: [Color]
-    var streakDays: Int? = nil
     var onTap: (() -> Void)? = nil
 
     public init(
         groupName: String,
         memberColors: [Color],
-        streakDays: Int? = nil,
         onTap: (() -> Void)? = nil
     ) {
         self.groupName = groupName
         self.memberColors = memberColors
-        self.streakDays = streakDays
         self.onTap = onTap
     }
 
@@ -651,15 +648,6 @@ public struct MongleCardGroup: View {
               
             }
             
-            if let streakDays {
-              Text("\(streakDays)일 연속")
-                .font(MongleFont.captionBold())
-                .foregroundColor(.white)
-                .padding(.horizontal, MongleSpacing.sm)
-                .padding(.vertical, 3)
-                .background(MongleColor.primaryLight)
-                .clipShape(Capsule())
-            }
           }
             .frame(maxWidth: .infinity)
             .padding(.horizontal, 20)
@@ -945,7 +933,7 @@ public struct MongleSheetAnswer: View {
 
             // Question
             VStack(alignment: .leading, spacing: 8) {
-                Text("🌿 Today's Question")
+                Text("Today's Question")
                     .font(MongleFont.captionBold())
                     .foregroundColor(MongleColor.primaryMuted)
 
@@ -965,7 +953,7 @@ public struct MongleSheetAnswer: View {
             .frame(height: 140)
 
             // Submit
-            MongleButtonCTA("마음 남기기", icon: "heart.fill", action: onSubmit)
+            MongleButtonCTA("답변 남기기", icon: "heart.fill", action: onSubmit)
         }
         .padding(.top, 24)
         .padding(.horizontal, 20)

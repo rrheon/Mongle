@@ -382,7 +382,7 @@ private struct TodayQuestionCard: View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 4) {
-                    Text("Today's Question")
+                    Text("오늘의 질문")
                         .font(MongleFont.captionBold())
                         .foregroundColor(MongleColor.primary)
                     if question.isAnswered {

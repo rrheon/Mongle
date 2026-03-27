@@ -143,6 +143,7 @@ public struct SearchHistoryView: View {
                                 result: result,
                                 query: store.query.trimmingCharacters(in: .whitespaces)
                             )
+                            .padding(.horizontal, MongleSpacing.md)
                             .padding(.bottom, MongleSpacing.xs)
 
                             if shouldShowAd(after: globalIndices[result.id] ?? 0, total: total) {
@@ -205,6 +206,7 @@ private struct SearchResultCard: View {
                 }
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(MongleSpacing.md)
         .background(MongleColor.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
