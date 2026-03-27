@@ -144,6 +144,7 @@ extension MainTabFeature {
                     state.path.append(.peerNudge(PeerNudgeFeature.State(
                         targetUserId: targetUser.id.uuidString,
                         memberName: targetUser.name,
+                        memberMoodId: targetUser.moodId,
                         questionText: questionText,
                         hearts: hearts
                     )))
