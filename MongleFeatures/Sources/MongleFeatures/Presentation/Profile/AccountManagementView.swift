@@ -30,11 +30,6 @@ public struct AccountManagementView: View {
         .overlay {
             if store.showLogoutConfirm {
                 MonglePopupView(
-                    icon: .init(
-                        systemName: "arrow.right.square.fill",
-                        foregroundColor: MongleColor.primary,
-                        backgroundColor: MongleColor.primaryLight
-                    ),
                     title: "로그아웃",
                     description: "정말 로그아웃할까요?",
                     primaryLabel: "로그아웃",
@@ -47,15 +42,11 @@ public struct AccountManagementView: View {
             }
             if store.showDeleteConfirm {
                 MonglePopupView(
-                    icon: .init(
-                        systemName: "trash.fill",
-                        foregroundColor: MongleColor.error,
-                        backgroundColor: MongleColor.bgErrorSoft
-                    ),
                     title: "계정 탈퇴",
                     description: "탈퇴하면 모든 데이터가 삭제돼요.\n이 작업은 되돌릴 수 없어요.",
                     primaryLabel: "탈퇴하기",
                     secondaryLabel: "취소",
+                    isDestructive: true,
                     onPrimary: { store.send(.deleteAccountConfirmed) },
                     onSecondary: { store.send(.alertDismissed) }
                 )
@@ -87,7 +78,7 @@ public struct AccountManagementView: View {
             VStack(spacing: 0) {
                 accountRow(
                     icon: "arrow.right.square.fill",
-                    iconColor: MongleColor.primary,
+                    iconColor: MongleColor.bgMintLight,
                     iconBackground: MongleColor.primaryLight,
                     title: "로그아웃",
                     subtitle: "기기에서 로그아웃해요"
@@ -97,11 +88,10 @@ public struct AccountManagementView: View {
               
               accountRow(
                   icon: "trash.fill",
-                  iconColor: MongleColor.error,
-                  iconBackground: MongleColor.bgErrorSoft,
+                  iconColor: MongleColor.bgMintLight,
+                  iconBackground: MongleColor.primaryLight,
                   title: "계정 탈퇴",
-                  subtitle: "모든 데이터가 삭제되며 복구할 수 없어요",
-                  titleColor: MongleColor.error
+                  subtitle: "모든 데이터가 삭제되며 복구할 수 없어요"
               ) {
                   store.send(.deleteAccountTapped)
               }

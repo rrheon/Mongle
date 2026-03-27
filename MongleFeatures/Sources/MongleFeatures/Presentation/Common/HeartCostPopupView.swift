@@ -10,6 +10,11 @@ public struct HeartCostPopupView: View {
         self.store = store
     }
 
+    /// `@Presents`로 스코핑된 스토어에서 PresentationAction을 벗겨내는 편의 이니셜라이저
+    public init(store: Store<HeartCostPopupFeature.State, PresentationAction<HeartCostPopupFeature.Action>>) {
+        self.store = store.scope(state: \.self, action: \.presented)
+    }
+
     public var body: some View {
         MonglePopupView(
             icon: .init(

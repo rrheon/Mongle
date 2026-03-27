@@ -55,7 +55,6 @@ extension GroupSelectView {
             MongleCardGroup(
               groupName: group.name,
               memberColors: memberColors(for: group),
-              streakDays: group.streakDays > 0 ? group.streakDays : nil,
               onTap: { store.send(.groupTapped(group)) }
             )
             .contextMenu {
@@ -89,15 +88,11 @@ extension GroupSelectView {
       }
       if store.showLeaveConfirmation {
         MonglePopupView(
-          icon: .init(
-            systemName: "rectangle.portrait.and.arrow.right.fill",
-            foregroundColor: MongleColor.error,
-            backgroundColor: MongleColor.bgErrorSoft
-          ),
           title: "그룹 나가기",
           description: "\(store.groupToLeave?.name ?? "그룹")에서 나가시겠어요?\n그룹 관련 데이터가 삭제되지만 작성한 답변은 유지됩니다.",
           primaryLabel: "나가기",
           secondaryLabel: "취소",
+          isDestructive: true,
           onPrimary: { store.send(.confirmLeave) },
           onSecondary: { store.send(.cancelLeaveConfirmation) }
         )
@@ -187,7 +182,7 @@ extension GroupSelectView {
 
         actionSheetRow(
           icon: "person.badge.key",
-          iconColor: MongleColor.secondary,
+          iconColor: MongleColor.primary,
           title: "초대코드로 참여하기",
           subtitle: "받은 초대코드로 참여하세요"
         ) {

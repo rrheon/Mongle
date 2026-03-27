@@ -34,15 +34,11 @@ public struct GroupManagementView: View {
     .overlay {
       if store.showLeaveConfirm {
         MonglePopupView(
-          icon: .init(
-            systemName: "rectangle.portrait.and.arrow.right.fill",
-            foregroundColor: MongleColor.error,
-            backgroundColor: MongleColor.bgErrorSoft
-          ),
           title: "그룹 나가기",
           description: "그룹을 나가면 모든 가족과의 답변 기록이 연결 해제됩니다.",
           primaryLabel: "나가기",
           secondaryLabel: "취소",
+          isDestructive: true,
           onPrimary: { store.send(.leaveGroupConfirmed) },
           onSecondary: { store.send(.leaveGroupAlertDismissed) }
         )
@@ -221,9 +217,6 @@ public struct GroupManagementView: View {
                 .background(MongleColor.error.opacity(0.1))
                 .clipShape(Capsule())
             }
-          } else if !member.isOwner {
-            Image(systemName: "ellipsis")
-              .foregroundColor(MongleColor.textHint)
           }
         }
         .padding(MongleSpacing.md)

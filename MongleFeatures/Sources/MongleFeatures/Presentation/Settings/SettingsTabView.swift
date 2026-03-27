@@ -43,7 +43,7 @@ struct SettingsTabView: View {
                     MonglePopupView(
                         icon: .init(
                             systemName: "arrow.right.square.fill",
-                            foregroundColor: MongleColor.primary,
+                            foregroundColor: MongleColor.bgMintLight,
                             backgroundColor: MongleColor.primaryLight
                         ),
                         title: "로그아웃",
@@ -60,9 +60,10 @@ struct SettingsTabView: View {
                     MonglePopupView(
                         icon: .init(
                             systemName: "trash.fill",
-                            foregroundColor: MongleColor.error,
-                            backgroundColor: MongleColor.bgErrorSoft
+                            foregroundColor: MongleColor.bgMintLight,
+                            backgroundColor: MongleColor.primaryLight
                         ),
+
                         title: "회원탈퇴",
                         description: "계정을 삭제하면 모든 데이터가\n영구적으로 삭제됩니다.",
                         primaryLabel: "탈퇴하기",

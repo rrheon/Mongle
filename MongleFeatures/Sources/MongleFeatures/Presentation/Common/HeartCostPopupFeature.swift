@@ -37,7 +37,7 @@ public struct HeartCostPopupFeature {
             switch costType {
             case .writeQuestion: return "나만의 질문을 등록하면\n하트 3개가 소모됩니다."
             case .refreshQuestion: return "이 질문을 넘기면 하트 3개가 소모됩니다.\n다른 가족의 답변을 바로 볼 수 있어요."
-            case .editAnswer: return "답변을 수정하면\n하트 1개가 소모됩니다."
+            case .editAnswer: return "답변을 수정하면 하트 1개가 소모됩니다."
             }
         }
 
