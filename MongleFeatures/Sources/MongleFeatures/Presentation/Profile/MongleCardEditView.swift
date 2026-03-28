@@ -9,7 +9,6 @@ import Domain
 
 public struct MongleCardEditView: View {
     @Bindable var store: StoreOf<MongleCardEditFeature>
-    @State private var selectedMood: MoodOption?
 
     public init(store: StoreOf<MongleCardEditFeature>) {
         self.store = store
@@ -22,21 +21,21 @@ public struct MongleCardEditView: View {
         }
         .background(MongleColor.background.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
-        .alert("변경 실패", isPresented: Binding(
-            get: { store.saveError != nil },
-            set: { if !$0 { store.send(.dismissSaveError) } }
-        )) {
-            Button("확인", role: .cancel) { store.send(.dismissSaveError) }
-        } message: {
-            Text(store.saveError?.userMessage ?? "")
-        }
-        .onAppear {
-            selectedMood = MoodOption.defaults.first(where: { $0.id == store.selectedMoodId })
-                ?? MoodOption.defaults.first(where: { $0.id == "loved" })
-        }
-        .onChange(of: selectedMood) { _, newMood in
-            if let id = newMood?.id {
-                store.send(.moodSelected(id))
+        .overlay {
+            if let error = store.saveError {
+                MonglePopupView(
+                    icon: .init(
+                        systemName: "exclamationmark.circle.fill",
+                        foregroundColor: MongleColor.error,
+                        backgroundColor: MongleColor.bgErrorSoft
+                    ),
+                    title: "변경 실패",
+                    description: error.userMessage,
+                    primaryLabel: "확인",
+                    onPrimary: { store.send(.dismissSaveError) }
+                )
+                .transition(.opacity)
+                .animation(.easeInOut(duration: 0.2), value: store.saveError != nil)
             }
         }
     }
@@ -44,36 +43,19 @@ public struct MongleCardEditView: View {
     // MARK: - Header
 
     private var header: some View {
-        HStack {
-            Button {
-                store.send(.backTapped)
-            } label: {
-                Image(systemName: "arrow.left")
-                    .font(.system(size: 20, weight: .medium))
-                    .foregroundColor(MongleColor.textPrimary)
-            }
-
-            Spacer()
-
-            Text("프로필 편집")
-                .font(.custom("Outfit", size: 18).weight(.semibold))
-                .foregroundColor(MongleColor.textPrimary)
-
-            Spacer()
-
-            Button {
-                store.send(.saveTapped)
-            } label: {
+        MongleNavigationHeader(title: "프로필 편집") {
+            MongleBackButton { store.send(.backTapped) }
+        } right: {
+            Button { store.send(.saveTapped) } label: {
                 Text("저장")
-                    .font(.custom("Outfit", size: 15).weight(.bold))
+                    .font(MongleFont.body1Bold())
                     .foregroundColor(store.isValid ? MongleColor.primarySoft : MongleColor.textHint)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
+            .buttonStyle(MongleScaleButtonStyle())
             .disabled(!store.isValid || store.isSaving)
         }
-        .frame(height: 56)
-        .padding(.top, MongleSpacing.sm)
-        .padding(.horizontal, MongleSpacing.md)
-        .background(Color.white.ignoresSafeArea(edges: .top))
     }
 
     // MARK: - Scroll Content
@@ -83,7 +65,6 @@ public struct MongleCardEditView: View {
             VStack(spacing: 28) {
                 avatarSection
                 nameSection
-                moodSection
                 Spacer(minLength: 0)
             }
             .padding(.top, 28)
@@ -96,26 +77,14 @@ public struct MongleCardEditView: View {
 
     private var avatarSection: some View {
         VStack(spacing: 12) {
-            monggleForMood
+            MongleMonggle.forMood(store.selectedMoodId, size: 80)
                 .animation(.spring(response: 0.3), value: store.selectedMoodId)
 
-            Text("기분을 바꾸면 색이 변해요")
+            Text("답변 수정 시 색상을 변경할 수 있어요.")
                 .font(MongleFont.caption())
                 .foregroundColor(MongleColor.textHint)
         }
         .frame(maxWidth: .infinity)
-    }
-
-    @ViewBuilder
-    private var monggleForMood: some View {
-        switch store.selectedMoodId {
-        case "happy":   MongleMonggle.yellow(size: 80)
-        case "calm":    MongleMonggle.green(size: 80)
-        case "loved":   MongleMonggle.pink(size: 80)
-        case "sad":     MongleMonggle.blue(size: 80)
-        case "tired":   MongleMonggle.orange(size: 80)
-        default:        MongleMonggle.pink(size: 80)
-        }
     }
 
     // MARK: - Name Section
@@ -123,42 +92,18 @@ public struct MongleCardEditView: View {
     private var nameSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("이름")
-                .font(.custom("Outfit", size: 14).weight(.semibold))
+                .font(MongleFont.body1Bold())
                 .foregroundColor(MongleColor.textPrimary)
 
-            HStack(spacing: 8) {
-                Image(systemName: "person.fill")
-                    .font(.system(size: 16))
-                    .foregroundColor(MongleColor.primary)
-
-                TextField("이름 입력", text: $store.editedName.sending(\.nameChanged))
-                    .font(.custom("Outfit", size: 16).weight(.medium))
-                    .foregroundColor(MongleColor.textPrimary)
-            }
-            .frame(height: 52)
-            .padding(.horizontal, MongleSpacing.md)
-            .background(MongleColor.cardBackgroundSolid)
-            .clipShape(RoundedRectangle(cornerRadius: MongleRadius.medium))
-            .overlay(
-                RoundedRectangle(cornerRadius: MongleRadius.medium)
-                    .stroke(MongleColor.moodCalm, lineWidth: 1.5)
+            MongleInputText(
+                placeholder: "이름 입력",
+                text: $store.editedName.sending(\.nameChanged),
+                icon: "person.fill"
             )
 
             Text("다른 멤버에게 보여지는 이름이에요")
                 .font(MongleFont.caption())
                 .foregroundColor(MongleColor.textHint)
-        }
-    }
-
-    // MARK: - Mood Section
-
-    private var moodSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("오늘의 기분")
-                .font(.custom("Outfit", size: 14).weight(.semibold))
-                .foregroundColor(MongleColor.textPrimary)
-
-            MongleMoodSelector(selected: $selectedMood)
         }
     }
 }

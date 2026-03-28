@@ -22,7 +22,9 @@ public struct ProfileEditFeature {
         public var isGuest: Bool = false
         public var showGuestLoginPrompt: Bool = false
         @Presents public var mongleCardEdit: MongleCardEditFeature.State?
-        @Presents public var supportScreen: SupportScreenFeature.State?
+        @Presents public var notificationSettings: NotificationSettingsFeature.State?
+        @Presents public var groupManagement: GroupManagementFeature.State?
+        @Presents public var moodHistory: MoodHistoryFeature.State?
         @Presents public var accountManagement: AccountManagementFeature.State?
 
         public init(user: User? = nil, familyId: UUID? = nil, familyCreatedById: UUID? = nil, isGuest: Bool = false) {
@@ -49,7 +51,9 @@ public struct ProfileEditFeature {
         // MARK: - Internal Actions
         case userLoaded(User)
         case mongleCardEdit(PresentationAction<MongleCardEditFeature.Action>)
-        case supportScreen(PresentationAction<SupportScreenFeature.Action>)
+        case notificationSettings(PresentationAction<NotificationSettingsFeature.Action>)
+        case groupManagement(PresentationAction<GroupManagementFeature.Action>)
+        case moodHistory(PresentationAction<MoodHistoryFeature.Action>)
         case accountManagement(PresentationAction<AccountManagementFeature.Action>)
 
         // MARK: - Delegate Actions
@@ -98,18 +102,17 @@ public struct ProfileEditFeature {
 
             case .moodHistoryTapped:
                 if state.isGuest { state.showGuestLoginPrompt = true; return .none }
-                state.supportScreen = SupportScreenFeature.State(screen: .moodHistory)
+                state.moodHistory = MoodHistoryFeature.State()
                 return .none
 
             case .notificationSettingsTapped:
                 if state.isGuest { state.showGuestLoginPrompt = true; return .none }
-                state.supportScreen = SupportScreenFeature.State(screen: .notificationSettings)
+                state.notificationSettings = NotificationSettingsFeature.State()
                 return .none
 
             case .groupManagementTapped:
                 if state.isGuest { state.showGuestLoginPrompt = true; return .none }
-                state.supportScreen = SupportScreenFeature.State(
-                    screen: .groupManagement,
+                state.groupManagement = GroupManagementFeature.State(
                     familyId: state.familyId,
                     currentUserId: state.user?.id,
                     familyCreatedById: state.familyCreatedById
@@ -154,14 +157,28 @@ public struct ProfileEditFeature {
             case .mongleCardEdit:
                 return .none
 
-            case .supportScreen(.presented(.delegate(.close))):
-                state.supportScreen = nil
+            case .notificationSettings(.presented(.delegate(.close))):
+                state.notificationSettings = nil
                 return .none
 
-            case .supportScreen(.presented(.delegate(.groupLeft))):
+            case .notificationSettings:
+                return .none
+
+            case .groupManagement(.presented(.delegate(.close))):
+                state.groupManagement = nil
+                return .none
+
+            case .groupManagement(.presented(.delegate(.groupLeft))):
                 return .send(.delegate(.groupLeft))
 
-            case .supportScreen:
+            case .groupManagement:
+                return .none
+
+            case .moodHistory(.presented(.delegate(.close))):
+                state.moodHistory = nil
+                return .none
+
+            case .moodHistory:
                 return .none
 
             case .accountManagement(.presented(.delegate(.close))):
@@ -186,8 +203,14 @@ public struct ProfileEditFeature {
         .ifLet(\.$mongleCardEdit, action: \.mongleCardEdit) {
             MongleCardEditFeature()
         }
-        .ifLet(\.$supportScreen, action: \.supportScreen) {
-            SupportScreenFeature()
+        .ifLet(\.$notificationSettings, action: \.notificationSettings) {
+            NotificationSettingsFeature()
+        }
+        .ifLet(\.$groupManagement, action: \.groupManagement) {
+            GroupManagementFeature()
+        }
+        .ifLet(\.$moodHistory, action: \.moodHistory) {
+            MoodHistoryFeature()
         }
         .ifLet(\.$accountManagement, action: \.accountManagement) {
             AccountManagementFeature()

@@ -7,6 +7,7 @@
 
 import ComposableArchitecture
 import Domain
+import SwiftUI
 
 extension MainTabFeature {
 
@@ -33,7 +34,7 @@ extension MainTabFeature {
         case skipQuestionResponse(Result<Int, AppError>)
 
         // MARK: My Answer
-        case showMyAnswer(memberName: String, questionText: String, answerText: String)
+        case showMyAnswer(memberName: String, questionText: String, answerText: String, monggleColor: Color, answerTime: String)
 
         // MARK: Ad Reward
         case adRewardEarned(HeartCostPopupFeature.CostType, heartsRemaining: Int)
@@ -49,7 +50,7 @@ extension MainTabFeature {
         case dismissAnswerHeartPopup
 
         // MARK: Peer Answer
-        case showPeerAnswer(memberName: String, questionText: String, peerAnswer: String, myAnswer: String)
+        case showPeerAnswer(memberName: String, questionText: String, peerAnswer: String, myAnswer: String, monggleColor: Color, peerAnswerTime: String, myAnswerTime: String)
 
         // MARK: Auth
         case logout

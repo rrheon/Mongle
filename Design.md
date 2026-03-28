@@ -580,6 +580,298 @@ Button {
 *(참고: `NotificationCard` 자체는 화면을 꽉 채우는 리스트 형태이므로, 누를 때 작아지는 스케일 애니메이션보다는 현재의 `.plain` 상태나 iOS 기본 하이라이트(회색 배경)를 유지하는 것이 더 자연스럽습니다. 그래서 리스트 셀은 그대로 두시는 걸 추천합니다!)*
 
 
+## ProfileEditView
+마이페이지(MY) 화면도 TCA의 NavigationStack 라우팅 처리가 아주 깔끔하게 들어가 있네요! 특히 `settingsSection`과 `SettingsRowView`를 분리해서 iOS 기본 설정 앱처럼 그룹화된 리스트 UI를 직접 구현하신 점은 정말 스마트합니다. 
+
+앱 전체의 통일성과 디테일을 위해 **딱 2가지**만 다듬으면 완벽할 것 같습니다.
+
+---
+
+### ✨ 1. 설정 리스트(Row)에 터치 피드백 추가하기 (UX 개선)
+현재 `settingsSection` 안의 버튼들에 `.buttonStyle(PlainButtonStyle())`이 적용되어 있습니다. 이렇게 하면 눌렀을 때 아무런 시각적 변화가 없어서 사용자가 "내가 지금 이걸 제대로 누른 게 맞나?" 하고 헷갈릴 수 있습니다.
+
+리스트 항목은 눌렀을 때 전체 배경이 살짝 어두워지는(Highlight) 피드백을 주는 것이 iOS의 기본이자 가장 자연스러운 UX입니다. 리스트 전용 커스텀 버튼 스타일을 하나 추가해 보세요.
+
+```swift
+// MARK: - List Row Button Style (파일 하단이나 공통 컴포넌트 쪽에 추가)
+struct MongleRowButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            // 눌렸을 때 아주 연한 회색 배경을 깔아줍니다
+            .background(configuration.isPressed ? Color.black.opacity(0.05) : Color.clear)
+    }
+}
+```
+
+**적용 위치 (`settingsSection` 내부):**
+```swift
+ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
+    Button(action: row.action) {
+        SettingsRowView(row: row)
+            .frame(minHeight: 56)
+    }
+    // 🔴 기존: .buttonStyle(PlainButtonStyle())
+    // 🟢 수정:
+    .buttonStyle(MongleRowButtonStyle())
+    
+    // ... Divider 코드 ...
+}
+```
+
+### 🎨 2. 마이페이지에도 `monglePanel` 입혀주기
+눈치채셨겠지만, 여기서도 `profileCard`와 설정 리스트 컨테이너(`settingsSection`)에 배경, 모서리, 그림자, 테두리 코드가 수동으로 들어가 있습니다. 앱 전체의 카드 스타일이 동일하게 유지되도록 우리가 만든 패널 모디파이어로 교체해 줍시다!
+
+**`profileCard` 하단 수정:**
+```swift
+// ❌ 수정 전 (ultraThinMaterial 등 복잡한 수동 세팅)
+.padding(MongleSpacing.md)
+.background(.ultraThinMaterial)
+.clipShape(RoundedRectangle(cornerRadius: MongleRadius.xl))
+.overlay(RoundedRectangle(cornerRadius: MongleRadius.xl).stroke(MongleColor.border.opacity(0.3), lineWidth: 1))
+.shadow(color: .black.opacity(0.04), radius: 16, x: 0, y: 4)
+
+// 🟢 수정 후 (Material 느낌이 필요하다면 배경색 옵션을 추가하거나 투명도로 조절)
+.padding(MongleSpacing.md)
+.monglePanel(
+    background: Color.white.opacity(0.85), // 또는 필요한 색상
+    cornerRadius: MongleRadius.xl,
+    borderColor: MongleColor.border.opacity(0.3),
+    shadowOpacity: 0.04
+)
+```
+
+**`settingsSection` 하단 수정:**
+```swift
+// 섹션 카드 컨테이너 VStack 하단
+// ❌ 수정 전
+.background(MongleColor.cardBackgroundSolid)
+.clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
+
+// 🟢 수정 후
+.monglePanel(
+    background: MongleColor.cardBackgroundSolid,
+    cornerRadius: MongleRadius.large,
+    borderColor: MongleColor.border, // 몽글 설정창 특유의 은은한 테두리 추가
+    shadowOpacity: 0.03 // 설정창 덩어리에도 아주 얕은 뎁스 추가
+)
+```
+
+## MongleCardEditView
+프로필 편집(`MongleCardEditView`) 화면도 아주 깔끔하게 잘 만드셨네요! 사용자가 기분을 바꿀 때 상단의 몽글이 캐릭터가 `spring` 애니메이션과 함께 통통 튀며 바뀌도록 구성한 점은 정말 훌륭한 디테일입니다.
+
+이 화면은 코드가 이미 꽤 좋지만, **TCA(Composable Architecture)의 정석적인 패턴**을 적용하고, 이전에 우리가 잘 만들어둔 **공통 컴포넌트를 재사용**하면 코드를 절반 가까이 줄일 수 있습니다. 3가지 핵심 포인트를 짚어드릴게요.
+
+---
+
+### 🚀 1. (가장 중요) TCA 안티패턴 제거: `@State` 동기화 버리기
+현재 코드를 보면 TCA의 `store.selectedMoodId` 값을 `MongleMoodSelector`에 전달하기 위해 지역 변수인 `@State private var selectedMood`를 만들고, `.onAppear`와 `.onChange`를 이용해 두 값을 억지로 동기화하고 있습니다. 
+이 방식은 앱이 복잡해지면 버그를 유발하는 대표적인 안티패턴입니다. **커스텀 Binding**을 만들면 `@State`와 뷰 모디파이어들을 싹 지울 수 있습니다.
+
+**수정 방향:**
+```swift
+// 1. @State private var selectedMood 지우기
+// 2. .onAppear, .onChange 모디파이어 통째로 지우기
+// 3. moodSection 내부를 아래처럼 커스텀 Binding으로 연결하기
+
+private var moodSection: some View {
+    VStack(alignment: .leading, spacing: 8) {
+        Text("오늘의 기분")
+            .font(MongleFont.body1Bold()) // (하드코딩 폰트 대신 시스템 폰트 사용)
+            .foregroundColor(MongleColor.textPrimary)
+
+        // 👇 똑똑한 커스텀 바인딩
+        let moodBinding = Binding<MoodOption?>(
+            get: { MoodOption.defaults.first { $0.id == store.selectedMoodId } },
+            set: { if let newId = $0?.id { store.send(.moodSelected(newId)) } }
+        )
+
+        MongleMoodSelector(selected: moodBinding)
+    }
+}
+```
+
+### ✨ 2. 기껏 만든 `MongleInputText` 활용하기 (코드 중복 제거)
+`nameSection`을 보면 TextField와 아이콘, 배경, 테두리를 수동으로 길게 작성하셨습니다. 그런데 우리가 맨 처음 공통 컴포넌트를 만들 때, **`MongleInputText`**라는 완벽한 컴포넌트를 이미 만들어 두었죠! 이걸 가져다 쓰면 코드가 마법처럼 짧아집니다.
+
+```swift
+// nameSection 내부 수정
+// ❌ 수정 전 (20줄 가까운 수동 UI 코드)
+// HStack { Image ... TextField ... } .background ... .overlay ...
+
+// 🟢 수정 후 (단 5줄!)
+private var nameSection: some View {
+    VStack(alignment: .leading, spacing: 8) {
+        Text("이름")
+            .font(MongleFont.body1Bold())
+            .foregroundColor(MongleColor.textPrimary)
+
+        // 🟢 공통 컴포넌트 재사용
+        MongleInputText(
+            placeholder: "이름 입력",
+            text: $store.editedName.sending(\.nameChanged),
+            icon: "person.fill"
+        )
+
+        Text("다른 멤버에게 보여지는 이름이에요")
+            .font(MongleFont.caption())
+            .foregroundColor(MongleColor.textHint)
+    }
+}
+```
+
+### 🎨 3. 하드코딩된 폰트(`"Outfit"`) 제거 및 터치 영역 확보
+앱 내의 폰트 일관성을 위해 흩어져 있는 `.custom("Outfit", size: 18)` 코드를 우리가 정의한 `MongleFont`로 교체해 주세요.
+또한, 헤더의 뒤로가기 버튼과 저장 버튼이 글자나 아이콘 영역만 터치되므로, 여유로운 터치 영역(44x44)을 잡아주는 것이 좋습니다.
+
+```swift
+// Header 내부 수정 예시
+Button {
+    store.send(.backTapped)
+} label: {
+    Image(systemName: "arrow.left")
+        .font(.system(size: 20, weight: .medium))
+        .foregroundColor(MongleColor.textPrimary)
+        .frame(width: 44, height: 44) // 👈 터치 영역 확보
+        .contentShape(Rectangle())
+}
+.buttonStyle(MongleScaleButtonStyle()) // 쫀득한 애니메이션 추가
+
+Spacer()
+
+Text("프로필 편집")
+    .font(MongleFont.heading3()) // 👈 하드코딩 폰트 교체
+    .foregroundColor(MongleColor.textPrimary)
+
+// 저장 버튼 쪽도 마찬가지로 폰트 교체 및 패딩/frame으로 영역 확보!
+```
+
+---
+
+**요약하자면:**
+TCA의 상태를 `@State`로 복사하지 말고 **Binding을 직접 만들어서 꽂아주는 것**, 그리고 이전에 만들어둔 **공통 UI 컴포넌트(`MongleInputText`)를 적극적으로 재사용하는 것**이 이번 리팩토링의 핵심입니다.
+
+## SupportScreenView
+
+`SupportScreenView`에 다양한 설정 화면(하트, 캘린더, 알림, 그룹 관리, 기분 히스토리)을 한데 모아서 렌더링하는 구조가 아주 인상적입니다! TCA의 `enum State` 방식을 활용하여 한 뷰 안에서 탭(또는 메뉴)에 따라 다른 화면을 뿌려주는 패턴은 코드를 간결하게 유지하는 데 아주 좋습니다.
+
+특히 이번에 말씀하신 **"초대 코드나 링크를 복사해서 공유하는 방식"**은 그룹 관리(`groupManagementView`) 화면에서 사용자들이 가장 많이 쓰게 될 핵심 기능입니다. 
+
+이를 위해 기존 코드를 어떻게 수정하면 좋을지, 그리고 앱 전체의 디자인 통일성을 위한 디테일을 함께 짚어드릴게요.
+
+---
+
+### 🚀 1. 초대 코드 복사 & 공유 기능 (UX/UI 강화)
+현재 `groupManagementView`의 그룹 정보 섹션을 보면 "코드: [초대코드]"가 단순 텍스트로 노출되어 있고, "새 멤버 초대하기"라는 커다란 2차 버튼(`MongleButtonSecondary`)이 있습니다.
+
+요즘 앱들은 코드를 터치하면 바로 복사되거나, 우측에 명시적인 공유 아이콘을 두어 직관적인 경험을 제공합니다. 애플의 `ShareLink` (iOS 16+)를 사용하면 아주 쉽게 네이티브 공유 시트를 띄울 수 있습니다.
+
+**`groupManagementView` 내부 수정:**
+```swift
+// 그룹 정보 카드 내부 수정
+VStack(alignment: .leading, spacing: MongleSpacing.md) {
+    sectionTitle("그룹 정보", subtitle: "초대 코드를 공유해 가족을 초대하세요")
+
+    HStack(spacing: MongleSpacing.md) {
+        Circle()
+            .fill(MongleColor.primaryLight)
+            .frame(width: 56, height: 56)
+            .overlay(Image(systemName: "person.3.fill").foregroundColor(MongleColor.primary))
+
+        VStack(alignment: .leading, spacing: 4) {
+            Text(store.groupName)
+                .font(MongleFont.heading3())
+                .foregroundColor(MongleColor.textPrimary)
+            
+            // 🟢 코드를 클립보드에 복사하는 버튼 
+            Button {
+                UIPasteboard.general.string = store.inviteCode
+                store.send(.inviteCodeCopied) // (TCA 액션에 추가하여 토스트 띄우기 권장)
+            } label: {
+                HStack(spacing: 4) {
+                    Text("초대 코드: \(store.inviteCode)")
+                        .font(MongleFont.body2Bold())
+                    Image(systemName: "doc.on.doc")
+                        .font(.system(size: 12))
+                }
+                .foregroundColor(MongleColor.primaryDark)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(MongleColor.primaryLight.opacity(0.5))
+                .clipShape(Capsule())
+            }
+        }
+        
+        Spacer()
+        
+        // 🟢 iOS 16 네이티브 공유 버튼 (우측 끝에 배치)
+        ShareLink(
+            item: "몽글에서 가족 통신망을 만들었어요! 초대 코드 [\(store.inviteCode)]를 입력하거나 아래 링크로 들어오세요.\nhttps://mongle.app/invite/\(store.inviteCode)"
+        ) {
+            Image(systemName: "square.and.arrow.up")
+                .font(.system(size: 20, weight: .medium))
+                .foregroundColor(MongleColor.primary)
+                .padding(8)
+                .background(MongleColor.primaryLight.opacity(0.3))
+                .clipShape(Circle())
+        }
+    }
+    
+    // (기존의 MongleButtonSecondary("새 멤버 초대하기")는 삭제하셔도 좋습니다. UI가 훨씬 깔끔해집니다.)
+
+    HStack(spacing: MongleSpacing.xs) {
+        invitePill("\(store.members.count)명 참여")
+        invitePill("초대 코드 활성")
+    }
+}
+// 하단 .monglePanel 적용 잊지 마세요!
+.monglePanel(background: MongleColor.cardBackground, cornerRadius: MongleRadius.large, borderColor: MongleColor.borderWarm)
+```
+
+### 🎨 2. 하드코딩된 패널 스타일 통일하기 (`monglePanel`)
+이전 화면들과 마찬가지로, `SupportScreenView` 내부의 거의 모든 카드(하트 안내, 캘린더, 설정 토글, 그룹 정보 등)에 `.background`, `.clipShape`, `.overlay(RoundedRectangle.stroke)` 코드가 반복되고 있습니다. 
+
+뷰 코드가 상당히 긴 편인데, 이것들을 모두 `.monglePanel` 하나로 교체하시면 코드가 수십 줄 이상 줄어들고 유지보수가 편해집니다.
+
+```swift
+// 예시: notificationSettingsView 하단의 카드
+// ❌ 수정 전
+.background(MongleColor.cardBackground)
+.clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
+.overlay(RoundedRectangle(cornerRadius: MongleRadius.large).stroke(MongleColor.borderWarm, lineWidth: 1))
+
+// 🟢 수정 후
+.monglePanel(background: MongleColor.cardBackground, cornerRadius: MongleRadius.large, borderColor: MongleColor.borderWarm, shadowOpacity: 0)
+```
+*(다른 모든 카드들도 동일하게 적용해 주세요!)*
+
+### ⚙️ 3. DateFormatter 성능 최적화 (버벅임 방지)
+캘린더나 기분 히스토리 쪽에서 `DateFormatter`를 매번 `private var`로 생성하여 사용하고 있습니다. 뷰가 다시 그려질 때마다(예: 하트를 누르거나 토글을 켤 때마다) Formatter가 수십 번 새로 생성되면서 스크롤이나 애니메이션이 끊길 수 있습니다.
+
+```swift
+// ❌ 수정 전
+private var monthTitle: String {
+    let formatter = DateFormatter()
+    // ...
+}
+
+// 🟢 수정 후 (파일 상단이나 확장(extension) 영역에 static으로 선언)
+private static let monthFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.locale = Locale(identifier: "ko_KR")
+    formatter.dateFormat = "yyyy년 M월"
+    return formatter
+}()
+
+private var monthTitle: String {
+    Self.monthFormatter.string(from: store.currentMonth)
+}
+```
+*(`selectedDateTitle`, `moodSummarySubtitle`, `shortDate` 용 Formatter들도 모두 `static let`으로 분리해 주세요!)*
+
+---
+
+초대 링크 공유 기능은 `ShareLink`를 통해 네이티브 기능으로 손쉽게 해결되었고, 나머지 UI 최적화만 진행해 주시면 설정/관리 화면도 완벽하게 마무리될 것 같습니다. 
+
 
 ---
 ## 참고사항

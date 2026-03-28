@@ -173,7 +173,7 @@ public struct OnboardingView: View {
         if store.currentIndex == 0 {
             return "시작하기"
         } else if store.isLastPage {
-            return "몽글 시작하기 🌿"
+            return "몽글 시작하기"
         } else {
             return "다음"
         }

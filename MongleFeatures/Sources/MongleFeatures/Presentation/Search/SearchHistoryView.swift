@@ -84,7 +84,7 @@ public struct SearchHistoryView: View {
         } else if !store.results.isEmpty {
             resultsList
         } else {
-            emptyStateView(icon: "🌿", message: "가족의 소중한 기록을 검색해보세요")
+            emptyStateView(icon: nil, message: "가족의 소중한 기록을 검색해보세요")
         }
     }
 
@@ -143,6 +143,7 @@ public struct SearchHistoryView: View {
                                 result: result,
                                 query: store.query.trimmingCharacters(in: .whitespaces)
                             )
+                            .padding(.horizontal, MongleSpacing.md)
                             .padding(.bottom, MongleSpacing.xs)
 
                             if shouldShowAd(after: globalIndices[result.id] ?? 0, total: total) {
@@ -173,6 +174,8 @@ public struct SearchHistoryView: View {
         VStack(spacing: 12) {
             if let icon {
                 Text(icon).font(.system(size: 40))
+            } else{
+              MongleLogo(size: .large, type: .MongleLogo)
             }
             Text(message)
                 .font(MongleFont.body2())
@@ -203,6 +206,7 @@ private struct SearchResultCard: View {
                 }
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(MongleSpacing.md)
         .background(MongleColor.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
@@ -245,18 +249,7 @@ private struct MiniMongleAvatar: View {
 
     var body: some View {
         let color = Self.colors[colorIndex % Self.colors.count]
-        Circle()
-            .fill(color)
-            .frame(width: 32, height: 32)
-            .shadow(color: color.opacity(0.3), radius: 4, x: 0, y: 2)
-            .overlay(
-                // Simple eye representation
-                HStack(spacing: 5) {
-                    Circle().fill(Color.black.opacity(0.7)).frame(width: 4, height: 4)
-                    Circle().fill(Color.black.opacity(0.7)).frame(width: 4, height: 4)
-                }
-                .offset(y: -1)
-            )
+        MongleMonggle(color: color, size: 32)
     }
 }
 

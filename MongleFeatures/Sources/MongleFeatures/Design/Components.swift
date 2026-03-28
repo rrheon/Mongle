@@ -452,6 +452,16 @@ public extension MongleMonggle {
     static func orange(name: String? = nil, size: CGFloat = 56) -> MongleMonggle {
         MongleMonggle(color: MongleColor.monggleOrange, name: name, size: size)
     }
+    static func forMood(_ moodId: String?, size: CGFloat = 56) -> MongleMonggle {
+        switch moodId {
+        case "happy":  return MongleMonggle(color: MongleColor.monggleYellow, size: size)
+        case "calm":   return MongleMonggle(color: MongleColor.monggleGreen, size: size)
+        case "loved":  return MongleMonggle(color: MongleColor.mongglePink, size: size)
+        case "sad":    return MongleMonggle(color: MongleColor.monggleBlue, size: size)
+        case "tired":  return MongleMonggle(color: MongleColor.monggleOrange, size: size)
+        default:       return MongleMonggle(color: MongleColor.mongglePink, size: size)
+        }
+    }
 }
 
 // MARK: - XP Bar
@@ -512,10 +522,10 @@ public struct MongleXPBar: View {
 public struct MongleCardQuestion: View {
     let question: String
     var emoji: String = "🌿"
-    var label: String = "Today's Question"
+    var label: String = "오늘의 질문"
     var onTap: (() -> Void)? = nil
 
-    public init(question: String, emoji: String = "🌿", label: String = "Today's Question", onTap: (() -> Void)? = nil) {
+    public init(question: String, emoji: String = "🌿", label: String = "오늘의 질문", onTap: (() -> Void)? = nil) {
         self.question = question
         self.emoji = emoji
         self.label = label
@@ -599,18 +609,15 @@ public struct MongleCardGlass<Content: View>: View {
 public struct MongleCardGroup: View {
     let groupName: String
     let memberColors: [Color]
-    var streakDays: Int? = nil
     var onTap: (() -> Void)? = nil
 
     public init(
         groupName: String,
         memberColors: [Color],
-        streakDays: Int? = nil,
         onTap: (() -> Void)? = nil
     ) {
         self.groupName = groupName
         self.memberColors = memberColors
-        self.streakDays = streakDays
         self.onTap = onTap
     }
 
@@ -641,15 +648,6 @@ public struct MongleCardGroup: View {
               
             }
             
-            if let streakDays {
-              Text("\(streakDays)일 연속")
-                .font(MongleFont.captionBold())
-                .foregroundColor(.white)
-                .padding(.horizontal, MongleSpacing.sm)
-                .padding(.vertical, 3)
-                .background(MongleColor.primaryLight)
-                .clipShape(Capsule())
-            }
           }
             .frame(maxWidth: .infinity)
             .padding(.horizontal, 20)
@@ -808,11 +806,11 @@ public struct MoodOption: Identifiable, Equatable {
     }
 
     public static let defaults: [MoodOption] = [
-        MoodOption(id: "happy",   emoji: "😊", label: "행복",  color: MongleColor.moodHappy),
-        MoodOption(id: "calm",    emoji: "😌", label: "평온",  color: MongleColor.moodCalm),
-        MoodOption(id: "loved",   emoji: "🥰", label: "사랑",  color: MongleColor.moodLoved),
-        MoodOption(id: "sad",     emoji: "😢", label: "우울",  color: MongleColor.moodSad),
-        MoodOption(id: "tired",   emoji: "😴", label: "지침",  color: MongleColor.moodTired),
+        MoodOption(id: "calm",    emoji: "😌", label: "평온",  color: MongleColor.monggleGreen),
+        MoodOption(id: "happy",   emoji: "😊", label: "행복",  color: MongleColor.monggleYellow),
+        MoodOption(id: "loved",   emoji: "🥰", label: "사랑",  color: MongleColor.mongglePink),
+        MoodOption(id: "sad",     emoji: "😢", label: "우울",  color: MongleColor.monggleBlue),
+        MoodOption(id: "tired",   emoji: "😴", label: "지침",  color: MongleColor.monggleOrange),
     ]
 }
 
@@ -841,7 +839,7 @@ public struct MongleMoodSelector: View {
                 ForEach(moods) { mood in
                     Spacer()
                     VStack(spacing: 6) {
-                        monggle(for: mood.id, size: 44)
+                        MongleMonggle.forMood(mood.id, size: 44)
                             .scaleEffect(selected == mood ? 1.18 : 1.0)
                             .animation(.spring(response: 0.25, dampingFraction: 0.6), value: selected)
 
@@ -862,17 +860,6 @@ public struct MongleMoodSelector: View {
         .shadow(color: MongleColor.shadowBase.opacity(0.12), radius: 16, x: 0, y: 4)
     }
 
-    @ViewBuilder
-    private func monggle(for moodId: String, size: CGFloat) -> some View {
-        switch moodId {
-        case "happy":   MongleMonggle.yellow(size: size)
-        case "calm":    MongleMonggle.green(size: size)
-        case "loved":   MongleMonggle.pink(size: size)
-        case "sad":     MongleMonggle.blue(size: size)
-        case "tired":   MongleMonggle.orange(size: size)
-        default:        MongleMonggle.pink(size: size)
-        }
-    }
 }
 
 // MARK: - Header/Home
@@ -946,7 +933,7 @@ public struct MongleSheetAnswer: View {
 
             // Question
             VStack(alignment: .leading, spacing: 8) {
-                Text("🌿 Today's Question")
+                Text("Today's Question")
                     .font(MongleFont.captionBold())
                     .foregroundColor(MongleColor.primaryMuted)
 
@@ -966,13 +953,20 @@ public struct MongleSheetAnswer: View {
             .frame(height: 140)
 
             // Submit
-            MongleButtonCTA("마음 남기기", icon: "heart.fill", action: onSubmit)
+            MongleButtonCTA("답변 남기기", icon: "heart.fill", action: onSubmit)
         }
         .padding(.top, 24)
         .padding(.horizontal, 20)
         .padding(.bottom, 32)
         .background(Color.white)
-        .cornerRadius(24, corners: [.topLeft, .topRight])
+        .clipShape(
+            .rect(
+                topLeadingRadius: 24,
+                bottomLeadingRadius: 0,
+                bottomTrailingRadius: 0,
+                topTrailingRadius: 24
+            )
+        )
         .shadow(color: MongleColor.textPrimary.opacity(0.1), radius: 20, x: 0, y: -4)
     }
 }
@@ -997,27 +991,25 @@ extension View {
     }
 }
 
-// MARK: - Helpers
+// MARK: - Button Styles
 
-extension View {
-    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
-        clipShape(RoundedCorner(radius: radius, corners: corners))
+public struct MongleScaleButtonStyle: ButtonStyle {
+    public init() {}
+    public func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
+            .opacity(configuration.isPressed ? 0.9 : 1.0)
+            .animation(.spring(response: 0.2, dampingFraction: 0.6), value: configuration.isPressed)
     }
 }
 
-private struct RoundedCorner: Shape {
-    var radius: CGFloat
-    var corners: UIRectCorner
-
-    func path(in rect: CGRect) -> Path {
-        let path = UIBezierPath(
-            roundedRect: rect,
-            byRoundingCorners: corners,
-            cornerRadii: CGSize(width: radius, height: radius)
-        )
-        return Path(path.cgPath)
+struct MongleRowButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(configuration.isPressed ? Color.black.opacity(0.05) : Color.clear)
     }
 }
+
 
 // MARK: - Previews
 
@@ -1137,17 +1129,17 @@ public struct MongleView: View {
     public let onNudge: () -> Void
     public let onSelfTap: () -> Void
 
-    // 팝업: 답변완료 캐릭터 탭 + 내가 미답변 → "먼저 답변하면 볼 수 있어요"
-    @State private var showAnswerFirstToViewAlert = false
-    // 팝업: 미답변 캐릭터 탭 + 내가 미답변 → "먼저 답변하면 재촉할 수 있어요"
-    @State private var showAnswerFirstToNudgeAlert = false
+    public let onAnswerFirstToView: (String) -> Void
+    public let onAnswerFirstToNudge: (String) -> Void
 
     public init(name: String, color: Color, hasAnswered: Bool, hasCurrentUserAnswered: Bool,
                 hasCurrentUserSkipped: Bool = false,
                 isCurrentUser: Bool = false,
                 onViewAnswer: @escaping () -> Void,
                 onNudge: @escaping () -> Void,
-                onSelfTap: @escaping () -> Void = {}) {
+                onSelfTap: @escaping () -> Void = {},
+                onAnswerFirstToView: @escaping (String) -> Void = { _ in },
+                onAnswerFirstToNudge: @escaping (String) -> Void = { _ in }) {
         self.name = name
         self.color = color
         self.hasAnswered = hasAnswered
@@ -1157,6 +1149,8 @@ public struct MongleView: View {
         self.onViewAnswer = onViewAnswer
         self.onNudge = onNudge
         self.onSelfTap = onSelfTap
+        self.onAnswerFirstToView = onAnswerFirstToView
+        self.onAnswerFirstToNudge = onAnswerFirstToNudge
     }
 
     private func handleTap() {
@@ -1175,13 +1169,13 @@ public struct MongleView: View {
           onViewAnswer() // 상대 답변 완료 + 내가 볼 수 있음 -> 답변 보기
 
       case (true, false):
-          showAnswerFirstToViewAlert = true  // 상대만 완료 -> 내가 먼저 써야 함 (팝업)
+          onAnswerFirstToView(name)  // 상대만 완료 -> 내가 먼저 써야 함 (팝업)
 
       case (false, true):
           onNudge()  // 내가 볼 수 있음 + 상대 미답변 -> 재촉하기
 
       case (false, false):
-          showAnswerFirstToNudgeAlert = true // 둘 다 미완료 -> 내가 먼저 써야 재촉 가능 (팝업)
+          onAnswerFirstToNudge(name) // 둘 다 미완료 -> 내가 먼저 써야 재촉 가능 (팝업)
       }
     }
 
@@ -1193,16 +1187,6 @@ public struct MongleView: View {
             }
         }
         .buttonStyle(.plain)
-        .alert("\(name)의 답변 보기", isPresented: $showAnswerFirstToViewAlert) {
-            Button("확인", role: .cancel) {}
-        } message: {
-            Text("오늘의 질문에 먼저 답변하면\n\(name)의 답변을 볼 수 있어요!")
-        }
-        .alert("\(name) 재촉하기", isPresented: $showAnswerFirstToNudgeAlert) {
-            Button("확인", role: .cancel) {}
-        } message: {
-            Text("오늘의 질문에 먼저 답변하면\n\(name)에게 재촉할 수 있어요!")
-        }
     }
 
     @ViewBuilder
@@ -1248,6 +1232,8 @@ public struct MongleSceneView: View {
     public var onViewAnswer: (String) -> Void = { _ in }
     public var onNudge: (String) -> Void = { _ in }
     public var onSelfTap: () -> Void = {}
+    public var onAnswerFirstToView: (String) -> Void = { _ in }
+    public var onAnswerFirstToNudge: (String) -> Void = { _ in }
 
     private let stepSize: CGFloat = 2.0
     private let interval: TimeInterval = 0.12
@@ -1273,7 +1259,9 @@ public struct MongleSceneView: View {
                 currentUserName: String? = nil,
                 onViewAnswer: @escaping (String) -> Void = { _ in },
                 onNudge: @escaping (String) -> Void = { _ in },
-                onSelfTap: @escaping () -> Void = {}) {
+                onSelfTap: @escaping () -> Void = {},
+                onAnswerFirstToView: @escaping (String) -> Void = { _ in },
+                onAnswerFirstToNudge: @escaping (String) -> Void = { _ in }) {
         self.hasCurrentUserAnswered = hasCurrentUserAnswered
         self.hasCurrentUserSkipped = hasCurrentUserSkipped
         self.members = members
@@ -1281,6 +1269,8 @@ public struct MongleSceneView: View {
         self.onViewAnswer = onViewAnswer
         self.onNudge = onNudge
         self.onSelfTap = onSelfTap
+        self.onAnswerFirstToView = onAnswerFirstToView
+        self.onAnswerFirstToNudge = onAnswerFirstToNudge
     }
 
     private var effectiveMembers: [(String, Color, Bool)] {
@@ -1301,7 +1291,9 @@ public struct MongleSceneView: View {
                         isCurrentUser: currentUserName != nil && h.name == currentUserName,
                         onViewAnswer: { onViewAnswer(h.name) },
                         onNudge: { onNudge(h.name) },
-                        onSelfTap: onSelfTap
+                        onSelfTap: onSelfTap,
+                        onAnswerFirstToView: onAnswerFirstToView,
+                        onAnswerFirstToNudge: onAnswerFirstToNudge
                     )
                     .position(CGPoint(x: h.position.x, y: h.position.y + hopY))
                     .animation(.linear(duration: interval), value: h.stepCount)

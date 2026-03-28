@@ -8,6 +8,32 @@
 import Foundation
 import ComposableArchitecture
 import Domain
+import SwiftUI
+
+private func monggleColor(for moodId: String?) -> Color {
+    switch moodId {
+    case "happy":  return MongleColor.monggleYellow
+    case "calm":   return MongleColor.monggleGreen
+    case "loved":  return MongleColor.mongglePink
+    case "sad":    return MongleColor.monggleBlue
+    case "tired":  return MongleColor.monggleOrange
+    default:       return MongleColor.monggleYellow
+    }
+}
+
+private func formatAnswerTime(_ date: Date) -> String {
+    let calendar = Calendar.current
+    let formatter = DateFormatter()
+    formatter.locale = Locale(identifier: "ko_KR")
+    if calendar.isDateInToday(date) {
+        formatter.dateFormat = "오늘 a h:mm"
+    } else if calendar.isDateInYesterday(date) {
+        formatter.dateFormat = "어제 a h:mm"
+    } else {
+        formatter.dateFormat = "M월 d일 a h:mm"
+    }
+    return formatter.string(from: date)
+}
 
 extension MainTabFeature {
 
@@ -58,21 +84,29 @@ extension MainTabFeature {
                     let memberName = state.home.currentUser?.name ?? ""
                     let questionId = state.home.todayQuestion?.id
                     let currentUserId = state.home.currentUser?.id
+                    let myMonggleColor = monggleColor(for: state.home.currentUser?.moodId)
                     return .run { send in
                         var answerText = ""
+                        var answerTime = ""
                         if let qId = questionId,
                            let userId = currentUserId {
-                            answerText = (try? await answerRepository.getByUserAndDailyQuestion(dailyQuestionId: qId, userId: userId))?.content ?? ""
+                            let answer = try? await answerRepository.getByUserAndDailyQuestion(dailyQuestionId: qId, userId: userId)
+                            answerText = answer?.content ?? ""
+                            if let date = answer?.updatedAt ?? answer?.createdAt {
+                                answerTime = formatAnswerTime(date)
+                            }
                         }
-                        await send(.showMyAnswer(memberName: memberName, questionText: questionText, answerText: answerText))
+                        await send(.showMyAnswer(memberName: memberName, questionText: questionText, answerText: answerText, monggleColor: myMonggleColor, answerTime: answerTime))
                     }
 
-                case .showMyAnswer(let memberName, let questionText, let answerText):
+                case .showMyAnswer(let memberName, let questionText, let answerText, let monggleColor, let answerTime):
                     state.modal = .peerAnswer(PeerAnswerFeature.State(
                         memberName: memberName,
+                        monggleColor: monggleColor,
                         questionText: questionText,
                         peerAnswer: answerText,
-                        myAnswer: answerText
+                        myAnswer: answerText,
+                        peerAnswerTime: answerTime.isEmpty ? "오늘" : answerTime
                     ))
                     return .none
 
@@ -82,15 +116,26 @@ extension MainTabFeature {
                     let currentUserId = state.home.currentUser?.id
                     let targetUser = state.home.familyMembers.first { $0.name == memberName }
                     let targetUserId = targetUser?.id
+                    let peerMonggleColor = monggleColor(for: targetUser?.moodId)
                     return .run { [answerRepository] send in
                         var peerAnswer = ""
                         var myAnswer = ""
+                        var peerAnswerTime = ""
+                        var myAnswerTime = ""
                         if let qId = questionId {
                             let answers = (try? await answerRepository.getByDailyQuestion(dailyQuestionId: qId)) ?? []
-                            peerAnswer = answers.first { $0.userId == targetUserId }?.content ?? ""
-                            myAnswer = answers.first { $0.userId == currentUserId }?.content ?? ""
+                            let peerAnswerObj = answers.first { $0.userId == targetUserId }
+                            let myAnswerObj = answers.first { $0.userId == currentUserId }
+                            peerAnswer = peerAnswerObj?.content ?? ""
+                            myAnswer = myAnswerObj?.content ?? ""
+                            if let date = peerAnswerObj.flatMap({ $0.updatedAt ?? $0.createdAt }) {
+                                peerAnswerTime = formatAnswerTime(date)
+                            }
+                            if let date = myAnswerObj.flatMap({ $0.updatedAt ?? $0.createdAt }) {
+                                myAnswerTime = formatAnswerTime(date)
+                            }
                         }
-                        await send(.showPeerAnswer(memberName: memberName, questionText: questionText, peerAnswer: peerAnswer, myAnswer: myAnswer))
+                        await send(.showPeerAnswer(memberName: memberName, questionText: questionText, peerAnswer: peerAnswer, myAnswer: myAnswer, monggleColor: peerMonggleColor, peerAnswerTime: peerAnswerTime, myAnswerTime: myAnswerTime))
                     }
 
                 case .home(.delegate(.navigateToPeerNotAnsweredNudge(let targetUser))):
@@ -99,6 +144,7 @@ extension MainTabFeature {
                     state.path.append(.peerNudge(PeerNudgeFeature.State(
                         targetUserId: targetUser.id.uuidString,
                         memberName: targetUser.name,
+                        memberMoodId: targetUser.moodId,
                         questionText: questionText,
                         hearts: hearts
                     )))
@@ -108,8 +154,8 @@ extension MainTabFeature {
                     state.modal = .answerFirstPopup(AnswerFirstPopupFeature.State(memberName: memberName, popupType: .viewAnswer))
                     return .none
 
-                case .home(.delegate(.showNudgeUnavailablePopup(_))):
-                    // MongleView에서 로컬 alert으로 처리
+                case .home(.delegate(.showNudgeUnavailablePopup(let memberName))):
+                    state.modal = .answerFirstPopup(AnswerFirstPopupFeature.State(memberName: memberName, popupType: .nudge))
                     return .none
 
                 case .home(.delegate(.navigateToHeartsSystem)):
@@ -200,6 +246,9 @@ extension MainTabFeature {
                                 await send(.skipQuestionResponse(.failure(AppError.from(error))))
                             }
                         }
+                    default:
+                        state.modal = nil
+                        return .none
                     }
 
                 case .modal(.presented(.heartCostPopup(.delegate(.cancelled)))):
@@ -242,6 +291,8 @@ extension MainTabFeature {
                                 await send(.skipQuestionResponse(.failure(AppError.from(error))))
                             }
                         }
+                    default:
+                        return .none
                     }
 
                 // MARK: - HeartInfoPopup Delegate
@@ -312,7 +363,8 @@ extension MainTabFeature {
                             QuestionDetailFeature.State(
                                 question: question,
                                 currentUser: state.home.currentUser,
-                                familyMembers: state.home.familyMembers
+                                familyMembers: state.home.familyMembers,
+                                hearts: state.home.hearts
                             )
                         )
                     )
@@ -325,7 +377,8 @@ extension MainTabFeature {
                             QuestionDetailFeature.State(
                                 question: question,
                                 currentUser: state.home.currentUser,
-                                familyMembers: state.home.familyMembers
+                                familyMembers: state.home.familyMembers,
+                                hearts: state.home.hearts
                             )
                         )
                     )
@@ -360,12 +413,11 @@ extension MainTabFeature {
                         }
                         state.profile.user = updated
                     }
-                    state.history.historyItems = [:]
-                    state.history.loadedMonths = []
                     state.path.removeLast()
                     state.showAnswerSubmittedToast = true
                     state.showAnswerHeartPopup = true
                     return .merge(
+                        .send(.history(.forceReload)),
                         .run { [userRepository] _ in
                             guard let user = updatedUser else { return }
                             _ = try? await userRepository.update(user)
@@ -376,13 +428,11 @@ extension MainTabFeature {
                         }
                     )
 
-                case .path(.element(id: _, action: .questionDetail(.delegate(.answerEdited(let answer, let moodId))))):
-                    state.history.historyItems = [:]
-                    state.history.loadedMonths = []
-                    // 오늘 질문 수정인 경우에만 색상 업데이트
-                    let isTodayQuestion = answer.dailyQuestionId == state.home.todayQuestion?.id
+                case .path(.element(id: _, action: .questionDetail(.delegate(.answerEdited(_, let moodId))))):
+                    state.path.removeLast()
+                    state.home.hearts = max(0, state.home.hearts - 1)
                     let editUpdatedUser: User? = {
-                        guard isTodayQuestion, let moodId = moodId, let current = state.home.currentUser else { return nil }
+                        guard let moodId = moodId, let current = state.home.currentUser else { return nil }
                         return User(
                             id: current.id,
                             email: current.email,
@@ -404,6 +454,7 @@ extension MainTabFeature {
                     }
                     state.showEditAnswerToast = true
                     return .merge(
+                        .send(.history(.forceReload)),
                         .run { [userRepository] _ in
                             guard let user = editUpdatedUser else { return }
                             _ = try? await userRepository.update(user)
@@ -431,7 +482,8 @@ extension MainTabFeature {
                     state.path.append(.questionDetail(QuestionDetailFeature.State(
                         question: question,
                         currentUser: state.home.currentUser,
-                        familyMembers: state.home.familyMembers
+                        familyMembers: state.home.familyMembers,
+                        hearts: state.home.hearts
                     )))
                     return .none
 
@@ -453,12 +505,15 @@ extension MainTabFeature {
                     state.showAnswerHeartPopup = false
                     return .none
 
-                case .showPeerAnswer(let memberName, let questionText, let peerAnswer, let myAnswer):
+                case .showPeerAnswer(let memberName, let questionText, let peerAnswer, let myAnswer, let monggleColor, let peerAnswerTime, let myAnswerTime):
                     state.modal = .peerAnswer(PeerAnswerFeature.State(
                         memberName: memberName,
+                        monggleColor: monggleColor,
                         questionText: questionText,
                         peerAnswer: peerAnswer,
-                        myAnswer: myAnswer
+                        myAnswer: myAnswer,
+                        peerAnswerTime: peerAnswerTime.isEmpty ? "오늘" : peerAnswerTime,
+                        myAnswerTime: myAnswerTime.isEmpty ? "오늘" : myAnswerTime
                     ))
                     return .none
 

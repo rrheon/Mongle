@@ -15,7 +15,6 @@ public struct AccountManagementView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: MongleSpacing.lg) {
                     accountSection
-                    dangerSection
                 }
                 .padding(.horizontal, MongleSpacing.md)
                 .padding(.top, MongleSpacing.md)
@@ -28,48 +27,43 @@ public struct AccountManagementView: View {
             error: store.appError,
             onDismiss: { store.send(.dismissError) }
         )
-        .alert("로그아웃", isPresented: Binding(
-            get: { store.showLogoutConfirm },
-            set: { _ in store.send(.alertDismissed) }
-        )) {
-            Button("로그아웃", role: .destructive) { store.send(.logoutConfirmed) }
-            Button("취소", role: .cancel) { store.send(.alertDismissed) }
-        } message: {
-            Text("정말 로그아웃할까요?")
-        }
-        .alert("계정 탈퇴", isPresented: Binding(
-            get: { store.showDeleteConfirm },
-            set: { _ in store.send(.alertDismissed) }
-        )) {
-            Button("탈퇴하기", role: .destructive) { store.send(.deleteAccountConfirmed) }
-            Button("취소", role: .cancel) { store.send(.alertDismissed) }
-        } message: {
-            Text("탈퇴하면 모든 데이터가 삭제돼요.\n이 작업은 되돌릴 수 없어요.")
+        .overlay {
+            if store.showLogoutConfirm {
+                MonglePopupView(
+                    title: "로그아웃",
+                    description: "정말 로그아웃할까요?",
+                    primaryLabel: "로그아웃",
+                    secondaryLabel: "취소",
+                    onPrimary: { store.send(.logoutConfirmed) },
+                    onSecondary: { store.send(.alertDismissed) }
+                )
+                .transition(.opacity)
+                .animation(.easeInOut(duration: 0.2), value: store.showLogoutConfirm)
+            }
+            if store.showDeleteConfirm {
+                MonglePopupView(
+                    title: "계정 탈퇴",
+                    description: "탈퇴하면 모든 데이터가 삭제돼요.\n이 작업은 되돌릴 수 없어요.",
+                    primaryLabel: "탈퇴하기",
+                    secondaryLabel: "취소",
+                    isDestructive: true,
+                    onPrimary: { store.send(.deleteAccountConfirmed) },
+                    onSecondary: { store.send(.alertDismissed) }
+                )
+                .transition(.opacity)
+                .animation(.easeInOut(duration: 0.2), value: store.showDeleteConfirm)
+            }
         }
     }
 
     // MARK: - Header
 
     private var header: some View {
-        ZStack {
-            Text("계정 관리")
-                .font(MongleFont.body1Bold())
-                .foregroundColor(MongleColor.textPrimary)
-
-            HStack {
-                Button { store.send(.backTapped) } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(MongleColor.textPrimary)
-                        .frame(width: 44, height: 44)
-                }
-                .buttonStyle(.plain)
-                Spacer()
-            }
+        MongleNavigationHeader(title: "계정 관리") {
+            MongleBackButton { store.send(.backTapped) }
+        } right: {
+            EmptyView()
         }
-        .frame(height: 56)
-        .padding(.horizontal, 8)
-        .background(Color.white)
     }
 
     // MARK: - Account Section
@@ -84,39 +78,23 @@ public struct AccountManagementView: View {
             VStack(spacing: 0) {
                 accountRow(
                     icon: "arrow.right.square.fill",
-                    iconColor: MongleColor.primary,
+                    iconColor: MongleColor.bgMintLight,
                     iconBackground: MongleColor.primaryLight,
                     title: "로그아웃",
                     subtitle: "기기에서 로그아웃해요"
                 ) {
                     store.send(.logoutTapped)
                 }
-            }
-            .background(MongleColor.cardBackgroundSolid)
-            .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
-        }
-    }
-
-    // MARK: - Danger Section
-
-    private var dangerSection: some View {
-        VStack(alignment: .leading, spacing: MongleSpacing.sm) {
-            Text("위험 구역")
-                .font(MongleFont.captionBold())
-                .foregroundColor(MongleColor.error)
-                .padding(.horizontal, MongleSpacing.xxs)
-
-            VStack(spacing: 0) {
-                accountRow(
-                    icon: "trash.fill",
-                    iconColor: MongleColor.error,
-                    iconBackground: MongleColor.bgErrorSoft,
-                    title: "계정 탈퇴",
-                    subtitle: "모든 데이터가 삭제되며 복구할 수 없어요",
-                    titleColor: MongleColor.error
-                ) {
-                    store.send(.deleteAccountTapped)
-                }
+              
+              accountRow(
+                  icon: "trash.fill",
+                  iconColor: MongleColor.bgMintLight,
+                  iconBackground: MongleColor.primaryLight,
+                  title: "계정 탈퇴",
+                  subtitle: "모든 데이터가 삭제되며 복구할 수 없어요"
+              ) {
+                  store.send(.deleteAccountTapped)
+              }
             }
             .background(MongleColor.cardBackgroundSolid)
             .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))

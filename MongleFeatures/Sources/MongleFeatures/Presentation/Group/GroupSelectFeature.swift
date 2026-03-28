@@ -1,6 +1,8 @@
 import Foundation
 import ComposableArchitecture
 import Domain
+import UserNotifications
+import UIKit
 
 public enum CreateGroupFocusField: Equatable, Sendable {
     case groupName
@@ -27,6 +29,8 @@ public struct GroupSelectFeature {
         public enum Step: Equatable, Sendable {
             case select
             case createGroup
+            case notificationPermission
+            case quietHoursPermission
             case groupCreated
             case joinWithCode
         }
@@ -51,6 +55,9 @@ public struct GroupSelectFeature {
         public var groups: [MongleGroup] = []
         public var isLoadingGroups: Bool = false
         public var showMaxGroupsAlert: Bool = false
+
+        // MARK: - 알림 허용 플로우
+        public var isFromJoin: Bool = false
 
         // MARK: - 알림 배지
         public var hasUnreadNotifications: Bool = false
@@ -109,6 +116,11 @@ public struct GroupSelectFeature {
         case joinTapped
         case setLoading(Bool)
         case setInviteCode(String)
+        case setJoinSuccess
+        case notificationPermissionAllowed
+        case notificationPermissionSkipped
+        case quietHoursPermissionEnabled
+        case quietHoursPermissionSkipped
         case setError(String?)
         case setAppError(AppError?)
         case dismissError
@@ -189,7 +201,7 @@ public struct GroupSelectFeature {
                 return .none
 
             case .groupNameChanged(let name):
-                state.groupName = String(name.prefix(15))
+                state.groupName = String(name.prefix(10))
                 state.groupNameError = false
                 return .none
 
@@ -293,8 +305,45 @@ public struct GroupSelectFeature {
 
             case .setInviteCode(let code):
                 state.inviteCode = code
-                state.step = .groupCreated
                 state.isLoading = false
+                state.isFromJoin = false
+                state.step = .groupCreated
+                return .none
+
+            case .setJoinSuccess:
+                state.isLoading = false
+                return .send(.delegate(.completed))
+
+            case .notificationPermissionAllowed:
+                state.step = .quietHoursPermission
+                return .run { _ in
+                    _ = try? await UNUserNotificationCenter.current()
+                        .requestAuthorization(options: [.alert, .badge, .sound])
+                    await MainActor.run {
+                        UIApplication.shared.registerForRemoteNotifications()
+                    }
+                }
+
+            case .notificationPermissionSkipped:
+                state.step = .quietHoursPermission
+                return .none
+
+            case .quietHoursPermissionEnabled:
+                UserDefaults.standard.set(true, forKey: "notification.quietHours")
+                UserDefaults.standard.set(true, forKey: "mongle.didShowNotificationSetup")
+                if state.isFromJoin {
+                    return .send(.delegate(.completed))
+                }
+                state.step = .groupCreated
+                return .none
+
+            case .quietHoursPermissionSkipped:
+                UserDefaults.standard.set(false, forKey: "notification.quietHours")
+                UserDefaults.standard.set(true, forKey: "mongle.didShowNotificationSetup")
+                if state.isFromJoin {
+                    return .send(.delegate(.completed))
+                }
+                state.step = .groupCreated
                 return .none
 
             case .setError(let message):

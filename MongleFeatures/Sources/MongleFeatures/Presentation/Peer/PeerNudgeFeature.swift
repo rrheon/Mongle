@@ -7,6 +7,7 @@ public struct PeerNudgeFeature {
     public struct State: Equatable {
         public var targetUserId: String
         public var memberName: String
+        public var memberMoodId: String?
         public var questionText: String
         public var hearts: Int
         public var isSent: Bool
@@ -17,12 +18,14 @@ public struct PeerNudgeFeature {
         public init(
             targetUserId: String = "",
             memberName: String,
+            memberMoodId: String? = nil,
             questionText: String = "",
             hearts: Int = 5,
             isSent: Bool = false
         ) {
             self.targetUserId = targetUserId
             self.memberName = memberName
+            self.memberMoodId = memberMoodId
             self.questionText = questionText
             self.hearts = hearts
             self.isSent = isSent

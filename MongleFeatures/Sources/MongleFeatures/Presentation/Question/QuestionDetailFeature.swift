@@ -24,6 +24,8 @@ public struct QuestionDetailFeature {
         public var isSubmitting: Bool = false
         public var appError: AppError?
         public var showMoodRequiredAlert: Bool = false
+        public var hearts: Int = 0
+      @Presents public var editCostPopup: HeartCostPopupFeature.State?
 
         public var hasMyAnswer: Bool { myAnswer != nil }
         public var isValidAnswer: Bool {
@@ -51,7 +53,8 @@ public struct QuestionDetailFeature {
             answerText: String = "",
             selectedMoodIndex: Int? = nil,
             isLoading: Bool = false,
-            isSubmitting: Bool = false
+            isSubmitting: Bool = false,
+            hearts: Int = 0
         ) {
             self.question = question
             self.currentUser = currentUser
@@ -59,7 +62,15 @@ public struct QuestionDetailFeature {
             self.myAnswer = myAnswer
             self.familyAnswers = familyAnswers
             self.answerText = myAnswer?.content ?? answerText
-            self.selectedMoodIndex = selectedMoodIndex
+            self.hearts = hearts
+            // 수정 모드: 사용자의 현재 moodId로 초기 선택
+            if myAnswer != nil,
+               let moodId = currentUser?.moodId,
+               let index = MoodOption.defaults.firstIndex(where: { $0.id == moodId }) {
+                self.selectedMoodIndex = index
+            } else {
+                self.selectedMoodIndex = selectedMoodIndex
+            }
             self.isLoading = isLoading
             self.isSubmitting = isSubmitting
         }
@@ -79,6 +90,10 @@ public struct QuestionDetailFeature {
         case loadDataResponse(Result<LoadedData, AppError>)
         case submitAnswerResponse(Result<Answer, AppError>)
         case setAppError(AppError?)
+
+        // MARK: - Presentation Actions
+        case editCostPopup(PresentationAction<HeartCostPopupFeature.Action>)
+        case adHeartGranted(Int)
 
         // MARK: - Delegate Actions
         case delegate(Delegate)
@@ -101,11 +116,13 @@ public struct QuestionDetailFeature {
     }
 
     @Dependency(\.answerRepository) var answerRepository
+    @Dependency(\.userRepository) var userRepository
+    @Dependency(\.adClient) var adClient
     @Dependency(\.errorHandler) var errorHandler
 
     public init() {}
 
-    public var body: some Reducer<State, Action> {
+    public var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
             // MARK: - View Actions
@@ -139,7 +156,8 @@ public struct QuestionDetailFeature {
                 }
 
             case .answerTextChanged(let text):
-                state.answerText = text
+                guard !state.isSubmitting else { return .none }
+                state.answerText = String(text.prefix(200))
                 state.appError = nil
                 return .none
 
@@ -165,52 +183,104 @@ public struct QuestionDetailFeature {
                     return .none
                 }
 
+                if state.hasMyAnswer {
+                    // 수정인 경우: 하트 소모 팝업 표시
+                    state.editCostPopup = HeartCostPopupFeature.State(
+                        costType: .editAnswer,
+                        hearts: state.hearts
+                    )
+                    return .none
+                }
+
+                // 신규 답변인 경우: 바로 제출
                 state.isSubmitting = true
                 state.appError = nil
 
                 let answerText = state.answerText.trimmingCharacters(in: .whitespacesAndNewlines)
                 let userId = state.currentUser?.id ?? UUID()
-                let existingAnswer = state.myAnswer
-                // Question.id를 사용 (서버 /answers API는 Question 테이블 ID 기준)
                 let questionId = state.question.id
                 let selectedMoodId = state.selectedMoodIndex.map { MoodOption.defaults[$0].id }
 
                 return .run { [answerRepository] send in
                     do {
-                        let result: Answer
-                        if let existing = existingAnswer {
-                            let updated = Answer(
-                                id: existing.id,
-                                dailyQuestionId: questionId,
-                                userId: userId,
-                                content: answerText,
-                                imageURL: existing.imageURL,
-                                createdAt: existing.createdAt,
-                                updatedAt: Date()
-                            )
-                            result = try await answerRepository.update(updated)
-                        } else {
-                            let newAnswer = Answer(
-                                id: UUID(),
-                                dailyQuestionId: questionId,
-                                userId: userId,
-                                content: answerText,
-                                imageURL: nil,
-                                createdAt: Date()
-                            )
-                            result = try await answerRepository.create(newAnswer, moodId: selectedMoodId)
-                        }
+                        let newAnswer = Answer(
+                            id: UUID(),
+                            dailyQuestionId: questionId,
+                            userId: userId,
+                            content: answerText,
+                            imageURL: nil,
+                            createdAt: Date()
+                        )
+                        let result = try await answerRepository.create(newAnswer, moodId: selectedMoodId)
                         await send(.submitAnswerResponse(.success(result)))
                     } catch {
                         await send(.submitAnswerResponse(.failure(AppError.from(error))))
                     }
                 }
 
+            case .editCostPopup(.presented(.delegate(.confirmed))):
+                state.editCostPopup = nil
+                guard let existingAnswer = state.myAnswer else { return .none }
+                state.isSubmitting = true
+                state.appError = nil
+
+                let editAnswerText = state.answerText.trimmingCharacters(in: .whitespacesAndNewlines)
+                let editUserId = state.currentUser?.id ?? UUID()
+                let editQuestionId = state.question.id
+                let editMoodId = state.selectedMoodIndex.map { MoodOption.defaults[$0].id }
+                let updated = Answer(
+                    id: existingAnswer.id,
+                    dailyQuestionId: editQuestionId,
+                    userId: editUserId,
+                    content: editAnswerText,
+                    imageURL: existingAnswer.imageURL,
+                    createdAt: existingAnswer.createdAt,
+                    updatedAt: Date()
+                )
+                return .run { [answerRepository] send in
+                    do {
+                        let result = try await answerRepository.update(updated, moodId: editMoodId)
+                        await send(.submitAnswerResponse(.success(result)))
+                    } catch {
+                        await send(.submitAnswerResponse(.failure(AppError.from(error))))
+                    }
+                }
+
+            case .editCostPopup(.presented(.delegate(.cancelled))):
+                state.editCostPopup = nil
+                return .none
+
+            case .editCostPopup(.presented(.delegate(.watchAdRequested))):
+                state.editCostPopup = nil
+                return .run { [adClient, userRepository] send in
+                    let earned = await adClient.showRewardedAd()
+                    guard earned else { return }
+                    do {
+                        let heartsRemaining = try await userRepository.grantAdHearts(amount: 1)
+                        await send(.adHeartGranted(heartsRemaining))
+                    } catch {
+                        await send(.adHeartGranted(-1))
+                    }
+                }
+
+            case .adHeartGranted(let hearts):
+                if hearts >= 0 {
+                    state.hearts = hearts
+                } else {
+                    state.hearts += 1
+                }
+                state.editCostPopup = HeartCostPopupFeature.State(costType: .editAnswer, hearts: state.hearts)
+                return .none
+
+            case .editCostPopup:
+                return .none
+
             case .dismissErrorTapped:
                 state.appError = nil
                 return .none
 
             case .closeTapped:
+                state.appError = nil
                 return .send(.delegate(.closed))
 
             // MARK: - Internal Actions
@@ -220,6 +290,11 @@ public struct QuestionDetailFeature {
                 state.familyAnswers = data.familyAnswers
                 if let myAnswer = data.myAnswer {
                     state.answerText = myAnswer.content
+                    // 수정 모드: 사용자의 현재 moodId로 기분 선택 복원
+                    if let moodId = state.currentUser?.moodId,
+                       let index = MoodOption.defaults.firstIndex(where: { $0.id == moodId }) {
+                        state.selectedMoodIndex = index
+                    }
                 }
                 return .none
 
@@ -230,7 +305,7 @@ public struct QuestionDetailFeature {
 
             case .submitAnswerResponse(.success(let answer)):
                 let wasEditing = state.hasMyAnswer
-                state.isSubmitting = false
+                // isSubmitting을 false로 초기화하지 않음: dismiss 중 TextField가 answerTextChanged를 재전송하는 것을 방지
                 state.myAnswer = answer
                 let moodId = state.selectedMoodIndex.map { MoodOption.defaults[$0].id }
                 return .send(wasEditing ? .delegate(.answerEdited(answer, moodId: moodId)) : .delegate(.answerSubmitted(answer, moodId: moodId)))
@@ -250,6 +325,9 @@ public struct QuestionDetailFeature {
             case .delegate:
                 return .none
             }
+        }
+        .ifLet(\.$editCostPopup, action: \.editCostPopup) {
+            HeartCostPopupFeature()
         }
     }
 }

@@ -10,7 +10,7 @@ extension GroupSelectView {
   }
 
   var shareText: String {
-    "몽글에서 함께해요! 🌿\n초대코드: \(store.inviteCode)\n링크: \(inviteLink)"
+    "몽글에서 함께해요! \n초대코드: \(store.inviteCode)\n링크: \(inviteLink)"
   }
 
   var groupCreatedView: some View {

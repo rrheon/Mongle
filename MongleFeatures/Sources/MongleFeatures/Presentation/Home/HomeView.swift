@@ -64,6 +64,10 @@ struct HomeViewActions {
     var onMyMonggleTap: () -> Void = {}
     var onGroupSelected: (MongleGroup) -> Void = { _ in }
     var onNavigateToGroupSelect: () -> Void = {}
+    var onNotificationPermissionAllowed: () -> Void = {}
+    var onNotificationPermissionSkipped: () -> Void = {}
+    var onAnswerRequiredTap: (String) -> Void = { _ in }
+    var onNudgeUnavailableTap: (String) -> Void = { _ in }
 }
 
 // MARK: - Main View
@@ -75,6 +79,7 @@ struct HomeView: View {
     let members: [(name: String, color: Color, hasAnswered: Bool)]
     var currentUserName: String?
     var actions: HomeViewActions
+    var showNotificationPermission: Bool = false
 
     @State private var showGroupDropdown = false
 
@@ -84,7 +89,8 @@ struct HomeView: View {
         hasCurrentUserSkipped: Bool = false,
         members: [(name: String, color: Color, hasAnswered: Bool)] = [],
         currentUserName: String? = nil,
-        actions: HomeViewActions = HomeViewActions()
+        actions: HomeViewActions = HomeViewActions(),
+        showNotificationPermission: Bool = false
     ) {
         self.topBarState = topBarState
         self.hasCurrentUserAnswered = hasCurrentUserAnswered
@@ -92,6 +98,7 @@ struct HomeView: View {
         self.members = members
         self.currentUserName = currentUserName
         self.actions = actions
+        self.showNotificationPermission = showNotificationPermission
     }
 
     var body: some View {
@@ -116,16 +123,18 @@ struct HomeView: View {
                     currentUserName: currentUserName,
                     onViewAnswer: actions.onPeerAnswerTap,
                     onNudge: actions.onPeerNudgeTap,
-                    onSelfTap: actions.onMyMonggleTap
+                    onSelfTap: actions.onMyMonggleTap,
+                    onAnswerFirstToView: actions.onAnswerRequiredTap,
+                    onAnswerFirstToNudge: actions.onNudgeUnavailableTap
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .ignoresSafeArea(edges: .top)
 
-            // 그룹 드롭다운 오버레이 (헤더 바로 아래, safe area 무시)
+            // 그룹 드롭다운
             if showGroupDropdown {
-                // 반투명 배경 (터치 시 닫기)
+                // 반투명 배경 (터치 시 닫기) — 드롭다운 아래 레이어
                 Color.black.opacity(0.3)
                     .ignoresSafeArea()
                     .onTapGesture { withAnimation(.easeInOut(duration: 0.15)) { showGroupDropdown = false } }
@@ -142,13 +151,28 @@ struct HomeView: View {
                         actions.onNavigateToGroupSelect()
                     }
                 )
-                // ZStack이 safe area를 포함하도록 ignoresSafeArea 적용 후
-                // 헤더 높이(safeArea 포함 116pt)만큼 top padding
-                .ignoresSafeArea(edges: .top)
                 .padding(.top, 116)
             }
         }
         .ignoresSafeArea(edges: .top)
+        .overlay {
+            if showNotificationPermission {
+                MonglePopupView(
+                    icon: .init(
+                        systemName: "bell.fill",
+                        foregroundColor: MongleColor.primary,
+                        backgroundColor: MongleColor.primaryLight
+                    ),
+                    title: "알림을 허용해 주세요",
+                    description: "가족의 소식을 놓치지 않을 수 있어요.",
+                    primaryLabel: "허용하기",
+                    secondaryLabel: "나중에",
+                    onPrimary: { actions.onNotificationPermissionAllowed() },
+                    onSecondary: { actions.onNotificationPermissionSkipped() }
+                )
+                .transition(.opacity.animation(.easeInOut(duration: 0.2)))
+            }
+        }
     }
 }
 
@@ -245,10 +269,10 @@ private struct HeartsButtonView: View {
       }
       .padding(.vertical, 6)
       .padding(.horizontal, 10)
-      .background(MongleColor.heartRedLight)
+      .background(MongleColor.bgNeutral)
       .clipShape(Capsule())
     }
-    .buttonStyle(.plain)
+    .buttonStyle(MongleScaleButtonStyle())
     .popover(isPresented: $showCallout, arrowEdge: .top) {
       HeartCalloutView(hearts: hearts)
         .presentationCompactAdaptation(.popover)
@@ -281,7 +305,7 @@ private struct HeartCalloutView: View {
       Divider()
 
       HStack(spacing: 4) {
-        Image(systemName: "sun.rise.fill")
+        Image(systemName: "sun.min.fill")
           .foregroundColor(MongleColor.primary)
           .font(.system(size: 11))
         Text("매일 오전 +1 · 답변 완료 +3")
@@ -324,7 +348,7 @@ private struct NotificationButtonView: View {
           .foregroundColor(MongleColor.primary)
           .padding(.vertical, 6)
           .padding(.horizontal, 10)
-          .background(MongleColor.primaryLight)
+          .background(MongleColor.bgNeutral)
           .clipShape(Capsule())
 
         if hasNotification {
@@ -335,7 +359,7 @@ private struct NotificationButtonView: View {
         }
       }
     }
-    .buttonStyle(.plain)
+    .buttonStyle(MongleScaleButtonStyle())
   }
 }
 
@@ -346,15 +370,31 @@ private struct TodayQuestionCard: View {
     var onTap: (() -> Void)?  // nil이면 비활성 카드 (탭 이벤트 없음)
 
     var body: some View {
-        let cardContent = HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                // 타이틀 및 완료 체크마크
-                headerView
+        if let onTap = onTap {
+            Button(action: onTap) { cardBody }
+                .buttonStyle(MongleScaleButtonStyle())
+        } else {
+            cardBody
+        }
+    }
 
-                // 질문 텍스트
+    private var cardBody: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 4) {
+                    Text("오늘의 질문")
+                        .font(MongleFont.captionBold())
+                        .foregroundColor(MongleColor.primary)
+                    if question.isAnswered {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 14))
+                            .foregroundColor(MongleColor.primary)
+                    }
+                }
+
                 Text(question.text)
-                    .font(.subheadline.bold())
-                    .foregroundColor(onTap != nil ? .primary : .secondary)
+                    .font(MongleFont.body1Bold())
+                    .foregroundColor(onTap != nil ? MongleColor.textPrimary : MongleColor.textSecondary)
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
             }
@@ -363,51 +403,14 @@ private struct TodayQuestionCard: View {
 
             if onTap != nil {
                 Image(systemName: "chevron.right")
-                    .font(.caption.bold())
-                    .foregroundColor(.secondary)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(MongleColor.textHint)
             }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
-        .background(cardBackground)
-
-        if let onTap = onTap {
-            Button(action: onTap) { cardContent }
-                .buttonStyle(CardButtonStyle())
-        } else {
-            cardContent
-        }
+        .monglePanel(background: Color.white.opacity(0.85), cornerRadius: 14, borderColor: .clear, shadowOpacity: 0.07)
     }
-    
-    // 헤더뷰
-    private var headerView: some View {
-        HStack(spacing: 4) {
-            Text("Today's Question")
-                .font(.caption.bold())
-                .foregroundColor(.green)
-            
-            if question.isAnswered {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.caption)
-                    .foregroundColor(.green)
-            }
-        }
-    }
-    
-    private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: 14)
-            .fill(Color.white.opacity(0.85))
-            .shadow(color: .black.opacity(0.07), radius: 6, x: 0, y: 2)
-    }
-  
-  // 오늘의 질문 카드 스타일
-  private struct CardButtonStyle: ButtonStyle {
-      func makeBody(configuration: Configuration) -> some View {
-          configuration.label
-              .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
-              .animation(.easeInOut(duration: 0.12), value: configuration.isPressed)
-      }
-  }
 }
 
 // MARK: - Group Dropdown View
@@ -478,9 +481,7 @@ private struct GroupDropdownView: View {
         }
         .buttonStyle(.plain)
       }
-      .background(Color.white)
-      .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
-      .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 4)
+      .monglePanel(background: Color.white, cornerRadius: MongleRadius.large, borderColor: .clear, shadowOpacity: 0.12)
       .frame(width: UIScreen.main.bounds.width / 2)
       .padding(.leading, 16)
 

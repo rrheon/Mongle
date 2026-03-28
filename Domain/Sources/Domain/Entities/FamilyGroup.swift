@@ -15,6 +15,7 @@ public struct MongleGroup: Equatable, Sendable {
     public let createdBy: UUID
     public let createdAt: Date
     public let inviteCode: String
+    public let streakDays: Int
 
     public init(
         id: UUID,
@@ -23,7 +24,8 @@ public struct MongleGroup: Equatable, Sendable {
         createdBy: UUID,
         createdAt: Date,
         inviteCode: String,
-        memberMoodIds: [String] = []
+        memberMoodIds: [String] = [],
+        streakDays: Int = 0
     ) {
         self.id = id
         self.name = name
@@ -32,5 +34,6 @@ public struct MongleGroup: Equatable, Sendable {
         self.createdBy = createdBy
         self.createdAt = createdAt
         self.inviteCode = inviteCode
+        self.streakDays = streakDays
     }
 }

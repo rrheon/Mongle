@@ -92,6 +92,9 @@ public struct SearchHistoryFeature {
                 var results: [SearchResultItem] = []
 
                 for hq in state.allHistory {
+                    // 오늘 날짜의 질문은 검색 결과에서 제외
+                    if Calendar.current.isDateInToday(hq.date) { continue }
+
                     let questionMatches = hq.question.content.lowercased().contains(lowerQuery)
                     let matchedAnswers = hq.answers.filter { answer in
                         answer.content.lowercased().contains(lowerQuery) ||

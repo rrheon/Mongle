@@ -22,6 +22,12 @@ public struct PeerNudgeView: View {
                 .padding(.bottom, 32)
             }
             .background(MongleColor.background)
+
+            nudgeButton
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
+                .padding(.bottom, 32)
+                .background(MongleColor.background)
         }
         .background(MongleColor.background)
         .mongleErrorToast(
@@ -33,25 +39,11 @@ public struct PeerNudgeView: View {
     // MARK: - Navigation Header
 
     private var navigationHeader: some View {
-        HStack {
-            Button {
-                store.send(.closeTapped)
-            } label: {
-                Image(systemName: "chevron.backward")
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundColor(MongleColor.textPrimary)
-                    .frame(width: 24, height: 24)
-            }
-            Spacer()
-            Text("답변 재촉하기")
-                .font(MongleFont.heading3())
-                .foregroundColor(MongleColor.textPrimary)
-            Spacer()
-            Color.clear.frame(width: 24, height: 24)
+        MongleNavigationHeader(title: "답변 재촉하기") {
+            MongleBackButton { store.send(.closeTapped) }
+        } right: {
+            EmptyView()
         }
-        .padding(.horizontal, 20)
-        .frame(height: 56)
-        .background(Color.white)
     }
 
     // MARK: - Question Card
@@ -76,9 +68,20 @@ public struct PeerNudgeView: View {
 
     // MARK: - Empty State (몽글 + 미답변 안내)
 
+    private func monggleColor(for moodId: String?) -> Color {
+        switch moodId {
+        case "happy":  return MongleColor.monggleYellow
+        case "calm":   return MongleColor.monggleGreen
+        case "loved":  return MongleColor.mongglePink
+        case "sad":    return MongleColor.monggleBlue
+        case "tired":  return MongleColor.monggleOrange
+        default:       return MongleColor.monggleYellow
+        }
+    }
+
     private var emptyState: some View {
         VStack(spacing: 16) {
-            MongleMonggle(color: MongleColor.monggleYellow, size: 72)
+            MongleMonggle(color: monggleColor(for: store.memberMoodId), size: 72)
             VStack(spacing: 4) {
                 Text("\(store.memberName)가 아직 답변하지 않았어요")
                     .font(MongleFont.button())
@@ -113,8 +116,6 @@ public struct PeerNudgeView: View {
             if store.hearts <= 0 && !store.isSent {
                 insufficientHeartsSection
             }
-
-            nudgeButton
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -139,7 +140,7 @@ public struct PeerNudgeView: View {
                     } else {
                         Image(systemName: "play.fill")
                             .font(.system(size: 13))
-                        Text("광고 보고 재촉하기 💚")
+                        Text("광고 보고 재촉하기")
                             .font(MongleFont.captionBold())
                     }
                 }
@@ -186,9 +187,6 @@ public struct PeerNudgeView: View {
             store.send(.nudgeTapped)
         } label: {
             HStack(spacing: MongleSpacing.sm) {
-                Image(systemName: "heart.fill")
-                    .font(.system(size: 18))
-                    .foregroundColor(.white)
                 Text(store.isSent ? "재촉 완료" : "재촉하기")
                     .font(MongleFont.body1Bold())
                     .foregroundColor(.white)

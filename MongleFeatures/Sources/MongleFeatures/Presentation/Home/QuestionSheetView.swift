@@ -23,8 +23,6 @@ public struct QuestionSheetView: View {
             VStack(alignment: .leading, spacing: MongleSpacing.lg) {
                 header
                 questionCard
-                Divider()
-                    .background(MongleColor.divider)
                 actionButtons
             }
             .padding(.horizontal, MongleSpacing.md)
@@ -70,8 +68,10 @@ public struct QuestionSheetView: View {
                 Image(systemName: "xmark")
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(MongleColor.textHint)
-                    .padding(MongleSpacing.sm)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
+            .buttonStyle(MongleScaleButtonStyle())
         }
     }
 
@@ -107,11 +107,11 @@ public struct QuestionSheetView: View {
         }
         .padding(MongleSpacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(MongleColor.primaryLight.opacity(0.15))
-        .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
-        .overlay(
-            RoundedRectangle(cornerRadius: MongleRadius.large)
-                .stroke(MongleColor.primary.opacity(0.3), lineWidth: 1)
+        .monglePanel(
+            background: MongleColor.primaryLight.opacity(0.15),
+            cornerRadius: MongleRadius.large,
+            borderColor: MongleColor.primary.opacity(0.3),
+            shadowOpacity: 0
         )
     }
 
@@ -124,12 +124,16 @@ public struct QuestionSheetView: View {
                 store.send(.answerTapped)
             }
 
+          Divider()
+              .background(MongleColor.divider)
+          
+        
             // 나만의 질문 작성하기
             actionRow(
                 icon: "pencil.circle",
                 title: "나만의 질문 작성하기",
                 subtitle: "하트 3개 소모",
-                iconColor: MongleColor.accentOrange
+                iconColor: MongleColor.primary
             ) {
                 store.send(.writeQuestionTapped)
             }
@@ -139,7 +143,7 @@ public struct QuestionSheetView: View {
                 icon: "arrow.right.circle",
                 title: "질문 넘기기",
                 subtitle: "하트 3개 소모 · 다른 가족 답변 열람 가능",
-                iconColor: MongleColor.secondary
+                iconColor: MongleColor.primary
             ) {
                 store.send(.refreshQuestionTapped)
             }
@@ -174,13 +178,13 @@ public struct QuestionSheetView: View {
             }
             .padding(.vertical, MongleSpacing.sm)
             .padding(.horizontal, MongleSpacing.md)
-            .background(MongleColor.cardGlass)
-            .clipShape(RoundedRectangle(cornerRadius: MongleRadius.medium))
-            .overlay(
-                RoundedRectangle(cornerRadius: MongleRadius.medium)
-                    .stroke(MongleColor.border, lineWidth: 1)
+            .monglePanel(
+                background: MongleColor.cardGlass,
+                cornerRadius: MongleRadius.medium,
+                borderColor: MongleColor.border,
+                shadowOpacity: 0.04
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(MongleScaleButtonStyle())
     }
 }
