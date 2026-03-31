@@ -214,6 +214,10 @@ AppError 시스템 모든 Feature 적용 완료:
 - [x] **알림 화면** — 알림 목록, 읽음/미읽음, 전체 읽음 처리 / 실제 API 연동
   - `notificationRepository.getNotifications()`, `markAsRead()`, `markAllAsRead()`
 - [x] **전체 UI** — iOS 디자인 시스템 반영 (그라디언트 배경, MongleCard, MongleButton, MongleCharacter 아바타)
+- [x] **LoginScreen iOS 동일화** — 이메일 로그인 제거, 소셜 로그인만 (Kakao/Google/Apple), 둘러보기 버튼 추가, iOS 레이아웃 적용 (상단 로고+타이틀 55%, 하단 버튼 45%)
+- [x] **OnboardingScreen iOS 동일화** — 페이지 2에 MongleGroupCard 시각화, 페이지 3에 MongleQuestionCard + MiniMonggle 캐릭터 5개 추가
+- [x] **HistoryScreen 배경** — 그라디언트 배경 적용 (FFF8F0→FFF2EB→EFF8F1), Scaffold containerColor 투명화
+- [x] **SettingsScreen iOS 동일화** — iOS ProfileEditView 스타일로 재디자인 (프로필 카드, iOS 스타일 설정 섹션/행, 아이콘 배경 원형, chevron 화살표)
 
 ### Android — 남은 작업
 

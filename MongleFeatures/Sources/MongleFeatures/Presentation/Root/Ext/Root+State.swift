@@ -70,6 +70,9 @@ extension RootFeature {
         // MARK: Push Navigation
         public var pendingOpenQuestion: Bool = false
 
+        // MARK: Pending Invite
+        public var pendingInviteCode: String? = nil
+
         // MARK: Modal
         @Presents public var questionDetail: QuestionDetailFeature.State?
 

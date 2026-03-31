@@ -84,6 +84,8 @@ struct MainTabView: View {
                 .tag(MainTabFeature.State.Tab.settings)
         }
         .accentColor(MongleColor.primaryDeep)
+        .toolbarBackground(Color.white, for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
     }
 
     // MARK: - Home Tab

@@ -201,10 +201,14 @@ extension RootFeature {
                         }
                     }
                     if newAppState == .groupSelection {
-                        // data.allFamilies는 이미 loadData에서 받아온 최신 데이터이므로
-                        // 별도 getMyFamilies() 재호출 불필요. 동일 프레임 내 중복 업데이트 방지.
                         state.groupSelect.groups = data.allFamilies
                         state.groupSelect.currentUserId = data.user?.id
+                        // 딥링크로 들어온 초대코드가 있으면 자동으로 참여 화면으로 이동
+                        if let code = state.pendingInviteCode {
+                            state.groupSelect.joinCode = code
+                            state.groupSelect.step = .joinWithCode
+                            state.pendingInviteCode = nil
+                        }
                     }
                     return .none
 
@@ -411,6 +415,7 @@ extension RootFeature {
                     return .send(.groupSelect(.loadGroupsResponse(result)))
 
                 case .pendingInviteCode(let code):
+                    state.pendingInviteCode = code
                     if let code = code, state.appState == .groupSelection {
                         state.groupSelect.joinCode = code
                         state.groupSelect.step = .joinWithCode
