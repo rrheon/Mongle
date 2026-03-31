@@ -48,6 +48,8 @@ public struct ProfileEditView: View {
                 .background(MongleColor.background)
             }
             .navigationBarHidden(true)
+            .toolbarBackground(Color.white, for: .tabBar)
+            .toolbarBackground(.visible, for: .tabBar)
             .onAppear { store.send(.onAppear) }
             .overlay {
                 if store.showGuestLoginPrompt {

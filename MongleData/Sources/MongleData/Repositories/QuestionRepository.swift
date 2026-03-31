@@ -99,6 +99,7 @@ final class QuestionRepository: QuestionRepositoryInterface {
                 question: QuestionMapper.toDomain(dto),
                 date: date,
                 hasMyAnswer: dto.hasMyAnswer,
+                hasMySkipped: dto.hasMySkipped,
                 familyAnswerCount: dto.familyAnswerCount,
                 answers: answers
             )

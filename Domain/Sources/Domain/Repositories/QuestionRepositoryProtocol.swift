@@ -32,6 +32,7 @@ public struct HistoryQuestion: Equatable, Sendable {
     public let question: Question
     public let date: Date
     public let hasMyAnswer: Bool
+    public let hasMySkipped: Bool
     public let familyAnswerCount: Int
     public let answers: [HistoryAnswerSummary]
 
@@ -58,6 +59,7 @@ public struct HistoryQuestion: Equatable, Sendable {
         question: Question,
         date: Date,
         hasMyAnswer: Bool,
+        hasMySkipped: Bool = false,
         familyAnswerCount: Int,
         answers: [HistoryAnswerSummary]
     ) {
@@ -65,6 +67,7 @@ public struct HistoryQuestion: Equatable, Sendable {
         self.question = question
         self.date = date
         self.hasMyAnswer = hasMyAnswer
+        self.hasMySkipped = hasMySkipped
         self.familyAnswerCount = familyAnswerCount
         self.answers = answers
     }

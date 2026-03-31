@@ -109,6 +109,8 @@ struct MainTabView: View {
                     .navigationBarBackButtonHidden(true)
             }
         }
+        .toolbarBackground(Color.white, for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
         .tabItem { Label("HOME", systemImage: "house") }
         .tag(MainTabFeature.State.Tab.home)
     }

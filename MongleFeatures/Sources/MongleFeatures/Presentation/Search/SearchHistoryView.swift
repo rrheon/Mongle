@@ -23,6 +23,8 @@ public struct SearchHistoryView: View {
             bodyContent
         }
         .background(MongleColor.background)
+        .toolbarBackground(Color.white, for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
         .onAppear {
             store.send(.onAppear)
             isSearchFocused = true

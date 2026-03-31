@@ -33,6 +33,7 @@ public struct HistoryItem: Equatable, Identifiable, Sendable {
     public let totalMembers: Int
     public let isCompleted: Bool
     public let userAnswered: Bool
+    public let userSkipped: Bool
     public let memberAnswers: [MemberAnswer]
 
     public init(
@@ -43,6 +44,7 @@ public struct HistoryItem: Equatable, Identifiable, Sendable {
         totalMembers: Int,
         isCompleted: Bool,
         userAnswered: Bool,
+        userSkipped: Bool = false,
         memberAnswers: [MemberAnswer] = []
     ) {
         self.id = id
@@ -52,6 +54,7 @@ public struct HistoryItem: Equatable, Identifiable, Sendable {
         self.totalMembers = totalMembers
         self.isCompleted = isCompleted
         self.userAnswered = userAnswered
+        self.userSkipped = userSkipped
         self.memberAnswers = memberAnswers
     }
 }
@@ -210,8 +213,8 @@ public struct HistoryFeature {
                         var historyItems: [Date: HistoryItem] = [:]
                         for hq in historyQuestions {
                             let isToday = calendar.isDateInToday(hq.date)
-                            // 오늘 날짜는 내가 답변한 경우에만 노출
-                            if isToday && !hq.hasMyAnswer {
+                            // 오늘 날짜는 내가 답변하거나 넘긴 경우에만 노출
+                            if isToday && !hq.hasMyAnswer && !hq.hasMySkipped {
                                 continue
                             }
                             let memberAnswers: [MemberAnswer] = hq.answers.map { answer in
@@ -229,6 +232,7 @@ public struct HistoryFeature {
                                 totalMembers: totalMembers,
                                 isCompleted: hq.familyAnswerCount >= totalMembers,
                                 userAnswered: hq.hasMyAnswer,
+                                userSkipped: hq.hasMySkipped,
                                 memberAnswers: memberAnswers
                             )
                             historyItems[calendar.startOfDay(for: hq.date)] = item

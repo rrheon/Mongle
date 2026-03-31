@@ -59,6 +59,8 @@ public struct HistoryView: View {
             }
         }
         .background(MongleColor.background)
+        .toolbarBackground(Color.white, for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
         .onAppear { store.send(.onAppear) }
         .mongleErrorToast(
             error: store.appError,
@@ -142,7 +144,9 @@ public struct HistoryView: View {
         let isCurrentMonth = cal.component(.month, from: date) == cal.component(.month, from: store.currentMonth)
         let isToday = cal.isDateInToday(date)
         let isSelected = cal.isDate(date, inSameDayAs: store.selectedDate)
-        let hasRecord = store.historyItems[cal.startOfDay(for: date)] != nil
+        let recordItem = store.historyItems[cal.startOfDay(for: date)]
+        let hasRecord = recordItem != nil
+        let isSkippedOnly = recordItem?.userSkipped == true && recordItem?.userAnswered == false
         let weekday = cal.component(.weekday, from: date)
 
         let numColor: Color = {
@@ -176,7 +180,7 @@ public struct HistoryView: View {
 
                 if hasRecord && isCurrentMonth {
                     Circle()
-                        .fill(MongleColor.primary)
+                        .fill(isSkippedOnly ? MongleColor.textHint : MongleColor.primary)
                         .frame(width: 6, height: 6)
                 } else {
                     Color.clear.frame(width: 6, height: 6)
@@ -200,19 +204,29 @@ public struct HistoryView: View {
                     .font(MongleFont.captionBold())
                     .foregroundColor(MongleColor.primary)
                 Spacer()
-                Text("\(item.answerCount)/\(item.totalMembers)명 답변")
-                    .font(MongleFont.caption())
-                    .foregroundColor(MongleColor.textHint)
+                if item.userSkipped {
+                    Text("넘김")
+                        .font(MongleFont.caption())
+                        .foregroundColor(MongleColor.textHint)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(MongleColor.bgNeutral)
+                        .clipShape(Capsule())
+                } else {
+                    Text("\(item.answerCount)/\(item.totalMembers)명 답변")
+                        .font(MongleFont.caption())
+                        .foregroundColor(MongleColor.textHint)
+                }
             }
 
             Text(item.question.content)
                 .font(MongleFont.body2Bold())
-                .foregroundColor(MongleColor.textPrimary)
+                .foregroundColor(item.userSkipped ? MongleColor.textSecondary : MongleColor.textPrimary)
                 .lineSpacing(3)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
-        .monglePanel(background: Color.white, cornerRadius: 16, borderColor: MongleColor.primary, shadowOpacity: 0.05)
+        .monglePanel(background: Color.white, cornerRadius: 16, borderColor: item.userSkipped ? MongleColor.border : MongleColor.primary, shadowOpacity: 0.05)
         .contentShape(Rectangle())
 //        .onTapGesture { store.send(.itemTapped(item)) }
     }

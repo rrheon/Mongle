@@ -315,6 +315,7 @@ private struct HeartCalloutView: View {
     }
     .padding(14)
     .frame(width: 220)
+    .background(Color.white)
   }
 
   private func heartRow(icon: String, color: Color, text: String, cost: String) -> some View {
