@@ -230,12 +230,12 @@ public struct GroupSelectFeature {
                 state.groupNameError = nameEmpty
                 state.nicknameError = nickEmpty
                 if nameEmpty {
-                    state.appError = .domain("공간 이름을 입력해주세요")
+                    state.appError = .domain(L10n.tr("group_name_error"))
                     state.createGroupFocusField = .groupName
                     return .none
                 }
                 if nickEmpty {
-                    state.appError = .domain("닉네임을 입력해주세요")
+                    state.appError = .domain(L10n.tr("group_nickname_error"))
                     state.createGroupFocusField = .nickname
                     return .none
                 }
@@ -283,12 +283,12 @@ public struct GroupSelectFeature {
                 state.joinCodeError = codeEmpty
                 state.nicknameError = nickEmpty
                 if codeEmpty {
-                    state.appError = .domain("초대 코드를 입력해주세요")
+                    state.appError = .domain(L10n.tr("group_code_placeholder"))
                     state.joinGroupFocusField = .joinCode
                     return .none
                 }
                 if nickEmpty {
-                    state.appError = .domain("닉네임을 입력해주세요")
+                    state.appError = .domain(L10n.tr("group_nickname_error"))
                     state.joinGroupFocusField = .nickname
                     return .none
                 }
@@ -397,12 +397,18 @@ public struct GroupSelectFeature {
                 state.path.removeLast()
                 return .none
 
-            case .path(.element(id: _, action: .notification(.delegate(.navigateToGroup(let familyId))))):
+            case .path(.element(id: _, action: .notification(.delegate(.navigateToGroup(let familyId, let markAsReadId))))):
                 state.path.removeAll()
+                let markEffect: Effect<Action> = {
+                    guard let notifId = markAsReadId else { return .none }
+                    return .run { [notificationRepository] _ in
+                        _ = try? await notificationRepository.markAsRead(id: notifId)
+                    }
+                }()
                 if let group = state.groups.first(where: { $0.id == familyId }) {
-                    return .send(.delegate(.groupSelected(group)))
+                    return .merge(markEffect, .send(.delegate(.groupSelected(group))))
                 }
-                return .none
+                return markEffect
 
             case .path:
                 return .none

@@ -12,6 +12,8 @@ extension RootFeature {
     public struct RootData: Equatable, Sendable {
         public let user: User?
         public let question: Question?
+        public let yesterdayQuestion: Question?
+        public let hasAnsweredYesterday: Bool
         public let family: MongleGroup?
         public let familyMembers: [User]
         public let hasAnsweredToday: Bool
@@ -24,6 +26,8 @@ extension RootFeature {
         public init(
             user: User?,
             question: Question?,
+            yesterdayQuestion: Question? = nil,
+            hasAnsweredYesterday: Bool = false,
             family: MongleGroup?,
             familyMembers: [User],
             hasAnsweredToday: Bool = false,
@@ -35,6 +39,8 @@ extension RootFeature {
         ) {
             self.user = user
             self.question = question
+            self.yesterdayQuestion = yesterdayQuestion
+            self.hasAnsweredYesterday = hasAnsweredYesterday
             self.family = family
             self.familyMembers = familyMembers
             self.hasAnsweredToday = hasAnsweredToday

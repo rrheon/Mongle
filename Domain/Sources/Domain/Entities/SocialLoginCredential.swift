@@ -10,7 +10,6 @@ import Foundation
 public enum SocialProviderType: String, Sendable, Equatable, CaseIterable {
     case apple
     case kakao
-    case naver
     case google
 }
 
@@ -26,7 +25,6 @@ public protocol SocialLoginCredential: Sendable {
     /// 서버에 전송할 제공자별 페이로드 (key-value)
     /// - Apple: identity_token, authorization_code, name?, email?
     /// - Kakao:  access_token, name?, email?
-    /// - Naver:  access_token, name?, email?
     /// - Google: id_token, name?, email?
     var fields: [String: String] { get }
 }

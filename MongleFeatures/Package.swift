@@ -5,6 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "MongleFeatures",
+    defaultLocalization: "ko",
     platforms: [
         .iOS(.v17),
         .macOS(.v14)
@@ -56,7 +57,8 @@ let package = Package(
             path: "Sources/MongleFeatures",
             resources: [
                 .process("Assets.xcassets"),
-                .process("Fonts")
+                .process("Fonts"),
+                .process("Resources")
             ]
         ),
         .testTarget(
