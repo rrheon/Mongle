@@ -10,11 +10,11 @@ extension GroupSelectView {
       MongleLogo(size: .large, type: .MongleLogo)
 
       VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-        Text("초대코드를 입력해주세요.")
+        Text(L10n.tr("group_join_headline"))
           .font(MongleFont.heading2())
           .foregroundColor(MongleColor.textPrimary)
 
-        Text("친구나 가족에게 받은 코드를 입력하면\n함께 공간에 참여할 수 있어요")
+        Text(L10n.tr("group_join_subtitle"))
           .font(MongleFont.body2())
           .foregroundColor(MongleColor.textSecondary)
           .lineSpacing(3)
@@ -23,7 +23,7 @@ extension GroupSelectView {
 
       // 초대 코드 필드
       VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-        Text("초대 코드")
+        Text(L10n.tr("group_code_label"))
           .font(MongleFont.captionBold())
           .foregroundColor(MongleColor.textSecondary)
 
@@ -33,6 +33,7 @@ extension GroupSelectView {
             .foregroundColor(MongleColor.textHint)
           TextField("MONG-4729", text: $store.joinCode.sending(\.joinCodeChanged))
             .font(MongleFont.body2())
+            .foregroundColor(MongleColor.textPrimary)
             .textCase(.uppercase)
             .autocorrectionDisabled()
             .focused($joinGroupFocus, equals: .joinCode)
@@ -51,11 +52,11 @@ extension GroupSelectView {
         )
 
         if store.joinCodeError {
-          Text("초대 코드를 입력해주세요")
+          Text(L10n.tr("group_code_placeholder"))
             .font(MongleFont.caption())
             .foregroundColor(MongleColor.error)
         } else {
-          Text("대문자와 숫자로 이루어진 코드에요")
+          Text(L10n.tr("group_code_hint"))
             .font(MongleFont.caption())
             .foregroundColor(MongleColor.textHint)
         }
@@ -63,7 +64,7 @@ extension GroupSelectView {
 
       // 닉네임 필드
       VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-        Text("내 닉네임")
+        Text(L10n.tr("group_nickname_label"))
           .font(MongleFont.captionBold())
           .foregroundColor(MongleColor.textSecondary)
 
@@ -71,8 +72,9 @@ extension GroupSelectView {
           Image(systemName: "person")
             .font(.system(size: 16))
             .foregroundColor(MongleColor.textHint)
-          TextField("엄마", text: $store.nickname.sending(\.nicknameChanged))
+          TextField(L10n.tr("group_nickname_placeholder"), text: $store.nickname.sending(\.nicknameChanged))
             .font(MongleFont.body2())
+            .foregroundColor(MongleColor.textPrimary)
             .focused($joinGroupFocus, equals: .nickname)
         }
         .padding(MongleSpacing.md)
@@ -89,11 +91,11 @@ extension GroupSelectView {
         )
 
         if store.nicknameError {
-          Text("닉네임을 입력해주세요")
+          Text(L10n.tr("group_nickname_error"))
             .font(MongleFont.caption())
             .foregroundColor(MongleColor.error)
         } else {
-          Text("다른 멤버에게 보여지는 이름이에요")
+          Text(L10n.tr("group_nickname_hint"))
             .font(MongleFont.caption())
             .foregroundColor(MongleColor.textHint)
         }

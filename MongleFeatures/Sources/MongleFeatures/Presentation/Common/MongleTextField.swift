@@ -61,9 +61,11 @@ struct MongleTextField: View {
                 // Text Input
                 if isSecure && !isSecureTextVisible {
                     SecureField(placeholder, text: $text)
+                        .foregroundColor(MongleColor.textPrimary)
                         .focused($isFocused)
                 } else {
                     TextField(placeholder, text: $text)
+                        .foregroundColor(MongleColor.textPrimary)
                         .keyboardType(keyboardType)
                         .autocapitalization(.none)
                         .autocorrectionDisabled()
@@ -161,6 +163,7 @@ struct MongleTextArea: View {
 
                 TextEditor(text: $text)
                     .font(MongleFont.body1())
+                    .foregroundColor(MongleColor.textPrimary)
                     .focused($isFocused)
                     .scrollContentBackground(.hidden)
                     .padding(.horizontal, MongleSpacing.sm)
