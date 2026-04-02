@@ -35,7 +35,7 @@ struct SettingsTabView: View {
                 .padding(.bottom, MongleSpacing.xl)
             }
             .background(MongleColor.background)
-            .navigationTitle("설정")
+            .navigationTitle(L10n.tr("settings_app"))
             .navigationBarTitleDisplayMode(.inline)
             .onAppear { store.send(.onAppear) }
             .overlay {
@@ -46,10 +46,10 @@ struct SettingsTabView: View {
                             foregroundColor: MongleColor.bgMintLight,
                             backgroundColor: MongleColor.primaryLight
                         ),
-                        title: "로그아웃",
-                        description: "정말 로그아웃 하시겠습니까?",
-                        primaryLabel: "로그아웃",
-                        secondaryLabel: "취소",
+                        title: L10n.tr("settings_logout"),
+                        description: L10n.tr("settings_logout_confirm"),
+                        primaryLabel: L10n.tr("settings_logout"),
+                        secondaryLabel: L10n.tr("common_cancel"),
                         onPrimary: { store.send(.logoutConfirmed) },
                         onSecondary: { store.send(.logoutCancelled) }
                     )
@@ -64,10 +64,10 @@ struct SettingsTabView: View {
                             backgroundColor: MongleColor.primaryLight
                         ),
 
-                        title: "회원탈퇴",
-                        description: "계정을 삭제하면 모든 데이터가\n영구적으로 삭제됩니다.",
-                        primaryLabel: "탈퇴하기",
-                        secondaryLabel: "취소",
+                        title: L10n.tr("settings_delete_account"),
+                        description: L10n.tr("settings_delete_confirm"),
+                        primaryLabel: L10n.tr("settings_delete_btn"),
+                        secondaryLabel: L10n.tr("common_cancel"),
                         onPrimary: { store.send(.deleteAccountConfirmed) },
                         onSecondary: { store.send(.deleteAccountCancelled) }
                     )
@@ -94,13 +94,13 @@ struct SettingsTabView: View {
                         )
 
                     VStack(alignment: .leading, spacing: MongleSpacing.xxs) {
-                        Text("내 프로필")
+                        Text(L10n.tr("settings_profile"))
                             .font(MongleFont.body2Bold())
                             .foregroundColor(MongleColor.primary)
                         Text(store.currentUser?.name ?? "Mongle User")
                             .font(MongleFont.heading3())
                             .foregroundColor(MongleColor.textPrimary)
-                        Text("오늘의 기분: 사랑")
+                        Text(L10n.tr("mood_loved"))
                             .font(MongleFont.body2())
                             .foregroundColor(MongleColor.textSecondary)
                     }
@@ -133,22 +133,22 @@ struct SettingsTabView: View {
 
     private var moodSection: some View {
         settingsSection(
-            title: "오늘의 기분",
+            title: L10n.tr("settings_profile"),
             rows: [
                 SettingsRowModel(
                     icon: "face.smiling.fill",
                     iconColor: MongleColor.moodHappy,
                     iconBackground: MongleColor.moodHappyLight,
-                    title: "오늘의 기분 설정",
-                    subtitle: "기분에 따라 몽글 색이 변해요",
+                    title: L10n.tr("settings_profile_edit"),
+                    subtitle: L10n.tr("settings_profile_edit_desc"),
                     action: { store.send(.profileEditTapped) }
                 ),
                 SettingsRowModel(
                     icon: "clock.arrow.circlepath",
                     iconColor: MongleColor.moodCalm,
                     iconBackground: MongleColor.moodCalmLight,
-                    title: "기분 히스토리",
-                    subtitle: "나의 감정 기록 돌아보기",
+                    title: L10n.tr("settings_mood_history"),
+                    subtitle: L10n.tr("settings_mood_history_desc"),
                     action: { store.send(.moodHistoryTapped) }
                 )
             ]
@@ -157,30 +157,30 @@ struct SettingsTabView: View {
 
     private var groupSection: some View {
         settingsSection(
-            title: "그룹 관리",
+            title: L10n.tr("settings_group"),
             rows: [
                 SettingsRowModel(
                     icon: "bell.fill",
                     iconColor: MongleColor.primary,
                     iconBackground: MongleColor.primaryLight,
-                    title: "알림 설정",
-                    subtitle: "답변 알림, 리마인더",
+                    title: L10n.tr("settings_notifications"),
+                    subtitle: L10n.tr("settings_notifications_desc"),
                     action: { store.send(.notificationSettingsTapped) }
                 ),
                 SettingsRowModel(
                     icon: "person.3.fill",
                     iconColor: MongleColor.accentOrange,
                     iconBackground: MongleColor.bgWarm,
-                    title: "그룹 관리",
-                    subtitle: "멤버 초대, 그룹 설정",
+                    title: L10n.tr("settings_group"),
+                    subtitle: L10n.tr("settings_group_desc"),
                     action: { store.send(.groupManagementTapped) }
                 ),
                 SettingsRowModel(
                     icon: "bell.badge.fill",
                     iconColor: MongleColor.info,
                     iconBackground: MongleColor.bgInfoLight,
-                    title: "알림 센터",
-                    subtitle: "가족 답변과 시스템 알림 확인",
+                    title: L10n.tr("home_notifications"),
+                    subtitle: L10n.tr("notif_settings_answer_desc"),
                     action: { store.send(.notificationsTapped) }
                 )
             ]
@@ -189,22 +189,22 @@ struct SettingsTabView: View {
 
     private var accountSection: some View {
         settingsSection(
-            title: "계정",
+            title: L10n.tr("settings_account"),
             rows: [
                 SettingsRowModel(
                     icon: "rectangle.portrait.and.arrow.right",
                     iconColor: MongleColor.textPrimary,
                     iconBackground: MongleColor.bgNeutralWarm,
-                    title: "로그아웃",
-                    subtitle: "현재 계정에서 로그아웃",
+                    title: L10n.tr("settings_logout"),
+                    subtitle: L10n.tr("settings_logout_desc"),
                     action: { store.send(.logoutTapped) }
                 ),
                 SettingsRowModel(
                     icon: "trash.fill",
                     iconColor: MongleColor.error,
                     iconBackground: MongleColor.bgDanger,
-                    title: "회원탈퇴",
-                    subtitle: "모든 데이터를 삭제하고 앱을 떠나요",
+                    title: L10n.tr("settings_delete_account"),
+                    subtitle: L10n.tr("settings_delete_account_desc"),
                     titleColor: MongleColor.error,
                     action: { store.send(.deleteAccountTapped) }
                 )

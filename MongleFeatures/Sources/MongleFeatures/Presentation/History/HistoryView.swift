@@ -11,7 +11,7 @@ public struct HistoryView: View {
     @Bindable var store: StoreOf<HistoryFeature>
 
     private let cal = Calendar.current
-    private let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
+    private let weekdays = [L10n.tr("calendar_day_sun"), L10n.tr("calendar_day_mon"), L10n.tr("calendar_day_tue"), L10n.tr("calendar_day_wed"), L10n.tr("calendar_day_thu"), L10n.tr("calendar_day_fri"), L10n.tr("calendar_day_sat")]
 
     public init(store: StoreOf<HistoryFeature>) {
         self.store = store
@@ -72,7 +72,7 @@ public struct HistoryView: View {
 
     private var headerView: some View {
         HStack(spacing: 12) {
-            Text("기록")
+            Text(L10n.tr("history_title"))
                 .font(MongleFont.heading3().weight(.bold))
                 .foregroundColor(MongleColor.textPrimary)
 
@@ -205,7 +205,7 @@ public struct HistoryView: View {
                     .foregroundColor(MongleColor.primary)
                 Spacer()
                 if item.userSkipped {
-                    Text("넘김")
+                    Text(L10n.tr("home_skip_btn"))
                         .font(MongleFont.caption())
                         .foregroundColor(MongleColor.textHint)
                         .padding(.horizontal, 8)
@@ -213,7 +213,7 @@ public struct HistoryView: View {
                         .background(MongleColor.bgNeutral)
                         .clipShape(Capsule())
                 } else {
-                    Text("\(item.answerCount)/\(item.totalMembers)명 답변")
+                    Text(L10n.tr("history_answer_count", item.answerCount, item.totalMembers))
                         .font(MongleFont.caption())
                         .foregroundColor(MongleColor.textHint)
                 }
@@ -261,7 +261,7 @@ public struct HistoryView: View {
         let isToday = cal.isDateInToday(store.selectedDate)
         let noon = cal.date(bySettingHour: 12, minute: 0, second: 0, of: Date()) ?? Date()
         let isBeforeNoon = Date() < noon
-        let message = (isToday && isBeforeNoon) ? "아직 질문을 받아오지 않았어요" : "이 날의 기록이 없어요"
+        let message = (isToday && isBeforeNoon) ? L10n.tr("home_question_placeholder") : L10n.tr("history_no_record")
         let icon = (isToday && isBeforeNoon) ? "clock" : "calendar.badge.exclamationmark"
 
         return VStack(spacing: 12) {
@@ -285,7 +285,7 @@ public struct HistoryView: View {
             Image(systemName: "bubble.left")
                 .font(.system(size: 14))
                 .foregroundColor(MongleColor.textHint)
-            Text("아직 답변이 없어요")
+            Text(L10n.tr("history_no_record"))
                 .font(MongleFont.body2())
                 .foregroundColor(MongleColor.textHint)
         }
@@ -298,7 +298,7 @@ public struct HistoryView: View {
 
     private var moodTimelineSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("최근 14일 기분")
+            Text(L10n.tr("history_recent_mood"))
                 .font(MongleFont.body2Bold())
                 .foregroundColor(MongleColor.textPrimary)
 
@@ -347,7 +347,7 @@ public struct HistoryView: View {
     }
 
     private func moodLabel(for index: Int) -> String {
-        let labels = ["평온", "행복", "사랑", "우울", "지침"]
+        let labels = [L10n.tr("mood_calm"), L10n.tr("mood_happy"), L10n.tr("mood_loved"), L10n.tr("mood_sad"), L10n.tr("mood_tired")]
         return labels[index % labels.count]
     }
 

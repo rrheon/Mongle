@@ -39,7 +39,7 @@ public struct WriteQuestionView: View {
     // MARK: - Navigation Header
 
     private var navigationHeader: some View {
-        MongleNavigationHeader(title: "질문 작성하기") {
+        MongleNavigationHeader(title: L10n.tr("write_title")) {
             MongleBackButton { store.send(.closeTapped) }
         } right: {
             EmptyView()
@@ -50,10 +50,10 @@ public struct WriteQuestionView: View {
 
     private var descriptionSection: some View {
         VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-            Text("나만의 질문을 작성해요")
+            Text(L10n.tr("write_section_title"))
                 .font(MongleFont.body1Bold())
                 .foregroundColor(MongleColor.textPrimary)
-            Text("작성한 질문은 오늘의 질문으로 등록돼요.")
+            Text(L10n.tr("write_section_desc"))
                 .font(MongleFont.body2())
                 .foregroundColor(MongleColor.textSecondary)
                 .lineSpacing(3)
@@ -64,13 +64,13 @@ public struct WriteQuestionView: View {
 
     private var textEditorSection: some View {
         VStack(alignment: .leading, spacing: MongleSpacing.sm) {
-            Text("질문")
+            Text(L10n.tr("write_field_label"))
                 .font(MongleFont.captionBold())
                 .foregroundColor(MongleColor.textHint)
 
             ZStack(alignment: .topLeading) {
                 if store.questionText.isEmpty {
-                    Text("예) 오늘 하루 가장 기억에 남는 순간은 무엇인가요?")
+                    Text(L10n.tr("write_placeholder"))
                         .font(MongleFont.body2())
                         .foregroundColor(MongleColor.textHint)
                         .padding(.top, 12)
@@ -109,7 +109,7 @@ public struct WriteQuestionView: View {
     private var submitButton: some View {
         VStack(spacing: 0) {
             Divider()
-            MongleButtonPrimary(store.isSubmitting ? "등록 중..." : "질문 등록하기") {
+            MongleButtonPrimary(store.isSubmitting ? L10n.tr("common_loading") : L10n.tr("write_submit")) {
                 store.send(.submitTapped)
             }
             .opacity((store.canSubmit && !store.isSubmitting) ? 1 : 0.5)

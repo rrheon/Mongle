@@ -69,9 +69,9 @@ struct QuestionDetailView: View {
                         foregroundColor: MongleColor.primary,
                         backgroundColor: MongleColor.primaryLight
                     ),
-                    title: "오늘의 몽글을 선택해주세요",
-                    description: "지금 기분과 가장 비슷한 몽글 캐릭터를 골라보세요",
-                    primaryLabel: "확인",
+                    title: L10n.tr("detail_mood_required_title"),
+                    description: L10n.tr("detail_mood_required_desc"),
+                    primaryLabel: L10n.tr("common_confirm"),
                     onPrimary: { store.send(.moodRequiredAlertDismissed) }
                 )
                 .transition(.opacity)
@@ -90,7 +90,7 @@ struct QuestionDetailView: View {
     // MARK: - Header
 
     private var customHeader: some View {
-        MongleNavigationHeader(title: "마음 남기기") {
+        MongleNavigationHeader(title: L10n.tr("detail_title")) {
             MongleBackButton {
                 isClosing = true
                 store.send(.closeTapped)
@@ -104,7 +104,7 @@ struct QuestionDetailView: View {
 
     private var questionSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("오늘의 질문")
+            Text(L10n.tr("detail_today_question"))
                 .font(MongleFont.captionBold())
                 .foregroundColor(MongleColor.primary)
 
@@ -124,12 +124,12 @@ struct QuestionDetailView: View {
     private var moodPickerSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("오늘의 몽글")
+                Text(L10n.tr("detail_today_mongle"))
                     .font(MongleFont.captionBold())
                     .foregroundColor(MongleColor.textSecondary)
                 Spacer()
                 if store.selectedMoodIndex == nil {
-                    Text("하나를 선택해주세요")
+                    Text(L10n.tr("detail_select_mood"))
                         .font(MongleFont.caption())
                         .foregroundColor(MongleColor.textHint)
                 }
@@ -179,7 +179,7 @@ struct QuestionDetailView: View {
 
     private var answerInputSection: some View {
         VStack(alignment: .trailing, spacing: 6) {
-            TextField("오늘의 감정을 자유롭게 적어보세요.\n어떤 이야기든 좋아요.", text: Binding(
+            TextField(L10n.tr("detail_answer_placeholder"), text: Binding(
                 get: { store.answerText },
                 set: { newValue in
                     guard !store.isSubmitting, !isClosing else { return }
@@ -218,7 +218,7 @@ struct QuestionDetailView: View {
                 Image(systemName: "paperplane.fill")
                     .font(.system(size: 16))
                     .foregroundColor(.white)
-                Text(store.hasMyAnswer ? "답변 수정하기" : "답변 남기기")
+                Text(store.hasMyAnswer ? L10n.tr("detail_edit_submit") : L10n.tr("detail_submit"))
                     .font(MongleFont.button())
                     .foregroundColor(.white)
             }

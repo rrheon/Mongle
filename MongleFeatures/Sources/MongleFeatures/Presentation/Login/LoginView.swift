@@ -24,11 +24,11 @@ struct LoginView: View {
           MongleLogo(size: .large, type: .MongleLogo)
             .padding(.top, MongleSpacing.xxl)
 
-          Text("몽글")
+          Text(L10n.tr("login_title"))
             .font(MongleFont.heading1())
             .foregroundStyle(.black)
-            
-          Text("오늘의 마음은 어떤 색인가요?")
+
+          Text(L10n.tr("login_subtitle"))
             .font(MongleFont.body1())
             .foregroundStyle(MongleColor.textSecondary)
         }
@@ -86,7 +86,7 @@ struct LoginView: View {
       Button {
         store.send(.browseTapped)
       } label: {
-        Text("둘러보기")
+        Text(L10n.tr("login_browse"))
           .font(MongleFont.body2())
           .foregroundStyle(MongleColor.textHint)
       }

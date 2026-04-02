@@ -27,7 +27,7 @@ public struct HeartInfoPopupView: View {
 
                 // 제목 + 보유 하트
                 VStack(spacing: MongleSpacing.sm) {
-                    Text("하트")
+                    Text(L10n.tr("heart_title"))
                         .font(MongleFont.heading3())
                         .foregroundColor(MongleColor.textPrimary)
 
@@ -35,7 +35,7 @@ public struct HeartInfoPopupView: View {
                         Image(systemName: "heart.fill")
                             .font(.system(size: 14))
                             .foregroundColor(MongleColor.heartRed)
-                        Text("현재 보유 \(store.hearts)개")
+                        Text(L10n.tr("home_heart_count", store.hearts))
                             .font(MongleFont.body2Bold())
                             .foregroundColor(MongleColor.heartRed)
                     }
@@ -78,7 +78,7 @@ public struct HeartInfoPopupView: View {
                 .cornerRadius(MongleRadius.large)
 
                 // 닫기 버튼
-                MongleButtonPrimary("확인") {
+                MongleButtonPrimary(L10n.tr("common_confirm")) {
                     store.send(.closeTapped)
                 }
             }

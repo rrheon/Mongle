@@ -338,7 +338,7 @@ public struct MongleBadgeAnswered: View {
             Image(systemName: "checkmark")
                 .font(.system(size: 10, weight: .bold))
                 .foregroundColor(.white)
-            Text("답변 완료")
+            Text(L10n.tr("home_answer_complete"))
                 .font(.system(size: 10, weight: .semibold))
                 .foregroundColor(.white)
         }
@@ -522,10 +522,10 @@ public struct MongleXPBar: View {
 public struct MongleCardQuestion: View {
     let question: String
     var emoji: String = "🌿"
-    var label: String = "오늘의 질문"
+    var label: String = L10n.tr("home_today_question")
     var onTap: (() -> Void)? = nil
 
-    public init(question: String, emoji: String = "🌿", label: String = "오늘의 질문", onTap: (() -> Void)? = nil) {
+    public init(question: String, emoji: String = "🌿", label: String = L10n.tr("home_today_question"), onTap: (() -> Void)? = nil) {
         self.question = question
         self.emoji = emoji
         self.label = label
@@ -806,11 +806,11 @@ public struct MoodOption: Identifiable, Equatable {
     }
 
     public static let defaults: [MoodOption] = [
-        MoodOption(id: "calm",    emoji: "😌", label: "평온",  color: MongleColor.monggleGreen),
-        MoodOption(id: "happy",   emoji: "😊", label: "행복",  color: MongleColor.monggleYellow),
-        MoodOption(id: "loved",   emoji: "🥰", label: "사랑",  color: MongleColor.mongglePink),
-        MoodOption(id: "sad",     emoji: "😢", label: "우울",  color: MongleColor.monggleBlue),
-        MoodOption(id: "tired",   emoji: "😴", label: "지침",  color: MongleColor.monggleOrange),
+        MoodOption(id: "calm",    emoji: "😌", label: L10n.tr("mood_calm"),    color: MongleColor.monggleGreen),
+        MoodOption(id: "happy",   emoji: "😊", label: L10n.tr("mood_happy"),   color: MongleColor.monggleYellow),
+        MoodOption(id: "loved",   emoji: "🥰", label: L10n.tr("mood_loved"),   color: MongleColor.mongglePink),
+        MoodOption(id: "sad",     emoji: "😢", label: L10n.tr("mood_sad"),     color: MongleColor.monggleBlue),
+        MoodOption(id: "tired",   emoji: "😴", label: L10n.tr("mood_tired"),   color: MongleColor.monggleOrange),
     ]
 }
 
@@ -1193,7 +1193,7 @@ public struct MongleView: View {
     private var statusBadge: some View {
         if isCurrentUser {
             let icon: String = hasAnswered ? "checkmark.circle.fill" : (hasCurrentUserSkipped ? "arrow.right.circle.fill" : "pencil.circle")
-            let label: String = hasAnswered ? "답변완료" : (hasCurrentUserSkipped ? "질문 넘김" : "답변하기")
+            let label: String = hasAnswered ? L10n.tr("home_answer_complete") : (hasCurrentUserSkipped ? L10n.tr("home_skip_btn") : L10n.tr("home_answer_btn"))
             let bgColor: Color = hasAnswered ? MongleColor.primary.opacity(0.85) : (hasCurrentUserSkipped ? Color.purple.opacity(0.7) : MongleColor.accentOrange.opacity(0.85))
             HStack(spacing: 4) {
                 Image(systemName: icon)
@@ -1210,7 +1210,7 @@ public struct MongleView: View {
             HStack(spacing: 4) {
                 Image(systemName: hasAnswered ? "checkmark.circle.fill" : "clock")
                     .font(.system(size: 10, weight: .bold))
-                Text(hasAnswered ? "답변완료" : "미답변")
+                Text(hasAnswered ? L10n.tr("home_answer_complete") : L10n.tr("nudge_send"))
                     .font(.caption2.bold())
             }
             .padding(.horizontal, 8)

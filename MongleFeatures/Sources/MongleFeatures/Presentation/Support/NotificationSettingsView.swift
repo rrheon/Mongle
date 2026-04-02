@@ -10,7 +10,7 @@ public struct NotificationSettingsView: View {
 
     public var body: some View {
         VStack(spacing: 0) {
-            MongleNavigationHeader(title: "알림 설정") {
+            MongleNavigationHeader(title: L10n.tr("notif_settings_title")) {
                 MongleBackButton { store.send(.closeTapped) }
             } right: {
                 EmptyView()
@@ -18,13 +18,13 @@ public struct NotificationSettingsView: View {
 
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: MongleSpacing.md) {
-                    settingsSection(title: "답변 알림", items: Array(store.notificationItems.prefix(1)))
-                    settingsSection(title: "재촉 알림", items: Array(store.notificationItems.dropFirst(1).prefix(1)))
-                    settingsSection(title: "시스템 알림", items: Array(store.notificationItems.dropFirst(2)))
+                    settingsSection(title: L10n.tr("notif_settings_answer"), items: Array(store.notificationItems.prefix(1)))
+                    settingsSection(title: L10n.tr("notif_settings_nudge"), items: Array(store.notificationItems.dropFirst(1).prefix(1)))
+                    settingsSection(title: L10n.tr("notif_settings_system"), items: Array(store.notificationItems.dropFirst(2)))
 
                     HStack(spacing: MongleSpacing.md) {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("방해 금지 시간")
+                            Text(L10n.tr("notif_settings_dnd"))
                                 .font(MongleFont.body2Bold())
                                 .foregroundColor(MongleColor.textPrimary)
                             Text(store.quietHours)

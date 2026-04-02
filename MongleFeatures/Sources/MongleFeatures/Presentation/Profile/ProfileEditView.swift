@@ -35,7 +35,7 @@ public struct ProfileEditView: View {
                         moodSection
                         groupSection
 
-                        Text("몽글 v1.0.0")
+                        Text(L10n.tr("settings_version", "1.0.0"))
                             .font(MongleFont.caption())
                             .foregroundColor(MongleColor.textHint)
                             .frame(maxWidth: .infinity)
@@ -59,10 +59,10 @@ public struct ProfileEditView: View {
                             foregroundColor: MongleColor.primary,
                             backgroundColor: MongleColor.primaryLight
                         ),
-                        title: "로그인이 필요해요",
-                        description: "이 기능을 이용하려면 로그인이 필요해요.",
-                        primaryLabel: "로그인하기",
-                        secondaryLabel: "취소",
+                        title: L10n.tr("settings_login_required"),
+                        description: L10n.tr("settings_login_required_desc"),
+                        primaryLabel: L10n.tr("settings_login_btn"),
+                        secondaryLabel: L10n.tr("common_cancel"),
                         onPrimary: { store.send(.guestLoginTapped) },
                         onSecondary: { store.send(.guestLoginDismissed) }
                     )
@@ -102,7 +102,7 @@ public struct ProfileEditView: View {
 
     private var headerView: some View {
         HStack(spacing: 12) {
-            Text("MY")
+            Text(L10n.tr("settings_my"))
                 .font(MongleFont.heading3().weight(.bold))
                 .foregroundColor(MongleColor.textPrimary)
 
@@ -147,14 +147,14 @@ public struct ProfileEditView: View {
 
     private var moodSection: some View {
         settingsSection(
-            title: "프로필",
+            title: L10n.tr("settings_profile"),
             rows: [
                 ProfileSettingsRow(
                     icon: "face.smiling.fill",
                     iconColor: MongleColor.bgMintLight,
                     iconBackground: MongleColor.primaryLight,
-                    title: "프로필 편집",
-                    subtitle: "이름을 변경할 수 있어요",
+                    title: L10n.tr("settings_profile_edit"),
+                    subtitle: L10n.tr("settings_profile_edit_desc"),
                     action: { store.send(.moodSettingTapped) }
                 )
             ]
@@ -165,30 +165,30 @@ public struct ProfileEditView: View {
 
     private var groupSection: some View {
         settingsSection(
-            title: "앱 설정",
+            title: L10n.tr("settings_app"),
             rows: [
                 ProfileSettingsRow(
                     icon: "bell.fill",
                     iconColor: MongleColor.bgMintLight,
                     iconBackground: MongleColor.primaryLight,
-                    title: "알림 설정",
-                    subtitle: "답변 알림, 리마인더",
+                    title: L10n.tr("settings_notifications"),
+                    subtitle: L10n.tr("settings_notifications_desc"),
                     action: { store.send(.notificationSettingsTapped) }
                 ),
                 ProfileSettingsRow(
                     icon: "person.3.fill",
                     iconColor: MongleColor.bgMintLight,
                     iconBackground: MongleColor.primaryLight,
-                    title: "그룹 관리",
-                    subtitle: "멤버 초대, 그룹 설정",
+                    title: L10n.tr("settings_group"),
+                    subtitle: L10n.tr("settings_group_desc"),
                     action: { store.send(.groupManagementTapped) }
                 ),
                 ProfileSettingsRow(
                     icon: "gearshape.fill",
                     iconColor: MongleColor.bgMintLight,
                     iconBackground: MongleColor.primaryLight,
-                    title: "계정 관리",
-                    subtitle: "로그아웃, 탈퇴",
+                    title: L10n.tr("settings_account"),
+                    subtitle: L10n.tr("settings_account_desc"),
                     action: { store.send(.accountManagementTapped) }
                 )
             ]

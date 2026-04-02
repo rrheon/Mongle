@@ -19,7 +19,7 @@ public struct MoodHistoryView: View {
             .padding(.bottom, MongleSpacing.xl)
         }
         .background(MongleColor.background)
-        .navigationTitle("기분 히스토리")
+        .navigationTitle(L10n.tr("settings_mood_history"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -41,11 +41,11 @@ public struct MoodHistoryView: View {
 
     private var summarySection: some View {
         VStack(alignment: .leading, spacing: MongleSpacing.sm) {
-            sectionTitle("이번 달 기분 요약", subtitle: moodSummarySubtitle)
+            sectionTitle(L10n.tr("history_mood_summary"), subtitle: moodSummarySubtitle)
 
             let pieData = moodPieData
             if pieData.isEmpty {
-                Text("이번 달 기분 기록이 없어요")
+                Text(L10n.tr("history_mood_empty"))
                     .font(MongleFont.body2())
                     .foregroundColor(MongleColor.textHint)
                     .frame(maxWidth: .infinity)
@@ -84,7 +84,7 @@ public struct MoodHistoryView: View {
 
     private var timelineSection: some View {
         VStack(alignment: .leading, spacing: MongleSpacing.sm) {
-            sectionTitle("기분 타임라인", subtitle: "최근 14일")
+            sectionTitle(L10n.tr("history_mood_timeline"), subtitle: L10n.tr("history_recent_mood"))
 
             HStack {
                 ForEach(0..<5, id: \.self) { index in
@@ -120,7 +120,7 @@ public struct MoodHistoryView: View {
 
     private var recordsSection: some View {
         VStack(alignment: .leading, spacing: MongleSpacing.sm) {
-            sectionTitle("최근 기분 기록", subtitle: "날짜별로 남긴 감정")
+            sectionTitle(L10n.tr("history_mood_recent"), subtitle: L10n.tr("history_mood_by_date"))
 
             ForEach(store.moodRecords) { record in
                 HStack(spacing: MongleSpacing.md) {
@@ -162,7 +162,7 @@ public struct MoodHistoryView: View {
     }
 
     private func monggleMoodLabel(for index: Int) -> String {
-        ["기쁨", "평온", "사랑", "우울", "지침"][index % 5]
+        [L10n.tr("mood_happy"), L10n.tr("mood_calm"), L10n.tr("mood_loved"), L10n.tr("mood_sad"), L10n.tr("mood_tired")][index % 5]
     }
 
     private func monggleColor(for index: Int) -> Color {
@@ -172,19 +172,19 @@ public struct MoodHistoryView: View {
 
     private func monggleColorForLabel(_ label: String) -> Color {
         switch label {
-        case "기쁨": return MongleColor.monggleYellow
-        case "평온": return MongleColor.monggleGreen
-        case "사랑": return MongleColor.mongglePink
-        case "우울": return MongleColor.monggleBlue
+        case L10n.tr("mood_happy"): return MongleColor.monggleYellow
+        case L10n.tr("mood_calm"): return MongleColor.monggleGreen
+        case L10n.tr("mood_loved"): return MongleColor.mongglePink
+        case L10n.tr("mood_sad"): return MongleColor.monggleBlue
         default: return MongleColor.monggleOrange
         }
     }
 
     private func moodName(for id: String) -> String {
         switch id {
-        case "happy": return "기쁨"; case "calm": return "평온"; case "loved": return "사랑"
-        case "sad": return "우울"; case "tired": return "지침"; case "excited": return "설렘"
-        case "anxious": return "불안"; default: return "기쁨"
+        case "happy": return L10n.tr("mood_happy"); case "calm": return L10n.tr("mood_calm"); case "loved": return L10n.tr("mood_loved")
+        case "sad": return L10n.tr("mood_sad"); case "tired": return L10n.tr("mood_tired"); case "excited": return L10n.tr("mood_excited")
+        case "anxious": return L10n.tr("mood_anxious"); default: return L10n.tr("mood_happy")
         }
     }
 
@@ -226,9 +226,9 @@ public struct MoodHistoryView: View {
         let total = counts.values.reduce(0, +)
         guard total > 0 else { return [] }
         let moodDefs: [(String, Color, String)] = [
-            ("happy", MongleColor.moodHappy, "기쁨"), ("calm", MongleColor.moodCalm, "평온"),
-            ("loved", MongleColor.moodLoved, "사랑"), ("sad", MongleColor.moodSad, "우울"),
-            ("tired", MongleColor.moodTired, "지침"),
+            ("happy", MongleColor.moodHappy, L10n.tr("mood_happy")), ("calm", MongleColor.moodCalm, L10n.tr("mood_calm")),
+            ("loved", MongleColor.moodLoved, L10n.tr("mood_loved")), ("sad", MongleColor.moodSad, L10n.tr("mood_sad")),
+            ("tired", MongleColor.moodTired, L10n.tr("mood_tired")),
         ]
         let sorted = moodDefs.filter { (counts[$0.0] ?? 0) > 0 }.sorted { (counts[$0.0] ?? 0) > (counts[$1.0] ?? 0) }
         var result: [(from: Double, to: Double, color: Color, label: String, percentage: String)] = []

@@ -25,6 +25,9 @@ public struct SearchHistoryView: View {
         .background(MongleColor.background)
         .toolbarBackground(Color.white, for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
+        .onTapGesture {
+            isSearchFocused = false
+        }
         .onAppear {
             store.send(.onAppear)
             isSearchFocused = true
@@ -40,7 +43,7 @@ public struct SearchHistoryView: View {
                     .font(.system(size: 14))
                     .foregroundColor(MongleColor.textSecondary)
 
-                TextField("답변이나 질문 검색", text: Binding(
+                TextField(L10n.tr("search_placeholder"), text: Binding(
                     get: { store.query },
                     set: { store.send(.queryChanged($0)) }
                 ))
@@ -80,13 +83,13 @@ public struct SearchHistoryView: View {
             ProgressView().tint(MongleColor.primary)
             Spacer()
         } else if store.showMinLengthHint {
-            emptyStateView(icon: nil, message: "2글자 이상 입력해 주세요")
+            emptyStateView(icon: nil, message: L10n.tr("search_min_length"))
         } else if store.query.trimmingCharacters(in: .whitespaces).count >= 2 && store.results.isEmpty {
-            emptyStateView(icon: "🔍", message: "\"\(store.query.trimmingCharacters(in: .whitespaces))\"에 맞는 기록이 없어요")
+            emptyStateView(icon: "🔍", message: L10n.tr("search_no_results", store.query.trimmingCharacters(in: .whitespaces)))
         } else if !store.results.isEmpty {
             resultsList
         } else {
-            emptyStateView(icon: nil, message: "가족의 소중한 기록을 검색해보세요")
+            emptyStateView(icon: nil, message: L10n.tr("search_empty"))
         }
     }
 
@@ -97,7 +100,7 @@ public struct SearchHistoryView: View {
             LazyVStack(spacing: 0, pinnedViews: []) {
                 // Count label
                 HStack {
-                    Text("\(store.resultCount)개의 기록을 찾았어요")
+                    Text(L10n.tr("search_result_count", store.resultCount))
                         .font(MongleFont.caption())
                         .foregroundColor(MongleColor.textHint)
                     Spacer()
@@ -164,6 +167,7 @@ public struct SearchHistoryView: View {
                 Spacer().frame(height: MongleSpacing.xl)
             }
         }
+        .scrollDismissesKeyboard(.immediately)
     }
 
     private func shouldShowAd(after index: Int, total: Int) -> Bool {

@@ -39,7 +39,7 @@ public struct PeerNudgeView: View {
     // MARK: - Navigation Header
 
     private var navigationHeader: some View {
-        MongleNavigationHeader(title: "답변 재촉하기") {
+        MongleNavigationHeader(title: L10n.tr("nudge_title")) {
             MongleBackButton { store.send(.closeTapped) }
         } right: {
             EmptyView()
@@ -50,7 +50,7 @@ public struct PeerNudgeView: View {
 
     private var questionCard: some View {
         VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-            Text("오늘의 질문")
+            Text(L10n.tr("detail_today_question"))
                 .font(MongleFont.body2Bold())
                 .foregroundColor(MongleColor.primary)
             Text(store.questionText)
@@ -83,11 +83,11 @@ public struct PeerNudgeView: View {
         VStack(spacing: 16) {
             MongleMonggle(color: monggleColor(for: store.memberMoodId), size: 72)
             VStack(spacing: 4) {
-                Text("\(store.memberName)가 아직 답변하지 않았어요")
+                Text(L10n.tr("nudge_not_answered", store.memberName))
                     .font(MongleFont.button())
                     .foregroundColor(MongleColor.textPrimary)
                     .multilineTextAlignment(.center)
-                Text("답변하면 여기서 바로 확인할 수 있어요")
+                Text(L10n.tr("nudge_hint"))
                     .font(.system(size: 13))
                     .foregroundColor(MongleColor.textHint)
                     .multilineTextAlignment(.center)
@@ -101,11 +101,11 @@ public struct PeerNudgeView: View {
 
     private var nudgeCard: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("답변을 재촉해볼까요?")
+            Text(L10n.tr("nudge_prompt"))
                 .font(MongleFont.body1Bold())
                 .foregroundColor(MongleColor.textPrimary)
 
-            Text("\(store.memberName)에게 알림을 보내 답변을 재촉할 수 있어요.\n하트 1개가 소모됩니다.")
+            Text(L10n.tr("nudge_desc", store.memberName))
                 .font(.system(size: 13))
                 .foregroundColor(MongleColor.textSecondary)
                 .lineSpacing(3)
@@ -125,7 +125,7 @@ public struct PeerNudgeView: View {
 
     private var insufficientHeartsSection: some View {
         VStack(spacing: MongleSpacing.xs) {
-            Text("하트가 부족해요.")
+            Text(L10n.tr("nudge_insufficient"))
                 .font(MongleFont.caption())
                 .foregroundColor(MongleColor.error)
 
@@ -140,7 +140,7 @@ public struct PeerNudgeView: View {
                     } else {
                         Image(systemName: "play.fill")
                             .font(.system(size: 13))
-                        Text("광고 보고 재촉하기")
+                        Text(L10n.tr("nudge_watch_ad"))
                             .font(MongleFont.captionBold())
                     }
                 }
@@ -162,7 +162,7 @@ public struct PeerNudgeView: View {
                 Image(systemName: "heart.fill")
                     .font(.system(size: 20))
                     .foregroundColor(MongleColor.heartRed)
-                Text("보유 하트: \(store.hearts)개")
+                Text(L10n.tr("nudge_hearts", store.hearts))
                     .font(.system(size: 13))
                     .foregroundColor(MongleColor.textSecondary)
             }
@@ -171,7 +171,7 @@ public struct PeerNudgeView: View {
                 Image(systemName: "heart.fill")
                     .font(.system(size: 14))
                     .foregroundColor(MongleColor.heartRed)
-                Text(store.isSent ? "전송 완료" : "-1")
+                Text(store.isSent ? L10n.tr("nudge_sent_status") : "-1")
                     .font(MongleFont.captionBold())
                     .foregroundColor(MongleColor.heartRed)
             }
@@ -187,7 +187,7 @@ public struct PeerNudgeView: View {
             store.send(.nudgeTapped)
         } label: {
             HStack(spacing: MongleSpacing.sm) {
-                Text(store.isSent ? "재촉 완료" : "재촉하기")
+                Text(store.isSent ? L10n.tr("nudge_done") : L10n.tr("nudge_send"))
                     .font(MongleFont.body1Bold())
                     .foregroundColor(.white)
             }

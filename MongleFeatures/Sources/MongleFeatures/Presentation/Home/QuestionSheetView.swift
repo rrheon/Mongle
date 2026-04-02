@@ -54,10 +54,10 @@ public struct QuestionSheetView: View {
     private var header: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Text("오늘의 질문")
+                Text(L10n.tr("sheet_title"))
                     .font(MongleFont.caption())
                     .foregroundColor(MongleColor.primary)
-                Text("무엇을 할까요?")
+                Text(L10n.tr("sheet_subtitle"))
                     .font(MongleFont.heading3())
                     .foregroundColor(MongleColor.textPrimary)
             }
@@ -83,7 +83,7 @@ public struct QuestionSheetView: View {
                 Image(systemName: "quote.bubble.fill")
                     .font(.system(size: 13))
                     .foregroundColor(MongleColor.primary)
-                Text("오늘의 질문")
+                Text(L10n.tr("sheet_title"))
                     .font(MongleFont.body2Bold())
                     .foregroundColor(MongleColor.primary)
                 if store.isAnswered {
@@ -92,7 +92,7 @@ public struct QuestionSheetView: View {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 12))
                             .foregroundColor(MongleColor.primary)
-                        Text("답변 완료")
+                        Text(L10n.tr("home_answer_complete"))
                             .font(MongleFont.captionBold())
                             .foregroundColor(MongleColor.primary)
                     }
@@ -120,7 +120,7 @@ public struct QuestionSheetView: View {
     private var actionButtons: some View {
         VStack(spacing: MongleSpacing.sm) {
             // 답변하기
-            MongleButtonPrimary(store.isAnswered ? "답변 수정하기" : "답변하기") {
+            MongleButtonPrimary(store.isAnswered ? L10n.tr("sheet_answer_edit") : L10n.tr("sheet_answer")) {
                 store.send(.answerTapped)
             }
 
@@ -131,8 +131,8 @@ public struct QuestionSheetView: View {
             // 나만의 질문 작성하기
             actionRow(
                 icon: "pencil.circle",
-                title: "나만의 질문 작성하기",
-                subtitle: "하트 3개 소모",
+                title: L10n.tr("sheet_write_question"),
+                subtitle: L10n.tr("sheet_heart_cost"),
                 iconColor: MongleColor.primary
             ) {
                 store.send(.writeQuestionTapped)
@@ -141,8 +141,8 @@ public struct QuestionSheetView: View {
             // 질문 넘기기
             actionRow(
                 icon: "arrow.right.circle",
-                title: "질문 넘기기",
-                subtitle: "하트 3개 소모 · 다른 가족 답변 열람 가능",
+                title: L10n.tr("sheet_skip"),
+                subtitle: L10n.tr("sheet_skip_desc"),
                 iconColor: MongleColor.primary
             ) {
                 store.send(.refreshQuestionTapped)

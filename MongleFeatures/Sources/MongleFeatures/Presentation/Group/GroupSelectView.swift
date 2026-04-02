@@ -145,7 +145,7 @@ public struct GroupSelectView: View {
   var bottomButtonBar: some View {
     switch store.step {
     case .createGroup:
-      MongleButtonPrimary("다음") {
+      MongleButtonPrimary(L10n.tr("common_next")) {
         store.send(.createNextTapped)
       }
       .padding(.horizontal, MongleSpacing.md)
@@ -155,10 +155,10 @@ public struct GroupSelectView: View {
 
     case .notificationPermission:
       VStack(spacing: MongleSpacing.sm) {
-        MongleButtonPrimary("허용하기") {
+        MongleButtonPrimary(L10n.tr("perm_notif_allow")) {
           store.send(.notificationPermissionAllowed)
         }
-        Button("나중에") {
+        Button(L10n.tr("perm_notif_later")) {
           store.send(.notificationPermissionSkipped)
         }
         .frame(height: 44)
@@ -172,10 +172,10 @@ public struct GroupSelectView: View {
 
     case .quietHoursPermission:
       VStack(spacing: MongleSpacing.sm) {
-        MongleButtonPrimary("사용하기") {
+        MongleButtonPrimary(L10n.tr("perm_dnd_use")) {
           store.send(.quietHoursPermissionEnabled)
         }
-        Button("건너뛰기") {
+        Button(L10n.tr("perm_dnd_skip")) {
           store.send(.quietHoursPermissionSkipped)
         }
         .frame(height: 44)
@@ -192,7 +192,7 @@ public struct GroupSelectView: View {
         ShareLink(item: shareText) {
           HStack(spacing: MongleSpacing.xs) {
             Image(systemName: "square.and.arrow.up")
-            Text("공유하기")
+            Text(L10n.tr("common_share"))
           }
           .font(MongleFont.button())
           .frame(maxWidth: .infinity)
@@ -206,7 +206,7 @@ public struct GroupSelectView: View {
           )
         }
 
-        MongleButtonPrimary("홈으로 가기") {
+        MongleButtonPrimary(L10n.tr("group_go_home")) {
           store.send(.completeTapped)
         }
       }
@@ -216,7 +216,7 @@ public struct GroupSelectView: View {
       .background(MongleColor.background)
 
     case .joinWithCode:
-      MongleButtonPrimary("참여하기") {
+      MongleButtonPrimary(L10n.tr("group_join_btn")) {
         store.send(.joinTapped)
       }
       .padding(.horizontal, MongleSpacing.md)
@@ -237,7 +237,7 @@ public struct GroupSelectView: View {
     case .select:
       MongleNavigationHeader(
           left: {
-            Text("몽글")
+            Text(L10n.tr("app_name"))
                 .font(MongleFont.heading3())
                 .foregroundColor(MongleColor.textPrimary)
                 .padding(.horizontal)
@@ -250,35 +250,35 @@ public struct GroupSelectView: View {
       )
 
     case .createGroup:
-      MongleNavigationHeader(title: "새 공간 만들기") {
+      MongleNavigationHeader(title: L10n.tr("group_create_title")) {
         MongleBackButton { store.send(.createBackTapped) }
       } right: {
         EmptyView()
       }
 
     case .joinWithCode:
-      MongleNavigationHeader(title: "초대코드로 참여하기") {
+      MongleNavigationHeader(title: L10n.tr("group_join_title")) {
         MongleBackButton { store.send(.joinBackTapped) }
       } right: {
         EmptyView()
       }
 
     case .groupCreated:
-      MongleNavigationHeader(title: "새 공간 만들기") {
+      MongleNavigationHeader(title: L10n.tr("group_create_title")) {
         EmptyView()
       } right: {
         EmptyView()
       }
 
     case .notificationPermission:
-      MongleNavigationHeader(title: "알림 설정") {
+      MongleNavigationHeader(title: L10n.tr("notif_settings_title")) {
         EmptyView()
       } right: {
         EmptyView()
       }
 
     case .quietHoursPermission:
-      MongleNavigationHeader(title: "방해 금지 시간") {
+      MongleNavigationHeader(title: L10n.tr("notif_settings_dnd")) {
         EmptyView()
       } right: {
         EmptyView()
