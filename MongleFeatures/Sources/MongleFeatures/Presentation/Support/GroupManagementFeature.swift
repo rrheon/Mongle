@@ -38,6 +38,7 @@ public struct GroupManagementFeature {
         public var showTransferSheet: Bool = false
         public var selectedTransferMemberId: UUID? = nil
         public var showCopiedToast: Bool = false
+        public var errorMessage: String?
 
         public var isCurrentUserOwner: Bool {
             guard let currentUserId, let createdById = familyCreatedById else { return false }
@@ -70,12 +71,14 @@ public struct GroupManagementFeature {
         case transferMemberSelected(UUID)
         case confirmTransferAndLeave
         case dismissTransferSheet
+        case dismissError
         case closeTapped
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
             case close
             case groupLeft
+            case memberKicked
         }
     }
 
@@ -185,11 +188,17 @@ public struct GroupManagementFeature {
                 }
                 state.kickTargetMember = nil
                 state.isKicking = false
-                return .none
+                return .send(.delegate(.memberKicked))
 
-            case .kickMemberFailure:
+            case .kickMemberFailure(let error):
                 state.kickTargetMember = nil
                 state.isKicking = false
+                state.isLeaving = false
+                state.errorMessage = error.userMessage
+                return .none
+
+            case .dismissError:
+                state.errorMessage = nil
                 return .none
 
             case .transferMemberSelected(let id):
@@ -201,9 +210,13 @@ public struct GroupManagementFeature {
                 state.showTransferSheet = false
                 state.isLeaving = true
                 return .run { [familyRepository] send in
-                    try? await familyRepository.transferCreator(newCreatorId: newCreatorId)
-                    try? await familyRepository.leaveFamily()
-                    await send(.delegate(.groupLeft))
+                    do {
+                        try await familyRepository.transferCreator(newCreatorId: newCreatorId)
+                        try await familyRepository.leaveFamily()
+                        await send(.delegate(.groupLeft))
+                    } catch {
+                        await send(.kickMemberFailure(AppError.from(error)))
+                    }
                 }
 
             case .dismissTransferSheet:

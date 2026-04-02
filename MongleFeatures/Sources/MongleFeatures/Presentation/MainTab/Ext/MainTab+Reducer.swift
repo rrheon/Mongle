@@ -56,14 +56,16 @@ extension MainTabFeature {
                     return .none
 
                 case .home(.delegate(.showQuestionSheet(let question))):
-
+                    // 오늘 질문이 없으면(오전 11시 이전) 어제 답변 여부로 판단
+                    let isAnswered = state.home.todayQuestion != nil
+                        ? state.home.hasAnsweredToday
+                        : state.home.hasAnsweredYesterday
                     state.modal = .questionSheet(
                         QuestionSheetFeature.State(
                             questionText: question.content,
-                            isAnswered: state.home.hasAnsweredToday
+                            isAnswered: isAnswered
                         )
                     )
-
                     return .none
 
                 // MARK: - Home Delegate
@@ -80,9 +82,11 @@ extension MainTabFeature {
                     return .none
 
                 case .home(.delegate(.navigateToMyAnswer)):
-                    let questionText = state.home.todayQuestion?.content ?? ""
+                    // 오늘 질문이 없으면(오전 11시 이전) 어제 질문 기준
+                    let activeQuestion = state.home.todayQuestion ?? state.home.yesterdayQuestion
+                    let questionText = activeQuestion?.content ?? ""
                     let memberName = state.home.currentUser?.name ?? ""
-                    let questionId = state.home.todayQuestion?.id
+                    let questionId = activeQuestion?.id
                     let currentUserId = state.home.currentUser?.id
                     let myMonggleColor = monggleColor(for: state.home.currentUser?.moodId)
                     return .run { send in
@@ -204,6 +208,9 @@ extension MainTabFeature {
 
                 case .profile(.delegate(.groupLeft)):
                     return .send(.delegate(.navigateToGroupSelect(fromGroupLeft: true)))
+
+                case .profile(.delegate(.memberKicked)):
+                    return .send(.delegate(.requestRefresh))
 
                 // MARK: - QuestionSheet Delegate
 
@@ -476,7 +483,7 @@ extension MainTabFeature {
                     state.path.removeLast()
                     return .none
 
-                case .path(.element(id: _, action: .notification(.delegate(.navigateToQuestion)))):
+                case .path(.element(id: _, action: .notification(.delegate(.navigateToQuestion(let markAsReadId))))):
                     state.path.removeLast()
                     guard let question = state.home.todayQuestion else { return .none }
                     state.path.append(.questionDetail(QuestionDetailFeature.State(
@@ -485,7 +492,10 @@ extension MainTabFeature {
                         familyMembers: state.home.familyMembers,
                         hearts: state.home.hearts
                     )))
-                    return .none
+                    guard let notifId = markAsReadId else { return .none }
+                    return .run { [notificationRepository] _ in
+                        _ = try? await notificationRepository.markAsRead(id: notifId)
+                    }
 
                 case .skipQuestionResponse(.success(let heartsRemaining)):
                     // 개인 패스: 질문 유지, 하트 차감, 패스 상태 기록
