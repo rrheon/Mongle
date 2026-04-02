@@ -1,0 +1,340 @@
+/* Common */
+"common_confirm" = "확인";
+"common_cancel" = "취소";
+"common_back" = "뒤로";
+"common_next" = "다음";
+"common_save" = "저장";
+"common_delete" = "삭제";
+"common_close" = "닫기";
+"common_copy" = "복사";
+"common_copied" = "복사됨";
+"common_share" = "공유하기";
+"common_retry" = "다시 시도";
+"common_loading" = "불러오는 중...";
+"app_name" = "몽글";
+
+/* Login */
+"login_title" = "몽글";
+"login_subtitle" = "오늘의 마음은 어떤 색인가요?";
+"login_kakao" = "카카오톡으로 계속하기";
+"login_google" = "Google로 계속하기";
+"login_apple" = "Apple로 계속하기";
+"login_browse" = "둘러보기";
+
+/* Onboarding */
+"onboarding_welcome_title" = "몽글에 오신 걸 환영해요";
+"onboarding_welcome_desc" = "가족, 친구와 매일 마음을 나누는\n따뜻한 소통 공간";
+"onboarding_group_title" = "나만의 공간을\n만들어보세요";
+"onboarding_group_desc" = "가족, 친구, 커플 등\n함께하고 싶은 사람들을 초대해요";
+"onboarding_question_title" = "매일 함께\n마음을 나눠요";
+"onboarding_question_desc" = "매일 새로운 질문에 답하고\n서로의 마음을 들여다보세요";
+"onboarding_sample_group" = "우리 가족 🩷";
+"onboarding_sample_question" = "오늘 당신을 웃게 한 건 무엇인가요?";
+"onboarding_today_question" = "오늘의 질문";
+"onboarding_start" = "시작하기";
+"onboarding_get_started" = "몽글 시작하기";
+"onboarding_never_show" = "다시 보지않기";
+
+/* Home */
+"home_default_group" = "몽글";
+"home_today_question" = "오늘의 질문";
+"home_question_placeholder" = "오전 11시에 새로운 질문이 도착해요";
+"home_answer_complete" = "답변 완료";
+"home_notifications" = "알림";
+"home_heart_count" = "현재 보유 %d개";
+"home_heart_replace" = "질문 다시받기";
+"home_heart_write" = "나만의 질문 작성";
+"home_heart_nudge" = "재촉하기";
+"home_heart_earn_rate" = "매일 오전 +1 · 답변 완료 +3";
+"home_group_manage" = "그룹 관리";
+"home_answer_first_title" = "먼저 답변을 완료해 주세요";
+"home_answer_first_view" = "%@의 답변을 보려면\n먼저 오늘의 질문에 답변해야 해요";
+"home_answer_first_nudge" = "%@에게 재촉하려면\n먼저 오늘의 질문에 답변해야 해요";
+"home_answer_btn" = "답변하기";
+"home_write_question_title" = "나만의 질문을 작성할까요?";
+"home_write_question_desc" = "하트 3개를 소모하여 나만의 질문을\n오늘의 질문으로 등록해요.";
+"home_write_btn" = "작성하기";
+"home_skip_title" = "질문을 넘기시겠어요?";
+"home_skip_desc" = "하트 3개를 소모하여 새로운 질문으로\n변경됩니다. 넘긴 후에는 다른 가족의\n답변을 열람할 수 있어요.";
+"home_skip_btn" = "넘기기";
+"home_hearts_insufficient" = "하트가 부족해요";
+"home_hearts_write_needed" = "질문을 작성하려면 하트 3개가 필요해요.\n현재 하트: %d개";
+"home_hearts_skip_needed" = "질문을 넘기려면 하트 3개가 필요해요.\n현재 하트: %d개";
+"home_answer_first_answer_desc" = "아직 오늘 답변을 안 했어요!";
+"home_answer_first_go" = "답변하러 가기";
+"home_answer_first_later" = "나중에 할게요";
+"home_answer_first_note" = "답변을 남기면 가족의 마음도 바로 열려요.";
+
+/* Question Sheet */
+"sheet_title" = "오늘의 질문";
+"sheet_subtitle" = "무엇을 할까요?";
+"sheet_answer_edit" = "답변 수정하기";
+"sheet_answer" = "답변하기";
+"sheet_write_question" = "나만의 질문 작성하기";
+"sheet_heart_cost" = "하트 3개 소모";
+"sheet_skip" = "질문 넘기기";
+"sheet_skip_desc" = "하트 3개 소모 · 다른 가족 답변 열람 가능";
+
+/* Question Detail */
+"detail_title" = "마음 남기기";
+"detail_today_question" = "오늘의 질문";
+"detail_today_mongle" = "오늘의 몽글";
+"detail_select_mood" = "하나를 선택해주세요";
+"detail_answer_placeholder" = "오늘의 감정을 자유롭게 적어보세요.\n어떤 이야기든 좋아요.";
+"detail_submit" = "답변 남기기";
+"detail_edit_submit" = "답변 수정하기";
+"detail_family_answers" = "가족의 답변 (%d)";
+"detail_mood_required_title" = "오늘의 몽글을 선택해주세요";
+"detail_mood_required_desc" = "지금 기분과 가장 비슷한 몽글 캐릭터를 골라보세요";
+"detail_edit_confirm_title" = "답변을 수정할까요?";
+"detail_edit_confirm_desc" = "답변을 수정하면 하트 1개가 소모돼요.";
+"detail_edit_btn" = "수정하기";
+"detail_edit_ad_title" = "하트가 부족해요";
+"detail_edit_ad_desc" = "답변을 수정하려면 하트 1개가 필요해요.\n광고를 보면 하트를 받을 수 있어요.";
+"detail_edit_ad_btn" = "광고 보고 수정하기";
+
+/* Write Question */
+"write_title" = "질문 작성하기";
+"write_section_title" = "나만의 질문을 작성해요";
+"write_section_desc" = "작성한 질문은 오늘의 질문으로 등록돼요.";
+"write_field_label" = "질문";
+"write_placeholder" = "예) 오늘 하루 가장 기억에 남는 순간은 무엇인가요?";
+"write_submit" = "질문 등록하기";
+
+/* Search */
+"search_placeholder" = "답변이나 질문 검색";
+"search_clear" = "지우기";
+"search_min_length" = "2글자 이상 입력해 주세요";
+"search_no_results" = "\"%@\"에 맞는 기록이 없어요";
+"search_result_count" = "%d개의 기록을 찾았어요";
+"search_empty" = "가족의 소중한 기록을 검색해보세요";
+
+/* Notifications */
+"notif_title" = "알림";
+"notif_mark_all_read" = "모두 읽음";
+"notif_delete_all" = "모두 제거";
+"notif_loading" = "알림을 불러오는 중...";
+"notif_empty_title" = "알림이 없어요";
+"notif_empty_desc" = "새로운 소식이 오면 알려드릴게요";
+"notif_time_now" = "방금 전";
+"notif_time_min" = "%d분 전";
+"notif_time_hour" = "%d시간 전";
+"notif_time_day" = "%d일 전";
+"notif_date_today" = "오늘";
+"notif_date_this_week" = "이번 주";
+"notif_date_older" = "이전";
+
+/* Nudge */
+"nudge_title" = "답변 재촉하기";
+"nudge_not_answered" = "%@가 아직 답변하지 않았어요";
+"nudge_hint" = "답변하면 여기서 바로 확인할 수 있어요";
+"nudge_prompt" = "답변을 재촉해볼까요?";
+"nudge_desc" = "%@에게 알림을 보내 답변을 재촉할 수 있어요.\n하트 1개가 소모됩니다.";
+"nudge_hearts" = "보유 하트: %d개";
+"nudge_sent" = "재촉 메시지를 보냈어요!";
+"nudge_insufficient" = "하트가 부족해요.";
+"nudge_watch_ad" = "광고 보고 재촉하기";
+"nudge_done" = "재촉 완료";
+"nudge_send" = "재촉하기";
+"nudge_sent_status" = "전송 완료";
+
+/* Group Select */
+"group_color_green" = "초록";
+"group_color_yellow" = "노랑";
+"group_color_pink" = "분홍";
+"group_color_blue" = "파랑";
+"group_color_orange" = "주황";
+"group_max_title" = "그룹 한도 초과";
+"group_max_desc" = "그룹은 최대 3개까지 참여할 수 있어요.";
+"group_empty" = "참여 중인 그룹이 없어요.\n새 공간을 만들거나 초대코드로 참여해보세요.";
+"group_create" = "새 공간 만들기";
+"group_join" = "초대코드로 참여하기";
+"group_what_to_do" = "무엇을 하시겠어요?";
+"group_create_desc" = "우리만의 공간을 직접 만들어요";
+"group_join_desc" = "받은 초대코드로 참여하세요";
+"group_create_title" = "새 공간 만들기";
+"group_create_headline" = "우리만의 몽글 공간을 만들어요";
+"group_create_subtitle" = "가족이나 친구와 함께 마음을 나눠보세요";
+"group_name_label" = "공간 이름";
+"group_name_placeholder" = "김씨네 가족";
+"group_name_error" = "공간 이름을 입력해주세요";
+"group_name_hint" = "가족, 친한 친구, 커플 등 자유롭게! (최대 10자)";
+"group_nickname_label" = "내 닉네임";
+"group_nickname_placeholder" = "엄마";
+"group_nickname_error" = "닉네임을 입력해주세요";
+"group_nickname_hint" = "다른 멤버에게 보여지는 이름이에요";
+"group_color_label" = "내 몽글 색상";
+"group_color_hint" = "다른 멤버에게 보여지는 몽글 캐릭터 색상이에요";
+"group_create_btn" = "공간 만들기";
+"group_join_title" = "초대코드로 참여하기";
+"group_join_headline" = "초대코드를 입력해주세요.";
+"group_join_subtitle" = "친구나 가족에게 받은 코드를 입력하면\n함께 공간에 참여할 수 있어요";
+"group_code_label" = "초대 코드";
+"group_code_placeholder" = "초대 코드를 입력해주세요";
+"group_code_hint" = "대문자와 숫자로 이루어진 코드에요";
+"group_join_btn" = "참여하기";
+"group_created_title" = "공간이 만들어졌어요! 🎉";
+"group_created_desc" = "아래 코드나 링크로 친구를 초대해보세요";
+"group_invite_code" = "초대 코드";
+"group_invite_link" = "초대 링크";
+"group_share_text" = "몽글에서 함께해요!\n초대코드: %@\n링크: %@";
+"group_go_home" = "홈으로 가기";
+"group_leave" = "그룹 나가기";
+"group_leave_title" = "그룹 나가기";
+"group_leave_desc" = "%@에서 나가시겠어요?\n그룹 관련 데이터가 삭제되지만 작성한 답변은 유지됩니다.";
+"group_leave_btn" = "나가기";
+"group_disband_error" = "그룹 해제 불가";
+
+/* Notification Permission */
+"perm_notif_title" = "알림을 허용해 주세요 🔔";
+"perm_notif_desc" = "가족의 소식을 놓치지 않을 수 있어요";
+"perm_notif_answer" = "맴버가 답변했을 때";
+"perm_notif_nudge" = "재촉 알림을 받았을 때";
+"perm_notif_question" = "새 질문 알림";
+"perm_notif_allow" = "허용하기";
+"perm_notif_later" = "나중에";
+"perm_dnd_title" = "방해 금지 시간 🌙";
+"perm_dnd_desc" = "취침 시간에는 알림을 받지 않아요";
+"perm_dnd_time" = "오후 10:00 - 오전 8:00";
+"perm_dnd_hint" = "이 시간 동안은 알림이 전송되지 않아요";
+"perm_dnd_use" = "사용하기";
+"perm_dnd_skip" = "건너뛰기";
+
+/* Moods */
+"mood_happy" = "행복";
+"mood_calm" = "평온";
+"mood_loved" = "사랑";
+"mood_sad" = "슬픔";
+"mood_tired" = "피곤";
+"mood_angry" = "화남";
+"mood_anxious" = "불안";
+"mood_excited" = "신남";
+
+/* Settings */
+"settings_my" = "MY";
+"settings_profile" = "프로필";
+"settings_profile_edit" = "프로필 편집";
+"settings_profile_edit_desc" = "이름을 변경할 수 있어요";
+"settings_mood_history" = "기분 히스토리";
+"settings_mood_history_desc" = "나의 감정 기록 돌아보기";
+"settings_mongle_card" = "몽글 카드 편집";
+"settings_mongle_card_desc" = "캐릭터 이름과 감정을 변경할 수 있어요";
+"settings_app" = "앱 설정";
+"settings_notifications" = "알림 설정";
+"settings_notifications_desc" = "답변 알림, 리마인더";
+"settings_group" = "그룹 관리";
+"settings_group_desc" = "멤버 초대, 그룹 설정";
+"settings_account" = "계정 관리";
+"settings_account_desc" = "로그아웃, 탈퇴";
+"settings_version" = "몽글 v%@";
+"settings_name_label" = "이름";
+"settings_name_placeholder" = "이름 입력";
+"settings_name_hint" = "다른 멤버에게 보여지는 이름이에요";
+"settings_name_cooldown" = "이름은 일주일에 한 번만 변경 가능해요 (%d일 후 변경 가능)";
+"settings_mood_hint" = "답변 수정 시 색상을 변경할 수 있어요.";
+"settings_logout" = "로그아웃";
+"settings_logout_desc" = "기기에서 로그아웃해요";
+"settings_logout_confirm" = "정말 로그아웃할까요?";
+"settings_delete_account" = "계정 탈퇴";
+"settings_delete_account_desc" = "모든 데이터가 삭제되며 복구할 수 없어요";
+"settings_delete_confirm" = "탈퇴하면 모든 데이터가 삭제돼요.\n이 작업은 되돌릴 수 없어요.";
+"settings_delete_btn" = "탈퇴하기";
+"settings_login_required" = "로그인이 필요해요";
+"settings_login_required_desc" = "이 기능을 이용하려면 로그인이 필요해요.";
+"settings_login_btn" = "로그인하기";
+"settings_change_failed" = "변경 실패";
+
+/* Group Management */
+"mgmt_title" = "그룹 관리";
+"mgmt_invite_section" = "그룹 초대";
+"mgmt_invite_desc" = "초대 코드나 링크를 공유해 가족을 초대하세요";
+"mgmt_leave" = "그룹 나가기";
+"mgmt_leave_desc" = "그룹을 나가면 모든 가족과의 답변 기록이 연결 해제됩니다.";
+"mgmt_leave_btn" = "나가기";
+"mgmt_kick" = "%@님을 내보낼까요?";
+"mgmt_kick_desc" = "해당 멤버는 그룹에서 제외됩니다.";
+"mgmt_kick_btn" = "내보내기";
+"mgmt_kick_error_title" = "내보내기 실패";
+"mgmt_kick_error_desc" = "멤버를 내보내는 중 문제가 발생했습니다. 다시 시도해 주세요.";
+"mgmt_transfer_title" = "방장 위임";
+"mgmt_transfer_desc" = "그룹을 나가기 전에 방장을 위임할 멤버를 선택해주세요.";
+"mgmt_transfer_btn" = "위임하고 나가기";
+
+/* Notification Settings */
+"notif_settings_title" = "알림 설정";
+"notif_settings_answer" = "답변 알림";
+"notif_settings_nudge" = "재촉 알림";
+"notif_settings_system" = "시스템 알림";
+"notif_settings_dnd" = "방해 금지 시간";
+"notif_settings_answer_desc" = "맴버가 답변했을 때";
+"notif_settings_answer_detail" = "그룹내 맴버가 오늘의 질문에 답변하면 알림";
+"notif_settings_nudge_desc" = "재촉 알림을 받았을 때";
+"notif_settings_nudge_detail" = "맴버에게 답변 재촉 알림을 받으면 알림";
+"notif_settings_question_desc" = "새 질문 알림";
+"notif_settings_question_detail" = "매일 오전 새 질문이 등록되면 알림";
+
+/* Toast Messages */
+"toast_skip" = "질문을 넘겼어요. 다른 가족 답변을 확인해보세요!";
+"toast_write" = "나만의 질문을 등록했어요!";
+"toast_nudge" = "재촉 메시지를 보냈어요!";
+"toast_edit" = "답변을 수정했어요!";
+"toast_answer" = "마음을 남겼어요!";
+"toast_group_left" = "그룹에서 나왔어요";
+"toast_code_copied" = "초대 코드가 복사되었습니다";
+"toast_max_groups" = "그룹은 최대 3개까지 만들 수 있어요";
+"toast_already_member" = "이미 속해있는 그룹이에요";
+"toast_invalid_code" = "초대코드를 다시 확인해주세요";
+
+/* Error Messages */
+"error_title" = "오류";
+"error_offline" = "인터넷 연결을 확인해주세요";
+"error_timeout" = "서버 응답이 오래 걸리고 있어요";
+"error_unauthorized" = "로그인이 필요해요";
+"error_not_found" = "요청한 데이터를 찾을 수 없어요";
+"error_server" = "서버 오류가 발생했어요 (%d)";
+"error_network" = "네트워크 오류가 발생했어요";
+"error_decoding" = "데이터를 읽는 중 오류가 발생했어요";
+"error_unknown" = "알 수 없는 오류가 발생했어요";
+"error_network_check" = "네트워크 연결을 확인해주세요.";
+
+/* History */
+"history_title" = "기록";
+"history_prev_month" = "이전 달";
+"history_next_month" = "다음 달";
+"history_recent_mood" = "최근 14일 기분";
+"history_answer_count" = "%d/%d명 답변";
+"history_no_record" = "이 날의 기록이 없어요";
+"history_mood_summary" = "이번 달 기분 요약";
+"history_mood_empty" = "이번 달 기분 기록이 없어요";
+"history_mood_timeline" = "기분 타임라인";
+"history_mood_recent" = "최근 기분 기록";
+"history_mood_by_date" = "날짜별로 남긴 감정";
+
+/* Heart Info */
+"heart_title" = "하트";
+"heart_info_title" = "하트는 관계를 움직이는 작은 자원이에요";
+"heart_info_desc" = "재촉, 질문 교체 같은 행동에만 제한적으로 사용돼요.";
+"heart_popup_ad" = "광고 보고 하트 받기 💚";
+"heart_granted_title" = "하트 +1";
+"heart_granted_desc" = "오늘 처음 접속하셨네요!\n하트 1개를 드렸어요 ❤️";
+"heart_cost" = "하트 %d";
+
+/* Calendar */
+"calendar_day_sun" = "일";
+"calendar_day_mon" = "월";
+"calendar_day_tue" = "화";
+"calendar_day_wed" = "수";
+"calendar_day_thu" = "목";
+"calendar_day_fri" = "금";
+"calendar_day_sat" = "토";
+
+/* Heart Cost Popup */
+"heart_cost_write" = "나만의 질문 작성하기";
+"heart_cost_skip" = "질문 넘기기";
+"heart_cost_edit" = "답변 수정하기";
+"heart_cost_write_desc" = "나만의 질문을 등록하면\n하트 3개가 소모됩니다.";
+"heart_cost_skip_desc" = "이 질문을 넘기면 하트 3개가 소모됩니다.\n다른 가족의 답변을 바로 볼 수 있어요.";
+"heart_cost_edit_desc" = "답변을 수정하면 하트 1개가 소모됩니다.";
+"heart_cost_write_btn" = "작성하러 가기";
+"heart_cost_skip_btn" = "질문 넘기기";
+"heart_cost_edit_btn" = "수정하기";

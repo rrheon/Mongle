@@ -1,0 +1,340 @@
+/* Common */
+"common_confirm" = "確認";
+"common_cancel" = "キャンセル";
+"common_back" = "戻る";
+"common_next" = "次へ";
+"common_save" = "保存";
+"common_delete" = "削除";
+"common_close" = "閉じる";
+"common_copy" = "コピー";
+"common_copied" = "コピー済み";
+"common_share" = "シェアする";
+"common_retry" = "再試行";
+"common_loading" = "読み込み中...";
+"app_name" = "モングル";
+
+/* Login */
+"login_title" = "モングル";
+"login_subtitle" = "今日の気持ちは何色ですか？";
+"login_kakao" = "カカオトークで続ける";
+"login_google" = "Googleで続ける";
+"login_apple" = "Appleで続ける";
+"login_browse" = "見てみる";
+
+/* Onboarding */
+"onboarding_welcome_title" = "モングルへようこそ";
+"onboarding_welcome_desc" = "家族や友達と毎日気持ちを分かち合う\n温かいコミュニケーション空間";
+"onboarding_group_title" = "自分だけの空間を\n作ってみましょう";
+"onboarding_group_desc" = "家族、友達、カップルなど\n一緒にしたい人を招待しましょう";
+"onboarding_question_title" = "毎日一緒に\n気持ちを分かち合おう";
+"onboarding_question_desc" = "毎日新しい質問に答えて\nお互いの気持ちを覗いてみましょう";
+"onboarding_sample_group" = "私たちの家族 🩷";
+"onboarding_sample_question" = "今日あなたを笑顔にしたものは何ですか？";
+"onboarding_today_question" = "今日の質問";
+"onboarding_start" = "はじめる";
+"onboarding_get_started" = "モングルをはじめる";
+"onboarding_never_show" = "再表示しない";
+
+/* Home */
+"home_default_group" = "モングル";
+"home_today_question" = "今日の質問";
+"home_question_placeholder" = "午前11時に新しい質問が届きます";
+"home_answer_complete" = "回答済み";
+"home_notifications" = "お知らせ";
+"home_heart_count" = "現在 %d個保有";
+"home_heart_replace" = "質問をもらい直す";
+"home_heart_write" = "自分だけの質問作成";
+"home_heart_nudge" = "催促する";
+"home_heart_earn_rate" = "毎朝 +1 · 回答完了 +3";
+"home_group_manage" = "グループ管理";
+"home_answer_first_title" = "まず回答を完了してください";
+"home_answer_first_view" = "%@の回答を見るには\nまず今日の質問に答えてください";
+"home_answer_first_nudge" = "%@に催促するには\nまず今日の質問に答えてください";
+"home_answer_btn" = "回答する";
+"home_write_question_title" = "自分だけの質問を作成しますか？";
+"home_write_question_desc" = "ハート3個を消費して自分だけの質問を\n今日の質問として登録します。";
+"home_write_btn" = "作成する";
+"home_skip_title" = "質問をスキップしますか？";
+"home_skip_desc" = "ハート3個を消費して新しい質問に変更されます。\nスキップ後は他の家族の回答を閲覧できます。";
+"home_skip_btn" = "スキップ";
+"home_hearts_insufficient" = "ハートが足りません";
+"home_hearts_write_needed" = "質問を作成するにはハート3個が必要です。\n現在のハート: %d個";
+"home_hearts_skip_needed" = "質問をスキップするにはハート3個が必要です。\n現在のハート: %d個";
+"home_answer_first_answer_desc" = "まだ今日回答していません！";
+"home_answer_first_go" = "回答しに行く";
+"home_answer_first_later" = "あとでします";
+"home_answer_first_note" = "回答すると家族の気持ちもすぐ見れます。";
+
+/* Question Sheet */
+"sheet_title" = "今日の質問";
+"sheet_subtitle" = "何をしますか？";
+"sheet_answer_edit" = "回答を修正する";
+"sheet_answer" = "回答する";
+"sheet_write_question" = "自分だけの質問を作成する";
+"sheet_heart_cost" = "ハート3個消費";
+"sheet_skip" = "質問をスキップ";
+"sheet_skip_desc" = "ハート3個消費 · 他の家族の回答閲覧可能";
+
+/* Question Detail */
+"detail_title" = "気持ちを残す";
+"detail_today_question" = "今日の質問";
+"detail_today_mongle" = "今日のモングル";
+"detail_select_mood" = "一つ選んでください";
+"detail_answer_placeholder" = "今日の感情を自由に書いてみてください。\nどんな話でも大丈夫です。";
+"detail_submit" = "回答を残す";
+"detail_edit_submit" = "回答を修正する";
+"detail_family_answers" = "家族の回答 (%d)";
+"detail_mood_required_title" = "今日のモングルを選んでください";
+"detail_mood_required_desc" = "今の気分に最も近いモングルキャラクターを選んでください";
+"detail_edit_confirm_title" = "回答を修正しますか？";
+"detail_edit_confirm_desc" = "回答を修正するとハート1個消費されます。";
+"detail_edit_btn" = "修正する";
+"detail_edit_ad_title" = "ハートが足りません";
+"detail_edit_ad_desc" = "回答を修正するにはハート1個が必要です。\n広告を見るとハートがもらえます。";
+"detail_edit_ad_btn" = "広告を見て修正する";
+
+/* Write Question */
+"write_title" = "質問を作成する";
+"write_section_title" = "自分だけの質問を作成しましょう";
+"write_section_desc" = "作成した質問は今日の質問として登録されます。";
+"write_field_label" = "質問";
+"write_placeholder" = "例）今日一番印象に残った瞬間は何ですか？";
+"write_submit" = "質問を登録する";
+
+/* Search */
+"search_placeholder" = "回答や質問を検索";
+"search_clear" = "クリア";
+"search_min_length" = "2文字以上入力してください";
+"search_no_results" = "「%@」に一致する記録がありません";
+"search_result_count" = "%d件の記録が見つかりました";
+"search_empty" = "家族の大切な記録を検索してみましょう";
+
+/* Notifications */
+"notif_title" = "お知らせ";
+"notif_mark_all_read" = "すべて既読";
+"notif_delete_all" = "すべて削除";
+"notif_loading" = "お知らせを読み込み中...";
+"notif_empty_title" = "お知らせはありません";
+"notif_empty_desc" = "新しいニュースがあればお知らせします";
+"notif_time_now" = "たった今";
+"notif_time_min" = "%d分前";
+"notif_time_hour" = "%d時間前";
+"notif_time_day" = "%d日前";
+"notif_date_today" = "今日";
+"notif_date_this_week" = "今週";
+"notif_date_older" = "以前";
+
+/* Nudge */
+"nudge_title" = "催促する";
+"nudge_not_answered" = "%@がまだ回答していません";
+"nudge_hint" = "回答すればここですぐ確認できます";
+"nudge_prompt" = "回答を催促しましょうか？";
+"nudge_desc" = "%@に通知を送って回答を催促できます。\nハート1個消費されます。";
+"nudge_hearts" = "保有ハート: %d個";
+"nudge_sent" = "催促メッセージを送りました！";
+"nudge_insufficient" = "ハートが足りません。";
+"nudge_watch_ad" = "広告を見て催促する";
+"nudge_done" = "催促完了";
+"nudge_send" = "催促する";
+"nudge_sent_status" = "送信完了";
+
+/* Group Select */
+"group_color_green" = "緑";
+"group_color_yellow" = "黄色";
+"group_color_pink" = "ピンク";
+"group_color_blue" = "青";
+"group_color_orange" = "オレンジ";
+"group_max_title" = "グループ上限超過";
+"group_max_desc" = "グループは最大3つまで参加できます。";
+"group_empty" = "参加中のグループがありません。\n新しいスペースを作るか招待コードで参加しましょう。";
+"group_create" = "新しいスペースを作る";
+"group_join" = "招待コードで参加する";
+"group_what_to_do" = "何をしますか？";
+"group_create_desc" = "自分だけのスペースを作りましょう";
+"group_join_desc" = "受け取った招待コードで参加してください";
+"group_create_title" = "新しいスペースを作る";
+"group_create_headline" = "私たちのモングルスペースを作りましょう";
+"group_create_subtitle" = "家族や友達と気持ちを分かち合いましょう";
+"group_name_label" = "スペース名";
+"group_name_placeholder" = "田中家";
+"group_name_error" = "スペース名を入力してください";
+"group_name_hint" = "家族、親友、カップルなど自由に！（最大10文字）";
+"group_nickname_label" = "ニックネーム";
+"group_nickname_placeholder" = "ママ";
+"group_nickname_error" = "ニックネームを入力してください";
+"group_nickname_hint" = "他のメンバーに表示される名前です";
+"group_color_label" = "モングルの色";
+"group_color_hint" = "他のメンバーに表示されるモングルキャラクターの色です";
+"group_create_btn" = "スペースを作成";
+"group_join_title" = "招待コードで参加する";
+"group_join_headline" = "招待コードを入力してください。";
+"group_join_subtitle" = "友達や家族からもらったコードを入力すると\n一緒にスペースに参加できます";
+"group_code_label" = "招待コード";
+"group_code_placeholder" = "招待コードを入力してください";
+"group_code_hint" = "大文字と数字で構成されたコードです";
+"group_join_btn" = "参加する";
+"group_created_title" = "スペースが作成されました！🎉";
+"group_created_desc" = "下のコードやリンクで友達を招待してみましょう";
+"group_invite_code" = "招待コード";
+"group_invite_link" = "招待リンク";
+"group_share_text" = "モングルで一緒に！\n招待コード: %@\nリンク: %@";
+"group_go_home" = "ホームへ";
+"group_leave" = "グループを退出";
+"group_leave_title" = "グループ退出";
+"group_leave_desc" = "%@を退出しますか？\nグループデータは削除されますが回答は保持されます。";
+"group_leave_btn" = "退出する";
+"group_disband_error" = "グループ解除不可";
+
+/* Notification Permission */
+"perm_notif_title" = "通知を許可してください 🔔";
+"perm_notif_desc" = "家族のニュースを見逃さないようにしましょう";
+"perm_notif_answer" = "メンバーが回答した時";
+"perm_notif_nudge" = "催促通知を受けた時";
+"perm_notif_question" = "新しい質問通知";
+"perm_notif_allow" = "許可する";
+"perm_notif_later" = "あとで";
+"perm_dnd_title" = "おやすみ時間 🌙";
+"perm_dnd_desc" = "就寝時間には通知を受けません";
+"perm_dnd_time" = "午後10:00 - 午前8:00";
+"perm_dnd_hint" = "この時間中は通知が送信されません";
+"perm_dnd_use" = "使用する";
+"perm_dnd_skip" = "スキップ";
+
+/* Moods */
+"mood_happy" = "幸せ";
+"mood_calm" = "穏やか";
+"mood_loved" = "愛";
+"mood_sad" = "悲しみ";
+"mood_tired" = "疲れ";
+"mood_angry" = "怒り";
+"mood_anxious" = "不安";
+"mood_excited" = "ワクワク";
+
+/* Settings */
+"settings_my" = "MY";
+"settings_profile" = "プロフィール";
+"settings_profile_edit" = "プロフィール編集";
+"settings_profile_edit_desc" = "名前を変更できます";
+"settings_mood_history" = "気分ヒストリー";
+"settings_mood_history_desc" = "自分の感情記録を振り返る";
+"settings_mongle_card" = "モングルカード編集";
+"settings_mongle_card_desc" = "キャラクターの名前と感情を変更できます";
+"settings_app" = "アプリ設定";
+"settings_notifications" = "通知設定";
+"settings_notifications_desc" = "回答通知、リマインダー";
+"settings_group" = "グループ管理";
+"settings_group_desc" = "メンバー招待、グループ設定";
+"settings_account" = "アカウント管理";
+"settings_account_desc" = "ログアウト、退会";
+"settings_version" = "モングル v%@";
+"settings_name_label" = "名前";
+"settings_name_placeholder" = "名前入力";
+"settings_name_hint" = "他のメンバーに表示される名前です";
+"settings_name_cooldown" = "名前は週に一度だけ変更可能です（%d日後に変更可能）";
+"settings_mood_hint" = "回答修正時に色を変更できます。";
+"settings_logout" = "ログアウト";
+"settings_logout_desc" = "デバイスからログアウトします";
+"settings_logout_confirm" = "本当にログアウトしますか？";
+"settings_delete_account" = "アカウント退会";
+"settings_delete_account_desc" = "すべてのデータが削除され復元できません";
+"settings_delete_confirm" = "退会するとすべてのデータが削除されます。\nこの操作は元に戻せません。";
+"settings_delete_btn" = "退会する";
+"settings_login_required" = "ログインが必要です";
+"settings_login_required_desc" = "この機能を利用するにはログインが必要です。";
+"settings_login_btn" = "ログインする";
+"settings_change_failed" = "変更失敗";
+
+/* Group Management */
+"mgmt_title" = "グループ管理";
+"mgmt_invite_section" = "グループ招待";
+"mgmt_invite_desc" = "招待コードやリンクを共有して招待しましょう";
+"mgmt_leave" = "グループを退出";
+"mgmt_leave_desc" = "グループを退出すると全ての回答記録の接続が解除されます。";
+"mgmt_leave_btn" = "退出する";
+"mgmt_kick" = "%@さんを退出させますか？";
+"mgmt_kick_desc" = "このメンバーはグループから除外されます。";
+"mgmt_kick_btn" = "退出させる";
+"mgmt_kick_error_title" = "退出失敗";
+"mgmt_kick_error_desc" = "メンバーの退出中に問題が発生しました。もう一度お試しください。";
+"mgmt_transfer_title" = "管理者委任";
+"mgmt_transfer_desc" = "管理者を委任するメンバーを選択してください。";
+"mgmt_transfer_btn" = "委任して退出";
+
+/* Notification Settings */
+"notif_settings_title" = "通知設定";
+"notif_settings_answer" = "回答通知";
+"notif_settings_nudge" = "催促通知";
+"notif_settings_system" = "システム通知";
+"notif_settings_dnd" = "おやすみ時間";
+"notif_settings_answer_desc" = "メンバーが回答した時";
+"notif_settings_answer_detail" = "グループメンバーが今日の質問に回答したら通知";
+"notif_settings_nudge_desc" = "催促通知を受けた時";
+"notif_settings_nudge_detail" = "メンバーから回答催促を受けたら通知";
+"notif_settings_question_desc" = "新しい質問通知";
+"notif_settings_question_detail" = "毎朝新しい質問が登録されたら通知";
+
+/* Toast Messages */
+"toast_skip" = "質問をスキップしました。他の家族の回答を確認しましょう！";
+"toast_write" = "自分だけの質問を登録しました！";
+"toast_nudge" = "催促メッセージを送りました！";
+"toast_edit" = "回答を修正しました！";
+"toast_answer" = "気持ちを残しました！";
+"toast_group_left" = "グループを退出しました";
+"toast_code_copied" = "招待コードがコピーされました";
+"toast_max_groups" = "グループは最大3つまで作成できます";
+"toast_already_member" = "すでに参加しているグループです";
+"toast_invalid_code" = "招待コードを再確認してください";
+
+/* Error Messages */
+"error_title" = "エラー";
+"error_offline" = "インターネット接続を確認してください";
+"error_timeout" = "サーバーの応答に時間がかかっています";
+"error_unauthorized" = "ログインが必要です";
+"error_not_found" = "リクエストしたデータが見つかりません";
+"error_server" = "サーバーエラーが発生しました (%d)";
+"error_network" = "ネットワークエラーが発生しました";
+"error_decoding" = "データの読み込み中にエラーが発生しました";
+"error_unknown" = "不明なエラーが発生しました";
+"error_network_check" = "ネットワーク接続を確認してください。";
+
+/* History */
+"history_title" = "記録";
+"history_prev_month" = "前月";
+"history_next_month" = "翌月";
+"history_recent_mood" = "最近14日間の気分";
+"history_answer_count" = "%d/%d人回答";
+"history_no_record" = "この日の記録はありません";
+"history_mood_summary" = "今月の気分まとめ";
+"history_mood_empty" = "今月の気分記録がありません";
+"history_mood_timeline" = "気分タイムライン";
+"history_mood_recent" = "最近の気分記録";
+"history_mood_by_date" = "日付別に残した感情";
+
+/* Heart Info */
+"heart_title" = "ハート";
+"heart_info_title" = "ハートは関係を動かす小さな資源です";
+"heart_info_desc" = "催促、質問交換などの行動にのみ制限的に使用されます。";
+"heart_popup_ad" = "広告を見てハートをもらう 💚";
+"heart_granted_title" = "ハート +1";
+"heart_granted_desc" = "今日初めてのアクセスですね！\nハートを1つプレゼントしました ❤️";
+"heart_cost" = "ハート %d";
+
+/* Calendar */
+"calendar_day_sun" = "日";
+"calendar_day_mon" = "月";
+"calendar_day_tue" = "火";
+"calendar_day_wed" = "水";
+"calendar_day_thu" = "木";
+"calendar_day_fri" = "金";
+"calendar_day_sat" = "土";
+
+/* Heart Cost Popup */
+"heart_cost_write" = "自分だけの質問を作成する";
+"heart_cost_skip" = "質問をスキップ";
+"heart_cost_edit" = "回答を修正する";
+"heart_cost_write_desc" = "自分だけの質問を登録すると\nハート3個が消費されます。";
+"heart_cost_skip_desc" = "この質問をスキップするとハート3個が消費されます。\n他の家族の回答をすぐに見れます。";
+"heart_cost_edit_desc" = "回答を修正するとハート1個が消費されます。";
+"heart_cost_write_btn" = "作成しに行く";
+"heart_cost_skip_btn" = "質問をスキップ";
+"heart_cost_edit_btn" = "修正する";

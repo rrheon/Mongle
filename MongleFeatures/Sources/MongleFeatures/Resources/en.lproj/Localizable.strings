@@ -1,0 +1,340 @@
+/* Common */
+"common_confirm" = "OK";
+"common_cancel" = "Cancel";
+"common_back" = "Back";
+"common_next" = "Next";
+"common_save" = "Save";
+"common_delete" = "Delete";
+"common_close" = "Close";
+"common_copy" = "Copy";
+"common_copied" = "Copied";
+"common_share" = "Share";
+"common_retry" = "Retry";
+"common_loading" = "Loading...";
+"app_name" = "Mongle";
+
+/* Login */
+"login_title" = "Mongle";
+"login_subtitle" = "What color is your heart today?";
+"login_kakao" = "Continue with KakaoTalk";
+"login_google" = "Continue with Google";
+"login_apple" = "Continue with Apple";
+"login_browse" = "Browse";
+
+/* Onboarding */
+"onboarding_welcome_title" = "Welcome to Mongle";
+"onboarding_welcome_desc" = "A warm space to share your feelings\nwith family and friends daily";
+"onboarding_group_title" = "Create your\nown space";
+"onboarding_group_desc" = "Invite family, friends, couples\nand anyone you want";
+"onboarding_question_title" = "Share your feelings\ntogether daily";
+"onboarding_question_desc" = "Answer new questions daily\nand peek into each other's hearts";
+"onboarding_sample_group" = "My Family 🩷";
+"onboarding_sample_question" = "What made you smile today?";
+"onboarding_today_question" = "Today's Question";
+"onboarding_start" = "Get Started";
+"onboarding_get_started" = "Start Mongle";
+"onboarding_never_show" = "Don't show again";
+
+/* Home */
+"home_default_group" = "Mongle";
+"home_today_question" = "Today's Question";
+"home_question_placeholder" = "A new question arrives at 11 AM";
+"home_answer_complete" = "Answered";
+"home_notifications" = "Notifications";
+"home_heart_count" = "%d hearts remaining";
+"home_heart_replace" = "Replace question";
+"home_heart_write" = "Write my question";
+"home_heart_nudge" = "Nudge";
+"home_heart_earn_rate" = "Daily +1 · Answer +3";
+"home_group_manage" = "Manage Groups";
+"home_answer_first_title" = "Please answer first";
+"home_answer_first_view" = "To see %@'s answer,\nyou need to answer today's question first";
+"home_answer_first_nudge" = "To nudge %@,\nyou need to answer today's question first";
+"home_answer_btn" = "Answer";
+"home_write_question_title" = "Write your own question?";
+"home_write_question_desc" = "Spend 3 hearts to register your question\nas today's question.";
+"home_write_btn" = "Write";
+"home_skip_title" = "Skip this question?";
+"home_skip_desc" = "Spend 3 hearts to get a new question.\nAfter skipping, you can view other members' answers.";
+"home_skip_btn" = "Skip";
+"home_hearts_insufficient" = "Not enough hearts";
+"home_hearts_write_needed" = "You need 3 hearts to write a question.\nCurrent hearts: %d";
+"home_hearts_skip_needed" = "You need 3 hearts to skip.\nCurrent hearts: %d";
+"home_answer_first_answer_desc" = "You haven't answered today yet!";
+"home_answer_first_go" = "Go answer";
+"home_answer_first_later" = "I'll do it later";
+"home_answer_first_note" = "Answering unlocks your family's hearts too.";
+
+/* Question Sheet */
+"sheet_title" = "Today's Question";
+"sheet_subtitle" = "What would you like to do?";
+"sheet_answer_edit" = "Edit Answer";
+"sheet_answer" = "Answer";
+"sheet_write_question" = "Write my own question";
+"sheet_heart_cost" = "3 hearts";
+"sheet_skip" = "Skip Question";
+"sheet_skip_desc" = "3 hearts · Can view others' answers";
+
+/* Question Detail */
+"detail_title" = "Leave Your Heart";
+"detail_today_question" = "Today's Question";
+"detail_today_mongle" = "Today's Mongle";
+"detail_select_mood" = "Please select one";
+"detail_answer_placeholder" = "Write about your feelings today.\nAnything is welcome.";
+"detail_submit" = "Submit Answer";
+"detail_edit_submit" = "Edit Answer";
+"detail_family_answers" = "Family Answers (%d)";
+"detail_mood_required_title" = "Please select today's Mongle";
+"detail_mood_required_desc" = "Choose the Mongle closest to your mood";
+"detail_edit_confirm_title" = "Edit your answer?";
+"detail_edit_confirm_desc" = "Editing costs 1 heart.";
+"detail_edit_btn" = "Edit";
+"detail_edit_ad_title" = "Not enough hearts";
+"detail_edit_ad_desc" = "You need 1 heart to edit.\nWatch an ad to get hearts.";
+"detail_edit_ad_btn" = "Watch ad and edit";
+
+/* Write Question */
+"write_title" = "Write Question";
+"write_section_title" = "Write your own question";
+"write_section_desc" = "Your question will be today's question.";
+"write_field_label" = "Question";
+"write_placeholder" = "e.g.) What was the most memorable moment today?";
+"write_submit" = "Submit Question";
+
+/* Search */
+"search_placeholder" = "Search answers or questions";
+"search_clear" = "Clear";
+"search_min_length" = "Please enter at least 2 characters";
+"search_no_results" = "No records matching \"%@\"";
+"search_result_count" = "Found %d records";
+"search_empty" = "Search your family's precious records";
+
+/* Notifications */
+"notif_title" = "Notifications";
+"notif_mark_all_read" = "Mark all read";
+"notif_delete_all" = "Delete all";
+"notif_loading" = "Loading notifications...";
+"notif_empty_title" = "No notifications";
+"notif_empty_desc" = "We'll notify you when there's news";
+"notif_time_now" = "Just now";
+"notif_time_min" = "%d min ago";
+"notif_time_hour" = "%d hours ago";
+"notif_time_day" = "%d days ago";
+"notif_date_today" = "Today";
+"notif_date_this_week" = "This Week";
+"notif_date_older" = "Earlier";
+
+/* Nudge */
+"nudge_title" = "Nudge";
+"nudge_not_answered" = "%@ hasn't answered yet";
+"nudge_hint" = "You can check the answer here";
+"nudge_prompt" = "Send a nudge?";
+"nudge_desc" = "Send a reminder to %@.\nCosts 1 heart.";
+"nudge_hearts" = "Hearts: %d";
+"nudge_sent" = "Nudge sent!";
+"nudge_insufficient" = "Not enough hearts.";
+"nudge_watch_ad" = "Watch ad and nudge";
+"nudge_done" = "Nudge Sent";
+"nudge_send" = "Nudge";
+"nudge_sent_status" = "Sent";
+
+/* Group Select */
+"group_color_green" = "Green";
+"group_color_yellow" = "Yellow";
+"group_color_pink" = "Pink";
+"group_color_blue" = "Blue";
+"group_color_orange" = "Orange";
+"group_max_title" = "Group limit reached";
+"group_max_desc" = "You can join up to 3 groups.";
+"group_empty" = "No groups yet.\nCreate a space or join with an invite code.";
+"group_create" = "Create New Space";
+"group_join" = "Join with Code";
+"group_what_to_do" = "What would you like to do?";
+"group_create_desc" = "Create your own space";
+"group_join_desc" = "Join with your invite code";
+"group_create_title" = "Create New Space";
+"group_create_headline" = "Create our Mongle space";
+"group_create_subtitle" = "Share feelings with family and friends";
+"group_name_label" = "Space Name";
+"group_name_placeholder" = "Kim Family";
+"group_name_error" = "Please enter a space name";
+"group_name_hint" = "Family, friends, couples, etc.! (max 10)";
+"group_nickname_label" = "My Nickname";
+"group_nickname_placeholder" = "Mom";
+"group_nickname_error" = "Please enter a nickname";
+"group_nickname_hint" = "Visible to other members";
+"group_color_label" = "My Mongle Color";
+"group_color_hint" = "Your character color visible to others";
+"group_create_btn" = "Create Space";
+"group_join_title" = "Join with Code";
+"group_join_headline" = "Enter your invite code.";
+"group_join_subtitle" = "Enter the code from a friend or family\nto join the space";
+"group_code_label" = "Invite Code";
+"group_code_placeholder" = "Enter invite code";
+"group_code_hint" = "Code with uppercase letters and numbers";
+"group_join_btn" = "Join";
+"group_created_title" = "Space created! 🎉";
+"group_created_desc" = "Invite friends with the code or link below";
+"group_invite_code" = "Invite Code";
+"group_invite_link" = "Invite Link";
+"group_share_text" = "Join me on Mongle!\nInvite code: %@\nLink: %@";
+"group_go_home" = "Go to Home";
+"group_leave" = "Leave Group";
+"group_leave_title" = "Leave Group";
+"group_leave_desc" = "Leave %@?\nGroup data will be deleted but your answers will be kept.";
+"group_leave_btn" = "Leave";
+"group_disband_error" = "Cannot disband group";
+
+/* Notification Permission */
+"perm_notif_title" = "Allow notifications 🔔";
+"perm_notif_desc" = "Don't miss updates from your family";
+"perm_notif_answer" = "When a member answers";
+"perm_notif_nudge" = "When you receive a nudge";
+"perm_notif_question" = "New question notification";
+"perm_notif_allow" = "Allow";
+"perm_notif_later" = "Later";
+"perm_dnd_title" = "Do Not Disturb 🌙";
+"perm_dnd_desc" = "No notifications during bedtime";
+"perm_dnd_time" = "10:00 PM - 8:00 AM";
+"perm_dnd_hint" = "Notifications won't be sent during this time";
+"perm_dnd_use" = "Enable";
+"perm_dnd_skip" = "Skip";
+
+/* Moods */
+"mood_happy" = "Happy";
+"mood_calm" = "Calm";
+"mood_loved" = "Loved";
+"mood_sad" = "Sad";
+"mood_tired" = "Tired";
+"mood_angry" = "Angry";
+"mood_anxious" = "Anxious";
+"mood_excited" = "Excited";
+
+/* Settings */
+"settings_my" = "MY";
+"settings_profile" = "Profile";
+"settings_profile_edit" = "Edit Profile";
+"settings_profile_edit_desc" = "Change your name";
+"settings_mood_history" = "Mood History";
+"settings_mood_history_desc" = "Review my emotion records";
+"settings_mongle_card" = "Edit Mongle Card";
+"settings_mongle_card_desc" = "Change character name and mood";
+"settings_app" = "App Settings";
+"settings_notifications" = "Notification Settings";
+"settings_notifications_desc" = "Answer notifications, reminders";
+"settings_group" = "Group Management";
+"settings_group_desc" = "Invite members, group settings";
+"settings_account" = "Account Management";
+"settings_account_desc" = "Logout, delete account";
+"settings_version" = "Mongle v%@";
+"settings_name_label" = "Name";
+"settings_name_placeholder" = "Enter name";
+"settings_name_hint" = "Visible to other members";
+"settings_name_cooldown" = "Name can be changed once a week (%d days left)";
+"settings_mood_hint" = "Color changes when editing answers.";
+"settings_logout" = "Logout";
+"settings_logout_desc" = "Log out from this device";
+"settings_logout_confirm" = "Are you sure you want to log out?";
+"settings_delete_account" = "Delete Account";
+"settings_delete_account_desc" = "All data will be deleted permanently";
+"settings_delete_confirm" = "All data will be deleted.\nThis cannot be undone.";
+"settings_delete_btn" = "Delete Account";
+"settings_login_required" = "Login Required";
+"settings_login_required_desc" = "Login required to use this feature.";
+"settings_login_btn" = "Log In";
+"settings_change_failed" = "Change Failed";
+
+/* Group Management */
+"mgmt_title" = "Group Management";
+"mgmt_invite_section" = "Group Invite";
+"mgmt_invite_desc" = "Share invite code or link";
+"mgmt_leave" = "Leave Group";
+"mgmt_leave_desc" = "Leaving disconnects all answer records.";
+"mgmt_leave_btn" = "Leave";
+"mgmt_kick" = "Remove %@?";
+"mgmt_kick_desc" = "This member will be removed.";
+"mgmt_kick_btn" = "Remove";
+"mgmt_kick_error_title" = "Remove Failed";
+"mgmt_kick_error_desc" = "Something went wrong while removing the member. Please try again.";
+"mgmt_transfer_title" = "Transfer Admin";
+"mgmt_transfer_desc" = "Select a member to transfer admin rights.";
+"mgmt_transfer_btn" = "Transfer and Leave";
+
+/* Notification Settings */
+"notif_settings_title" = "Notification Settings";
+"notif_settings_answer" = "Answer Notifications";
+"notif_settings_nudge" = "Nudge Notifications";
+"notif_settings_system" = "System Notifications";
+"notif_settings_dnd" = "Do Not Disturb";
+"notif_settings_answer_desc" = "When a member answers";
+"notif_settings_answer_detail" = "Notify when a group member answers";
+"notif_settings_nudge_desc" = "When you receive a nudge";
+"notif_settings_nudge_detail" = "Notify when you receive a nudge";
+"notif_settings_question_desc" = "New question notification";
+"notif_settings_question_detail" = "Notify when new daily question arrives";
+
+/* Toast Messages */
+"toast_skip" = "Question skipped. Check other answers!";
+"toast_write" = "Your question registered!";
+"toast_nudge" = "Nudge sent!";
+"toast_edit" = "Answer edited!";
+"toast_answer" = "Heart left!";
+"toast_group_left" = "Left the group";
+"toast_code_copied" = "Invite code copied";
+"toast_max_groups" = "Up to 3 groups allowed";
+"toast_already_member" = "Already a member";
+"toast_invalid_code" = "Please check the invite code";
+
+/* Error Messages */
+"error_title" = "Error";
+"error_offline" = "Check your internet connection";
+"error_timeout" = "Server is taking too long";
+"error_unauthorized" = "Login required";
+"error_not_found" = "Data not found";
+"error_server" = "Server error (%d)";
+"error_network" = "Network error";
+"error_decoding" = "Error reading data";
+"error_unknown" = "Unknown error";
+"error_network_check" = "Please check your network connection.";
+
+/* History */
+"history_title" = "History";
+"history_prev_month" = "Previous month";
+"history_next_month" = "Next month";
+"history_recent_mood" = "Mood in last 14 days";
+"history_answer_count" = "%d/%d answered";
+"history_no_record" = "No records for this day";
+"history_mood_summary" = "This Month's Mood Summary";
+"history_mood_empty" = "No mood records this month";
+"history_mood_timeline" = "Mood Timeline";
+"history_mood_recent" = "Recent Mood Records";
+"history_mood_by_date" = "Emotions by date";
+
+/* Heart Info */
+"heart_title" = "Hearts";
+"heart_info_title" = "Hearts are a small resource that moves relationships";
+"heart_info_desc" = "Used only for actions like nudging and replacing questions.";
+"heart_popup_ad" = "Watch ad for hearts 💚";
+"heart_granted_title" = "Heart +1";
+"heart_granted_desc" = "Welcome back today!\nYou received 1 heart ❤️";
+"heart_cost" = "%d hearts";
+
+/* Calendar */
+"calendar_day_sun" = "Sun";
+"calendar_day_mon" = "Mon";
+"calendar_day_tue" = "Tue";
+"calendar_day_wed" = "Wed";
+"calendar_day_thu" = "Thu";
+"calendar_day_fri" = "Fri";
+"calendar_day_sat" = "Sat";
+
+/* Heart Cost Popup */
+"heart_cost_write" = "Write my own question";
+"heart_cost_skip" = "Skip question";
+"heart_cost_edit" = "Edit answer";
+"heart_cost_write_desc" = "Registering your question\ncosts 3 hearts.";
+"heart_cost_skip_desc" = "Skipping costs 3 hearts.\nYou can view others' answers.";
+"heart_cost_edit_desc" = "Editing costs 1 heart.";
+"heart_cost_write_btn" = "Go write";
+"heart_cost_skip_btn" = "Skip question";
+"heart_cost_edit_btn" = "Edit";
