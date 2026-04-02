@@ -10,7 +10,7 @@ public struct GroupManagementView: View {
   
   public var body: some View {
     VStack(spacing: 0) {
-      MongleNavigationHeader(title: "그룹 관리") {
+      MongleNavigationHeader(title: L10n.tr("mgmt_title")) {
         MongleBackButton { store.send(.closeTapped) }
       } right: {
         EmptyView()
@@ -21,7 +21,7 @@ public struct GroupManagementView: View {
           groupInfoSection
           membersSection
           
-          MongleButtonSecondary("그룹 나가기") {
+          MongleButtonSecondary(L10n.tr("mgmt_leave")) {
             store.send(.leaveGroupTapped)
           }
         }
@@ -34,10 +34,10 @@ public struct GroupManagementView: View {
     .overlay {
       if store.showLeaveConfirm {
         MonglePopupView(
-          title: "그룹 나가기",
-          description: "그룹을 나가면 모든 가족과의 답변 기록이 연결 해제됩니다.",
-          primaryLabel: "나가기",
-          secondaryLabel: "취소",
+          title: L10n.tr("group_leave_title"),
+          description: L10n.tr("mgmt_leave_desc"),
+          primaryLabel: L10n.tr("mgmt_leave_btn"),
+          secondaryLabel: L10n.tr("common_cancel"),
           isDestructive: true,
           onPrimary: { store.send(.leaveGroupConfirmed) },
           onSecondary: { store.send(.leaveGroupAlertDismissed) }
@@ -54,10 +54,11 @@ public struct GroupManagementView: View {
             foregroundColor: MongleColor.error,
             backgroundColor: MongleColor.bgErrorSoft
           ),
-          title: store.kickTargetMember.map { "\($0.name)님을 내보낼까요?" } ?? "멤버 내보내기",
-          description: "해당 멤버는 그룹에서 제외됩니다.",
-          primaryLabel: "내보내기",
-          secondaryLabel: "취소",
+          title: store.kickTargetMember.map { L10n.tr("mgmt_kick", $0.name) } ?? L10n.tr("mgmt_kick_btn"),
+          description: L10n.tr("mgmt_kick_desc"),
+          primaryLabel: L10n.tr("mgmt_kick_btn"),
+          secondaryLabel: L10n.tr("common_cancel"),
+          isDestructive: true,
           onPrimary: { store.send(.kickMemberConfirmed) },
           onSecondary: { store.send(.kickMemberCancelled) }
         )
@@ -65,11 +66,28 @@ public struct GroupManagementView: View {
         .animation(.easeInOut(duration: 0.2), value: store.showKickConfirm)
       }
     }
-    .sheet(isPresented: Binding(
+    .overlay {
+      if let errorMessage = store.errorMessage {
+        MonglePopupView(
+          icon: .init(
+            systemName: "exclamationmark.circle.fill",
+            foregroundColor: MongleColor.error,
+            backgroundColor: MongleColor.bgErrorSoft
+          ),
+          title: L10n.tr("error_title"),
+          description: errorMessage,
+          primaryLabel: L10n.tr("common_confirm"),
+          onPrimary: { store.send(.dismissError) }
+        )
+        .transition(.opacity)
+        .animation(.easeInOut(duration: 0.2), value: store.errorMessage)
+      }
+    }
+    .navigationDestination(isPresented: Binding(
       get: { store.showTransferSheet },
       set: { if !$0 { store.send(.dismissTransferSheet) } }
     )) {
-      transferCreatorSheet
+      transferCreatorView
     }
     .overlay(alignment: .bottom) {
       if store.showCopiedToast {
@@ -79,6 +97,7 @@ public struct GroupManagementView: View {
       }
     }
     .animation(.easeInOut(duration: 0.3), value: store.showCopiedToast)
+    .preferredColorScheme(.light)
     .onAppear { store.send(.onAppear) }
   }
   
@@ -86,7 +105,7 @@ public struct GroupManagementView: View {
   
   private var groupInfoSection: some View {
     VStack(alignment: .leading, spacing: MongleSpacing.sm) {
-      sectionTitle("그룹 초대", subtitle: "초대 코드나 링크를 공유해 가족을 초대하세요")
+      sectionTitle(L10n.tr("mgmt_invite_section"), subtitle: L10n.tr("mgmt_invite_desc"))
       
       VStack(spacing: MongleSpacing.sm) {
         
@@ -95,10 +114,10 @@ public struct GroupManagementView: View {
           store.send(.inviteCodeCopyTapped)
         } label: {
           MongleInviteRowView(
-            title: "초대 코드",
-            value: store.inviteCode.isEmpty ? "불러오는 중..." : store.inviteCode,
+            title: L10n.tr("group_invite_code"),
+            value: store.inviteCode.isEmpty ? L10n.tr("common_loading") : store.inviteCode,
             buttonIcon: "doc.on.doc.fill",
-            buttonTitle: "복사"
+            buttonTitle: L10n.tr("common_copy")
           )
         }
         .buttonStyle(MongleScaleButtonStyle())
@@ -106,13 +125,13 @@ public struct GroupManagementView: View {
 
         // 2. 초대 링크 공유 버튼
         ShareLink(
-          item: "몽글에서 그룹을 만들었어요! 아래 링크로 들어오세요.\nhttps://mongle.app/invite/\(store.inviteCode)"
+          item: "몽글에서 그룹을 만들었어요! 아래 링크로 들어오세요.\nhttps://1cq1kfgvf1.execute-api.ap-northeast-2.amazonaws.com/invite/\(store.inviteCode)"
         ) {
           MongleInviteRowView(
-            title: "초대 링크",
-            value: store.inviteCode.isEmpty ? "불러오는 중..." : "https://mongle.app/invite/\(store.inviteCode)",
+            title: L10n.tr("group_invite_link"),
+            value: store.inviteCode.isEmpty ? L10n.tr("common_loading") : "https://1cq1kfgvf1.execute-api.ap-northeast-2.amazonaws.com/invite/\(store.inviteCode)",
             buttonIcon: "square.and.arrow.up.fill",
-            buttonTitle: "공유"
+            buttonTitle: L10n.tr("common_share")
           )
         }
         .buttonStyle(MongleScaleButtonStyle())
@@ -209,7 +228,7 @@ public struct GroupManagementView: View {
             Button {
               store.send(.kickMemberTapped(member))
             } label: {
-              Text("내보내기")
+              Text(L10n.tr("mgmt_kick_btn"))
                 .font(MongleFont.captionBold())
                 .foregroundColor(MongleColor.error)
                 .padding(.horizontal, MongleSpacing.sm)
@@ -225,29 +244,36 @@ public struct GroupManagementView: View {
     }
   }
   
-  // MARK: - Transfer Creator Sheet
-  
-  private var transferCreatorSheet: some View {
-    NavigationStack {
+  // MARK: - Transfer Creator View (Push)
+
+  private var transferCreatorView: some View {
+    VStack(spacing: 0) {
+      MongleNavigationHeader(title: L10n.tr("mgmt_transfer_title")) {
+        MongleBackButton { store.send(.dismissTransferSheet) }
+      } right: {
+        EmptyView()
+      }
+
       VStack(spacing: MongleSpacing.md) {
-        Text("그룹을 나가기 전에 방장을 위임할 멤버를 선택해주세요.")
+        Text(L10n.tr("mgmt_transfer_desc"))
           .font(MongleFont.body2())
           .foregroundColor(MongleColor.textSecondary)
           .multilineTextAlignment(.center)
           .padding(.horizontal, MongleSpacing.md)
-        
+          .padding(.top, MongleSpacing.md)
+
         ScrollView {
           VStack(spacing: MongleSpacing.sm) {
             ForEach(Array(store.transferCandidates.enumerated()), id: \.element.id) { index, member in
               HStack(spacing: MongleSpacing.md) {
                 MongleMonggle(color: monggleColor(for: index + 1), size: 40)
-                
+
                 Text(member.name)
                   .font(MongleFont.body2Bold())
                   .foregroundColor(MongleColor.textPrimary)
-                
+
                 Spacer()
-                
+
                 if store.selectedTransferMemberId == member.id {
                   Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(MongleColor.primary)
@@ -267,11 +293,11 @@ public struct GroupManagementView: View {
           }
           .padding(.horizontal, MongleSpacing.md)
         }
-        
+
         Button {
           store.send(.confirmTransferAndLeave)
         } label: {
-          Text("위임하고 나가기")
+          Text(L10n.tr("mgmt_transfer_btn"))
             .font(MongleFont.body1Bold())
             .foregroundColor(.white)
             .frame(maxWidth: .infinity)
@@ -283,15 +309,9 @@ public struct GroupManagementView: View {
         .padding(.horizontal, MongleSpacing.md)
         .padding(.bottom, MongleSpacing.md)
       }
-      .navigationTitle("방장 위임")
-      .navigationBarTitleDisplayMode(.inline)
-      .toolbar {
-        ToolbarItem(placement: .topBarLeading) {
-          Button("취소") { store.send(.dismissTransferSheet) }
-            .foregroundColor(MongleColor.textPrimary)
-        }
-      }
     }
+    .background(MongleColor.background)
+    .toolbar(.hidden, for: .navigationBar)
   }
   
   // MARK: - Helpers

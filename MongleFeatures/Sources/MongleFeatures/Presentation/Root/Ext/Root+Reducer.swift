@@ -38,13 +38,24 @@ extension RootFeature {
                             let familyResult = try await familyRepository.getMyFamily()
                             let family = familyResult?.0
                             let familyMembers = familyResult?.1 ?? []
-                            // 오전 12시(정오) 이전에는 오늘의 질문을 가져오지 않음
+                            // 오전 11시 이전에는 오늘의 질문을 가져오지 않음 (새 질문은 11시에 제공)
                             let calendar = Calendar.current
                             let now = Date()
-                            let noon = calendar.date(bySettingHour: 12, minute: 0, second: 0, of: now) ?? now
-                            let todayQuestion: Question? = now >= noon
+                            let questionTime = calendar.date(bySettingHour: 11, minute: 0, second: 0, of: now) ?? now
+                            let todayQuestion: Question? = now >= questionTime
                                 ? try await questionRepository.getTodayQuestion()
                                 : nil
+
+                            // 11시 이전에는 어제 질문을 히스토리에서 가져와 표시
+                            var yesterdayQuestion: Question? = nil
+                            var hasAnsweredYesterday = false
+                            if todayQuestion == nil {
+                                let recentHistory = (try? await questionRepository.getHistory(page: 1, limit: 1)) ?? []
+                                if let latest = recentHistory.first {
+                                    yesterdayQuestion = latest.question
+                                    hasAnsweredYesterday = latest.hasMyAnswer
+                                }
+                            }
 
                             var memberAnswerStatus: [UUID: Bool] = [:]
                             // 서버 /answers API는 Question.id 기준 (DailyQuestion.id 아님)
@@ -74,6 +85,8 @@ extension RootFeature {
                             let data = RootData(
                                 user: currentUser,
                                 question: todayQuestion,
+                                yesterdayQuestion: yesterdayQuestion,
+                                hasAnsweredYesterday: hasAnsweredYesterday,
                                 family: family,
                                 familyMembers: familyMembers,
                                 hasAnsweredToday: hasAnsweredToday,
@@ -123,6 +136,8 @@ extension RootFeature {
 
                     let homeState = HomeFeature.State(
                         todayQuestion: data.question,
+                        yesterdayQuestion: data.yesterdayQuestion,
+                        hasAnsweredYesterday: data.hasAnsweredYesterday,
                         family: data.family,
                         familyMembers: data.familyMembers,
                         currentUser: data.user,
@@ -234,16 +249,16 @@ extension RootFeature {
                     return .none
 
                 case .logout:
-                    state.mainTab?.path.removeAll()
-                    state.mainTab?.modal = nil
-                    state.mainTab?.profile.mongleCardEdit = nil
-                    state.mainTab?.profile.accountManagement = nil
+                    // appState를 먼저 변경하여 뷰가 LoginView로 전환된 후 mainTab을 정리
+                    // (순서 역전 시 MainTabView가 nil 상태의 mainTab에 액션을 보내는 TCA 경고 발생)
+                    state.appState = .unauthenticated
                     state.mainTab = nil
+                    state.questionDetail = nil
+                    state.selectedQuestion = nil
                     state.currentUser = nil
                     state.loginProviderType = nil
                     state.login = LoginFeature.State()
                     state.groupSelect = GroupSelectFeature.State()
-                    state.appState = .unauthenticated
                     return .run { [authRepository] _ in
                         try? await authRepository.logout()
                     }
@@ -416,9 +431,16 @@ extension RootFeature {
 
                 case .pendingInviteCode(let code):
                     state.pendingInviteCode = code
-                    if let code = code, state.appState == .groupSelection {
-                        state.groupSelect.joinCode = code
-                        state.groupSelect.step = .joinWithCode
+                    if let code = code {
+                        if state.appState == .groupSelection {
+                            state.groupSelect.joinCode = code
+                            state.groupSelect.step = .joinWithCode
+                        } else if state.appState == .authenticated {
+                            // 이미 로그인된 상태에서 초대 링크를 열면 그룹 선택 화면으로 이동
+                            state.appState = .groupSelection
+                            state.groupSelect.joinCode = code
+                            state.groupSelect.step = .joinWithCode
+                        }
                     }
                     return .none
 
