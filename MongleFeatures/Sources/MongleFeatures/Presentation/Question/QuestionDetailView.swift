@@ -161,6 +161,7 @@ struct QuestionDetailView: View {
 
                 Text(mood.label)
                     .font(.system(size: 12))
+                    .foregroundColor(MongleColor.textSecondary)
 
                 Circle()
                     .fill(isSelected ? MongleColor.primary : MongleColor.border)
