@@ -17,22 +17,33 @@ private func monggleColor(for moodId: String?) -> Color {
     case "loved":  return MongleColor.mongglePink
     case "sad":    return MongleColor.monggleBlue
     case "tired":  return MongleColor.monggleOrange
-    default:       return MongleColor.monggleYellow
+    default:       return MongleColor.mongglePink
     }
 }
 
 private func formatAnswerTime(_ date: Date) -> String {
     let calendar = Calendar.current
-    let formatter = DateFormatter()
-    formatter.locale = Locale(identifier: "ko_KR")
+    let timeFormatter = DateFormatter()
+    timeFormatter.locale = Locale.current
+    timeFormatter.dateFormat = DateFormatter.dateFormat(
+        fromTemplate: "ahmm",
+        options: 0,
+        locale: Locale.current
+    )
     if calendar.isDateInToday(date) {
-        formatter.dateFormat = "오늘 a h:mm"
+        return L10n.tr("date_today") + " " + timeFormatter.string(from: date)
     } else if calendar.isDateInYesterday(date) {
-        formatter.dateFormat = "어제 a h:mm"
+        return L10n.tr("date_yesterday") + " " + timeFormatter.string(from: date)
     } else {
-        formatter.dateFormat = "M월 d일 a h:mm"
+        let dateTimeFormatter = DateFormatter()
+        dateTimeFormatter.locale = Locale.current
+        dateTimeFormatter.dateFormat = DateFormatter.dateFormat(
+            fromTemplate: "MMMdahmm",
+            options: 0,
+            locale: Locale.current
+        )
+        return dateTimeFormatter.string(from: date)
     }
-    return formatter.string(from: date)
 }
 
 extension MainTabFeature {
@@ -56,14 +67,16 @@ extension MainTabFeature {
                     return .none
 
                 case .home(.delegate(.showQuestionSheet(let question))):
-
+                    // 오늘 질문이 없으면(오전 11시 이전) 어제 답변 여부로 판단
+                    let isAnswered = state.home.todayQuestion != nil
+                        ? state.home.hasAnsweredToday
+                        : state.home.hasAnsweredYesterday
                     state.modal = .questionSheet(
                         QuestionSheetFeature.State(
                             questionText: question.content,
-                            isAnswered: state.home.hasAnsweredToday
+                            isAnswered: isAnswered
                         )
                     )
-
                     return .none
 
                 // MARK: - Home Delegate
@@ -80,9 +93,11 @@ extension MainTabFeature {
                     return .none
 
                 case .home(.delegate(.navigateToMyAnswer)):
-                    let questionText = state.home.todayQuestion?.content ?? ""
+                    // 오늘 질문이 없으면(오전 11시 이전) 어제 질문 기준
+                    let activeQuestion = state.home.todayQuestion ?? state.home.yesterdayQuestion
+                    let questionText = activeQuestion?.content ?? ""
                     let memberName = state.home.currentUser?.name ?? ""
-                    let questionId = state.home.todayQuestion?.id
+                    let questionId = activeQuestion?.id
                     let currentUserId = state.home.currentUser?.id
                     let myMonggleColor = monggleColor(for: state.home.currentUser?.moodId)
                     return .run { send in
@@ -106,7 +121,7 @@ extension MainTabFeature {
                         questionText: questionText,
                         peerAnswer: answerText,
                         myAnswer: answerText,
-                        peerAnswerTime: answerTime.isEmpty ? "오늘" : answerTime
+                        peerAnswerTime: answerTime.isEmpty ? L10n.tr("date_today") : answerTime
                     ))
                     return .none
 
@@ -205,6 +220,9 @@ extension MainTabFeature {
                 case .profile(.delegate(.groupLeft)):
                     return .send(.delegate(.navigateToGroupSelect(fromGroupLeft: true)))
 
+                case .profile(.delegate(.memberKicked)):
+                    return .send(.delegate(.requestRefresh))
+
                 // MARK: - QuestionSheet Delegate
 
                 case .modal(.presented(.questionSheet(.delegate(.close)))):
@@ -257,11 +275,16 @@ extension MainTabFeature {
 
                 case .modal(.presented(.heartCostPopup(.delegate(.watchAdRequested(let costType))))):
                     // 팝업 닫고 광고 재생 → 시청 완료 시 서버에서 하트 지급 후 작업 수행
+                    let hearts = state.home.hearts
                     state.modal = nil
                     let cost = costType.cost
-                    return .run { [costType, cost] send in
+                    return .run { [costType, cost, hearts] send in
                         let earned = await adClient.showRewardedAd()
-                        guard earned else { return }
+                        guard earned else {
+                            // 광고 로드 실패 또는 시청 취소 → 에러 표시
+                            await send(.skipQuestionResponse(.failure(AppError.domain(L10n.tr("error_ad_load_failed")))))
+                            return
+                        }
                         do {
                             let heartsRemaining = try await userRepository.grantAdHearts(amount: cost)
                             await send(.adRewardEarned(costType, heartsRemaining: heartsRemaining))
@@ -476,7 +499,7 @@ extension MainTabFeature {
                     state.path.removeLast()
                     return .none
 
-                case .path(.element(id: _, action: .notification(.delegate(.navigateToQuestion)))):
+                case .path(.element(id: _, action: .notification(.delegate(.navigateToQuestion(let markAsReadId))))):
                     state.path.removeLast()
                     guard let question = state.home.todayQuestion else { return .none }
                     state.path.append(.questionDetail(QuestionDetailFeature.State(
@@ -485,17 +508,23 @@ extension MainTabFeature {
                         familyMembers: state.home.familyMembers,
                         hearts: state.home.hearts
                     )))
-                    return .none
+                    guard let notifId = markAsReadId else { return .none }
+                    return .run { [notificationRepository] _ in
+                        _ = try? await notificationRepository.markAsRead(id: notifId)
+                    }
 
                 case .skipQuestionResponse(.success(let heartsRemaining)):
                     // 개인 패스: 질문 유지, 하트 차감, 패스 상태 기록
                     state.home.hearts = heartsRemaining
                     state.home.hasSkippedToday = true
                     state.showRefreshToast = true
-                    return .run { send in
-                        try await Task.sleep(nanoseconds: 3_000_000_000)
-                        await send(.dismissRefreshToast)
-                    }
+                    return .merge(
+                        .send(.history(.forceReload)),
+                        .run { send in
+                            try await Task.sleep(nanoseconds: 3_000_000_000)
+                            await send(.dismissRefreshToast)
+                        }
+                    )
 
                 case .skipQuestionResponse(.failure(let error)):
                     state.home.appError = error
@@ -512,8 +541,8 @@ extension MainTabFeature {
                         questionText: questionText,
                         peerAnswer: peerAnswer,
                         myAnswer: myAnswer,
-                        peerAnswerTime: peerAnswerTime.isEmpty ? "오늘" : peerAnswerTime,
-                        myAnswerTime: myAnswerTime.isEmpty ? "오늘" : myAnswerTime
+                        peerAnswerTime: peerAnswerTime.isEmpty ? L10n.tr("date_today") : peerAnswerTime,
+                        myAnswerTime: myAnswerTime.isEmpty ? L10n.tr("date_today") : myAnswerTime
                     ))
                     return .none
 

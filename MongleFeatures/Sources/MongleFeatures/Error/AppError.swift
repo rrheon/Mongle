@@ -36,15 +36,15 @@ public enum AppError: Error, Equatable, Sendable {
     /// 토스트에 표시할 짧은 한 줄 메시지
     public var toastMessage: String {
         switch self {
-        case .offline:              return "인터넷 연결을 확인해주세요"
-        case .timeout:              return "서버 응답이 오래 걸리고 있어요"
-        case .unauthorized:         return "로그인이 필요해요"
-        case .notFound:             return "요청한 데이터를 찾을 수 없어요"
-        case .serverError(let code): return "서버 오류가 발생했어요 (\(code))"
-        case .network:              return "네트워크 오류가 발생했어요"
-        case .decoding:             return "데이터를 읽는 중 오류가 발생했어요"
+        case .offline:              return L10n.tr("error_offline")
+        case .timeout:              return L10n.tr("error_timeout")
+        case .unauthorized:         return L10n.tr("error_unauthorized")
+        case .notFound:             return L10n.tr("error_not_found")
+        case .serverError(let code): return L10n.tr("error_server", code)
+        case .network:              return L10n.tr("error_network")
+        case .decoding:             return L10n.tr("error_decoding")
         case .domain(let msg):      return msg
-        case .unknown(let msg):     return msg.isEmpty ? "알 수 없는 오류가 발생했어요" : msg
+        case .unknown(let msg):     return msg.isEmpty ? L10n.tr("error_unknown") : msg
         }
     }
 
@@ -52,23 +52,23 @@ public enum AppError: Error, Equatable, Sendable {
     public var userMessage: String {
         switch self {
         case .offline:
-            return "인터넷에 연결되어 있지 않아요.\n연결 상태를 확인한 후 다시 시도해 주세요."
+            return L10n.tr("error_offline")
         case .timeout:
-            return "서버 응답이 너무 오래 걸리고 있어요.\n잠시 후 다시 시도해 주세요."
+            return L10n.tr("error_timeout")
         case .unauthorized:
-            return "로그인이 필요해요."
+            return L10n.tr("error_unauthorized")
         case .notFound:
-            return "요청한 데이터를 찾을 수 없어요."
+            return L10n.tr("error_not_found")
         case .serverError(let code):
-            return "서버에 문제가 발생했어요 (\(code)).\n잠시 후 다시 시도해 주세요."
-        case .network(let msg):
-            return "네트워크 오류가 발생했어요.\n\(msg)"
+            return L10n.tr("error_server", code)
+        case .network:
+            return L10n.tr("error_network_check")
         case .decoding:
-            return "데이터를 읽는 중 오류가 발생했어요."
+            return L10n.tr("error_decoding")
         case .domain(let msg):
             return msg
         case .unknown(let msg):
-            return msg.isEmpty ? "알 수 없는 오류가 발생했어요." : msg
+            return msg.isEmpty ? L10n.tr("error_unknown") : msg
         }
     }
 

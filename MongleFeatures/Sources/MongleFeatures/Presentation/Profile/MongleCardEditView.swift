@@ -29,9 +29,9 @@ public struct MongleCardEditView: View {
                         foregroundColor: MongleColor.error,
                         backgroundColor: MongleColor.bgErrorSoft
                     ),
-                    title: "변경 실패",
+                    title: L10n.tr("settings_change_failed"),
                     description: error.userMessage,
-                    primaryLabel: "확인",
+                    primaryLabel: L10n.tr("common_confirm"),
                     onPrimary: { store.send(.dismissSaveError) }
                 )
                 .transition(.opacity)
@@ -43,11 +43,11 @@ public struct MongleCardEditView: View {
     // MARK: - Header
 
     private var header: some View {
-        MongleNavigationHeader(title: "프로필 편집") {
+        MongleNavigationHeader(title: L10n.tr("settings_profile_edit")) {
             MongleBackButton { store.send(.backTapped) }
         } right: {
             Button { store.send(.saveTapped) } label: {
-                Text("저장")
+                Text(L10n.tr("common_save"))
                     .font(MongleFont.body1Bold())
                     .foregroundColor(store.isValid ? MongleColor.primarySoft : MongleColor.textHint)
                     .frame(width: 44, height: 44)
@@ -80,7 +80,7 @@ public struct MongleCardEditView: View {
             MongleMonggle.forMood(store.selectedMoodId, size: 80)
                 .animation(.spring(response: 0.3), value: store.selectedMoodId)
 
-            Text("답변 수정 시 색상을 변경할 수 있어요.")
+            Text(L10n.tr("settings_mood_hint"))
                 .font(MongleFont.caption())
                 .foregroundColor(MongleColor.textHint)
         }
@@ -91,17 +91,17 @@ public struct MongleCardEditView: View {
 
     private var nameSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("이름")
+            Text(L10n.tr("settings_name_label"))
                 .font(MongleFont.body1Bold())
                 .foregroundColor(MongleColor.textPrimary)
 
             MongleInputText(
-                placeholder: "이름 입력",
+                placeholder: L10n.tr("settings_name_placeholder"),
                 text: $store.editedName.sending(\.nameChanged),
                 icon: "person.fill"
             )
 
-            Text("다른 멤버에게 보여지는 이름이에요")
+            Text(L10n.tr("settings_name_hint"))
                 .font(MongleFont.caption())
                 .foregroundColor(MongleColor.textHint)
         }

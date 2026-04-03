@@ -15,6 +15,7 @@ public struct MainTabFeature {
     @Dependency(\.questionRepository) var questionRepository
     @Dependency(\.answerRepository) var answerRepository
     @Dependency(\.userRepository) var userRepository
+    @Dependency(\.notificationRepository) var notificationRepository
     @Dependency(\.errorHandler) var errorHandler
     @Dependency(\.adClient) var adClient
 

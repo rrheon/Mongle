@@ -27,7 +27,7 @@ public struct HeartInfoPopupView: View {
 
                 // 제목 + 보유 하트
                 VStack(spacing: MongleSpacing.sm) {
-                    Text("하트")
+                    Text(L10n.tr("heart_title"))
                         .font(MongleFont.heading3())
                         .foregroundColor(MongleColor.textPrimary)
 
@@ -35,7 +35,7 @@ public struct HeartInfoPopupView: View {
                         Image(systemName: "heart.fill")
                             .font(.system(size: 14))
                             .foregroundColor(MongleColor.heartRed)
-                        Text("현재 보유 \(store.hearts)개")
+                        Text(L10n.tr("home_heart_count", store.hearts))
                             .font(MongleFont.body2Bold())
                             .foregroundColor(MongleColor.heartRed)
                     }
@@ -50,27 +50,27 @@ public struct HeartInfoPopupView: View {
                     heartInfoRow(
                         icon: "arrow.clockwise.circle.fill",
                         color: MongleColor.secondary,
-                        text: "질문 다시받기에 하트 1개가 사용돼요"
+                        text: L10n.tr("heart_info_replace")
                     )
                     heartInfoRow(
                         icon: "pencil.circle.fill",
                         color: MongleColor.accentOrange,
-                        text: "나만의 질문 작성에 하트 1개가 사용돼요"
+                        text: L10n.tr("heart_info_write")
                     )
                     heartInfoRow(
                         icon: "heart.circle.fill",
                         color: MongleColor.heartRed,
-                        text: "재촉하기에 하트 1개가 사용돼요"
+                        text: L10n.tr("heart_info_nudge")
                     )
                     heartInfoRow(
                         icon: "sun.rise.fill",
                         color: MongleColor.primary,
-                        text: "매일 오전 6시에 하트 1개가 충전돼요"
+                        text: L10n.tr("heart_info_daily")
                     )
                     heartInfoRow(
                         icon: "checkmark.circle.fill",
                         color: MongleColor.primary,
-                        text: "답변을 완료하면 하트 1개를 얻을 수 있어요"
+                        text: L10n.tr("heart_info_answer")
                     )
                 }
                 .padding(MongleSpacing.md)
@@ -78,7 +78,7 @@ public struct HeartInfoPopupView: View {
                 .cornerRadius(MongleRadius.large)
 
                 // 닫기 버튼
-                MongleButtonPrimary("확인") {
+                MongleButtonPrimary(L10n.tr("common_confirm")) {
                     store.send(.closeTapped)
                 }
             }

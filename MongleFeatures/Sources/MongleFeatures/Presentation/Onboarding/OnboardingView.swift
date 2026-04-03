@@ -37,12 +37,12 @@ public struct OnboardingView: View {
 
             // 텍스트
             VStack(spacing: 12) {
-                Text("몽글에 오신 걸 환영해요")
+                Text(L10n.tr("onboarding_welcome_title"))
                     .font(.system(size: 26, weight: .bold))
                     .foregroundColor(MongleColor.textPrimary)
                     .multilineTextAlignment(.center)
 
-                Text("가족, 친구와 매일 마음을 나누는\n따뜻한 소통 공간")
+                Text(L10n.tr("onboarding_welcome_desc"))
                     .font(MongleFont.body1())
                     .foregroundColor(MongleColor.textSecondary)
                     .multilineTextAlignment(.center)
@@ -62,12 +62,13 @@ public struct OnboardingView: View {
 
             // 그룹 카드
             MongleCardGroup(
-                groupName: "우리 가족 🩷",
+                groupName: L10n.tr("onboarding_sample_group"),
                 memberColors: [
                     MongleColor.monggleOrange,
                     MongleColor.monggleYellow,
                     MongleColor.monggleGreen,
-                    MongleColor.mongglePink
+                    MongleColor.mongglePink,
+                    MongleColor.monggleBlue
                 ]
             )
 
@@ -75,12 +76,12 @@ public struct OnboardingView: View {
 
             // 텍스트
             VStack(spacing: 12) {
-                Text("나만의 공간을\n만들어보세요")
+                Text(L10n.tr("onboarding_group_title"))
                     .font(.system(size: 26, weight: .bold))
                     .foregroundColor(MongleColor.textPrimary)
                     .multilineTextAlignment(.center)
 
-                Text("가족, 친구, 커플 등\n함께하고 싶은 사람들을 초대해요")
+                Text(L10n.tr("onboarding_group_desc"))
                     .font(MongleFont.body1())
                     .foregroundColor(MongleColor.textSecondary)
                     .multilineTextAlignment(.center)
@@ -99,7 +100,7 @@ public struct OnboardingView: View {
             Spacer()
 
             // 오늘의 질문 카드
-            MongleCardQuestion(question: "오늘 당신을 웃게 한 건 무엇인가요?")
+            MongleCardQuestion(question: L10n.tr("onboarding_sample_question"))
 
             Spacer().frame(height: 20)
 
@@ -118,12 +119,12 @@ public struct OnboardingView: View {
 
             // 텍스트
             VStack(spacing: 12) {
-                Text("매일 함께\n마음을 나눠요")
+                Text(L10n.tr("onboarding_question_title"))
                     .font(.system(size: 26, weight: .bold))
                     .foregroundColor(MongleColor.textPrimary)
                     .multilineTextAlignment(.center)
 
-                Text("매일 새로운 질문에 답하고\n서로의 마음을 들여다보세요")
+                Text(L10n.tr("onboarding_question_desc"))
                     .font(MongleFont.body1())
                     .foregroundColor(MongleColor.textSecondary)
                     .multilineTextAlignment(.center)
@@ -148,7 +149,7 @@ public struct OnboardingView: View {
             Button {
                 store.send(.neverShowAgainTapped)
             } label: {
-                Text("다시 보지않기")
+                Text(L10n.tr("onboarding_never_show"))
                     .font(MongleFont.body2())
                     .foregroundStyle(MongleColor.textHint)
             }
@@ -171,11 +172,11 @@ public struct OnboardingView: View {
 
     private var buttonTitle: String {
         if store.currentIndex == 0 {
-            return "시작하기"
+            return L10n.tr("onboarding_start")
         } else if store.isLastPage {
-            return "몽글 시작하기"
+            return L10n.tr("onboarding_get_started")
         } else {
-            return "다음"
+            return L10n.tr("common_next")
         }
     }
 

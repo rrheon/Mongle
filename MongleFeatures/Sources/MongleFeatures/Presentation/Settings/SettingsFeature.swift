@@ -27,7 +27,7 @@ public struct SettingsFeature {
             currentUser: User? = nil,
             loginProviderType: SocialProviderType? = nil,
             appVersion: String = "1.0.0",
-            notificationsEnabled: Bool = true,
+            notificationsEnabled: Bool = UserDefaults.standard.object(forKey: "mongle_notifications_enabled") as? Bool ?? true,
             isLoading: Bool = false,
             showLogoutConfirmation: Bool = false,
             showDeleteAccountConfirmation: Bool = false,
@@ -102,6 +102,19 @@ public struct SettingsFeature {
 
     public init() {}
 
+    /// 기기 언어에 맞는 법적 문서 URL 반환
+    /// ko → /ko/path, ja → /ja/path, 그 외 → /en/path
+    private static func legalURL(path: String) -> String {
+        let langCode = Locale.current.language.languageCode?.identifier ?? "en"
+        let lang: String
+        switch langCode {
+        case "ko": lang = "ko"
+        case "ja": lang = "ja"
+        default:   lang = "en"
+        }
+        return "https://monggle.app/legal/\(lang)/\(path)"
+    }
+
     public var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
@@ -126,7 +139,7 @@ public struct SettingsFeature {
 
             case .notificationsToggled(let enabled):
                 state.notificationsEnabled = enabled
-                // TODO: 실제 알림 설정 저장
+                UserDefaults.standard.set(enabled, forKey: "mongle_notifications_enabled")
                 return .none
 
             case .logoutTapped:
@@ -182,13 +195,15 @@ public struct SettingsFeature {
                 return .none
 
             case .termsOfServiceTapped:
-                if let url = URL(string: "https://example.com/terms") {
+                let termsURL = Self.legalURL(path: "terms")
+                if let url = URL(string: termsURL) {
                     return .send(.delegate(.openURL(url)))
                 }
                 return .none
 
             case .privacyPolicyTapped:
-                if let url = URL(string: "https://example.com/privacy") {
+                let privacyURL = Self.legalURL(path: "privacy")
+                if let url = URL(string: privacyURL) {
                     return .send(.delegate(.openURL(url)))
                 }
                 return .none

@@ -63,11 +63,14 @@ public struct ProfileEditFeature {
             case profileUpdated(User)
             case logout
             case groupLeft
+            case memberKicked
             case colorPreview(String)
             case colorPreviewCancelled
             case requestLogin
         }
     }
+
+    @Dependency(\.authRepository) var authRepository
 
     public init() {}
 
@@ -78,16 +81,10 @@ public struct ProfileEditFeature {
                 if state.user == nil {
                     state.isLoading = true
                     return .run { send in
-                        try await Task.sleep(nanoseconds: 300_000_000)
-                        let mockUser = User(
-                            id: UUID(),
-                            email: "user@example.com",
-                            name: "홍길동",
-                            profileImageURL: nil,
-                            role: .son,
-                            createdAt: Date()
-                        )
-                        await send(.userLoaded(mockUser))
+                        let user = try? await authRepository.getCurrentUser()
+                        if let user {
+                            await send(.userLoaded(user))
+                        }
                     }
                 }
                 return .none
@@ -144,11 +141,9 @@ public struct ProfileEditFeature {
 
             case .mongleCardEdit(.presented(.delegate(.saved(let user)))):
                 state.user = user
-                state.mongleCardEdit = nil
                 return .send(.delegate(.profileUpdated(user)))
 
             case .mongleCardEdit(.presented(.delegate(.cancelled))):
-                state.mongleCardEdit = nil
                 return .send(.delegate(.colorPreviewCancelled))
 
             case .mongleCardEdit(.presented(.delegate(.colorPreview(let moodId)))):
@@ -170,6 +165,9 @@ public struct ProfileEditFeature {
 
             case .groupManagement(.presented(.delegate(.groupLeft))):
                 return .send(.delegate(.groupLeft))
+
+            case .groupManagement(.presented(.delegate(.memberKicked))):
+                return .send(.delegate(.memberKicked))
 
             case .groupManagement:
                 return .none

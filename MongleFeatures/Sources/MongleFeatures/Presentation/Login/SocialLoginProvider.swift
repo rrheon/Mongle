@@ -269,7 +269,7 @@ public func revokeClientSocialAccess(for providerType: SocialProviderType) async
         try await KakaoLoginProvider().revokeClientAccess()
     case .google:
         try await GoogleLoginProvider().revokeClientAccess()
-    case .apple, .naver:
+    case .apple:
         break
     }
 }

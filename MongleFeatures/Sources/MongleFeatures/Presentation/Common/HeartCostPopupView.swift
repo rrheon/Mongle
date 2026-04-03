@@ -25,7 +25,7 @@ public struct HeartCostPopupView: View {
             title: store.title,
             description: store.description,
             primaryLabel: store.confirmLabel,
-            secondaryLabel: "취소",
+            secondaryLabel: L10n.tr("common_cancel"),
             isPrimaryEnabled: store.hasEnoughHearts,
             onPrimary: { store.send(.confirmTapped) },
             onSecondary: { store.send(.cancelTapped) }
@@ -43,7 +43,7 @@ public struct HeartCostPopupView: View {
                     Image(systemName: "heart.fill")
                         .font(.system(size: 16))
                         .foregroundColor(MongleColor.heartRed)
-                    Text("보유 하트: \(store.hearts)개")
+                    Text(L10n.tr("nudge_hearts", store.hearts))
                         .font(MongleFont.body2())
                         .foregroundColor(MongleColor.textSecondary)
                 }
@@ -65,7 +65,7 @@ public struct HeartCostPopupView: View {
 
             if !store.hasEnoughHearts {
                 VStack(spacing: MongleSpacing.xs) {
-                    Text("하트가 부족해요.")
+                    Text(L10n.tr("nudge_insufficient"))
                         .font(MongleFont.caption())
                         .foregroundColor(MongleColor.error)
 
@@ -75,7 +75,7 @@ public struct HeartCostPopupView: View {
                         HStack(spacing: 6) {
                             Image(systemName: "play.fill")
                                 .font(.system(size: 13))
-                            Text("광고 보고 하트 받기 💚")
+                            Text(L10n.tr("heart_popup_ad"))
                                 .font(MongleFont.captionBold())
                         }
                         .foregroundColor(.white)

@@ -76,10 +76,10 @@ public struct HistoryCalendarView: View {
 
     private var calendarGrid: some View {
         LazyVGrid(columns: columns, spacing: MongleSpacing.sm) {
-            ForEach(["일", "월", "화", "수", "목", "금", "토"], id: \.self) { day in
+            ForEach([L10n.tr("calendar_day_sun"), L10n.tr("calendar_day_mon"), L10n.tr("calendar_day_tue"), L10n.tr("calendar_day_wed"), L10n.tr("calendar_day_thu"), L10n.tr("calendar_day_fri"), L10n.tr("calendar_day_sat")], id: \.self) { day in
                 Text(day)
                     .font(MongleFont.captionBold())
-                    .foregroundColor(day == "일" ? MongleColor.error : (day == "토" ? MongleColor.info : MongleColor.textSecondary))
+                    .foregroundColor(day == L10n.tr("calendar_day_sun") ? MongleColor.error : (day == L10n.tr("calendar_day_sat") ? MongleColor.info : MongleColor.textSecondary))
                     .frame(maxWidth: .infinity)
             }
 
@@ -183,9 +183,9 @@ public struct HistoryCalendarView: View {
 
     private func moodName(for id: String) -> String {
         switch id {
-        case "happy": return "기쁨"; case "calm": return "평온"; case "loved": return "사랑"
-        case "sad": return "우울"; case "tired": return "지침"; case "excited": return "설렘"
-        case "anxious": return "불안"; default: return "기쁨"
+        case "happy": return L10n.tr("mood_happy"); case "calm": return L10n.tr("mood_calm"); case "loved": return L10n.tr("mood_loved")
+        case "sad": return L10n.tr("mood_sad"); case "tired": return L10n.tr("mood_tired"); case "excited": return L10n.tr("mood_excited")
+        case "anxious": return L10n.tr("mood_anxious"); default: return L10n.tr("mood_happy")
         }
     }
 

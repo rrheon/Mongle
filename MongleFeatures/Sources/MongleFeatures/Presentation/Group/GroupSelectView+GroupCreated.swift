@@ -6,11 +6,11 @@ import UIKit
 extension GroupSelectView {
 
   var inviteLink: String {
-    "https://monggle.app/join/\(store.inviteCode.lowercased())"
+    "https://1cq1kfgvf1.execute-api.ap-northeast-2.amazonaws.com/invite/\(store.inviteCode)"
   }
 
   var shareText: String {
-    "몽글에서 함께해요! \n초대코드: \(store.inviteCode)\n링크: \(inviteLink)"
+    L10n.tr("group_share_text", store.inviteCode, inviteLink)
   }
 
   var groupCreatedView: some View {
@@ -27,10 +27,10 @@ extension GroupSelectView {
       .padding(.bottom, MongleSpacing.sm)
 
       VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-        Text("공간이 만들어졌어요! 🎉")
+        Text(L10n.tr("group_created_title"))
           .font(MongleFont.heading2())
           .foregroundColor(MongleColor.textPrimary)
-        Text("아래 코드나 링크로 친구를 초대해보세요")
+        Text(L10n.tr("group_created_desc"))
           .font(MongleFont.body2())
           .foregroundColor(MongleColor.textSecondary)
       }
@@ -38,7 +38,7 @@ extension GroupSelectView {
 
       // 초대코드 카드
       VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-        Text("초대 코드")
+        Text(L10n.tr("group_invite_code"))
           .font(MongleFont.captionBold())
           .foregroundColor(MongleColor.textSecondary)
 
@@ -54,7 +54,7 @@ extension GroupSelectView {
             codeCopied = true
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) { codeCopied = false }
           } label: {
-            Label(codeCopied ? "복사됨" : "복사", systemImage: codeCopied ? "checkmark" : "doc.on.doc")
+            Label(codeCopied ? L10n.tr("common_copied") : L10n.tr("common_copy"), systemImage: codeCopied ? "checkmark" : "doc.on.doc")
               .font(MongleFont.captionBold())
               .foregroundColor(codeCopied ? MongleColor.success : MongleColor.primary)
               .padding(.horizontal, MongleSpacing.sm)
@@ -72,7 +72,7 @@ extension GroupSelectView {
 
       // 초대 링크
       VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-        Text("초대 링크")
+        Text(L10n.tr("group_invite_link"))
           .font(MongleFont.captionBold())
           .foregroundColor(MongleColor.textSecondary)
 
@@ -90,7 +90,7 @@ extension GroupSelectView {
             linkCopied = true
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) { linkCopied = false }
           } label: {
-            Label(linkCopied ? "복사됨" : "복사", systemImage: linkCopied ? "checkmark" : "doc.on.doc")
+            Label(linkCopied ? L10n.tr("common_copied") : L10n.tr("common_copy"), systemImage: linkCopied ? "checkmark" : "doc.on.doc")
               .font(MongleFont.captionBold())
               .foregroundColor(linkCopied ? MongleColor.success : MongleColor.primary)
               .padding(.horizontal, MongleSpacing.sm)

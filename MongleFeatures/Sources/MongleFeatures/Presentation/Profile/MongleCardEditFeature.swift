@@ -54,6 +54,7 @@ public struct MongleCardEditFeature {
     }
 
     @Dependency(\.userRepository) var userRepository
+    @Dependency(\.dismiss) var dismiss
 
     public init() {}
 
@@ -61,7 +62,10 @@ public struct MongleCardEditFeature {
         Reduce { state, action in
             switch action {
             case .backTapped:
-                return .send(.delegate(.cancelled))
+                return .run { send in
+                    await send(.delegate(.cancelled))
+                    await dismiss()
+                }
 
             case .saveTapped:
                 guard state.isValid else { return .none }
@@ -100,7 +104,10 @@ public struct MongleCardEditFeature {
             case .saveCompleted(let user):
                 state.isSaving = false
                 state.user = user
-                return .send(.delegate(.saved(user)))
+                return .run { [dismiss] send in
+                    await send(.delegate(.saved(user)))
+                    await dismiss()
+                }
 
             case .saveFailed(let error):
                 state.isSaving = false

@@ -11,14 +11,14 @@ public struct GroupManagementFeature {
             public let id: UUID
             public let name: String
             public let subtitle: String
-            public let colorHex: String
+            public let moodId: String?
             public let isOwner: Bool
 
-            public init(id: UUID = UUID(), name: String, subtitle: String, colorHex: String, isOwner: Bool = false) {
+            public init(id: UUID = UUID(), name: String, subtitle: String, moodId: String? = nil, isOwner: Bool = false) {
                 self.id = id
                 self.name = name
                 self.subtitle = subtitle
-                self.colorHex = colorHex
+                self.moodId = moodId
                 self.isOwner = isOwner
             }
         }
@@ -38,6 +38,7 @@ public struct GroupManagementFeature {
         public var showTransferSheet: Bool = false
         public var selectedTransferMemberId: UUID? = nil
         public var showCopiedToast: Bool = false
+        public var errorMessage: String?
 
         public var isCurrentUserOwner: Bool {
             guard let currentUserId, let createdById = familyCreatedById else { return false }
@@ -70,12 +71,14 @@ public struct GroupManagementFeature {
         case transferMemberSelected(UUID)
         case confirmTransferAndLeave
         case dismissTransferSheet
+        case dismissError
         case closeTapped
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
             case close
             case groupLeft
+            case memberKicked
         }
     }
 
@@ -106,7 +109,7 @@ public struct GroupManagementFeature {
                 state.members = users.map { user in
                     let isOwner = user.id == state.familyCreatedById
                     let subtitle = isOwner ? "방장" : formatter.string(from: user.createdAt) + " 가입"
-                    return State.GroupMember(id: user.id, name: user.name, subtitle: subtitle, colorHex: "", isOwner: isOwner)
+                    return State.GroupMember(id: user.id, name: user.name, subtitle: subtitle, moodId: user.moodId, isOwner: isOwner)
                 }
                 return .none
 
@@ -185,11 +188,17 @@ public struct GroupManagementFeature {
                 }
                 state.kickTargetMember = nil
                 state.isKicking = false
-                return .none
+                return .send(.delegate(.memberKicked))
 
-            case .kickMemberFailure:
+            case .kickMemberFailure(let error):
                 state.kickTargetMember = nil
                 state.isKicking = false
+                state.isLeaving = false
+                state.errorMessage = error.userMessage
+                return .none
+
+            case .dismissError:
+                state.errorMessage = nil
                 return .none
 
             case .transferMemberSelected(let id):
@@ -201,9 +210,13 @@ public struct GroupManagementFeature {
                 state.showTransferSheet = false
                 state.isLeaving = true
                 return .run { [familyRepository] send in
-                    try? await familyRepository.transferCreator(newCreatorId: newCreatorId)
-                    try? await familyRepository.leaveFamily()
-                    await send(.delegate(.groupLeft))
+                    do {
+                        try await familyRepository.transferCreator(newCreatorId: newCreatorId)
+                        try await familyRepository.leaveFamily()
+                        await send(.delegate(.groupLeft))
+                    } catch {
+                        await send(.kickMemberFailure(AppError.from(error)))
+                    }
                 }
 
             case .dismissTransferSheet:

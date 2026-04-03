@@ -66,11 +66,11 @@ public struct NotificationFeature {
                     ($0.value.first?.createdAt ?? .distantPast) > ($1.value.first?.createdAt ?? .distantPast)
                 }
                 for (familyId, items) in sortedFamilies {
-                    let name = groupNameMap[familyId] ?? "기타 그룹"
+                    let name = groupNameMap[familyId] ?? L10n.tr("notif_date_older")
                     result.append((name, items.sorted { $0.createdAt > $1.createdAt }))
                 }
                 if !noFamily.isEmpty {
-                    result.append(("기타", noFamily.sorted { $0.createdAt > $1.createdAt }))
+                    result.append((L10n.tr("notif_date_older"), noFamily.sorted { $0.createdAt > $1.createdAt }))
                 }
                 return result
 
@@ -100,9 +100,9 @@ public struct NotificationFeature {
             }
 
             var result: [(String, [MongleNotification])] = []
-            if !todayItems.isEmpty { result.append(("오늘", todayItems)) }
-            if !thisWeekItems.isEmpty { result.append(("이번 주", thisWeekItems)) }
-            if !olderItems.isEmpty { result.append(("이전", olderItems)) }
+            if !todayItems.isEmpty { result.append((L10n.tr("notif_date_today"), todayItems)) }
+            if !thisWeekItems.isEmpty { result.append((L10n.tr("notif_date_this_week"), thisWeekItems)) }
+            if !olderItems.isEmpty { result.append((L10n.tr("notif_date_older"), olderItems)) }
             return result
         }
 
@@ -141,8 +141,8 @@ public struct NotificationFeature {
 
         public enum Delegate: Sendable, Equatable {
             case close
-            case navigateToQuestion
-            case navigateToGroup(UUID)
+            case navigateToQuestion(markAsReadId: UUID?)
+            case navigateToGroup(UUID, markAsReadId: UUID?)
             case navigateToPeerNotAnsweredNudge(String)
         }
     }
@@ -173,21 +173,28 @@ public struct NotificationFeature {
                 }
 
             case .notificationTapped(let notification):
-                // 읽음 처리 + 네비게이션 동시 처리
-                let navigateEffect: Effect<Action> = {
-                    switch state.mode {
-                    case .grouped:
-                        guard let familyId = notification.familyId else { return .none }
-                        return .send(.delegate(.navigateToGroup(familyId)))
-                    default:
-                        return .send(.delegate(.navigateToQuestion))
-                    }
-                }()
-
-                if notification.isRead {
-                    return navigateEffect
-                } else {
-                    return .merge(.send(.markAsRead(notification)), navigateEffect)
+                // Optimistic UI update
+                let markId: UUID? = notification.isRead ? nil : notification.id
+                if !notification.isRead,
+                   let index = state.notifications.firstIndex(where: { $0.id == notification.id }) {
+                    state.notifications[index] = MongleNotification(
+                        id: notification.id,
+                        userId: notification.userId,
+                        familyId: notification.familyId,
+                        type: notification.type,
+                        title: notification.title,
+                        body: notification.body,
+                        isRead: true,
+                        createdAt: notification.createdAt
+                    )
+                }
+                // API 호출은 부모(MainTab)에서 처리 — 이 scope가 pop되어도 취소되지 않도록
+                switch state.mode {
+                case .grouped:
+                    guard let familyId = notification.familyId else { return .none }
+                    return .send(.delegate(.navigateToGroup(familyId, markAsReadId: markId)))
+                default:
+                    return .send(.delegate(.navigateToQuestion(markAsReadId: markId)))
                 }
 
             case .markAsRead(let notification):

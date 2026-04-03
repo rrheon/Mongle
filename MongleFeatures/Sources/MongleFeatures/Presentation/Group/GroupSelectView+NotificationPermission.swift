@@ -18,21 +18,21 @@ extension GroupSelectView {
             .padding(.bottom, MongleSpacing.sm)
 
             VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-                Text("알림을 허용해 주세요 🔔")
+                Text(L10n.tr("perm_notif_title"))
                     .font(MongleFont.heading2())
                     .foregroundColor(MongleColor.textPrimary)
-                Text("가족의 소식을 놓치지 않을 수 있어요")
+                Text(L10n.tr("perm_notif_desc"))
                     .font(MongleFont.body2())
                     .foregroundColor(MongleColor.textSecondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
             VStack(alignment: .leading, spacing: 0) {
-                notifPermissionRow(icon: "bubble.left.fill", text: "맴버가 답변했을 때")
+                notifPermissionRow(icon: "bubble.left.fill", text: L10n.tr("perm_notif_answer"))
                 Divider().padding(.leading, 44)
-                notifPermissionRow(icon: "hand.tap.fill", text: "재촉 알림을 받았을 때")
+                notifPermissionRow(icon: "hand.tap.fill", text: L10n.tr("perm_notif_nudge"))
                 Divider().padding(.leading, 44)
-                notifPermissionRow(icon: "questionmark.circle.fill", text: "새 질문 알림")
+                notifPermissionRow(icon: "questionmark.circle.fill", text: L10n.tr("perm_notif_question"))
             }
             .monglePanel(
                 background: MongleColor.cardBackground,
@@ -70,10 +70,10 @@ extension GroupSelectView {
             .padding(.bottom, MongleSpacing.sm)
 
             VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-                Text("방해 금지 시간 🌙")
+                Text(L10n.tr("perm_dnd_title"))
                     .font(MongleFont.heading2())
                     .foregroundColor(MongleColor.textPrimary)
-                Text("취침 시간에는 알림을 받지 않아요")
+                Text(L10n.tr("perm_dnd_desc"))
                     .font(MongleFont.body2())
                     .foregroundColor(MongleColor.textSecondary)
             }
@@ -88,10 +88,10 @@ extension GroupSelectView {
                     .clipShape(Circle())
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("오후 10:00 - 오전 8:00")
+                    Text(L10n.tr("perm_dnd_time"))
                         .font(MongleFont.body2Bold())
                         .foregroundColor(MongleColor.textPrimary)
-                    Text("이 시간 동안은 알림이 전송되지 않아요")
+                    Text(L10n.tr("perm_dnd_hint"))
                         .font(MongleFont.caption())
                         .foregroundColor(MongleColor.textSecondary)
                 }

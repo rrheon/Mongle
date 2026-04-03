@@ -54,9 +54,9 @@ struct MainTabView: View {
                             foregroundColor: .red,
                             backgroundColor: Color.red.opacity(0.12)
                         ),
-                        title: "하트 +1",
-                        description: "오늘의 질문에 답변하셨네요!\n하트 1개를 드렸어요 ❤️",
-                        primaryLabel: "확인",
+                        title: L10n.tr("heart_cost", 1),
+                        description: L10n.tr("toast_answer"),
+                        primaryLabel: L10n.tr("common_confirm"),
                         onPrimary: { store.send(.dismissAnswerHeartPopup) }
                     )
                     .transition(.identity)
@@ -109,6 +109,8 @@ struct MainTabView: View {
                     .navigationBarBackButtonHidden(true)
             }
         }
+        .toolbarBackground(Color.white, for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
         .tabItem { Label("HOME", systemImage: "house") }
         .tag(MainTabFeature.State.Tab.home)
     }
@@ -130,7 +132,7 @@ struct MainTabView: View {
         case "loved":  return MongleColor.mongglePink
         case "sad":    return MongleColor.monggleBlue
         case "tired":  return MongleColor.monggleOrange
-        default:       return monggleColors[index % monggleColors.count]
+        default:       return MongleColor.mongglePink
         }
     }
 
@@ -150,11 +152,13 @@ struct MainTabView: View {
         return HomeView(
             topBarState: HomeTopBarState(
                 streakDays: store.home.streakDays,
-                groupName: store.home.family?.name ?? "우리 가족",
+                groupName: store.home.family?.name ?? L10n.tr("home_default_group"),
                 hasNotification: store.home.hasUnreadNotifications,
                 hearts: store.home.hearts,
                 todayQuestion: store.home.todayQuestion.map {
                     TopBarQuestion(id: $0.id, text: $0.content, isAnswered: store.home.hasAnsweredToday)
+                } ?? store.home.yesterdayQuestion.map {
+                    TopBarQuestion(id: $0.id, text: $0.content, isAnswered: store.home.hasAnsweredYesterday)
                 },
                 allFamilies: store.home.allFamilies
             ),
@@ -190,10 +194,10 @@ struct MainTabView: View {
                         foregroundColor: MongleColor.primary,
                         backgroundColor: MongleColor.primaryLight
                     ),
-                    title: "로그인이 필요해요",
-                    description: "이 기능을 이용하려면 로그인이 필요해요.",
-                    primaryLabel: "로그인하기",
-                    secondaryLabel: "취소",
+                    title: L10n.tr("settings_login_required"),
+                    description: L10n.tr("settings_login_required_desc"),
+                    primaryLabel: L10n.tr("settings_login_btn"),
+                    secondaryLabel: L10n.tr("common_cancel"),
                     onPrimary: { store.send(.home(.guestLoginTapped)) },
                     onSecondary: { store.send(.home(.guestLoginDismissed)) }
                 )

@@ -35,26 +35,33 @@ public struct NotificationView: View {
     }
 
     private var headerView: some View {
-        MongleNavigationHeader(title: "알림") {
-            MongleBackButton { store.send(.backTapped) }
-        } right: {
+        VStack(spacing: 0) {
+            MongleNavigationHeader(title: L10n.tr("notif_title")) {
+                MongleBackButton { store.send(.backTapped) }
+            } right: {
+                EmptyView()
+            }
+
             if !store.notifications.isEmpty {
                 HStack(spacing: MongleSpacing.md) {
+                    Spacer()
+
                     Button { store.send(.markAllAsRead) } label: {
-                        Text("모두 읽음")
+                        Text(L10n.tr("notif_mark_all_read"))
                             .font(MongleFont.captionBold())
                             .foregroundColor(MongleColor.textSecondary)
                     }
                     .buttonStyle(MongleScaleButtonStyle())
 
                     Button { store.send(.deleteAll) } label: {
-                        Text("모두 제거")
+                        Text(L10n.tr("notif_delete_all"))
                             .font(MongleFont.captionBold())
                             .foregroundColor(MongleColor.error)
                     }
                     .buttonStyle(MongleScaleButtonStyle())
                 }
-                .padding(.trailing, MongleSpacing.xs)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 8)
             }
         }
     }
@@ -98,7 +105,7 @@ public struct NotificationView: View {
             ProgressView()
                 .scaleEffect(1.2)
 
-            Text("알림을 불러오는 중...")
+            Text(L10n.tr("notif_loading"))
                 .font(MongleFont.body2())
                 .foregroundColor(MongleColor.textSecondary)
         }
@@ -111,11 +118,11 @@ public struct NotificationView: View {
                 .font(.system(size: 56))
                 .foregroundColor(MongleColor.textHint)
 
-            Text("알림이 없어요")
+            Text(L10n.tr("notif_empty_title"))
                 .font(MongleFont.heading3())
                 .foregroundColor(MongleColor.textPrimary)
 
-            Text("새로운 소식이 오면 알려드릴게요")
+            Text(L10n.tr("notif_empty_desc"))
                 .font(MongleFont.body2())
                 .foregroundColor(MongleColor.textSecondary)
         }
@@ -158,7 +165,7 @@ private struct NotificationCard: View {
         .buttonStyle(.plain)
         .swipeActions(edge: .trailing) {
             Button(role: .destructive, action: onDelete) {
-                Label("삭제", systemImage: "trash")
+                Label(L10n.tr("common_delete"), systemImage: "trash")
             }
         }
     }

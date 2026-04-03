@@ -19,6 +19,7 @@ private struct MongleErrorToastModifier: ViewModifier {
             .task(id: error) {
                 guard error != nil else { return }
                 try? await Task.sleep(for: .seconds(3))
+                guard !Task.isCancelled else { return }
                 onDismiss()
             }
     }
@@ -73,7 +74,7 @@ public struct MongleErrorFullscreen: View {
                 Button(action: onRetry) {
                     HStack(spacing: 6) {
                         Image(systemName: "arrow.clockwise")
-                        Text("다시 시도")
+                        Text(L10n.tr("common_retry"))
                     }
                     .font(MongleFont.body2Bold())
                     .foregroundColor(.white)

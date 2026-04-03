@@ -26,14 +26,14 @@ public struct NotificationSettingsFeature {
         public init() {
             let ud = UserDefaults.standard
             self.notificationItems = [
-                .init(id: "r1", title: "맴버가 답변했을 때", subtitle: "그룹내 맴버가 오늘의 질문에 답변하면 알림",
+                .init(id: "r1", title: L10n.tr("notif_settings_answer_desc"), subtitle: L10n.tr("notif_settings_answer_detail"),
                       isOn: ud.object(forKey: "notification.r1") as? Bool ?? true),
-                .init(id: "r3", title: "재촉 알림을 받았을 때", subtitle: "맴버에게 답변 재촉 알림을 받으면 알림",
+                .init(id: "r3", title: L10n.tr("notif_settings_nudge_desc"), subtitle: L10n.tr("notif_settings_nudge_detail"),
                       isOn: ud.object(forKey: "notification.r3") as? Bool ?? true),
-                .init(id: "r5", title: "새 질문 알림", subtitle: "매일 오전 새 질문이 등록되면 알림",
+                .init(id: "r5", title: L10n.tr("notif_settings_question_desc"), subtitle: L10n.tr("notif_settings_question_detail"),
                       isOn: ud.object(forKey: "notification.r5") as? Bool ?? true),
             ]
-            self.quietHours = "오후 10:00 - 오전 8:00"
+            self.quietHours = L10n.tr("perm_dnd_time")
             self.quietHoursEnabled = ud.object(forKey: "notification.quietHours") as? Bool ?? true
         }
     }

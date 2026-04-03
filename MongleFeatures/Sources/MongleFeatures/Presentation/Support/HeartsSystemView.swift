@@ -13,8 +13,8 @@ public struct HeartsSystemView: View {
             VStack(spacing: MongleSpacing.md) {
                 infoStrip(
                     icon: "heart.text.square.fill",
-                    title: "하트는 관계를 움직이는 작은 자원이에요",
-                    description: "재촉, 질문 교체 같은 행동에만 제한적으로 사용돼요."
+                    title: L10n.tr("heart_info_title"),
+                    description: L10n.tr("heart_info_desc")
                 )
 
                 VStack(alignment: .leading, spacing: MongleSpacing.md) {
@@ -32,7 +32,7 @@ public struct HeartsSystemView: View {
                             Text("\(store.heartBalance)")
                                 .font(MongleFont.heading1())
                                 .foregroundColor(.white)
-                            Text("보유 중인 하트")
+                            Text(L10n.tr("heart_title"))
                                 .font(MongleFont.body2())
                                 .foregroundColor(.white.opacity(0.85))
                         }

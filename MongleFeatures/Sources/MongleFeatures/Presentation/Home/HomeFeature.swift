@@ -16,6 +16,9 @@ public struct HomeFeature {
     @ObservableState
     public struct State: Equatable {
         public var todayQuestion: Question?
+        /// 오전 11시 이전에 표시할 어제 질문 (답변 수정 가능)
+        public var yesterdayQuestion: Question?
+        public var hasAnsweredYesterday: Bool = false
         public var family: MongleGroup?
         public var familyMembers: [User] = []
         public var currentUser: User?
@@ -40,6 +43,8 @@ public struct HomeFeature {
 
         public init(
             todayQuestion: Question? = nil,
+            yesterdayQuestion: Question? = nil,
+            hasAnsweredYesterday: Bool = false,
             family: MongleGroup? = nil,
             familyMembers: [User] = [],
             currentUser: User? = nil,
@@ -57,6 +62,8 @@ public struct HomeFeature {
             hasUnreadNotifications: Bool = false
         ) {
             self.todayQuestion = todayQuestion
+            self.yesterdayQuestion = yesterdayQuestion
+            self.hasAnsweredYesterday = hasAnsweredYesterday
             self.family = family
             self.familyMembers = familyMembers
             self.currentUser = currentUser
@@ -135,8 +142,8 @@ public struct HomeFeature {
                         state.showNotificationPermission = true
                     }
                 }
-                // 데이터가 없으면 로딩 요청
-                if state.todayQuestion == nil && !state.isLoading {
+                // 오늘·어제 질문 모두 없을 때만 로딩 요청
+                if state.todayQuestion == nil && state.yesterdayQuestion == nil && !state.isLoading {
                     state.isLoading = true
                     return .send(.delegate(.requestRefresh))
                 }
@@ -147,7 +154,9 @@ public struct HomeFeature {
                     state.showGuestLoginPrompt = true
                     return .none
                 }
-                guard let question = state.todayQuestion else { return .none }
+                // 오늘 질문 없으면(오전 11시 이전) 어제 질문으로 시트 표시
+                let activeQuestion = state.todayQuestion ?? state.yesterdayQuestion
+                guard let question = activeQuestion else { return .none }
                 return .send(.delegate(.showQuestionSheet(question)))
 
             case .notificationTapped:
@@ -165,11 +174,14 @@ public struct HomeFeature {
                     state.showGuestLoginPrompt = true
                     return .none
                 }
-                if state.hasAnsweredToday {
+                // 오전 11시 이전이면 어제 질문 기준으로 판단
+                let activeQuestion = state.todayQuestion ?? state.yesterdayQuestion
+                let hasAnswered = state.todayQuestion != nil ? state.hasAnsweredToday : state.hasAnsweredYesterday
+                if hasAnswered {
                     return .send(.delegate(.navigateToMyAnswer))
                 } else {
                     // 패스한 경우에도 질문 시트를 보여줌 (답변 가능 + 다른 사람 답변 열람 가능)
-                    guard let question = state.todayQuestion else { return .none }
+                    guard let question = activeQuestion else { return .none }
                     return .send(.delegate(.showQuestionSheet(question)))
                 }
 

@@ -23,15 +23,18 @@ public struct MongleNavigationHeader<Left: View, Right: View>: View {
   
   public var body: some View {
     ZStack {
+      // 타이틀: 좌우 버튼 크기와 무관하게 정중앙 배치
       if !title.isEmpty {
         Text(title)
           .font(MongleFont.heading3())
           .foregroundColor(MongleColor.textPrimary)
+          .lineLimit(1)
       }
-      
+
+      // 좌우 버튼
       HStack(spacing: 0) {
         leftContent
-        Spacer()
+        Spacer(minLength: 0)
         rightContent
       }
     }

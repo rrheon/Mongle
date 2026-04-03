@@ -30,10 +30,10 @@ public struct AccountManagementView: View {
         .overlay {
             if store.showLogoutConfirm {
                 MonglePopupView(
-                    title: "로그아웃",
-                    description: "정말 로그아웃할까요?",
-                    primaryLabel: "로그아웃",
-                    secondaryLabel: "취소",
+                    title: L10n.tr("settings_logout"),
+                    description: L10n.tr("settings_logout_confirm"),
+                    primaryLabel: L10n.tr("settings_logout"),
+                    secondaryLabel: L10n.tr("common_cancel"),
                     onPrimary: { store.send(.logoutConfirmed) },
                     onSecondary: { store.send(.alertDismissed) }
                 )
@@ -42,10 +42,10 @@ public struct AccountManagementView: View {
             }
             if store.showDeleteConfirm {
                 MonglePopupView(
-                    title: "계정 탈퇴",
-                    description: "탈퇴하면 모든 데이터가 삭제돼요.\n이 작업은 되돌릴 수 없어요.",
-                    primaryLabel: "탈퇴하기",
-                    secondaryLabel: "취소",
+                    title: L10n.tr("settings_delete_account"),
+                    description: L10n.tr("settings_delete_confirm"),
+                    primaryLabel: L10n.tr("settings_delete_btn"),
+                    secondaryLabel: L10n.tr("common_cancel"),
                     isDestructive: true,
                     onPrimary: { store.send(.deleteAccountConfirmed) },
                     onSecondary: { store.send(.alertDismissed) }
@@ -59,7 +59,7 @@ public struct AccountManagementView: View {
     // MARK: - Header
 
     private var header: some View {
-        MongleNavigationHeader(title: "계정 관리") {
+        MongleNavigationHeader(title: L10n.tr("settings_account")) {
             MongleBackButton { store.send(.backTapped) }
         } right: {
             EmptyView()
@@ -70,7 +70,7 @@ public struct AccountManagementView: View {
 
     private var accountSection: some View {
         VStack(alignment: .leading, spacing: MongleSpacing.sm) {
-            Text("계정")
+            Text(L10n.tr("settings_account"))
                 .font(MongleFont.captionBold())
                 .foregroundColor(MongleColor.textSecondary)
                 .padding(.horizontal, MongleSpacing.xxs)
@@ -80,8 +80,8 @@ public struct AccountManagementView: View {
                     icon: "arrow.right.square.fill",
                     iconColor: MongleColor.bgMintLight,
                     iconBackground: MongleColor.primaryLight,
-                    title: "로그아웃",
-                    subtitle: "기기에서 로그아웃해요"
+                    title: L10n.tr("settings_logout"),
+                    subtitle: L10n.tr("settings_logout_desc")
                 ) {
                     store.send(.logoutTapped)
                 }
@@ -90,8 +90,8 @@ public struct AccountManagementView: View {
                   icon: "trash.fill",
                   iconColor: MongleColor.bgMintLight,
                   iconBackground: MongleColor.primaryLight,
-                  title: "계정 탈퇴",
-                  subtitle: "모든 데이터가 삭제되며 복구할 수 없어요"
+                  title: L10n.tr("settings_delete_account"),
+                  subtitle: L10n.tr("settings_delete_account_desc")
               ) {
                   store.send(.deleteAccountTapped)
               }

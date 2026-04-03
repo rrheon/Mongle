@@ -6,11 +6,11 @@ import ComposableArchitecture
 extension GroupSelectView {
 
   static let colorOptions: [(id: String, color: Color, label: String)] = [
-    ("calm",  MongleColor.monggleGreen,  "초록"),
-    ("happy", MongleColor.monggleYellow, "노랑"),
-    ("loved", MongleColor.mongglePink,   "분홍"),
-    ("sad",   MongleColor.monggleBlue,   "파랑"),
-    ("tired", MongleColor.monggleOrange, "주황"),
+    ("calm",  MongleColor.monggleGreen,  L10n.tr("group_color_green")),
+    ("happy", MongleColor.monggleYellow, L10n.tr("group_color_yellow")),
+    ("loved", MongleColor.mongglePink,   L10n.tr("group_color_pink")),
+    ("sad",   MongleColor.monggleBlue,   L10n.tr("group_color_blue")),
+    ("tired", MongleColor.monggleOrange, L10n.tr("group_color_orange")),
   ]
 
   // MARK: - Create Group View
@@ -31,10 +31,10 @@ extension GroupSelectView {
       MongleLogo(size: .large, type: .MongleLogo)
 
       VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-        Text("우리만의 몽글 공간을 만들어요")
+        Text(L10n.tr("group_create_headline"))
           .font(MongleFont.heading2())
           .foregroundColor(MongleColor.textPrimary)
-        Text("가족이나 친구와 함께 마음을 나눠보세요")
+        Text(L10n.tr("group_create_subtitle"))
           .font(MongleFont.body2())
           .foregroundColor(MongleColor.textSecondary)
       }
@@ -43,7 +43,7 @@ extension GroupSelectView {
       // 공간 이름 필드
       VStack(alignment: .leading, spacing: MongleSpacing.xs) {
         HStack {
-          Text("공간 이름")
+          Text(L10n.tr("group_name_label"))
             .font(MongleFont.captionBold())
             .foregroundColor(MongleColor.textSecondary)
           Spacer()
@@ -56,8 +56,13 @@ extension GroupSelectView {
           Image(systemName: "house")
             .font(.system(size: 16))
             .foregroundColor(MongleColor.textHint)
-          TextField("김씨네 가족", text: $store.groupName.sending(\.groupNameChanged))
+          TextField(
+              "",
+              text: $store.groupName.sending(\.groupNameChanged),
+              prompt: Text(L10n.tr("group_name_placeholder")).foregroundColor(MongleColor.textHint)
+            )
             .font(MongleFont.body2())
+            .foregroundColor(MongleColor.textPrimary)
             .focused($createGroupFocus, equals: .groupName)
         }
         .padding(MongleSpacing.md)
@@ -74,11 +79,11 @@ extension GroupSelectView {
         )
 
         if store.groupNameError {
-          Text("공간 이름을 입력해주세요")
+          Text(L10n.tr("group_name_error"))
             .font(MongleFont.caption())
             .foregroundColor(MongleColor.error)
         } else {
-          Text("가족, 친한 친구, 커플 등 자유롭게! (최대 10자)")
+          Text(L10n.tr("group_name_hint"))
             .font(MongleFont.caption())
             .foregroundColor(MongleColor.textHint)
         }
@@ -86,7 +91,7 @@ extension GroupSelectView {
 
       // 닉네임 필드
       VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-        Text("내 닉네임")
+        Text(L10n.tr("group_nickname_label"))
           .font(MongleFont.captionBold())
           .foregroundColor(MongleColor.textSecondary)
 
@@ -94,8 +99,13 @@ extension GroupSelectView {
           Image(systemName: "person")
             .font(.system(size: 16))
             .foregroundColor(MongleColor.textHint)
-          TextField("엄마", text: $store.nickname.sending(\.nicknameChanged))
+          TextField(
+              "",
+              text: $store.nickname.sending(\.nicknameChanged),
+              prompt: Text(L10n.tr("group_nickname_placeholder")).foregroundColor(MongleColor.textHint)
+            )
             .font(MongleFont.body2())
+            .foregroundColor(MongleColor.textPrimary)
             .focused($createGroupFocus, equals: .nickname)
         }
         .padding(MongleSpacing.md)
@@ -112,11 +122,11 @@ extension GroupSelectView {
         )
 
         if store.nicknameError {
-          Text("닉네임을 입력해주세요")
+          Text(L10n.tr("group_nickname_error"))
             .font(MongleFont.caption())
             .foregroundColor(MongleColor.error)
         } else {
-          Text("다른 멤버에게 보여지는 이름이에요")
+          Text(L10n.tr("group_nickname_hint"))
             .font(MongleFont.caption())
             .foregroundColor(MongleColor.textHint)
         }
@@ -131,7 +141,7 @@ extension GroupSelectView {
   @ViewBuilder
   func monggleColorPicker() -> some View {
     VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-      Text("내 몽글 색상")
+      Text(L10n.tr("group_color_label"))
         .font(MongleFont.captionBold())
         .foregroundColor(MongleColor.textSecondary)
 
@@ -156,7 +166,7 @@ extension GroupSelectView {
         Spacer()
       }
 
-      Text("다른 멤버에게 보여지는 몽글 캐릭터 색상이에요")
+      Text(L10n.tr("group_color_hint"))
         .font(MongleFont.caption())
         .foregroundColor(MongleColor.textHint)
     }

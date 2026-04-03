@@ -43,7 +43,7 @@ extension GroupSelectView {
           .frame(maxWidth: .infinity, alignment: .center)
           .padding(.vertical, MongleSpacing.md)
       } else if store.groups.isEmpty {
-        Text("참여 중인 그룹이 없어요.\n새 공간을 만들거나 초대코드로 참여해보세요.")
+        Text(L10n.tr("group_empty"))
           .font(MongleFont.body2())
           .foregroundColor(MongleColor.textSecondary)
           .multilineTextAlignment(.center)
@@ -61,7 +61,7 @@ extension GroupSelectView {
               Button(role: .destructive) {
                 store.send(.leaveGroupTapped(group))
               } label: {
-                Label("그룹 나가기", systemImage: "rectangle.portrait.and.arrow.right")
+                Label(L10n.tr("group_leave"), systemImage: "rectangle.portrait.and.arrow.right")
               }
             }
           }
@@ -78,9 +78,9 @@ extension GroupSelectView {
             foregroundColor: MongleColor.accentOrange,
             backgroundColor: MongleColor.bgWarm
           ),
-          title: "그룹 한도 초과",
-          description: "그룹은 최대 3개까지 참여할 수 있어요.",
-          primaryLabel: "확인",
+          title: L10n.tr("group_max_title"),
+          description: L10n.tr("group_max_desc"),
+          primaryLabel: L10n.tr("common_confirm"),
           onPrimary: { store.send(.dismissMaxGroupsAlert) }
         )
         .transition(.opacity)
@@ -88,10 +88,10 @@ extension GroupSelectView {
       }
       if store.showLeaveConfirmation {
         MonglePopupView(
-          title: "그룹 나가기",
-          description: "\(store.groupToLeave?.name ?? "그룹")에서 나가시겠어요?\n그룹 관련 데이터가 삭제되지만 작성한 답변은 유지됩니다.",
-          primaryLabel: "나가기",
-          secondaryLabel: "취소",
+          title: L10n.tr("group_leave_title"),
+          description: L10n.tr("group_leave_desc", store.groupToLeave?.name ?? L10n.tr("app_name")),
+          primaryLabel: L10n.tr("group_leave_btn"),
+          secondaryLabel: L10n.tr("common_cancel"),
           isDestructive: true,
           onPrimary: { store.send(.confirmLeave) },
           onSecondary: { store.send(.cancelLeaveConfirmation) }
@@ -106,22 +106,20 @@ extension GroupSelectView {
             foregroundColor: MongleColor.primary,
             backgroundColor: MongleColor.primaryLight
           ),
-          title: "그룹 해제 불가",
+          title: L10n.tr("group_disband_error"),
           description: store.leaveTooSoonMessage,
-          primaryLabel: "확인",
+          primaryLabel: L10n.tr("common_confirm"),
           onPrimary: { store.send(.dismissLeaveTooSoonAlert) }
         )
         .transition(.opacity)
         .animation(.easeInOut(duration: 0.2), value: store.showLeaveTooSoonAlert)
       }
     }
-    .sheet(isPresented: Binding(
+    .navigationDestination(isPresented: Binding(
       get: { store.showTransferSheet },
       set: { if !$0 { store.send(.dismissTransferSheet) } }
     )) {
-      transferCreatorSheet
-        .presentationDetents([.medium])
-        .presentationDragIndicator(.visible)
+      transferCreatorView
     }
   }
 
@@ -137,10 +135,10 @@ extension GroupSelectView {
         .clipShape(Circle())
 
       VStack(alignment: .leading, spacing: 2) {
-        Text("새 공간 만들기")
+        Text(L10n.tr("group_create"))
           .font(MongleFont.body2Bold())
           .foregroundColor(MongleColor.textPrimary)
-        Text("초대코드로 참여하기")
+        Text(L10n.tr("group_join"))
           .font(MongleFont.caption())
           .foregroundColor(MongleColor.textSecondary)
       }
@@ -161,7 +159,7 @@ extension GroupSelectView {
 
   var actionSheetContent: some View {
     VStack(alignment: .leading, spacing: 0) {
-      Text("무엇을 하시겠어요?")
+      Text(L10n.tr("group_what_to_do"))
         .font(MongleFont.body1Bold())
         .foregroundColor(MongleColor.textPrimary)
         .padding(.horizontal, MongleSpacing.lg)
@@ -172,8 +170,8 @@ extension GroupSelectView {
         actionSheetRow(
           icon: "sparkles",
           iconColor: MongleColor.primary,
-          title: "새 공간 만들기",
-          subtitle: "우리만의 공간을 직접 만들어요"
+          title: L10n.tr("group_create"),
+          subtitle: L10n.tr("group_create_desc")
         ) {
           store.send(.actionSheetNewSpaceTapped)
         }
@@ -183,8 +181,8 @@ extension GroupSelectView {
         actionSheetRow(
           icon: "person.badge.key",
           iconColor: MongleColor.primary,
-          title: "초대코드로 참여하기",
-          subtitle: "받은 초대코드로 참여하세요"
+          title: L10n.tr("group_join"),
+          subtitle: L10n.tr("group_join_desc")
         ) {
           store.send(.actionSheetJoinSpaceTapped)
         }
@@ -235,78 +233,73 @@ extension GroupSelectView {
     .buttonStyle(.plain)
   }
 
-  // MARK: - Transfer Creator Sheet
+  // MARK: - Transfer Creator View (Push)
 
-  var transferCreatorSheet: some View {
-    VStack(alignment: .leading, spacing: 0) {
-      VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-        Text("방장 위임")
-          .font(MongleFont.body1Bold())
-          .foregroundColor(MongleColor.textPrimary)
-        Text("그룹을 나가기 전에 방장을 위임할 멤버를 선택해주세요.")
+  var transferCreatorView: some View {
+    VStack(spacing: 0) {
+      MongleNavigationHeader(title: L10n.tr("mgmt_transfer_title")) {
+        MongleBackButton { store.send(.dismissTransferSheet) }
+      } right: {
+        EmptyView()
+      }
+
+      VStack(spacing: MongleSpacing.md) {
+        Text(L10n.tr("mgmt_transfer_desc"))
           .font(MongleFont.body2())
           .foregroundColor(MongleColor.textSecondary)
-          .lineSpacing(3)
-      }
-      .padding(.horizontal, MongleSpacing.lg)
-      .padding(.top, MongleSpacing.lg)
-      .padding(.bottom, MongleSpacing.md)
+          .multilineTextAlignment(.center)
+          .padding(.horizontal, MongleSpacing.md)
+          .padding(.top, MongleSpacing.md)
 
-      ScrollView(showsIndicators: false) {
-        VStack(spacing: 0) {
-          ForEach(store.transferCandidates, id: \.id) { member in
-            let isSelected = store.selectedTransferMemberId == member.id
-            Button {
-              store.send(.transferMemberSelected(member.id))
-            } label: {
-              HStack(spacing: MongleSpacing.md) {
-                Circle()
-                  .fill(MongleColor.primaryLight)
-                  .frame(width: 40, height: 40)
-                  .overlay(
-                    Text(String(member.name.prefix(1)))
-                      .font(MongleFont.body2Bold())
+        ScrollView(showsIndicators: false) {
+          VStack(spacing: 0) {
+            ForEach(store.transferCandidates, id: \.id) { member in
+              let isSelected = store.selectedTransferMemberId == member.id
+              Button {
+                store.send(.transferMemberSelected(member.id))
+              } label: {
+                HStack(spacing: MongleSpacing.md) {
+                  Circle()
+                    .fill(MongleColor.primaryLight)
+                    .frame(width: 40, height: 40)
+                    .overlay(
+                      Text(String(member.name.prefix(1)))
+                        .font(MongleFont.body2Bold())
+                        .foregroundColor(MongleColor.primary)
+                    )
+
+                  Text(member.name)
+                    .font(MongleFont.body2())
+                    .foregroundColor(MongleColor.textPrimary)
+
+                  Spacer()
+
+                  if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
                       .foregroundColor(MongleColor.primary)
-                  )
-
-                Text(member.name)
-                  .font(MongleFont.body2())
-                  .foregroundColor(MongleColor.textPrimary)
-
-                Spacer()
-
-                if isSelected {
-                  Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(MongleColor.primary)
+                  }
                 }
+                .padding(.horizontal, MongleSpacing.lg)
+                .padding(.vertical, MongleSpacing.md)
+                .background(isSelected ? MongleColor.primaryLight.opacity(0.3) : Color.clear)
+                .contentShape(Rectangle())
               }
-              .padding(.horizontal, MongleSpacing.lg)
-              .padding(.vertical, MongleSpacing.md)
-              .background(isSelected ? MongleColor.primaryLight.opacity(0.3) : Color.clear)
-              .contentShape(Rectangle())
+              .buttonStyle(.plain)
+              Divider().padding(.leading, MongleSpacing.lg + 40 + MongleSpacing.md)
             }
-            .buttonStyle(.plain)
-            Divider().padding(.leading, MongleSpacing.lg + 40 + MongleSpacing.md)
           }
         }
-      }
 
-      VStack(spacing: MongleSpacing.sm) {
-        MongleButtonPrimary("위임하고 나가기") {
+        MongleButtonPrimary(L10n.tr("mgmt_transfer_btn")) {
           store.send(.confirmTransferAndLeave)
         }
         .disabled(store.selectedTransferMemberId == nil)
         .opacity(store.selectedTransferMemberId == nil ? 0.5 : 1)
-
-        Button("취소") {
-          store.send(.dismissTransferSheet)
-        }
-        .font(MongleFont.body2())
-        .foregroundColor(MongleColor.textSecondary)
+        .padding(.horizontal, MongleSpacing.md)
+        .padding(.bottom, MongleSpacing.md)
       }
-      .padding(.horizontal, MongleSpacing.md)
-      .padding(.vertical, MongleSpacing.md)
     }
     .background(MongleColor.background)
+    .toolbar(.hidden, for: .navigationBar)
   }
 }

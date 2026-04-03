@@ -12,19 +12,12 @@ struct SocialLoginButton: View {
         case kakao
         case apple
         case google
-        case naver
-
-        private static var isKorean: Bool {
-            Locale.current.language.languageCode?.identifier == "ko"
-        }
 
         var title: String {
-            let korean = Provider.isKorean
             switch self {
-            case .kakao:  return korean ? "카카오톡으로 계속하기" : "Continue with KakaoTalk"
-            case .apple:  return korean ? "Apple로 계속하기"     : "Continue with Apple"
-            case .google: return korean ? "Google로 계속하기"    : "Continue with Google"
-            case .naver:  return korean ? "네이버로 계속하기"    : "Continue with Naver"
+            case .kakao:  return L10n.tr("login_kakao")
+            case .apple:  return L10n.tr("login_apple")
+            case .google: return L10n.tr("login_google")
             }
         }
 
@@ -75,11 +68,6 @@ struct SocialLoginButton: View {
                 .foregroundColor(foregroundColor)
         case .google:
             GoogleLogoIcon(size: 20)
-        case .naver:
-            Image("naver_icon")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 20, height: 20)
         }
     }
 
@@ -99,7 +87,6 @@ struct SocialLoginButton: View {
         case .kakao:  return MongleColor.kakao
         case .apple:  return MongleColor.apple
         case .google: return .white
-        case .naver:  return MongleColor.naver
         }
     }
 
@@ -108,7 +95,6 @@ struct SocialLoginButton: View {
         case .kakao:  return Color.black.opacity(0.85)
         case .apple:  return MongleColor.appleText
         case .google: return MongleColor.textPrimary
-        case .naver:  return MongleColor.naverText
         }
     }
 }
@@ -237,7 +223,6 @@ private struct GoogleLogoIcon: View {
         SocialLoginButton(provider: .kakao)  {}
         SocialLoginButton(provider: .apple)  {}
         SocialLoginButton(provider: .google) {}
-        SocialLoginButton(provider: .naver)  {}
     }
     .padding()
 }

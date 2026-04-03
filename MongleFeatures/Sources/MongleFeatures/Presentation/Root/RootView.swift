@@ -11,6 +11,7 @@ import Domain
 
 public struct RootView: View {
     @Bindable var store: StoreOf<RootFeature>
+    @Environment(\.scenePhase) private var scenePhase
 
     public init(store: StoreOf<RootFeature>) {
         self.store = store
@@ -45,6 +46,11 @@ public struct RootView: View {
         .onAppear {
             store.send(.onAppear)
         }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active && store.appState == .authenticated {
+                store.send(.refreshHomeData)
+            }
+        }
         .overlay {
             if store.showHeartGrantedPopup && store.appState == .authenticated {
                 MonglePopupView(
@@ -53,9 +59,9 @@ public struct RootView: View {
                         foregroundColor: .red,
                         backgroundColor: Color.red.opacity(0.12)
                     ),
-                    title: "하트 +1",
-                    description: "오늘 처음 접속하셨네요!\n하트 1개를 드렸어요 ❤️",
-                    primaryLabel: "확인",
+                    title: L10n.tr("heart_granted_title"),
+                    description: L10n.tr("heart_granted_desc"),
+                    primaryLabel: L10n.tr("common_confirm"),
                     onPrimary: { store.send(.dismissHeartPopup) }
                 )
                 .transition(.identity)
@@ -77,9 +83,11 @@ public struct RootView: View {
         if url.scheme == "monggle", url.host == "join" {
             return url.pathComponents.dropFirst().first?.uppercased()
         }
-        // Handle https://monggle.app/join/{code}
-        if url.host == "monggle.app", url.pathComponents.count >= 3,
-           url.pathComponents[1] == "join" {
+        // Handle https://mongle.app/invite/{code} 또는 https://monggle.app/join/{code}
+        let host = url.host?.lowercased() ?? ""
+        if host == "mongle.app" || host == "monggle.app",
+           url.pathComponents.count >= 3,
+           url.pathComponents[1] == "invite" || url.pathComponents[1] == "join" {
             return url.pathComponents[2].uppercased()
         }
         return nil

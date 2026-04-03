@@ -163,10 +163,10 @@ struct HomeView: View {
                         foregroundColor: MongleColor.primary,
                         backgroundColor: MongleColor.primaryLight
                     ),
-                    title: "알림을 허용해 주세요",
-                    description: "가족의 소식을 놓치지 않을 수 있어요.",
-                    primaryLabel: "허용하기",
-                    secondaryLabel: "나중에",
+                    title: L10n.tr("perm_notif_title"),
+                    description: L10n.tr("perm_notif_desc"),
+                    primaryLabel: L10n.tr("perm_notif_allow"),
+                    secondaryLabel: L10n.tr("perm_notif_later"),
                     onPrimary: { actions.onNotificationPermissionAllowed() },
                     onSecondary: { actions.onNotificationPermissionSkipped() }
                 )
@@ -181,8 +181,8 @@ struct HomeView: View {
 struct TopBarView: View {
   let state: HomeTopBarState
   @Binding var showGroupDropdown: Bool
-  var onQuestionTap: () -> Void = { print("질문 카드 탭") }
-  var onNotificationTap: () -> Void = { print("알림 탭") }
+  var onQuestionTap: () -> Void = {}
+  var onNotificationTap: () -> Void = {}
   var onHeartsTap: () -> Void = {}
 
   var body: some View {
@@ -196,11 +196,11 @@ struct TopBarView: View {
           .padding(.horizontal, 20)
           .padding(.top, 12)
           .padding(.bottom, 8)
-      } else if isBeforeNoon {
-        // 오전에는 비활성 안내 카드 표시 (탭 불가)
+      } else if isBeforeQuestionTime {
+        // 오전 11시 이전, 어제 질문도 없는 경우 안내 카드 표시 (탭 불가)
         let placeholder = TopBarQuestion(
           id: UUID(),
-          text: "오후 12시에 다시 질문을 받을 수 있어요",
+          text: L10n.tr("home_question_placeholder"),
           isAnswered: false
         )
         TodayQuestionCard(question: placeholder, onTap: nil)
@@ -211,10 +211,10 @@ struct TopBarView: View {
     }
   }
 
-  private var isBeforeNoon: Bool {
+  private var isBeforeQuestionTime: Bool {
     let cal = Calendar.current
-    let noon = cal.date(bySettingHour: 12, minute: 0, second: 0, of: Date()) ?? Date()
-    return Date() < noon
+    let questionTime = cal.date(bySettingHour: 11, minute: 0, second: 0, of: Date()) ?? Date()
+    return Date() < questionTime
   }
 
   private var headerView: some View {
@@ -291,16 +291,16 @@ private struct HeartCalloutView: View {
         Image(systemName: "heart.fill")
           .foregroundColor(MongleColor.heartRed)
           .font(.system(size: 13))
-        Text("현재 보유 \(hearts)개")
+        Text(L10n.tr("home_heart_count", hearts))
           .font(MongleFont.captionBold())
           .foregroundColor(MongleColor.heartRed)
       }
 
       Divider()
 
-      heartRow(icon: "arrow.clockwise.circle.fill", color: MongleColor.secondary, text: "질문 다시받기", cost: "1개")
-      heartRow(icon: "pencil.circle.fill", color: MongleColor.accentOrange, text: "나만의 질문 작성", cost: "3개")
-      heartRow(icon: "megaphone.fill", color: MongleColor.heartRed, text: "재촉하기", cost: "1개")
+      heartRow(icon: "arrow.clockwise.circle.fill", color: MongleColor.secondary, text: L10n.tr("home_heart_replace"), cost: L10n.tr("heart_cost", 1))
+      heartRow(icon: "pencil.circle.fill", color: MongleColor.accentOrange, text: L10n.tr("home_heart_write"), cost: L10n.tr("heart_cost", 3))
+      heartRow(icon: "megaphone.fill", color: MongleColor.heartRed, text: L10n.tr("home_heart_nudge"), cost: L10n.tr("heart_cost", 1))
 
       Divider()
 
@@ -308,13 +308,14 @@ private struct HeartCalloutView: View {
         Image(systemName: "sun.min.fill")
           .foregroundColor(MongleColor.primary)
           .font(.system(size: 11))
-        Text("매일 오전 +1 · 답변 완료 +3")
+        Text(L10n.tr("home_heart_earn_rate"))
           .font(MongleFont.caption())
           .foregroundColor(MongleColor.textSecondary)
       }
     }
     .padding(14)
     .frame(width: 220)
+    .background(Color.white)
   }
 
   private func heartRow(icon: String, color: Color, text: String, cost: String) -> some View {
@@ -327,7 +328,7 @@ private struct HeartCalloutView: View {
         .font(MongleFont.caption())
         .foregroundColor(MongleColor.textPrimary)
       Spacer()
-      Text("하트 \(cost)")
+      Text(cost)
         .font(MongleFont.caption())
         .foregroundColor(MongleColor.heartRed)
     }
@@ -382,7 +383,7 @@ private struct TodayQuestionCard: View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 4) {
-                    Text("오늘의 질문")
+                    Text(L10n.tr("home_today_question"))
                         .font(MongleFont.captionBold())
                         .foregroundColor(MongleColor.primary)
                     if question.isAnswered {
@@ -468,7 +469,7 @@ private struct GroupDropdownView: View {
             Image(systemName: "person.2.fill")
               .font(.system(size: 13))
               .foregroundColor(MongleColor.textSecondary)
-            Text("그룹 관리")
+            Text(L10n.tr("home_group_manage"))
               .font(MongleFont.body1())
               .foregroundColor(MongleColor.textSecondary)
             Spacer()

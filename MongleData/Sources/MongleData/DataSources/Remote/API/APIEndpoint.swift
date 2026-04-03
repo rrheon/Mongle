@@ -30,9 +30,17 @@ extension APIEndpoint {
     }
 
     var headers: [String: String]? {
+        let langCode = Locale.current.languageCode ?? "en"
+        let acceptLang: String
+        switch langCode {
+        case "ko": acceptLang = "ko"
+        case "ja": acceptLang = "ja"
+        default:   acceptLang = "en"
+        }
         return [
             "Content-Type": "application/json",
-            "Accept": "application/json"
+            "Accept": "application/json",
+            "Accept-Language": acceptLang
         ]
     }
 

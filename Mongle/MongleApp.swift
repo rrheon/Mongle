@@ -39,8 +39,13 @@ class MongleAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
         let userInfo = response.notification.request.content.userInfo
-        if let type = userInfo["type"] as? String, type == "ANSWER_REQUEST" {
-            store?.send(.openQuestion)
+        if let type = userInfo["type"] as? String {
+            switch type {
+            case "ANSWER_REQUEST", "MEMBER_ANSWERED", "NEW_QUESTION":
+                store?.send(.openQuestion)
+            default:
+                break
+            }
         }
         completionHandler()
     }
@@ -66,7 +71,12 @@ struct MongleApp: App {
         WindowGroup {
             RootView(store: store)
                 .onOpenURL { url in
-                    SocialSDK.handle(url: url)
+                    let host = url.host?.lowercased() ?? ""
+                    let isInviteLink = host == "mongle.app" || host == "monggle.app" || url.scheme == "monggle"
+                    // 초대 링크는 RootView.onOpenURL에서 처리, 소셜 SDK URL만 전달
+                    if !isInviteLink {
+                        SocialSDK.handle(url: url)
+                    }
                 }
                 .onAppear {
                     appDelegate.store = store
