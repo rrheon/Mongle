@@ -31,7 +31,11 @@ extension GroupSelectView {
           Image(systemName: "key")
             .font(.system(size: 16))
             .foregroundColor(MongleColor.textHint)
-          TextField("MONG-4729", text: $store.joinCode.sending(\.joinCodeChanged))
+          TextField(
+              "",
+              text: $store.joinCode.sending(\.joinCodeChanged),
+              prompt: Text("MONG-4729").foregroundColor(MongleColor.textHint)
+            )
             .font(MongleFont.body2())
             .foregroundColor(MongleColor.textPrimary)
             .textCase(.uppercase)
@@ -72,7 +76,11 @@ extension GroupSelectView {
           Image(systemName: "person")
             .font(.system(size: 16))
             .foregroundColor(MongleColor.textHint)
-          TextField(L10n.tr("group_nickname_placeholder"), text: $store.nickname.sending(\.nicknameChanged))
+          TextField(
+              "",
+              text: $store.nickname.sending(\.nicknameChanged),
+              prompt: Text(L10n.tr("group_nickname_placeholder")).foregroundColor(MongleColor.textHint)
+            )
             .font(MongleFont.body2())
             .foregroundColor(MongleColor.textPrimary)
             .focused($joinGroupFocus, equals: .nickname)

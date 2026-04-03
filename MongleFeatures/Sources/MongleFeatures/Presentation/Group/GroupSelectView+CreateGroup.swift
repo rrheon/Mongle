@@ -56,7 +56,11 @@ extension GroupSelectView {
           Image(systemName: "house")
             .font(.system(size: 16))
             .foregroundColor(MongleColor.textHint)
-          TextField(L10n.tr("group_name_placeholder"), text: $store.groupName.sending(\.groupNameChanged))
+          TextField(
+              "",
+              text: $store.groupName.sending(\.groupNameChanged),
+              prompt: Text(L10n.tr("group_name_placeholder")).foregroundColor(MongleColor.textHint)
+            )
             .font(MongleFont.body2())
             .foregroundColor(MongleColor.textPrimary)
             .focused($createGroupFocus, equals: .groupName)
@@ -95,7 +99,11 @@ extension GroupSelectView {
           Image(systemName: "person")
             .font(.system(size: 16))
             .foregroundColor(MongleColor.textHint)
-          TextField(L10n.tr("group_nickname_placeholder"), text: $store.nickname.sending(\.nicknameChanged))
+          TextField(
+              "",
+              text: $store.nickname.sending(\.nicknameChanged),
+              prompt: Text(L10n.tr("group_nickname_placeholder")).foregroundColor(MongleColor.textHint)
+            )
             .font(MongleFont.body2())
             .foregroundColor(MongleColor.textPrimary)
             .focused($createGroupFocus, equals: .nickname)
