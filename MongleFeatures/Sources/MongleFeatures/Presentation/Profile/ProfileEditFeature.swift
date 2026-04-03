@@ -141,11 +141,9 @@ public struct ProfileEditFeature {
 
             case .mongleCardEdit(.presented(.delegate(.saved(let user)))):
                 state.user = user
-                state.mongleCardEdit = nil
                 return .send(.delegate(.profileUpdated(user)))
 
             case .mongleCardEdit(.presented(.delegate(.cancelled))):
-                state.mongleCardEdit = nil
                 return .send(.delegate(.colorPreviewCancelled))
 
             case .mongleCardEdit(.presented(.delegate(.colorPreview(let moodId)))):

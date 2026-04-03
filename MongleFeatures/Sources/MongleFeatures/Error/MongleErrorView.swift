@@ -19,6 +19,7 @@ private struct MongleErrorToastModifier: ViewModifier {
             .task(id: error) {
                 guard error != nil else { return }
                 try? await Task.sleep(for: .seconds(3))
+                guard !Task.isCancelled else { return }
                 onDismiss()
             }
     }
