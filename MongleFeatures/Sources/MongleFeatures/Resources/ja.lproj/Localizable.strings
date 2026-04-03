@@ -338,3 +338,8 @@
 "heart_cost_write_btn" = "作成しに行く";
 "heart_cost_skip_btn" = "質問をスキップ";
 "heart_cost_edit_btn" = "修正する";
+
+/* Ad Errors */
+"error_ad_load_failed" = "広告を読み込めませんでした。もう一度お試しください。";
+"error_already_answered_skip" = "既に回答した質問はスキップできません";
+"error_already_skipped" = "既にこの質問をスキップしました";

@@ -11,6 +11,7 @@ import Domain
 
 public struct RootView: View {
     @Bindable var store: StoreOf<RootFeature>
+    @Environment(\.scenePhase) private var scenePhase
 
     public init(store: StoreOf<RootFeature>) {
         self.store = store
@@ -44,6 +45,11 @@ public struct RootView: View {
         }
         .onAppear {
             store.send(.onAppear)
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active && store.appState == .authenticated {
+                store.send(.refreshHomeData)
+            }
         }
         .overlay {
             if store.showHeartGrantedPopup && store.appState == .authenticated {

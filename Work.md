@@ -1,66 +1,233 @@
 # 작업
 
-다음의 로직 확인하기
-- ~~그룹선택화면, 홈화면, 기록화면, my화면, 답변상세화면에서 몽글캐릭터(해당 날짜에 사용자가 선택한 색)이 싱크가 맞게 나오는지~~ ✅
-- ~~질문에 대해 답변하기, 수정하기, 스킵하기 등의 로직이 제대로 돌아가는지~~ ✅
-  - ~~해당 작업 후 서버와의 통신이 제대로 이뤄지는지, 각 그룹별로 개별적으로 적용이 되는지~~ ✅
-
-### 검증 결과 및 수정사항
-
-**iOS 색상 싱크:**
-- HomeScreen/QuestionDetail의 default 색상이 불일치 → **모두 Pink으로 통일**
-- HistoryView는 moodId→colorIndex 변환으로 정상 동작 확인
-
-**Android 색상 싱크:**
-- QuestionDetailScreen이 role.ordinal 인덱스 기반 → **answer.moodId 기반으로 수정**
-
-**답변/수정/스킵 로직:**
-- iOS: 답변·수정·스킵 후 서버통신, 히스토리 새로고침, 그룹별 상태 분리 모두 정상
-- Android: 답변 제출 후 가족답변 새로고침 누락 → **onAnswerSubmitted()에 loadFamilyAnswers() 추가**
-- 서버: 답변 수정 시 하트 차감 누락 → **updateAnswer에 하트 -1 트랜잭션 추가**
-- 서버: createAnswer에 가족 소속 질문 검증 누락 → **dailyQuestion 확인 추가 (보안)**
-  
 ## 위치
-디자인: /Users/yong/Desktop/FamTree/MongleUI
-iOS: /Users/yong/Desktop/FamTree
-Andriod: /Users/yong/Mongle-Android 
-서버: /Users/yong/Desktop/MongleServer
+- 디자인: /Users/yong/Desktop/FamTree/MongleUI
+- iOS: /Users/yong/Desktop/FamTree
+- Android: /Users/yong/Mongle-Android
+- 서버: /Users/yong/Desktop/MongleServer
+
+## 구글 ad정보
+
+iOS
+앱ID : ca-app-pub-4718464707406824~3555712259
+- 배너: ca-app-pub-4718464707406824/5359748516
+- 보상형: ca-app-pub-4718464707406824/2869316545
+
+Android
+앱ID: ca-app-pub-4718464707406824~8995741193
+- 배너: ca-app-pub-4718464707406824/2974225929
+- 보상형: ca-app-pub-4718464707406824/9365243021
+
 ---
-## 버그 분석 및 수정 방안
 
-### 버그 1·2: 질문넘김 시 UI만 적용, 서버 미반영 / 그룹 전환 후 미답변 상태 (하트 차감됨)
+## 버그 목록 및 상세 분석
 
-**근본 원인: 서버 날짜 불일치**
+### 버그 1: iOS 텍스트필드 플레이스홀더 색상 진하게
 
-`skipTodayQuestion()` (QuestionService.ts:121)에서 `skippedDate`를 항상 **오늘 날짜**(`this.getToday()`)로 저장함.
-하지만 `getTodayQuestion()` (QuestionService.ts:54-75)은 **전날의 미완료 질문**을 반환할 수 있음.
+**현상:** 텍스트필드의 플레이스홀더 텍스트가 너무 연해서 잘 안 보임
 
-`hasMySkipped` 판정 (QuestionService.ts:467-470):
+**원인 분석:**
+- `MongleFeatures/.../Presentation/Question/QuestionDetailView.swift` (line 182-189)
+  - 네이티브 SwiftUI `TextField`를 사용 중이며, 플레이스홀더 색상이 시스템 기본(연한 회색)으로 표시됨
+- `MongleFeatures/.../Presentation/Common/MongleTextField.swift` (line 156-162)
+  - 커스텀 `MongleTextField`는 `Text` 오버레이로 플레이스홀더를 구현하여 `MongleColor.textHint` 적용 가능
+  - 하지만 `QuestionDetailView`에서는 네이티브 `TextField`를 사용 중
+
+**수정 방안:**
+- `QuestionDetailView.swift`에서 네이티브 `TextField` 대신 `MongleTextField` 사용으로 변경
+- 또는 `prompt` modifier + `.foregroundColor` 활용 (iOS 15+)
+- 커스텀 플레이스홀더 `Text` 오버레이로 색상 제어:
+```swift
+ZStack(alignment: .topLeading) {
+    if text.isEmpty {
+        Text(L10n.tr("detail_answer_placeholder"))
+            .foregroundColor(MongleColor.textSecondary) // 더 진한 색상
+            .font(MongleFont.body2())
+    }
+    TextEditor(text: $text)
+}
+```
+
+**영향도:** 낮음 | **수정 범위:** iOS 1파일
+
+---
+
+### 버그 2: Android 텍스트필드 플레이스홀더 색상 연하게
+
+**현상:** 플레이스홀더가 너무 진해서 입력된 텍스트와 구분이 어려움
+
+**원인 분석:**
+- `Mongle-Android/.../ui/common/MongleTextField.kt` (line 38-42)
+  - 플레이스홀더 색상이 `MaterialTheme.colorScheme.onSurfaceVariant`로 설정됨
+  - 이 색상이 너무 진함
+- `Color.kt`에 `MongleTextHint = Color(0xFF9E9E9E)` 정의되어 있으나 미사용
+
+**수정 방안:**
+```kotlin
+// MongleTextField.kt line 40
+// 기존: color = MaterialTheme.colorScheme.onSurfaceVariant
+// 변경:
+color = MongleTextHint.copy(alpha = 0.6f) // 또는 MongleTextHint 단독 사용
+```
+
+**영향도:** 낮음 | **수정 범위:** Android 1파일
+
+---
+
+### 버그 3: 그룹관리 화면 몽글 캐릭터 색상 싱크 불일치
+
+**현상:** 그룹관리 화면에서 몽글 캐릭터의 색상이 실제 사용자 기분(moodId)과 다르게 표시됨
+
+**원인 분석 (iOS):**
+- `GroupManagementView.swift` (line 204, 269)
+  - `monggleColor(for: index)` → 배열 인덱스 기반으로 색상 할당
+  - 사용자의 실제 `moodId`를 무시하고 순서대로 Yellow, Green, Pink, Blue, Orange 배정
+- `GroupManagementFeature.swift` (line 112)
+  - `GroupMember` 생성 시 `colorHex: ""` (빈 문자열)로 설정 → `moodId` 정보 전달 안 됨
+
+```swift
+// 문제 코드 (GroupManagementView.swift line 319-325)
+private func monggleColor(for index: Int) -> Color {
+    let colors: [Color] = [
+        MongleColor.monggleYellow, MongleColor.monggleGreen,
+        MongleColor.mongglePink, MongleColor.monggleBlue, MongleColor.monggleOrange
+    ]
+    return colors[index % colors.count]
+}
+```
+
+**원인 분석 (Android):**
+- `SettingsScreen.kt` (line 913-993) MembersSection
+  - `monggleColors[index % monggleColors.size]` → 동일하게 인덱스 기반 색상 할당
+  - HomeScreen에서는 `moodColor(moodId, fallbackColor)` 로 올바르게 처리하지만 그룹관리에서는 누락
+
+**수정 방안:**
+
+iOS:
+1. `GroupMember` 구조체에 `moodId` 필드 추가
+2. `GroupManagementFeature.swift`에서 서버 응답의 `moodId` → `GroupMember.moodId`에 매핑
+3. `monggleColor(for:)` 대신 `moodId` 기반 색상 함수 사용
+
+Android:
+1. MembersSection에서 `member.moodId` 기반 `moodColor()` 함수 적용
+2. HomeScreen의 `moodColor(moodId, fallback)` 패턴 재사용
+
+**영향도:** 중간 | **수정 범위:** iOS 2파일, Android 1파일
+
+---
+
+### 버그 4: 그룹나가기 시 위임 후 그룹선택 화면 이동 + 토스트
+
+**현상:** 그룹에서 나간 뒤 그룹 선택화면으로 이동은 하지만 "그룹에서 나왔습니다" 토스트가 없음
+
+**원인 분석 (iOS):**
+- `GroupManagementFeature.swift` (line 140-160, 208-220)
+  - 위임(transferCreator) → 탈퇴(leaveFamily) → `.delegate(.groupLeft)` 전송
+- `MainTab+Reducer.swift` (line 209-210)
+  - `.groupLeft` 수신 → `.navigateToGroupSelect(fromGroupLeft: true)` 전송
+  - `fromGroupLeft: true` 파라미터가 전달되지만 **토스트 표시 로직 없음**
+
+**원인 분석 (Android):**
+- `SettingsViewModel.kt` (line 220-235)
+  - transferCreator → leaveFamily → `SettingsEvent.LeftGroup` emit
+- `SettingsScreen.kt` (line 137-140)
+  - `LeftGroup` → `navController.popBackStack("my")` + `onGroupLeft()` 호출
+  - 토스트 표시 없음 (string resource `toast_group_left`는 존재)
+
+**수정 방안:**
+
+iOS:
+```swift
+// Root 또는 GroupSelect에서 fromGroupLeft 파라미터 처리
+case .navigateToGroupSelect(fromGroupLeft: true):
+    state.showGroupLeftToast = true // 토스트 상태 추가
+    // ... 기존 네비게이션 로직
+```
+
+Android:
+```kotlin
+// SettingsScreen.kt
+SettingsEvent.LeftGroup -> {
+    navController.popBackStack("my", inclusive = false)
+    // 토스트 표시 추가
+    Toast.makeText(context, context.getString(R.string.toast_group_left), Toast.LENGTH_SHORT).show()
+    onGroupLeft()
+}
+```
+
+**영향도:** 낮음 | **수정 범위:** iOS 1-2파일, Android 1파일
+
+---
+
+### 버그 5: iOS 답변 시 Android에서 몽글캐릭터가 미답변 상태로 표시
+
+**현상:** iOS에서 답변을 완료했는데, Android의 홈화면에서 해당 가족의 몽글 캐릭터가 여전히 미답변으로 나옴. 마음 남기기 화면에서는 답변이 보임.
+
+**원인 분석:**
+- `MainTab+Reducer.swift` (line 400-441)
+  - 답변 제출 시 `state.home.memberAnswerStatus[userId] = true`로 **로컬만 업데이트**
+  - 서버에는 답변이 정상 저장되지만, 다른 기기에서는 홈화면 새로고침 시에만 반영
+- `MainTabView.swift` (line 145-150)
+  - 캐릭터 색상을 `memberAnswerStatus` 딕셔너리에서 조회
+  - 이 딕셔너리는 **앱 시작 시 한 번만 로드**되고, 이후 로컬 답변 시에만 갱신
+
+**핵심 문제:**
+- 실시간 동기화 메커니즘 없음 (WebSocket/SSE 미사용)
+- 푸시 알림 수신 시 `memberAnswerStatus` 갱신 로직 누락
+- 홈화면 진입 시 강제 새로고침이 없거나 캐시된 데이터 사용
+
+**수정 방안:**
+
+1. **즉시 적용 가능:** 홈화면 진입(onAppear/onResume) 시 매번 서버에서 오늘의 질문 + 답변상태 새로고침
+2. **Android 측 (HomeScreen.kt):** 
+   - `LaunchedEffect` 또는 `onResume`에서 `viewModel.loadTodayQuestion()` 호출
+   - 가족 답변 상태 포함하여 갱신
+3. **iOS 측:**
+   - 푸시 알림(답변 알림) 수신 핸들러에서 `memberAnswerStatus` 갱신
+   - `MainTabView` onAppear에서 today question reload
+
+**추가:** 마음 남기기 화면에서 가족의 답변 부분 제거 필요 (Android)
+- `QuestionDetailScreen.kt`의 FamilyAnswersSection을 마음 남기기 화면에서 비노출 처리
+
+**영향도:** 높음 | **수정 범위:** iOS 1-2파일, Android 1-2파일
+
+---
+
+### 버그 6: Android 질문 넘기기 오류
+
+**현상:** Android에서 질문 넘기기가 동작하지 않음
+
+**원인 분석:**
+
+**서버 측 근본 원인 — 날짜 불일치:**
+- `QuestionService.ts` (line 116-189) `skipTodayQuestion()`
+  - `skippedDate`를 `dailyQuestion.date`로 저장하는데, `getTodayQuestion()`이 전날의 미완료 질문을 반환할 수 있음
+  - `hasMySkipped` 판정 (line 514-518)에서 날짜 비교 실패:
+    ```ts
+    myMembership.skippedDate.getTime() === dailyQuestion.date.getTime()
+    // skippedDate = 어제(4/2) vs 오늘 새 질문 = 오늘(4/3) → FALSE
+    ```
+  - 하트는 차감되지만 응답에서 `hasMySkipped = false` → 클라이언트에서 미반영 상태
+
+**Android 클라이언트:**
+- `HomeViewModel.kt` (line 259-279) `skipQuestion()`
+  - `questionRepository.skipQuestion()` 호출 후 에러 핸들링이 일반적
+  - 서버 에러 코드(400, 409 등) 별 분기처리 없음
+- `ApiQuestionRepository.kt` (line 67-70) `safeCall` 래핑으로 상세 에러 정보 손실 가능
+- `HomeScreen.kt` (line 432-467) 넘기기 확인 다이얼로그
+
+**수정 방안:**
+
+서버 수정 (핵심):
 ```ts
-membership.skippedDate.getTime() === dailyQuestion.date.getTime()
-// skippedDate = 오늘(4/3) vs dailyQuestion.date = 어제(4/2) → FALSE!
-```
-
-→ 하트는 차감되지만 서버 응답의 `hasMySkipped = false` → 그룹 전환 후 새로고침 시 "미답변" 상태로 표시됨.
-
-**수정:** `skipTodayQuestion()`에서 실제 표시 중인 질문의 날짜를 `skippedDate`로 저장
-
-```
-파일: MongleServer/src/services/QuestionService.ts
-수정 위치: skipTodayQuestion() (line 116-168)
-```
-
-```ts
-// 기존: const today = this.getToday();
-// 변경: 실제 활성 질문 조회 후 그 날짜 사용
+// QuestionService.ts skipTodayQuestion()
+// 기존: const today = this.getToday(); → today로 skippedDate 저장
+// 변경: 실제 활성 질문 조회 후 그 질문의 date를 skippedDate로 사용
 async skipTodayQuestion(userId: string): Promise<SkipQuestionResponse> {
-    const user = await prisma.user.findUnique({ where: { userId } });
-    if (!user) throw Errors.notFound('사용자');
-    if (!user.familyId) throw Errors.badRequest('가족에 속해 있지 않습니다.');
-
+    // ... 사용자/가족 검증 ...
     const today = this.getToday();
 
-    // ★ 실제 표시 중인 질문 조회 (getTodayQuestion과 동일 로직)
+    // ★ getTodayQuestion과 동일 로직으로 실제 활성 질문 조회
     let dailyQuestion = await prisma.dailyQuestion.findUnique({
         where: { familyId_date: { familyId: user.familyId, date: today } },
         include: { question: true },
@@ -84,151 +251,193 @@ async skipTodayQuestion(userId: string): Promise<SkipQuestionResponse> {
 
     if (!dailyQuestion) throw Errors.notFound('오늘의 질문');
 
-    // ★ skippedDate는 실제 질문의 날짜 사용
+    // ★ 실제 질문의 날짜를 skippedDate로 사용
     const questionDate = dailyQuestion.date;
 
-    const membership = await prisma.familyMembership.findUnique({
-        where: { userId_familyId: { userId: user.id, familyId: user.familyId } },
-    });
-    if (!membership) throw Errors.notFound('멤버십');
-
-    const alreadySkipped =
-        membership.skippedDate !== null &&
-        membership.skippedDate.getTime() === questionDate.getTime();
-    if (alreadySkipped) {
-        throw Errors.conflict('오늘 이미 질문을 패스했습니다.');
-    }
-
-    const currentHearts = membership.hearts ?? 0;
-    if (currentHearts < 3) {
-        throw Errors.badRequest('하트가 부족합니다. 하트 3개가 필요합니다.');
-    }
-
-    // 이미 답변한 경우 패스 불가
-    const myAnswer = await prisma.answer.findFirst({
-        where: { questionId: dailyQuestion.question.id, userId: user.id },
-    });
-    if (myAnswer) throw Errors.conflict('이미 답변한 질문은 패스할 수 없습니다.');
-
-    // ★ skippedDate = 질문 날짜, 하트 -3
-    const [updatedMembership] = await prisma.$transaction([
-        prisma.familyMembership.update({
-            where: { userId_familyId: { userId: user.id, familyId: user.familyId } },
-            data: { skippedDate: questionDate, hearts: { decrement: 3 } },
-        }),
-    ]);
-
-    return {
-        message: '질문을 패스했습니다.',
-        heartsRemaining: updatedMembership.hearts,
-    };
+    // ... 이하 skippedDate = questionDate로 처리 ...
 }
 ```
+
+Android 에러 핸들링 개선:
+```kotlin
+// HomeViewModel.kt skipQuestion()
+.onFailure { e ->
+    val message = when {
+        e.message?.contains("이미 답변") == true ->
+            context.getString(R.string.error_already_answered_skip)
+        e.message?.contains("하트가 부족") == true ->
+            context.getString(R.string.home_hearts_insufficient_title)
+        else -> e.message ?: context.getString(R.string.error_skip_failed)
+    }
+    _uiState.update { it.copy(isLoading = false, errorMessage = message) }
+}
+```
+
+**영향도:** 높음 (하트 손실) | **수정 범위:** 서버 1파일, Android 1파일
 
 ---
 
-### 버그 3: 하트가 없을 때 광고보기를 누르면 아무것도 일어나지 않음
+### 버그 7: "이미 답변한 질문은 넘길 수 없습니다" 팝업 다국어 처리 누락
 
-**원인 A — Android: 광고보기 버튼 자체가 없음**
+**현상:** 해당 에러 메시지가 다국어 처리 안 되어 한국어만 표시됨
 
-`HomeScreen.kt:444-451`에서 하트 부족 시 "하트가 부족합니다" 안내 팝업만 표시하고 "광고 보기" 버튼이 없음.
-(Nudge/답변수정에는 광고 기능 있지만, 질문 넘기기에는 누락됨)
+**원인 분석:**
+- Android strings.xml에 해당 문자열 리소스 없음
+- 서버에서 반환하는 에러 메시지("이미 답변한 질문은 패스할 수 없습니다")를 그대로 표시 중
 
+**수정 방안:**
+
+각 strings.xml에 추가:
+```xml
+<!-- values-ko/strings.xml -->
+<string name="error_already_answered_skip">이미 답변한 질문은 넘길 수 없어요</string>
+
+<!-- values/strings.xml (English) -->
+<string name="error_already_answered_skip">You cannot skip a question you\'ve already answered</string>
+
+<!-- values-ja/strings.xml (Japanese) -->
+<string name="error_already_answered_skip">既に回答した質問はスキップできません</string>
 ```
-파일: Mongle-Android/.../ui/home/HomeScreen.kt (line 444-451)
-```
 
-수정: iOS의 HeartCostPopupView처럼 "광고 보고 넘기기" 버튼 추가 필요
+클라이언트에서 서버 에러 코드(409 Conflict)를 감지하여 로컬라이즈된 문자열 표시.
+
+**영향도:** 낮음 | **수정 범위:** Android 3파일 (strings.xml) + 1파일 (ViewModel)
+
+---
+
+### 버그 8: Android My화면 — 기분 히스토리, 몽글카드 편집 제거
+
+**현상:** My 화면에 기분 히스토리, 몽글카드 편집 메뉴가 있으나 제거 필요 (준비중 상태)
+
+**원인 분석:**
+- `SettingsScreen.kt` (line 326-341)
+  - 기분 히스토리: `SettingsRowData(icon=Timeline, title=settings_mood_history, ...)`
+  - 몽글카드 편집: `SettingsRowData(icon=Edit, title=settings_mongle_card, ...)`
+- `SettingsScreen.kt` (line 1157-1185) MoodHistoryScreen → "준비 중" 플레이스홀더
+- `SettingsScreen.kt` (line 1190-1260) MongleCardEditScreen → 비활성화된 편집 인터페이스
+- NavHost 라우팅 (line 245-254) → "mood_history", "mongle_card_edit" 경로
+
+**수정 방안:**
+삭제 대상:
+1. SettingsRowData 2개 (line 326-341) — 메뉴 항목
+2. `onMoodHistoryTapped`, `onMongleCardEditTapped` 콜백 파라미터
+3. NavHost 라우팅 2개 (line 245-254)
+4. MoodHistoryScreen 컴포저블 (line 1157-1185)
+5. MongleCardEditScreen 컴포저블 (line 1190-1260)
+6. MyScreen 함수 시그니처에서 해당 람다 제거
+
+**영향도:** 낮음 | **수정 범위:** Android 1파일 (SettingsScreen.kt)
+
+---
+
+### 버그 9: iOS 히스토리 화면에서 다른 사용자 답변을 볼 수 없음
+
+**현상:** 본인이 답변을 완료했음에도 히스토리에서 다른 가족의 답변이 보이지 않음
+
+**원인 분석:**
+- `HistoryFeature.swift` (line 216-232)
+  - `hq.answers` 배열을 `MemberAnswer`로 매핑하여 `HistoryItem.memberAnswers`에 저장
+  - 클라이언트 필터링 문제는 아님 — 모든 답변을 그대로 표시
+- `HistoryFeature.swift` (line 207)
+  - `questionRepository.getHistory(page: 1, limit: 60)` 호출
+  - **서버 응답에 가족 답변이 포함되지 않을 가능성**
+
+**서버 측 확인:**
+- `QuestionService.ts` `getQuestionHistory()` (line 293-309)
+  - 히스토리 응답에 가족 답변 포함 여부 확인 필요
+  - skip 상태 체크에서도 동일한 날짜 비교 문제 존재 가능
+
+**수정 방안:**
+1. 서버 `/questions` (히스토리) API 응답에 `answers` 배열이 포함되는지 확인
+2. 서버에서 본인 답변 여부와 관계없이 가족 답변을 반환하도록 수정
+3. 클라이언트에서 답변 표시 조건 확인 (본인 미답변 시 가족 답변 숨김 처리가 있는지)
+
+**영향도:** 중간 | **수정 범위:** 서버 1파일 확인 필요, iOS 1파일
+
+---
+
+### 버그 10: Android 답변 수정 시 몽글캐릭터 색상 싱크 불일치
+
+**현상:** 답변 수정 후 홈화면의 몽글캐릭터 색상이 변경된 기분에 맞게 갱신되지 않음
+
+**원인 분석 (iOS):**
+- `HomeScreen/QuestionDetail`의 default 색상 불일치 → **모두 Pink으로 통일**
+- `HistoryView`는 `moodId→colorIndex` 변환으로 정상 동작 확인
+
+**원인 분석 (Android):**
+- `QuestionDetailScreen.kt` (line 462-510) `FamilyAnswerItem`
+  - `familyAnswer.answer.moodId`로 색상 결정 → 매핑 자체는 정상
+- `QuestionDetailViewModel.kt` (line 188-223) `doSubmitAnswer()`
+  - 답변 수정 시 `myAnswer` 상태는 업데이트하지만, 홈화면의 `memberAnswerStatus`나 `moodId`는 별도 갱신 필요
+- **HomeScreen.kt** (line 164-170)
+  - `QuestionDetailScreen`이 `role.ordinal` 인덱스 기반 → **`answer.moodId` 기반으로 수정 필요**
+
+**답변/수정/스킵 로직 추가 확인:**
+- Android: 답변 제출 후 가족답변 새로고침 누락 → **`onAnswerSubmitted()`에 `loadFamilyAnswers()` 추가**
+- 서버: 답변 수정 시 하트 -1 차감 → ✅ `AnswerService.ts` (line 264-274) 정상 구현됨
+- 서버: createAnswer에 가족 소속 질문 검증 → ✅ `AnswerService.ts` (line 40-48) 정상 구현됨
+
+**수정 방안:**
+1. Android HomeScreen: 색상 결정을 `role.ordinal` → `moodId` 기반으로 변경
+2. 답변 수정 완료 → 홈화면 복귀 시 today question 재로드
+3. `onAnswerSubmitted()` 콜백에서 `loadFamilyAnswers()` 호출 추가
+
+**영향도:** 중간 | **수정 범위:** Android 2파일
+
+---
+
+### 버그 11: 하트 부족 시 광고보기 무반응
+
+**원인 A — Android: 광고 버튼 다국어 미처리**
+- `HomeScreen.kt` (line 444-465)
+  - 광고 보기 버튼 자체는 구현되어 있으나 `"광고 보고 넘기기"` 하드코딩 → 다국어 리소스 미사용
+  
+수정:
 ```kotlin
-} else {
-    MonglePopup(
-        title = stringResource(R.string.home_hearts_insufficient_title),
-        description = stringResource(R.string.home_hearts_insufficient_skip, currentHearts),
-        primaryLabel = stringResource(R.string.home_watch_ad_skip), // "광고 보고 넘기기"
-        onPrimary = {
-            showSkipConfirmDialog = false
-            // adManager로 광고 재생 → 하트 지급 → 넘기기 실행
-            viewModel.watchAdForSkip(adManager)
-        },
-        secondaryLabel = stringResource(R.string.common_cancel),
-        onSecondary = { showSkipConfirmDialog = false }
-    )
-}
+// line 455
+// 기존: primaryLabel = if (adManager != null) "광고 보고 넘기기" else ...
+// 변경:
+primaryLabel = if (adManager != null) stringResource(R.string.home_watch_ad_skip) else stringResource(R.string.common_confirm)
 ```
 
-HomeViewModel에 `watchAdForSkip()` 추가 필요:
-```kotlin
-fun watchAdForSkip(adManager: AdManager) {
-    viewModelScope.launch {
-        adManager.showRewardedAd(
-            onRewarded = {
-                viewModelScope.launch {
-                    try {
-                        userRepository.grantAdHearts(3)
-                        skipQuestion()
-                    } catch (e: Exception) {
-                        _uiState.update { it.copy(errorMessage = "광고 보상 지급 실패") }
-                    }
-                }
-            },
-            onFailed = {
-                _uiState.update { it.copy(errorMessage = "광고를 불러올 수 없습니다.") }
-            }
-        )
-    }
-}
+각 strings.xml에 추가:
+```xml
+<!-- ko --> <string name="home_watch_ad_skip">광고 보고 넘기기</string>
+<!-- en --> <string name="home_watch_ad_skip">Watch ad and skip</string>
+<!-- ja --> <string name="home_watch_ad_skip">広告を見てスキップ</string>
 ```
 
-**원인 B — iOS: 광고 실패 시 무반응**
+**원인 B — iOS: 광고 실패 시 에러 처리**
+- `MainTab+Reducer.swift` (line 265-284)
+  - 광고 실패 시 `.skipQuestionResponse(.failure(...))` 전송 → 에러 토스트 표시됨
+  - 다만 `state.modal = nil`로 팝업이 먼저 닫혀서 사용자가 재시도 경로 없음
+  - `.skipQuestionResponse` 액션을 재사용하는 것은 의미적으로 부적절
 
-`MainTab+Reducer.swift:270-271`에서 광고 시청 실패 시 `guard earned else { return }` 으로 조용히 종료됨.
-팝업은 이미 닫힌 상태(`state.modal = nil`, line 267)이므로 사용자에게 아무 피드백 없음.
-
-```
-파일: MongleFeatures/.../MainTab/Ext/MainTab+Reducer.swift (line 265-279)
-```
-
-수정: 광고 실패 시 에러 토스트 표시
+수정:
 ```swift
-case .modal(.presented(.heartCostPopup(.delegate(.watchAdRequested(let costType))))):
-    state.modal = nil
-    let cost = costType.cost
-    return .run { [costType, cost] send in
-        let earned = await adClient.showRewardedAd()
-        guard earned else {
-            // ★ 실패 시 에러 전달
-            await send(.adLoadFailed)
-            return
-        }
-        // ... 기존 로직
-    }
+guard earned else {
+    // 전용 에러 액션 사용 + 재시도 가능한 팝업 유지
+    await send(.adLoadFailed("광고를 불러올 수 없습니다. 다시 시도해주세요."))
+    return
+}
 ```
 
----
-
-### 수정 우선순위
-
-| 순서 | 버그 | 영향도 | 수정 범위 |
-|------|------|--------|-----------|
-| 1 | 서버 날짜 불일치 (버그1·2) | 높음 — 하트 손실 | 서버 1파일 |
-| 2 | Android 광고 버튼 누락 (버그3-A) | 중간 | Android 2파일 |
-| 3 | iOS 광고 실패 무반응 (버그3-B) | 낮음 | iOS 1파일 |
+**영향도:** 중간 | **수정 범위:** Android 4파일 (strings.xml × 3 + HomeScreen), iOS 1파일
 
 ---
 
-## 구글 ad정보
+## 수정 우선순위
 
-iOS
-앱ID : ca-app-pub-4718464707406824~3555712259
-- 배너
-ca-app-pub-4718464707406824/5359748516
-- 보상형
-ca-app-pub-4718464707406824/2869316545
-
-Andriod
-앱ID: ca-app-pub-4718464707406824~8995741193
-- 배너
- ca-app-pub-4718464707406824/2974225929
-
-- 보상형
- ca-app-pub-4718464707406824/9365243021
+| 순서 | 버그 | 영향도 | 플랫폼 | 핵심 원인 |
+|------|------|--------|--------|-----------|
+| 1 | 버그 6: 질문 넘기기 (서버 날짜 불일치) | 높음 — 하트 손실 | 서버 | skippedDate와 dailyQuestion.date 불일치 |
+| 2 | 버그 5: 답변 시 상대방 몽글 미반영 | 높음 | iOS+Android | 실시간 동기화 없음, 새로고침 누락 |
+| 3 | 버그 10: 답변수정 시 색상 싱크 | 중간 | Android | moodId 미반영, 새로고침 누락 |
+| 4 | 버그 3: 그룹관리 몽글 색상 | 중간 | iOS+Android | 인덱스 기반 색상 → moodId 기반 필요 |
+| 5 | 버그 9: 히스토리 답변 안 보임 | 중간 | iOS(+서버) | 서버 응답 확인 필요 |
+| 6 | 버그 11: 광고 무반응 | 중간 | iOS+Android | 다국어 누락, 에러 UX 미흡 |
+| 7 | 버그 8: My화면 메뉴 제거 | 낮음 | Android | 미완성 기능 정리 |
+| 8 | 버그 7: 넘기기 팝업 다국어 | 낮음 | Android | strings.xml 추가 |
+| 9 | 버그 4: 그룹나가기 토스트 | 낮음 | iOS+Android | 토스트 표시 로직 추가 |
+| 10 | 버그 1: iOS 플레이스홀더 진하게 | 낮음 | iOS | 색상 변경 |
+| 11 | 버그 2: Android 플레이스홀더 연하게 | 낮음 | Android | 색상 변경 |

@@ -201,7 +201,7 @@ public struct GroupManagementView: View {
       
       ForEach(Array(store.members.enumerated()), id: \.element.id) { index, member in
         HStack(spacing: MongleSpacing.md) {
-          MongleMonggle(color: monggleColor(for: index), size: 40)
+          MongleMonggle(color: monggleColor(for: member.moodId, fallbackIndex: index), size: 40)
           
           VStack(alignment: .leading, spacing: 2) {
             Text(member.name)
@@ -266,7 +266,7 @@ public struct GroupManagementView: View {
           VStack(spacing: MongleSpacing.sm) {
             ForEach(Array(store.transferCandidates.enumerated()), id: \.element.id) { index, member in
               HStack(spacing: MongleSpacing.md) {
-                MongleMonggle(color: monggleColor(for: index + 1), size: 40)
+                MongleMonggle(color: monggleColor(for: member.moodId, fallbackIndex: index + 1), size: 40)
 
                 Text(member.name)
                   .font(MongleFont.body2Bold())
@@ -316,12 +316,20 @@ public struct GroupManagementView: View {
   
   // MARK: - Helpers
   
-  private func monggleColor(for index: Int) -> Color {
-    let colors: [Color] = [
-      MongleColor.monggleYellow, MongleColor.monggleGreen,
-      MongleColor.mongglePink, MongleColor.monggleBlue, MongleColor.monggleOrange
-    ]
-    return colors[index % colors.count]
+  private func monggleColor(for moodId: String?, fallbackIndex: Int) -> Color {
+    switch moodId {
+    case "happy": return MongleColor.monggleYellow
+    case "calm":  return MongleColor.monggleGreen
+    case "loved": return MongleColor.mongglePink
+    case "sad":   return MongleColor.monggleBlue
+    case "tired": return MongleColor.monggleOrange
+    default:
+      let colors: [Color] = [
+        MongleColor.monggleYellow, MongleColor.monggleGreen,
+        MongleColor.mongglePink, MongleColor.monggleBlue, MongleColor.monggleOrange
+      ]
+      return colors[fallbackIndex % colors.count]
+    }
   }
   
   private func sectionTitle(_ title: String, subtitle: String) -> some View {

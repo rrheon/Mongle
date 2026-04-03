@@ -11,14 +11,14 @@ public struct GroupManagementFeature {
             public let id: UUID
             public let name: String
             public let subtitle: String
-            public let colorHex: String
+            public let moodId: String?
             public let isOwner: Bool
 
-            public init(id: UUID = UUID(), name: String, subtitle: String, colorHex: String, isOwner: Bool = false) {
+            public init(id: UUID = UUID(), name: String, subtitle: String, moodId: String? = nil, isOwner: Bool = false) {
                 self.id = id
                 self.name = name
                 self.subtitle = subtitle
-                self.colorHex = colorHex
+                self.moodId = moodId
                 self.isOwner = isOwner
             }
         }
@@ -109,7 +109,7 @@ public struct GroupManagementFeature {
                 state.members = users.map { user in
                     let isOwner = user.id == state.familyCreatedById
                     let subtitle = isOwner ? "방장" : formatter.string(from: user.createdAt) + " 가입"
-                    return State.GroupMember(id: user.id, name: user.name, subtitle: subtitle, colorHex: "", isOwner: isOwner)
+                    return State.GroupMember(id: user.id, name: user.name, subtitle: subtitle, moodId: user.moodId, isOwner: isOwner)
                 }
                 return .none
 

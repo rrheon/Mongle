@@ -271,7 +271,7 @@ extension MainTabFeature {
                         let earned = await adClient.showRewardedAd()
                         guard earned else {
                             // 광고 로드 실패 또는 시청 취소 → 에러 표시
-                            await send(.skipQuestionResponse(.failure(AppError.domain("광고를 불러올 수 없습니다. 다시 시도해주세요."))))
+                            await send(.skipQuestionResponse(.failure(AppError.domain(L10n.tr("error_ad_load_failed")))))
                             return
                         }
                         do {

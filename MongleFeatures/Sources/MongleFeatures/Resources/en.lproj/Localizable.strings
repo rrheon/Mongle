@@ -338,3 +338,8 @@
 "heart_cost_write_btn" = "Go write";
 "heart_cost_skip_btn" = "Skip question";
 "heart_cost_edit_btn" = "Edit";
+
+/* Ad Errors */
+"error_ad_load_failed" = "Couldn't load the ad. Please try again.";
+"error_already_answered_skip" = "You can't skip a question you've already answered";
+"error_already_skipped" = "You've already skipped this question";

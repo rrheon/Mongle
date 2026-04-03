@@ -209,17 +209,15 @@ public struct HistoryFeature {
                         var historyItems: [Date: HistoryItem] = [:]
                         for hq in historyQuestions {
                             let isToday = calendar.isDateInToday(hq.date)
-                            // 오늘 날짜는 내가 답변하거나 넘긴 경우에만 노출
-                            if isToday && !hq.hasMyAnswer && !hq.hasMySkipped {
-                                continue
-                            }
-                            let memberAnswers: [MemberAnswer] = hq.answers.map { answer in
+                            let canViewAnswers = hq.hasMyAnswer || hq.hasMySkipped
+                            // 오늘 미답변이어도 질문은 노출하되, 가족 답변 내용은 답변/스킵 후에만 표시
+                            let memberAnswers: [MemberAnswer] = canViewAnswers ? hq.answers.map { answer in
                                 MemberAnswer(
                                     memberName: answer.userName,
                                     answerContent: answer.content,
                                     colorIndex: colorIndexFromMoodId(answer.moodId)
                                 )
-                            }
+                            } : []
                             let item = HistoryItem(
                                 id: UUID(uuidString: hq.dailyQuestionId) ?? UUID(),
                                 date: hq.date,

@@ -186,7 +186,7 @@ struct QuestionDetailView: View {
                     if newValue.count > 200 { return }
                     store.send(.answerTextChanged(newValue))
                 }
-            ), axis: .vertical)
+            ), prompt: Text(L10n.tr("detail_answer_placeholder")).foregroundColor(MongleColor.textSecondary), axis: .vertical)
             .font(MongleFont.body2())
             .foregroundColor(MongleColor.textPrimary)
             .lineSpacing(4)
