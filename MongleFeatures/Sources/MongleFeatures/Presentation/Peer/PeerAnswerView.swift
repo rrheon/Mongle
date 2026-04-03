@@ -81,7 +81,7 @@ public struct PeerAnswerView: View {
 
     private var questionCard: some View {
         VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-            Text("오늘의 질문")
+            Text(L10n.tr("peer_today_question"))
                 .font(MongleFont.body2Bold())
                 .foregroundColor(MongleColor.primary)
             Text(store.questionText)

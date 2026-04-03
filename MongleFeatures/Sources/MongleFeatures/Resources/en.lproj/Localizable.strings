@@ -339,6 +339,30 @@
 "heart_cost_skip_btn" = "Skip question";
 "heart_cost_edit_btn" = "Edit";
 
+/* Heart Info Popup */
+"heart_info_replace" = "1 heart is used for replacing a question";
+"heart_info_write" = "1 heart is used for writing your own question";
+"heart_info_nudge" = "1 heart is used for nudging";
+"heart_info_daily" = "1 heart is recharged every day at 6 AM";
+"heart_info_answer" = "You earn 1 heart for completing an answer";
+
+/* Peer Answer */
+"peer_today_question" = "Today's Question";
+
+/* Validation */
+"error_answer_empty" = "Please enter your answer.";
+"error_question_load" = "Could not load question data.";
+
+/* Group Leave */
+"group_leave_too_soon" = "You can leave after 24 hours from group creation.\nPlease try again in %d hours.";
+
+/* Character Count */
+"write_char_count" = "%d chars";
+
+/* Date Fallback */
+"date_today" = "Today";
+"date_yesterday" = "Yesterday";
+
 /* Ad Errors */
 "error_ad_load_failed" = "Couldn't load the ad. Please try again.";
 "error_already_answered_skip" = "You can't skip a question you've already answered";

@@ -339,6 +339,30 @@
 "heart_cost_skip_btn" = "質問をスキップ";
 "heart_cost_edit_btn" = "修正する";
 
+/* Heart Info Popup */
+"heart_info_replace" = "質問のもらい直しにハート1個が使用されます";
+"heart_info_write" = "自分だけの質問作成にハート1個が使用されます";
+"heart_info_nudge" = "催促にハート1個が使用されます";
+"heart_info_daily" = "毎朝6時にハート1個が充電されます";
+"heart_info_answer" = "回答を完了するとハート1個がもらえます";
+
+/* Peer Answer */
+"peer_today_question" = "今日の質問";
+
+/* Validation */
+"error_answer_empty" = "回答を入力してください。";
+"error_question_load" = "質問情報を読み込めませんでした。";
+
+/* Group Leave */
+"group_leave_too_soon" = "グループ作成後24時間が経過しないと退出できません。\n%d時間後にもう一度お試しください。";
+
+/* Character Count */
+"write_char_count" = "%d 文字";
+
+/* Date Fallback */
+"date_today" = "今日";
+"date_yesterday" = "昨日";
+
 /* Ad Errors */
 "error_ad_load_failed" = "広告を読み込めませんでした。もう一度お試しください。";
 "error_already_answered_skip" = "既に回答した質問はスキップできません";

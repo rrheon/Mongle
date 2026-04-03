@@ -23,16 +23,27 @@ private func monggleColor(for moodId: String?) -> Color {
 
 private func formatAnswerTime(_ date: Date) -> String {
     let calendar = Calendar.current
-    let formatter = DateFormatter()
-    formatter.locale = Locale(identifier: "ko_KR")
+    let timeFormatter = DateFormatter()
+    timeFormatter.locale = Locale.current
+    timeFormatter.dateFormat = DateFormatter.dateFormat(
+        fromTemplate: "ahmm",
+        options: 0,
+        locale: Locale.current
+    )
     if calendar.isDateInToday(date) {
-        formatter.dateFormat = "오늘 a h:mm"
+        return L10n.tr("date_today") + " " + timeFormatter.string(from: date)
     } else if calendar.isDateInYesterday(date) {
-        formatter.dateFormat = "어제 a h:mm"
+        return L10n.tr("date_yesterday") + " " + timeFormatter.string(from: date)
     } else {
-        formatter.dateFormat = "M월 d일 a h:mm"
+        let dateTimeFormatter = DateFormatter()
+        dateTimeFormatter.locale = Locale.current
+        dateTimeFormatter.dateFormat = DateFormatter.dateFormat(
+            fromTemplate: "MMMdahmm",
+            options: 0,
+            locale: Locale.current
+        )
+        return dateTimeFormatter.string(from: date)
     }
-    return formatter.string(from: date)
 }
 
 extension MainTabFeature {
@@ -110,7 +121,7 @@ extension MainTabFeature {
                         questionText: questionText,
                         peerAnswer: answerText,
                         myAnswer: answerText,
-                        peerAnswerTime: answerTime.isEmpty ? "오늘" : answerTime
+                        peerAnswerTime: answerTime.isEmpty ? L10n.tr("date_today") : answerTime
                     ))
                     return .none
 
@@ -530,8 +541,8 @@ extension MainTabFeature {
                         questionText: questionText,
                         peerAnswer: peerAnswer,
                         myAnswer: myAnswer,
-                        peerAnswerTime: peerAnswerTime.isEmpty ? "오늘" : peerAnswerTime,
-                        myAnswerTime: myAnswerTime.isEmpty ? "오늘" : myAnswerTime
+                        peerAnswerTime: peerAnswerTime.isEmpty ? L10n.tr("date_today") : peerAnswerTime,
+                        myAnswerTime: myAnswerTime.isEmpty ? L10n.tr("date_today") : myAnswerTime
                     ))
                     return .none
 

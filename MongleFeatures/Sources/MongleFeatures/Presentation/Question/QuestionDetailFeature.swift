@@ -175,11 +175,11 @@ public struct QuestionDetailFeature {
                     return .none
                 }
                 guard state.isValidAnswer else {
-                    state.appError = .domain("답변을 입력해주세요.")
+                    state.appError = .domain(L10n.tr("error_answer_empty"))
                     return .none
                 }
                 guard state.question.dailyQuestionId != nil else {
-                    state.appError = .domain("질문 정보를 불러올 수 없습니다.")
+                    state.appError = .domain(L10n.tr("error_question_load"))
                     return .none
                 }
 

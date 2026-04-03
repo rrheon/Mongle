@@ -97,7 +97,7 @@ public struct WriteQuestionView: View {
 
             HStack {
                 Spacer()
-                Text("\(store.questionText.count) 자")
+                Text(L10n.tr("write_char_count", store.questionText.count))
                     .font(MongleFont.caption())
                     .foregroundColor(MongleColor.textHint)
             }

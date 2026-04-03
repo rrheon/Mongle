@@ -339,6 +339,30 @@
 "heart_cost_skip_btn" = "질문 넘기기";
 "heart_cost_edit_btn" = "수정하기";
 
+/* Heart Info Popup */
+"heart_info_replace" = "질문 다시받기에 하트 1개가 사용돼요";
+"heart_info_write" = "나만의 질문 작성에 하트 1개가 사용돼요";
+"heart_info_nudge" = "재촉하기에 하트 1개가 사용돼요";
+"heart_info_daily" = "매일 오전 6시에 하트 1개가 충전돼요";
+"heart_info_answer" = "답변을 완료하면 하트 1개를 얻을 수 있어요";
+
+/* Peer Answer */
+"peer_today_question" = "오늘의 질문";
+
+/* Validation */
+"error_answer_empty" = "답변을 입력해주세요.";
+"error_question_load" = "질문 정보를 불러올 수 없습니다.";
+
+/* Group Leave */
+"group_leave_too_soon" = "그룹 생성 후 24시간이 지나야 해제할 수 있어요.\n%d시간 후에 다시 시도해 주세요.";
+
+/* Character Count */
+"write_char_count" = "%d 자";
+
+/* Date Fallback */
+"date_today" = "오늘";
+"date_yesterday" = "어제";
+
 /* Ad Errors */
 "error_ad_load_failed" = "광고를 불러올 수 없어요. 다시 시도해주세요.";
 "error_already_answered_skip" = "이미 답변한 질문은 넘길 수 없어요";

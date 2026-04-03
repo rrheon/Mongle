@@ -420,7 +420,7 @@ public struct GroupSelectFeature {
                 let hoursSinceCreation = Date().timeIntervalSince(group.createdAt) / 3600
                 if hoursSinceCreation < 24 {
                     let hoursLeft = Int(ceil(24 - hoursSinceCreation))
-                    state.leaveTooSoonMessage = "그룹 생성 후 24시간이 지나야 해제할 수 있어요.\n\(hoursLeft)시간 후에 다시 시도해 주세요."
+                    state.leaveTooSoonMessage = L10n.tr("group_leave_too_soon", hoursLeft)
                     state.showLeaveTooSoonAlert = true
                     return .none
                 }
