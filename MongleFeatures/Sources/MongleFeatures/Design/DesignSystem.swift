@@ -75,7 +75,7 @@ public enum MongleColor {
     // Text
     public static let textPrimary = Color(hex: "1A1A1A")
     public static let textSecondary = Color(hex: "6D6D6D")
-    public static let textHint = Color(hex: "9E9E9E")
+    public static let textHint = Color(hex: "757575")
 
     // Status
     public static let error = Color(hex: "F44336")

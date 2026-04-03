@@ -132,7 +132,7 @@ struct MainTabView: View {
         case "loved":  return MongleColor.mongglePink
         case "sad":    return MongleColor.monggleBlue
         case "tired":  return MongleColor.monggleOrange
-        default:       return monggleColors[index % monggleColors.count]
+        default:       return MongleColor.mongglePink
         }
     }
 

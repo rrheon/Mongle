@@ -17,7 +17,7 @@ private func monggleColor(for moodId: String?) -> Color {
     case "loved":  return MongleColor.mongglePink
     case "sad":    return MongleColor.monggleBlue
     case "tired":  return MongleColor.monggleOrange
-    default:       return MongleColor.monggleYellow
+    default:       return MongleColor.mongglePink
     }
 }
 
@@ -507,10 +507,13 @@ extension MainTabFeature {
                     state.home.hearts = heartsRemaining
                     state.home.hasSkippedToday = true
                     state.showRefreshToast = true
-                    return .run { send in
-                        try await Task.sleep(nanoseconds: 3_000_000_000)
-                        await send(.dismissRefreshToast)
-                    }
+                    return .merge(
+                        .send(.history(.forceReload)),
+                        .run { send in
+                            try await Task.sleep(nanoseconds: 3_000_000_000)
+                            await send(.dismissRefreshToast)
+                        }
+                    )
 
                 case .skipQuestionResponse(.failure(let error)):
                     state.home.appError = error

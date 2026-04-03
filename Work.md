@@ -1,12 +1,25 @@
 # 작업
 
-질문 넘기에 대한 문제
-- ~~질문넘김 시 UI만적용되고 서버에는 적용이 안되는 모습임~~ ✅
-- ~~다른 그룹에 넘어갔다가 해당 그룹에 오면 답변을 안한 상태로 나옴~~ ✅
-  - ~~하트는 차감된 상태~~
-- ~~하트가 없을 때 광고보기를 누르면 아무것도 일어나지않음~~ ✅
-- ~~Android: 질문넘김이 전체 그룹에 적용되는 문제~~ ✅
-- ~~Android: 다른 사람에게 답변 안한것으로 보이는 문제~~ ✅
+다음의 로직 확인하기
+- ~~그룹선택화면, 홈화면, 기록화면, my화면, 답변상세화면에서 몽글캐릭터(해당 날짜에 사용자가 선택한 색)이 싱크가 맞게 나오는지~~ ✅
+- ~~질문에 대해 답변하기, 수정하기, 스킵하기 등의 로직이 제대로 돌아가는지~~ ✅
+  - ~~해당 작업 후 서버와의 통신이 제대로 이뤄지는지, 각 그룹별로 개별적으로 적용이 되는지~~ ✅
+
+### 검증 결과 및 수정사항
+
+**iOS 색상 싱크:**
+- HomeScreen/QuestionDetail의 default 색상이 불일치 → **모두 Pink으로 통일**
+- HistoryView는 moodId→colorIndex 변환으로 정상 동작 확인
+
+**Android 색상 싱크:**
+- QuestionDetailScreen이 role.ordinal 인덱스 기반 → **answer.moodId 기반으로 수정**
+
+**답변/수정/스킵 로직:**
+- iOS: 답변·수정·스킵 후 서버통신, 히스토리 새로고침, 그룹별 상태 분리 모두 정상
+- Android: 답변 제출 후 가족답변 새로고침 누락 → **onAnswerSubmitted()에 loadFamilyAnswers() 추가**
+- 서버: 답변 수정 시 하트 차감 누락 → **updateAnswer에 하트 -1 트랜잭션 추가**
+- 서버: createAnswer에 가족 소속 질문 검증 누락 → **dailyQuestion 확인 추가 (보안)**
+  
 ## 위치
 디자인: /Users/yong/Desktop/FamTree/MongleUI
 iOS: /Users/yong/Desktop/FamTree
