@@ -264,11 +264,16 @@ extension MainTabFeature {
 
                 case .modal(.presented(.heartCostPopup(.delegate(.watchAdRequested(let costType))))):
                     // 팝업 닫고 광고 재생 → 시청 완료 시 서버에서 하트 지급 후 작업 수행
+                    let hearts = state.home.hearts
                     state.modal = nil
                     let cost = costType.cost
-                    return .run { [costType, cost] send in
+                    return .run { [costType, cost, hearts] send in
                         let earned = await adClient.showRewardedAd()
-                        guard earned else { return }
+                        guard earned else {
+                            // 광고 로드 실패 또는 시청 취소 → 에러 표시
+                            await send(.skipQuestionResponse(.failure(AppError.domain("광고를 불러올 수 없습니다. 다시 시도해주세요."))))
+                            return
+                        }
                         do {
                             let heartsRemaining = try await userRepository.grantAdHearts(amount: cost)
                             await send(.adRewardEarned(costType, heartsRemaining: heartsRemaining))

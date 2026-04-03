@@ -1,35 +1,208 @@
 # 작업
 
-링크를 타고 들어가면 아래와 같은 에러가 발생해
-Received port for identifier response: <(null)> with error:Error Domain=RBSServiceErrorDomain Code=1 "Client not entitled" UserInfo={RBSEntitlement=com.apple.runningboard.process-state, NSLocalizedFailureReason=Client not entitled, RBSPermanent=false}
-
-로그아웃 시 아래와 같은 에러가 발생해 
-An "ifLet" at "MongleFeatures/Root+Reducer.swift:488" received a child action when child state was "nil".
-
-  Action:
-    RootFeature.Action.mainTab(
-      .profile(.onAppear)
-    )
-
-This is generally considered an application logic error, and can happen for a few reasons:
-
-A parent reducer set child state to "nil" before this reducer ran. This reducer must run before any other reducer sets child state to "nil". This ensures that child reducers can handle their actions while their state is still available.
-
-An in-flight effect emitted this action when child state was "nil". While it may be perfectly reasonable to ignore this action, consider canceling the associated effect before child state becomes "nil", especially if it is a long-living effect.
-
-This action was sent to the store while state was "nil". Make sure that actions for this reducer can only be sent from a store when state is non-"nil". In SwiftUI applications, use "IfLetStore".
-
-
-그룹 나가기 시 이런 에러가 발생해
-<decode: bad range for [%{public}s] got [offs:350 len:1369 within:0]> 
-
-몽글 초대 페이지에 나뭇잎말고 몽글로고를 넣어줘
+질문 넘기에 대한 문제
+- ~~질문넘김 시 UI만적용되고 서버에는 적용이 안되는 모습임~~ ✅
+- ~~다른 그룹에 넘어갔다가 해당 그룹에 오면 답변을 안한 상태로 나옴~~ ✅
+  - ~~하트는 차감된 상태~~
+- ~~하트가 없을 때 광고보기를 누르면 아무것도 일어나지않음~~ ✅
+- ~~Android: 질문넘김이 전체 그룹에 적용되는 문제~~ ✅
+- ~~Android: 다른 사람에게 답변 안한것으로 보이는 문제~~ ✅
 ## 위치
 디자인: /Users/yong/Desktop/FamTree/MongleUI
 iOS: /Users/yong/Desktop/FamTree
 Andriod: /Users/yong/Mongle-Android 
 서버: /Users/yong/Desktop/MongleServer
 ---
+## 버그 분석 및 수정 방안
+
+### 버그 1·2: 질문넘김 시 UI만 적용, 서버 미반영 / 그룹 전환 후 미답변 상태 (하트 차감됨)
+
+**근본 원인: 서버 날짜 불일치**
+
+`skipTodayQuestion()` (QuestionService.ts:121)에서 `skippedDate`를 항상 **오늘 날짜**(`this.getToday()`)로 저장함.
+하지만 `getTodayQuestion()` (QuestionService.ts:54-75)은 **전날의 미완료 질문**을 반환할 수 있음.
+
+`hasMySkipped` 판정 (QuestionService.ts:467-470):
+```ts
+membership.skippedDate.getTime() === dailyQuestion.date.getTime()
+// skippedDate = 오늘(4/3) vs dailyQuestion.date = 어제(4/2) → FALSE!
+```
+
+→ 하트는 차감되지만 서버 응답의 `hasMySkipped = false` → 그룹 전환 후 새로고침 시 "미답변" 상태로 표시됨.
+
+**수정:** `skipTodayQuestion()`에서 실제 표시 중인 질문의 날짜를 `skippedDate`로 저장
+
+```
+파일: MongleServer/src/services/QuestionService.ts
+수정 위치: skipTodayQuestion() (line 116-168)
+```
+
+```ts
+// 기존: const today = this.getToday();
+// 변경: 실제 활성 질문 조회 후 그 날짜 사용
+async skipTodayQuestion(userId: string): Promise<SkipQuestionResponse> {
+    const user = await prisma.user.findUnique({ where: { userId } });
+    if (!user) throw Errors.notFound('사용자');
+    if (!user.familyId) throw Errors.badRequest('가족에 속해 있지 않습니다.');
+
+    const today = this.getToday();
+
+    // ★ 실제 표시 중인 질문 조회 (getTodayQuestion과 동일 로직)
+    let dailyQuestion = await prisma.dailyQuestion.findUnique({
+        where: { familyId_date: { familyId: user.familyId, date: today } },
+        include: { question: true },
+    });
+
+    if (!dailyQuestion) {
+        const twoDaysAgo = new Date(today);
+        twoDaysAgo.setUTCDate(twoDaysAgo.getUTCDate() - 2);
+        const recentDQ = await prisma.dailyQuestion.findFirst({
+            where: { familyId: user.familyId, date: { gte: twoDaysAgo, lt: today } },
+            include: { question: true },
+            orderBy: { date: 'desc' },
+        });
+        if (recentDQ) {
+            const allCompleted = await this.isQuestionCompleted(
+                user.familyId, recentDQ.questionId, recentDQ.date
+            );
+            if (!allCompleted) dailyQuestion = recentDQ;
+        }
+    }
+
+    if (!dailyQuestion) throw Errors.notFound('오늘의 질문');
+
+    // ★ skippedDate는 실제 질문의 날짜 사용
+    const questionDate = dailyQuestion.date;
+
+    const membership = await prisma.familyMembership.findUnique({
+        where: { userId_familyId: { userId: user.id, familyId: user.familyId } },
+    });
+    if (!membership) throw Errors.notFound('멤버십');
+
+    const alreadySkipped =
+        membership.skippedDate !== null &&
+        membership.skippedDate.getTime() === questionDate.getTime();
+    if (alreadySkipped) {
+        throw Errors.conflict('오늘 이미 질문을 패스했습니다.');
+    }
+
+    const currentHearts = membership.hearts ?? 0;
+    if (currentHearts < 3) {
+        throw Errors.badRequest('하트가 부족합니다. 하트 3개가 필요합니다.');
+    }
+
+    // 이미 답변한 경우 패스 불가
+    const myAnswer = await prisma.answer.findFirst({
+        where: { questionId: dailyQuestion.question.id, userId: user.id },
+    });
+    if (myAnswer) throw Errors.conflict('이미 답변한 질문은 패스할 수 없습니다.');
+
+    // ★ skippedDate = 질문 날짜, 하트 -3
+    const [updatedMembership] = await prisma.$transaction([
+        prisma.familyMembership.update({
+            where: { userId_familyId: { userId: user.id, familyId: user.familyId } },
+            data: { skippedDate: questionDate, hearts: { decrement: 3 } },
+        }),
+    ]);
+
+    return {
+        message: '질문을 패스했습니다.',
+        heartsRemaining: updatedMembership.hearts,
+    };
+}
+```
+
+---
+
+### 버그 3: 하트가 없을 때 광고보기를 누르면 아무것도 일어나지 않음
+
+**원인 A — Android: 광고보기 버튼 자체가 없음**
+
+`HomeScreen.kt:444-451`에서 하트 부족 시 "하트가 부족합니다" 안내 팝업만 표시하고 "광고 보기" 버튼이 없음.
+(Nudge/답변수정에는 광고 기능 있지만, 질문 넘기기에는 누락됨)
+
+```
+파일: Mongle-Android/.../ui/home/HomeScreen.kt (line 444-451)
+```
+
+수정: iOS의 HeartCostPopupView처럼 "광고 보고 넘기기" 버튼 추가 필요
+```kotlin
+} else {
+    MonglePopup(
+        title = stringResource(R.string.home_hearts_insufficient_title),
+        description = stringResource(R.string.home_hearts_insufficient_skip, currentHearts),
+        primaryLabel = stringResource(R.string.home_watch_ad_skip), // "광고 보고 넘기기"
+        onPrimary = {
+            showSkipConfirmDialog = false
+            // adManager로 광고 재생 → 하트 지급 → 넘기기 실행
+            viewModel.watchAdForSkip(adManager)
+        },
+        secondaryLabel = stringResource(R.string.common_cancel),
+        onSecondary = { showSkipConfirmDialog = false }
+    )
+}
+```
+
+HomeViewModel에 `watchAdForSkip()` 추가 필요:
+```kotlin
+fun watchAdForSkip(adManager: AdManager) {
+    viewModelScope.launch {
+        adManager.showRewardedAd(
+            onRewarded = {
+                viewModelScope.launch {
+                    try {
+                        userRepository.grantAdHearts(3)
+                        skipQuestion()
+                    } catch (e: Exception) {
+                        _uiState.update { it.copy(errorMessage = "광고 보상 지급 실패") }
+                    }
+                }
+            },
+            onFailed = {
+                _uiState.update { it.copy(errorMessage = "광고를 불러올 수 없습니다.") }
+            }
+        )
+    }
+}
+```
+
+**원인 B — iOS: 광고 실패 시 무반응**
+
+`MainTab+Reducer.swift:270-271`에서 광고 시청 실패 시 `guard earned else { return }` 으로 조용히 종료됨.
+팝업은 이미 닫힌 상태(`state.modal = nil`, line 267)이므로 사용자에게 아무 피드백 없음.
+
+```
+파일: MongleFeatures/.../MainTab/Ext/MainTab+Reducer.swift (line 265-279)
+```
+
+수정: 광고 실패 시 에러 토스트 표시
+```swift
+case .modal(.presented(.heartCostPopup(.delegate(.watchAdRequested(let costType))))):
+    state.modal = nil
+    let cost = costType.cost
+    return .run { [costType, cost] send in
+        let earned = await adClient.showRewardedAd()
+        guard earned else {
+            // ★ 실패 시 에러 전달
+            await send(.adLoadFailed)
+            return
+        }
+        // ... 기존 로직
+    }
+```
+
+---
+
+### 수정 우선순위
+
+| 순서 | 버그 | 영향도 | 수정 범위 |
+|------|------|--------|-----------|
+| 1 | 서버 날짜 불일치 (버그1·2) | 높음 — 하트 손실 | 서버 1파일 |
+| 2 | Android 광고 버튼 누락 (버그3-A) | 중간 | Android 2파일 |
+| 3 | iOS 광고 실패 무반응 (버그3-B) | 낮음 | iOS 1파일 |
+
+---
+
 ## 구글 ad정보
 
 iOS
