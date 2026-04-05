@@ -68,8 +68,7 @@ final class DailyQuestionRepository: DailyQuestionRepositoryInterface {
     }
 
     func delete(id: UUID) async throws {
-        // TODO: Delete endpoint 필요
-        fatalError("Delete endpoint not implemented yet")
+        throw DailyQuestionError.unknown("Delete endpoint not supported")
     }
 
     func getCompletedByFamily(familyId: UUID) async throws -> [DailyQuestion] {
