@@ -6,11 +6,11 @@ import UIKit
 extension GroupSelectView {
 
   var inviteLink: String {
-    "https://1cq1kfgvf1.execute-api.ap-northeast-2.amazonaws.com/invite/\(store.inviteCode)"
+    AppConfig.inviteLink(code: store.inviteCode)
   }
 
   var shareText: String {
-    L10n.tr("group_share_text", store.inviteCode, inviteLink)
+    AppConfig.inviteShareText(code: store.inviteCode)
   }
 
   var groupCreatedView: some View {

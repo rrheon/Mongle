@@ -124,7 +124,7 @@ extension RootFeature {
                         let heartPopupKey = "mongle.lastHeartPopupDate.\(familyId)"
                         let todayStart = Calendar.current.startOfDay(for: Date())
                         let lastPopupDate = UserDefaults.standard.object(forKey: heartPopupKey) as? Date
-                        let isFirstAccessToday = lastPopupDate == nil || Calendar.current.startOfDay(for: lastPopupDate!) < todayStart
+                        let isFirstAccessToday = lastPopupDate.map { Calendar.current.startOfDay(for: $0) < todayStart } ?? true
                         if isFirstAccessToday {
                             UserDefaults.standard.set(todayStart, forKey: heartPopupKey)
                             state.showHeartGrantedPopup = true

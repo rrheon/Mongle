@@ -125,11 +125,11 @@ public struct GroupManagementView: View {
 
         // 2. 초대 링크 공유 버튼
         ShareLink(
-          item: "몽글에서 그룹을 만들었어요! 아래 링크로 들어오세요.\nhttps://1cq1kfgvf1.execute-api.ap-northeast-2.amazonaws.com/invite/\(store.inviteCode)"
+          item: AppConfig.inviteShareText(code: store.inviteCode)
         ) {
           MongleInviteRowView(
             title: L10n.tr("group_invite_link"),
-            value: store.inviteCode.isEmpty ? L10n.tr("common_loading") : "https://1cq1kfgvf1.execute-api.ap-northeast-2.amazonaws.com/invite/\(store.inviteCode)",
+            value: store.inviteCode.isEmpty ? L10n.tr("common_loading") : AppConfig.inviteLink(code: store.inviteCode),
             buttonIcon: "square.and.arrow.up.fill",
             buttonTitle: L10n.tr("common_share")
           )
