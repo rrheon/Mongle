@@ -339,6 +339,30 @@
 "heart_cost_skip_btn" = "質問をスキップ";
 "heart_cost_edit_btn" = "修正する";
 
+/* Hearts System */
+"hearts_title" = "ハート 💗";
+"hearts_desc" = "家族にもっと気持ちを伝えたい時に使う小さな応援です。";
+"hearts_today" = "今日現在";
+"hearts_earn_title" = "ハートの獲得方法";
+"hearts_earn_subtitle" = "毎日貯まるハートのルール";
+"hearts_earn_login" = "今日のログイン";
+"hearts_earn_login_sub" = "毎日1回";
+"hearts_earn_answer" = "質問に回答する";
+"hearts_earn_answer_sub" = "回答1回あたり";
+"hearts_use_title" = "ハートの使い道";
+"hearts_use_subtitle" = "必要な時にだけ選択的に使いましょう";
+"hearts_use_nudge" = "回答を催促する";
+"hearts_use_nudge_desc" = "未回答メンバーに通知を送信";
+"hearts_use_nudge_cost" = "ハート1個";
+"hearts_use_replace" = "別の質問をもらう";
+"hearts_use_replace_desc" = "今日の質問を新しい質問に交換";
+"hearts_use_replace_cost" = "ハート3個";
+"hearts_use_skip" = "強制スキップ";
+"hearts_use_skip_desc" = "未回答者がいても次の質問へ";
+"hearts_use_skip_cost" = "ハート5個";
+"hearts_save_title" = "ハートは大切に使う仕組みです";
+"hearts_save_desc" = "回答を続けるほど安定的に貯めることができます。";
+
 /* Heart Info Popup */
 "heart_info_replace" = "質問のもらい直しにハート1個が使用されます";
 "heart_info_write" = "自分だけの質問作成にハート1個が使用されます";

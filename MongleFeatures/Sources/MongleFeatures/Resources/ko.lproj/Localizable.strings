@@ -339,6 +339,30 @@
 "heart_cost_skip_btn" = "질문 넘기기";
 "heart_cost_edit_btn" = "수정하기";
 
+/* Hearts System */
+"hearts_title" = "하트 💗";
+"hearts_desc" = "가족에게 마음을 더 전하고 싶을 때 쓰는 작은 응원이에요.";
+"hearts_today" = "오늘 기준";
+"hearts_earn_title" = "하트 얻는 방법";
+"hearts_earn_subtitle" = "매일 쌓이는 하트 규칙";
+"hearts_earn_login" = "오늘 접속하기";
+"hearts_earn_login_sub" = "매일 1회";
+"hearts_earn_answer" = "질문에 답변하기";
+"hearts_earn_answer_sub" = "답변 1회당";
+"hearts_use_title" = "하트 사용처";
+"hearts_use_subtitle" = "필요한 순간에만 선택적으로 써요";
+"hearts_use_nudge" = "답변 재촉하기";
+"hearts_use_nudge_desc" = "미답변 멤버에게 알림 전송";
+"hearts_use_nudge_cost" = "하트 1개";
+"hearts_use_replace" = "다른 질문 받기";
+"hearts_use_replace_desc" = "오늘 질문을 새 질문으로 교체";
+"hearts_use_replace_cost" = "하트 3개";
+"hearts_use_skip" = "강제 질문 넘기기";
+"hearts_use_skip_desc" = "미답변 인원 있어도 다음 질문으로";
+"hearts_use_skip_cost" = "하트 5개";
+"hearts_save_title" = "하트는 아껴 쓰는 구조예요";
+"hearts_save_desc" = "답변을 꾸준히 남길수록 더 안정적으로 모을 수 있어요.";
+
 /* Heart Info Popup */
 "heart_info_replace" = "질문 다시받기에 하트 1개가 사용돼요";
 "heart_info_write" = "나만의 질문 작성에 하트 1개가 사용돼요";

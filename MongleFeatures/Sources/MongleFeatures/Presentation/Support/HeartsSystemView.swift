@@ -18,11 +18,11 @@ public struct HeartsSystemView: View {
                 )
 
                 VStack(alignment: .leading, spacing: MongleSpacing.md) {
-                    Text("하트 💗")
+                    Text(L10n.tr("hearts_title"))
                         .font(MongleFont.heading2())
                         .foregroundColor(.white)
 
-                    Text("가족에게 마음을 더 전하고 싶을 때 쓰는 작은 응원이에요.")
+                    Text(L10n.tr("hearts_desc"))
                         .font(MongleFont.body2())
                         .foregroundColor(.white.opacity(0.88))
                         .lineSpacing(3)
@@ -55,7 +55,7 @@ public struct HeartsSystemView: View {
                 )
                 .clipShape(RoundedRectangle(cornerRadius: MongleRadius.xl))
                 .overlay(alignment: .topTrailing) {
-                    Text("오늘 기준")
+                    Text(L10n.tr("hearts_today"))
                         .font(MongleFont.captionBold())
                         .foregroundColor(.white.opacity(0.9))
                         .padding(.horizontal, MongleSpacing.sm)
@@ -66,33 +66,33 @@ public struct HeartsSystemView: View {
                 }
 
                 VStack(alignment: .leading, spacing: MongleSpacing.sm) {
-                    sectionTitle("하트 얻는 방법", subtitle: "매일 쌓이는 하트 규칙")
+                    sectionTitle(L10n.tr("hearts_earn_title"), subtitle: L10n.tr("hearts_earn_subtitle"))
                     HStack(spacing: MongleSpacing.sm) {
-                        miniHeartCard(title: "오늘 접속하기", subtitle: "매일 1회", value: "+1", tint: MongleColor.heartPastel)
-                        miniHeartCard(title: "질문에 답변하기", subtitle: "답변 1회당", value: "+3", tint: MongleColor.heartPastelLight)
+                        miniHeartCard(title: L10n.tr("hearts_earn_login"), subtitle: L10n.tr("hearts_earn_login_sub"), value: "+1", tint: MongleColor.heartPastel)
+                        miniHeartCard(title: L10n.tr("hearts_earn_answer"), subtitle: L10n.tr("hearts_earn_answer_sub"), value: "+3", tint: MongleColor.heartPastelLight)
                     }
                 }
 
                 VStack(alignment: .leading, spacing: MongleSpacing.sm) {
-                    sectionTitle("하트 사용처", subtitle: "필요한 순간에만 선택적으로 써요")
+                    sectionTitle(L10n.tr("hearts_use_title"), subtitle: L10n.tr("hearts_use_subtitle"))
                     heartsSection(items: [
-                        ("답변 재촉하기", "미답변 멤버에게 알림 전송", "하트 1개"),
-                        ("다른 질문 받기", "오늘 질문을 새 질문으로 교체", "하트 3개"),
-                        ("강제 질문 넘기기", "미답변 인원 있어도 다음 질문으로", "하트 5개"),
+                        (L10n.tr("hearts_use_nudge"), L10n.tr("hearts_use_nudge_desc"), L10n.tr("hearts_use_nudge_cost")),
+                        (L10n.tr("hearts_use_replace"), L10n.tr("hearts_use_replace_desc"), L10n.tr("hearts_use_replace_cost")),
+                        (L10n.tr("hearts_use_skip"), L10n.tr("hearts_use_skip_desc"), L10n.tr("hearts_use_skip_cost")),
                     ])
                 }
 
                 infoStrip(
                     icon: "sparkles",
-                    title: "하트는 아껴 쓰는 구조예요",
-                    description: "답변을 꾸준히 남길수록 더 안정적으로 모을 수 있어요."
+                    title: L10n.tr("hearts_save_title"),
+                    description: L10n.tr("hearts_save_desc")
                 )
             }
             .padding(MongleSpacing.md)
             .padding(.bottom, MongleSpacing.xl)
         }
         .background(MongleColor.background)
-        .navigationTitle("하트 💗")
+        .navigationTitle(L10n.tr("hearts_title"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {

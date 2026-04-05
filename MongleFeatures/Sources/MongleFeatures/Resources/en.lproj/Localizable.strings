@@ -339,6 +339,30 @@
 "heart_cost_skip_btn" = "Skip question";
 "heart_cost_edit_btn" = "Edit";
 
+/* Hearts System */
+"hearts_title" = "Hearts 💗";
+"hearts_desc" = "A small token of support when you want to share more love with family.";
+"hearts_today" = "As of today";
+"hearts_earn_title" = "How to earn hearts";
+"hearts_earn_subtitle" = "Daily heart accumulation rules";
+"hearts_earn_login" = "Daily login";
+"hearts_earn_login_sub" = "Once a day";
+"hearts_earn_answer" = "Answer a question";
+"hearts_earn_answer_sub" = "Per answer";
+"hearts_use_title" = "How to use hearts";
+"hearts_use_subtitle" = "Use selectively when needed";
+"hearts_use_nudge" = "Nudge for answer";
+"hearts_use_nudge_desc" = "Send reminder to unanswered member";
+"hearts_use_nudge_cost" = "1 heart";
+"hearts_use_replace" = "Get new question";
+"hearts_use_replace_desc" = "Replace today's question with a new one";
+"hearts_use_replace_cost" = "3 hearts";
+"hearts_use_skip" = "Force skip question";
+"hearts_use_skip_desc" = "Move to next question even with unanswered members";
+"hearts_use_skip_cost" = "5 hearts";
+"hearts_save_title" = "Hearts are designed to be used wisely";
+"hearts_save_desc" = "Answering consistently helps you accumulate more hearts.";
+
 /* Heart Info Popup */
 "heart_info_replace" = "1 heart is used for replacing a question";
 "heart_info_write" = "1 heart is used for writing your own question";
