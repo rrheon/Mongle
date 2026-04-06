@@ -242,26 +242,33 @@ extension RootFeature {
                     return .none
 
                 case .showLoginScreen:
+                    // appState만 먼저 전환 → MainTabView가 화면에서 사라짐
+                    // mainTab/questionDetail은 다음 tick에서 정리해 in-flight 자식 액션이 안전히 처리되도록 함
                     state.appState = .unauthenticated
-                    state.mainTab = nil
-                    state.questionDetail = nil
-                    state.selectedQuestion = nil
-                    return .none
+                    return .run { send in
+                        await Task.yield()
+                        await send(.completeLogout)
+                    }
 
                 case .logout:
-                    // appState를 먼저 변경하여 뷰가 LoginView로 전환된 후 mainTab을 정리
-                    // (순서 역전 시 MainTabView가 nil 상태의 mainTab에 액션을 보내는 TCA 경고 발생)
+                    // appState만 먼저 전환 → MainTabView가 LoginView로 교체되며 ProfileView 등의 onAppear가 더 이상 dispatch되지 않음
+                    // mainTab nil 처리는 completeLogout에서 다음 runloop tick에 수행
                     state.appState = .unauthenticated
-                    state.mainTab = nil
-                    state.questionDetail = nil
-                    state.selectedQuestion = nil
                     state.currentUser = nil
                     state.loginProviderType = nil
                     state.login = LoginFeature.State()
                     state.groupSelect = GroupSelectFeature.State()
-                    return .run { [authRepository] _ in
+                    return .run { [authRepository] send in
                         try? await authRepository.logout()
+                        await Task.yield()
+                        await send(.completeLogout)
                     }
+
+                case .completeLogout:
+                    state.mainTab = nil
+                    state.questionDetail = nil
+                    state.selectedQuestion = nil
+                    return .none
 
                 // MARK: MainTab Delegate
                 case .mainTab(.delegate(.navigateToQuestionDetail)):
