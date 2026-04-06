@@ -78,8 +78,6 @@ extension APIEndpoint {
 // MARK: - Auth Endpoints
 
 enum AuthEndpoint: APIEndpoint {
-    case login(email: String, password: String)
-    case signup(name: String, email: String, password: String, role: String)
     /// 소셜 로그인 단일 엔드포인트.
     /// provider: "apple" | "kakao" | "naver" | "google"
     /// fields: 제공자별 페이로드 (SocialLoginCredential.fields)
@@ -92,10 +90,6 @@ enum AuthEndpoint: APIEndpoint {
 
     var path: String {
         switch self {
-        case .login:
-            return "/auth/login"
-        case .signup:
-            return "/auth/signup"
         case .socialLogin:
             return "/auth/social"
         case .logout:
@@ -111,7 +105,7 @@ enum AuthEndpoint: APIEndpoint {
 
     var method: HTTPMethod {
         switch self {
-        case .login, .signup, .socialLogin, .logout, .refreshToken:
+        case .socialLogin, .logout, .refreshToken:
             return .post
         case .deleteAccount:
             return .delete
@@ -125,12 +119,6 @@ enum AuthEndpoint: APIEndpoint {
         encoder.keyEncodingStrategy = .convertToSnakeCase
 
         switch self {
-        case .login(let email, let password):
-            let dto = LoginRequestDTO(email: email, password: password)
-            return try? encoder.encode(dto)
-        case .signup(let name, let email, let password, let role):
-            let dto = SignupRequestDTO(email: email, name: name, password: password, role: role)
-            return try? encoder.encode(dto)
         case .socialLogin(let provider, let fields):
             var body = fields
             body["provider"] = provider

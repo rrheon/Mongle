@@ -9,37 +9,8 @@ import Foundation
 
 // MARK: - Login DTOs
 
-/// 로그인 요청 DTO
-struct LoginRequestDTO: Codable {
-    let email: String
-    let password: String
-}
-
-/// 로그인 응답 DTO
+/// 로그인 응답 DTO (소셜 로그인 공통)
 struct LoginResponseDTO: Codable {
-    let user: UserDTO
-    let token: String
-    let refreshToken: String?
-
-    enum CodingKeys: String, CodingKey {
-        case user
-        case token
-        case refreshToken = "refresh_token"
-    }
-}
-
-// MARK: - Signup DTOs
-
-/// 회원가입 요청 DTO
-struct SignupRequestDTO: Codable {
-    let email: String
-    let name: String
-    let password: String
-    let role: String
-}
-
-/// 회원가입 응답 DTO
-struct SignupResponseDTO: Codable {
     let user: UserDTO
     let token: String
     let refreshToken: String?
