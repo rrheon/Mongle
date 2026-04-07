@@ -69,6 +69,13 @@ extension GroupSelectView {
       }
 
       newSpaceButton
+
+      #if os(iOS)
+      if !store.groups.isEmpty {
+        AdBannerSection()
+          .padding(.top, MongleSpacing.sm)
+      }
+      #endif
     }
     .overlay {
       if store.showMaxGroupsAlert {

@@ -28,7 +28,7 @@
 "onboarding_group_desc" = "Invite family, friends, couples\nand anyone you want";
 "onboarding_question_title" = "Share your feelings\ntogether daily";
 "onboarding_question_desc" = "Answer new questions daily\nand peek into each other's hearts";
-"onboarding_sample_group" = "My Family 🩷";
+"onboarding_sample_group" = "My Group 🩷";
 "onboarding_sample_question" = "What made you smile today?";
 "onboarding_today_question" = "Today's Question";
 "onboarding_start" = "Get Started";
@@ -63,7 +63,7 @@
 "home_answer_first_answer_desc" = "You haven't answered today yet!";
 "home_answer_first_go" = "Go answer";
 "home_answer_first_later" = "I'll do it later";
-"home_answer_first_note" = "Answering unlocks your family's hearts too.";
+"home_answer_first_note" = "Answering unlocks other members' hearts too.";
 
 /* Question Sheet */
 "sheet_title" = "Today's Question";
@@ -83,7 +83,7 @@
 "detail_answer_placeholder" = "Write about your feelings today.\nAnything is welcome.";
 "detail_submit" = "Submit Answer";
 "detail_edit_submit" = "Edit Answer";
-"detail_family_answers" = "Family Answers (%d)";
+"detail_family_answers" = "Group Answers (%d)";
 "detail_mood_required_title" = "Please select today's Mongle";
 "detail_mood_required_desc" = "Choose the Mongle closest to your mood";
 "detail_edit_confirm_title" = "Edit your answer?";
@@ -107,7 +107,7 @@
 "search_min_length" = "Please enter at least 2 characters";
 "search_no_results" = "No records matching \"%@\"";
 "search_result_count" = "Found %d records";
-"search_empty" = "Search your family's precious records";
+"search_empty" = "Search your group's precious records";
 
 /* Notifications */
 "notif_title" = "Notifications";
@@ -154,9 +154,9 @@
 "group_join_desc" = "Join with your invite code";
 "group_create_title" = "Create New Space";
 "group_create_headline" = "Create our Mongle space";
-"group_create_subtitle" = "Share feelings with family and friends";
+"group_create_subtitle" = "Share feelings with the people you care about";
 "group_name_label" = "Space Name";
-"group_name_placeholder" = "Kim Family";
+"group_name_placeholder" = "My Group";
 "group_name_error" = "Please enter a space name";
 "group_name_hint" = "Family, friends, couples, etc.! (max 10)";
 "group_nickname_label" = "My Nickname";
@@ -168,7 +168,7 @@
 "group_create_btn" = "Create Space";
 "group_join_title" = "Join with Code";
 "group_join_headline" = "Enter your invite code.";
-"group_join_subtitle" = "Enter the code from a friend or family\nto join the space";
+"group_join_subtitle" = "Enter the invite code you received\nto join the space";
 "group_code_label" = "Invite Code";
 "group_code_placeholder" = "Enter invite code";
 "group_code_hint" = "Code with uppercase letters and numbers";
@@ -187,7 +187,7 @@
 
 /* Notification Permission */
 "perm_notif_title" = "Allow notifications 🔔";
-"perm_notif_desc" = "Don't miss updates from your family";
+"perm_notif_desc" = "Don't miss updates from your group";
 "perm_notif_answer" = "When a member answers";
 "perm_notif_nudge" = "When you receive a nudge";
 "perm_notif_question" = "New question notification";
@@ -341,7 +341,7 @@
 
 /* Hearts System */
 "hearts_title" = "Hearts 💗";
-"hearts_desc" = "A small token of support when you want to share more love with family.";
+"hearts_desc" = "A small token of support when you want to share more love with your group.";
 "hearts_today" = "As of today";
 "hearts_earn_title" = "How to earn hearts";
 "hearts_earn_subtitle" = "Daily heart accumulation rules";

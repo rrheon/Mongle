@@ -38,24 +38,14 @@ extension RootFeature {
                             let familyResult = try await familyRepository.getMyFamily()
                             let family = familyResult?.0
                             let familyMembers = familyResult?.1 ?? []
-                            // 오전 11시 이전에는 오늘의 질문을 가져오지 않음 (새 질문은 11시에 제공)
-                            let calendar = Calendar.current
-                            let now = Date()
-                            let questionTime = calendar.date(bySettingHour: 11, minute: 0, second: 0, of: now) ?? now
-                            let todayQuestion: Question? = now >= questionTime
-                                ? try await questionRepository.getTodayQuestion()
-                                : nil
+                            // 서버 스케줄러가 KST 자정에 새 질문을 배정하므로 시각 분기 없이 바로 조회.
+                            // (과거엔 오전 11시 이전엔 어제 질문을 대신 보여주는 limbo 구간이 있었으나,
+                            //  자정 기준으로 통일)
+                            let todayQuestion: Question? = try await questionRepository.getTodayQuestion()
 
-                            // 11시 이전에는 어제 질문을 히스토리에서 가져와 표시
-                            var yesterdayQuestion: Question? = nil
-                            var hasAnsweredYesterday = false
-                            if todayQuestion == nil {
-                                let recentHistory = (try? await questionRepository.getHistory(page: 1, limit: 1)) ?? []
-                                if let latest = recentHistory.first {
-                                    yesterdayQuestion = latest.question
-                                    hasAnsweredYesterday = latest.hasMyAnswer
-                                }
-                            }
+                            // yesterdayQuestion fallback 은 더 이상 필요 없음 — 항상 nil 로 전달
+                            let yesterdayQuestion: Question? = nil
+                            let hasAnsweredYesterday = false
 
                             var memberAnswerStatus: [UUID: Bool] = [:]
                             // 서버 /answers API는 Question.id 기준 (DailyQuestion.id 아님)

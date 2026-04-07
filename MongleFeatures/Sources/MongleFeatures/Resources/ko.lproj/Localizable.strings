@@ -28,7 +28,7 @@
 "onboarding_group_desc" = "가족, 친구, 커플 등\n함께하고 싶은 사람들을 초대해요";
 "onboarding_question_title" = "매일 함께\n마음을 나눠요";
 "onboarding_question_desc" = "매일 새로운 질문에 답하고\n서로의 마음을 들여다보세요";
-"onboarding_sample_group" = "우리 가족 🩷";
+"onboarding_sample_group" = "우리 그룹 🩷";
 "onboarding_sample_question" = "오늘 당신을 웃게 한 건 무엇인가요?";
 "onboarding_today_question" = "오늘의 질문";
 "onboarding_start" = "시작하기";
@@ -55,7 +55,7 @@
 "home_write_question_desc" = "하트 3개를 소모하여 나만의 질문을\n오늘의 질문으로 등록해요.";
 "home_write_btn" = "작성하기";
 "home_skip_title" = "질문을 넘기시겠어요?";
-"home_skip_desc" = "하트 3개를 소모하여 새로운 질문으로\n변경됩니다. 넘긴 후에는 다른 가족의\n답변을 열람할 수 있어요.";
+"home_skip_desc" = "하트 3개를 소모하여 새로운 질문으로\n변경됩니다. 넘긴 후에는 다른 멤버의\n답변을 열람할 수 있어요.";
 "home_skip_btn" = "넘기기";
 "home_hearts_insufficient" = "하트가 부족해요";
 "home_hearts_write_needed" = "질문을 작성하려면 하트 3개가 필요해요.\n현재 하트: %d개";
@@ -63,7 +63,7 @@
 "home_answer_first_answer_desc" = "아직 오늘 답변을 안 했어요!";
 "home_answer_first_go" = "답변하러 가기";
 "home_answer_first_later" = "나중에 할게요";
-"home_answer_first_note" = "답변을 남기면 가족의 마음도 바로 열려요.";
+"home_answer_first_note" = "답변을 남기면 멤버의 마음도 바로 열려요.";
 
 /* Question Sheet */
 "sheet_title" = "오늘의 질문";
@@ -73,7 +73,7 @@
 "sheet_write_question" = "나만의 질문 작성하기";
 "sheet_heart_cost" = "하트 3개 소모";
 "sheet_skip" = "질문 넘기기";
-"sheet_skip_desc" = "하트 3개 소모 · 다른 가족 답변 열람 가능";
+"sheet_skip_desc" = "하트 3개 소모 · 다른 멤버 답변 열람 가능";
 
 /* Question Detail */
 "detail_title" = "마음 남기기";
@@ -83,7 +83,7 @@
 "detail_answer_placeholder" = "오늘의 감정을 자유롭게 적어보세요.\n어떤 이야기든 좋아요.";
 "detail_submit" = "답변 남기기";
 "detail_edit_submit" = "답변 수정하기";
-"detail_family_answers" = "가족의 답변 (%d)";
+"detail_family_answers" = "그룹 답변 (%d)";
 "detail_mood_required_title" = "오늘의 몽글을 선택해주세요";
 "detail_mood_required_desc" = "지금 기분과 가장 비슷한 몽글 캐릭터를 골라보세요";
 "detail_edit_confirm_title" = "답변을 수정할까요?";
@@ -107,7 +107,7 @@
 "search_min_length" = "2글자 이상 입력해 주세요";
 "search_no_results" = "\"%@\"에 맞는 기록이 없어요";
 "search_result_count" = "%d개의 기록을 찾았어요";
-"search_empty" = "가족의 소중한 기록을 검색해보세요";
+"search_empty" = "그룹의 소중한 기록을 검색해보세요";
 
 /* Notifications */
 "notif_title" = "알림";
@@ -154,9 +154,9 @@
 "group_join_desc" = "받은 초대코드로 참여하세요";
 "group_create_title" = "새 공간 만들기";
 "group_create_headline" = "우리만의 몽글 공간을 만들어요";
-"group_create_subtitle" = "가족이나 친구와 함께 마음을 나눠보세요";
+"group_create_subtitle" = "함께할 사람들과 마음을 나눠보세요";
 "group_name_label" = "공간 이름";
-"group_name_placeholder" = "김씨네 가족";
+"group_name_placeholder" = "우리 그룹";
 "group_name_error" = "공간 이름을 입력해주세요";
 "group_name_hint" = "가족, 친한 친구, 커플 등 자유롭게! (최대 10자)";
 "group_nickname_label" = "내 닉네임";
@@ -168,7 +168,7 @@
 "group_create_btn" = "공간 만들기";
 "group_join_title" = "초대코드로 참여하기";
 "group_join_headline" = "초대코드를 입력해주세요.";
-"group_join_subtitle" = "친구나 가족에게 받은 코드를 입력하면\n함께 공간에 참여할 수 있어요";
+"group_join_subtitle" = "받은 초대 코드를 입력하면\n함께 공간에 참여할 수 있어요";
 "group_code_label" = "초대 코드";
 "group_code_placeholder" = "초대 코드를 입력해주세요";
 "group_code_hint" = "대문자와 숫자로 이루어진 코드에요";
@@ -187,7 +187,7 @@
 
 /* Notification Permission */
 "perm_notif_title" = "알림을 허용해 주세요 🔔";
-"perm_notif_desc" = "가족의 소식을 놓치지 않을 수 있어요";
+"perm_notif_desc" = "그룹 소식을 놓치지 않을 수 있어요";
 "perm_notif_answer" = "맴버가 답변했을 때";
 "perm_notif_nudge" = "재촉 알림을 받았을 때";
 "perm_notif_question" = "새 질문 알림";
@@ -247,9 +247,9 @@
 /* Group Management */
 "mgmt_title" = "그룹 관리";
 "mgmt_invite_section" = "그룹 초대";
-"mgmt_invite_desc" = "초대 코드나 링크를 공유해 가족을 초대하세요";
+"mgmt_invite_desc" = "초대 코드나 링크를 공유해 멤버를 초대하세요";
 "mgmt_leave" = "그룹 나가기";
-"mgmt_leave_desc" = "그룹을 나가면 모든 가족과의 답변 기록이 연결 해제됩니다.";
+"mgmt_leave_desc" = "그룹을 나가면 모든 멤버와의 답변 기록이 연결 해제됩니다.";
 "mgmt_leave_btn" = "나가기";
 "mgmt_kick" = "%@님을 내보낼까요?";
 "mgmt_kick_desc" = "해당 멤버는 그룹에서 제외됩니다.";
@@ -274,7 +274,7 @@
 "notif_settings_question_detail" = "매일 오전 새 질문이 등록되면 알림";
 
 /* Toast Messages */
-"toast_skip" = "질문을 넘겼어요. 다른 가족 답변을 확인해보세요!";
+"toast_skip" = "질문을 넘겼어요. 다른 멤버 답변을 확인해보세요!";
 "toast_write" = "나만의 질문을 등록했어요!";
 "toast_nudge" = "재촉 메시지를 보냈어요!";
 "toast_edit" = "답변을 수정했어요!";
@@ -333,7 +333,7 @@
 "heart_cost_skip" = "질문 넘기기";
 "heart_cost_edit" = "답변 수정하기";
 "heart_cost_write_desc" = "나만의 질문을 등록하면\n하트 3개가 소모됩니다.";
-"heart_cost_skip_desc" = "이 질문을 넘기면 하트 3개가 소모됩니다.\n다른 가족의 답변을 바로 볼 수 있어요.";
+"heart_cost_skip_desc" = "이 질문을 넘기면 하트 3개가 소모됩니다.\n다른 멤버의 답변을 바로 볼 수 있어요.";
 "heart_cost_edit_desc" = "답변을 수정하면 하트 1개가 소모됩니다.";
 "heart_cost_write_btn" = "작성하러 가기";
 "heart_cost_skip_btn" = "질문 넘기기";
@@ -341,7 +341,7 @@
 
 /* Hearts System */
 "hearts_title" = "하트 💗";
-"hearts_desc" = "가족에게 마음을 더 전하고 싶을 때 쓰는 작은 응원이에요.";
+"hearts_desc" = "그룹 멤버에게 마음을 더 전하고 싶을 때 쓰는 작은 응원이에요.";
 "hearts_today" = "오늘 기준";
 "hearts_earn_title" = "하트 얻는 방법";
 "hearts_earn_subtitle" = "매일 쌓이는 하트 규칙";
