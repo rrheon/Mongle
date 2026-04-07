@@ -127,7 +127,7 @@ struct MongleTextField: View {
     }
 
     private var borderColor: Color {
-        if errorMessage != nil && !errorMessage!.isEmpty {
+        if let errorMessage, !errorMessage.isEmpty {
             return MongleColor.error
         }
         return isFocused ? MongleColor.primary : MongleColor.border
@@ -190,7 +190,7 @@ struct MongleTextArea: View {
     }
 
     private var borderColor: Color {
-        if errorMessage != nil && !errorMessage!.isEmpty {
+        if let errorMessage, !errorMessage.isEmpty {
             return MongleColor.error
         }
         return isFocused ? MongleColor.primary : MongleColor.border

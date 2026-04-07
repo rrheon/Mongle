@@ -28,7 +28,7 @@
 "onboarding_group_desc" = "家族、友達、カップルなど\n一緒にしたい人を招待しましょう";
 "onboarding_question_title" = "毎日一緒に\n気持ちを分かち合おう";
 "onboarding_question_desc" = "毎日新しい質問に答えて\nお互いの気持ちを覗いてみましょう";
-"onboarding_sample_group" = "私たちの家族 🩷";
+"onboarding_sample_group" = "私たちのグループ 🩷";
 "onboarding_sample_question" = "今日あなたを笑顔にしたものは何ですか？";
 "onboarding_today_question" = "今日の質問";
 "onboarding_start" = "はじめる";
@@ -55,7 +55,7 @@
 "home_write_question_desc" = "ハート3個を消費して自分だけの質問を\n今日の質問として登録します。";
 "home_write_btn" = "作成する";
 "home_skip_title" = "質問をスキップしますか？";
-"home_skip_desc" = "ハート3個を消費して新しい質問に変更されます。\nスキップ後は他の家族の回答を閲覧できます。";
+"home_skip_desc" = "ハート3個を消費して新しい質問に変更されます。\nスキップ後は他のメンバーの回答を閲覧できます。";
 "home_skip_btn" = "スキップ";
 "home_hearts_insufficient" = "ハートが足りません";
 "home_hearts_write_needed" = "質問を作成するにはハート3個が必要です。\n現在のハート: %d個";
@@ -63,7 +63,7 @@
 "home_answer_first_answer_desc" = "まだ今日回答していません！";
 "home_answer_first_go" = "回答しに行く";
 "home_answer_first_later" = "あとでします";
-"home_answer_first_note" = "回答すると家族の気持ちもすぐ見れます。";
+"home_answer_first_note" = "回答するとメンバーの気持ちもすぐ見れます。";
 
 /* Question Sheet */
 "sheet_title" = "今日の質問";
@@ -73,7 +73,7 @@
 "sheet_write_question" = "自分だけの質問を作成する";
 "sheet_heart_cost" = "ハート3個消費";
 "sheet_skip" = "質問をスキップ";
-"sheet_skip_desc" = "ハート3個消費 · 他の家族の回答閲覧可能";
+"sheet_skip_desc" = "ハート3個消費 · 他のメンバーの回答閲覧可能";
 
 /* Question Detail */
 "detail_title" = "気持ちを残す";
@@ -83,7 +83,7 @@
 "detail_answer_placeholder" = "今日の感情を自由に書いてみてください。\nどんな話でも大丈夫です。";
 "detail_submit" = "回答を残す";
 "detail_edit_submit" = "回答を修正する";
-"detail_family_answers" = "家族の回答 (%d)";
+"detail_family_answers" = "グループの回答 (%d)";
 "detail_mood_required_title" = "今日のモングルを選んでください";
 "detail_mood_required_desc" = "今の気分に最も近いモングルキャラクターを選んでください";
 "detail_edit_confirm_title" = "回答を修正しますか？";
@@ -107,7 +107,7 @@
 "search_min_length" = "2文字以上入力してください";
 "search_no_results" = "「%@」に一致する記録がありません";
 "search_result_count" = "%d件の記録が見つかりました";
-"search_empty" = "家族の大切な記録を検索してみましょう";
+"search_empty" = "グループの大切な記録を検索してみましょう";
 
 /* Notifications */
 "notif_title" = "お知らせ";
@@ -154,9 +154,9 @@
 "group_join_desc" = "受け取った招待コードで参加してください";
 "group_create_title" = "新しいスペースを作る";
 "group_create_headline" = "私たちのモングルスペースを作りましょう";
-"group_create_subtitle" = "家族や友達と気持ちを分かち合いましょう";
+"group_create_subtitle" = "大切な人たちと気持ちを分かち合いましょう";
 "group_name_label" = "スペース名";
-"group_name_placeholder" = "田中家";
+"group_name_placeholder" = "マイグループ";
 "group_name_error" = "スペース名を入力してください";
 "group_name_hint" = "家族、親友、カップルなど自由に！（最大10文字）";
 "group_nickname_label" = "ニックネーム";
@@ -168,7 +168,7 @@
 "group_create_btn" = "スペースを作成";
 "group_join_title" = "招待コードで参加する";
 "group_join_headline" = "招待コードを入力してください。";
-"group_join_subtitle" = "友達や家族からもらったコードを入力すると\n一緒にスペースに参加できます";
+"group_join_subtitle" = "受け取った招待コードを入力すると\n一緒にスペースに参加できます";
 "group_code_label" = "招待コード";
 "group_code_placeholder" = "招待コードを入力してください";
 "group_code_hint" = "大文字と数字で構成されたコードです";
@@ -187,7 +187,7 @@
 
 /* Notification Permission */
 "perm_notif_title" = "通知を許可してください 🔔";
-"perm_notif_desc" = "家族のニュースを見逃さないようにしましょう";
+"perm_notif_desc" = "グループのお知らせを見逃さないようにしましょう";
 "perm_notif_answer" = "メンバーが回答した時";
 "perm_notif_nudge" = "催促通知を受けた時";
 "perm_notif_question" = "新しい質問通知";
@@ -274,7 +274,7 @@
 "notif_settings_question_detail" = "毎朝新しい質問が登録されたら通知";
 
 /* Toast Messages */
-"toast_skip" = "質問をスキップしました。他の家族の回答を確認しましょう！";
+"toast_skip" = "質問をスキップしました。他のメンバーの回答を確認しましょう！";
 "toast_write" = "自分だけの質問を登録しました！";
 "toast_nudge" = "催促メッセージを送りました！";
 "toast_edit" = "回答を修正しました！";
@@ -333,11 +333,35 @@
 "heart_cost_skip" = "質問をスキップ";
 "heart_cost_edit" = "回答を修正する";
 "heart_cost_write_desc" = "自分だけの質問を登録すると\nハート3個が消費されます。";
-"heart_cost_skip_desc" = "この質問をスキップするとハート3個が消費されます。\n他の家族の回答をすぐに見れます。";
+"heart_cost_skip_desc" = "この質問をスキップするとハート3個が消費されます。\n他のメンバーの回答をすぐに見れます。";
 "heart_cost_edit_desc" = "回答を修正するとハート1個が消費されます。";
 "heart_cost_write_btn" = "作成しに行く";
 "heart_cost_skip_btn" = "質問をスキップ";
 "heart_cost_edit_btn" = "修正する";
+
+/* Hearts System */
+"hearts_title" = "ハート 💗";
+"hearts_desc" = "グループのメンバーにもっと気持ちを伝えたい時に使う小さな応援です。";
+"hearts_today" = "今日現在";
+"hearts_earn_title" = "ハートの獲得方法";
+"hearts_earn_subtitle" = "毎日貯まるハートのルール";
+"hearts_earn_login" = "今日のログイン";
+"hearts_earn_login_sub" = "毎日1回";
+"hearts_earn_answer" = "質問に回答する";
+"hearts_earn_answer_sub" = "回答1回あたり";
+"hearts_use_title" = "ハートの使い道";
+"hearts_use_subtitle" = "必要な時にだけ選択的に使いましょう";
+"hearts_use_nudge" = "回答を催促する";
+"hearts_use_nudge_desc" = "未回答メンバーに通知を送信";
+"hearts_use_nudge_cost" = "ハート1個";
+"hearts_use_replace" = "別の質問をもらう";
+"hearts_use_replace_desc" = "今日の質問を新しい質問に交換";
+"hearts_use_replace_cost" = "ハート3個";
+"hearts_use_skip" = "強制スキップ";
+"hearts_use_skip_desc" = "未回答者がいても次の質問へ";
+"hearts_use_skip_cost" = "ハート5個";
+"hearts_save_title" = "ハートは大切に使う仕組みです";
+"hearts_save_desc" = "回答を続けるほど安定的に貯めることができます。";
 
 /* Heart Info Popup */
 "heart_info_replace" = "質問のもらい直しにハート1個が使用されます";

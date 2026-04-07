@@ -16,13 +16,11 @@ final class QuestionRepository: QuestionRepositoryInterface {
     }
 
     func create(_ question: Question) async throws -> Question {
-        // TODO: Create endpoint 필요
-        fatalError("Create endpoint not implemented yet")
+        throw QuestionError.unknown("Create endpoint not supported")
     }
 
     func get(id: UUID) async throws -> Question {
-        // TODO: Get by ID endpoint 필요
-        fatalError("Get by ID endpoint not implemented yet")
+        throw QuestionError.unknown("Get by ID endpoint not supported")
     }
 
     func getByOrder(_ order: Int) async throws -> Question? {
@@ -44,13 +42,11 @@ final class QuestionRepository: QuestionRepositoryInterface {
     }
 
     func update(_ question: Question) async throws -> Question {
-        // TODO: Update endpoint 필요
-        fatalError("Update endpoint not implemented yet")
+        throw QuestionError.unknown("Update endpoint not supported")
     }
 
     func delete(id: UUID) async throws {
-        // TODO: Delete endpoint 필요
-        fatalError("Delete endpoint not implemented yet")
+        throw QuestionError.unknown("Delete endpoint not supported")
     }
 
     func getTodayQuestion() async throws -> Question? {

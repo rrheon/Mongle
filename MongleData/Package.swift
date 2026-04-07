@@ -6,8 +6,8 @@ import PackageDescription
 let package = Package(
     name: "MongleData",
     platforms: [
-        .iOS(.v15),
-        .macOS(.v12)
+        .iOS(.v17),
+        .macOS(.v14)
     ],
     products: [
         .library(

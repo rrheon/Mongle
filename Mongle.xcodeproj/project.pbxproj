@@ -36,6 +36,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				Mongle.entitlements,
 			);
 			target = EE964B8F2EE97EF000AD2760 /* Mongle */;
 		};

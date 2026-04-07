@@ -269,8 +269,32 @@ public struct QuestionDetailFeature {
                 } else {
                     state.hearts += 1
                 }
-                state.editCostPopup = HeartCostPopupFeature.State(costType: .editAnswer, hearts: state.hearts)
-                return .none
+                // 광고 시청 완료 → 수정 작업 자동 실행 (다른 광고 보상 기능과 일관)
+                guard let existingAnswer = state.myAnswer else { return .none }
+                state.isSubmitting = true
+                state.appError = nil
+
+                let editAnswerText = state.answerText.trimmingCharacters(in: .whitespacesAndNewlines)
+                let editUserId = state.currentUser?.id ?? UUID()
+                let editQuestionId = state.question.id
+                let editMoodId = state.selectedMoodIndex.map { MoodOption.defaults[$0].id }
+                let updated = Answer(
+                    id: existingAnswer.id,
+                    dailyQuestionId: editQuestionId,
+                    userId: editUserId,
+                    content: editAnswerText,
+                    imageURL: existingAnswer.imageURL,
+                    createdAt: existingAnswer.createdAt,
+                    updatedAt: Date()
+                )
+                return .run { [answerRepository] send in
+                    do {
+                        let result = try await answerRepository.update(updated, moodId: editMoodId)
+                        await send(.submitAnswerResponse(.success(result)))
+                    } catch {
+                        await send(.submitAnswerResponse(.failure(AppError.from(error))))
+                    }
+                }
 
             case .editCostPopup:
                 return .none

@@ -62,7 +62,7 @@ final class AnswerRepository: AnswerRepositoryInterface {
     }
 
     func getByUser(userId: UUID) async throws -> [Answer] {
-        fatalError("Get by user endpoint not implemented")
+        throw AnswerError.unknown("Get by user endpoint not supported")
     }
 
     func update(_ answer: Answer, moodId: String?) async throws -> Answer {
@@ -77,6 +77,6 @@ final class AnswerRepository: AnswerRepositoryInterface {
     }
 
     func delete(id: UUID) async throws {
-        fatalError("Delete endpoint not implemented")
+        throw AnswerError.unknown("Delete endpoint not supported")
     }
 }

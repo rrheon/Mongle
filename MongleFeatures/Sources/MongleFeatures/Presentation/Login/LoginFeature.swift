@@ -41,8 +41,6 @@ public struct LoginFeature {
         /// View의 Provider 인증 실패 (사용자 취소 제외)
         case socialLoginFailed(String)
 
-        case emailLoginTapped
-        case emailSignupTapped
         case browseTapped
         case dismissError
 
@@ -97,12 +95,6 @@ public struct LoginFeature {
             case .loginResponse(.failure(let error)):
                 state.isLoading = false
                 state.errorMessage = error.localizedDescription
-                return .none
-
-            case .emailLoginTapped:
-                return .none
-
-            case .emailSignupTapped:
                 return .none
 
             case .browseTapped:

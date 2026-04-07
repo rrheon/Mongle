@@ -21,37 +21,6 @@ final class AuthRepository: AuthRepositoryInterface {
         self.tokenStorage = tokenStorage
     }
 
-    func login(email: String, password: String) async throws -> User {
-        let endpoint = AuthEndpoint.login(email: email, password: password)
-        let response: LoginResponseDTO = try await apiClient.request(endpoint)
-
-        // 토큰 저장
-        try tokenStorage.saveToken(response.token)
-        if let refreshToken = response.refreshToken {
-            try tokenStorage.saveRefreshToken(refreshToken)
-        }
-
-        return UserMapper.toDomain(response.user)
-    }
-
-    func signup(name: String, email: String, password: String, role: FamilyRole) async throws -> User {
-        let endpoint = AuthEndpoint.signup(
-            name: name,
-            email: email,
-            password: password,
-            role: role.rawValue
-        )
-        let response: SignupResponseDTO = try await apiClient.request(endpoint)
-
-        // 토큰 저장
-        try tokenStorage.saveToken(response.token)
-        if let refreshToken = response.refreshToken {
-            try tokenStorage.saveRefreshToken(refreshToken)
-        }
-
-        return UserMapper.toDomain(response.user)
-    }
-
     func socialLogin(with credential: any SocialLoginCredential) async throws -> User {
         let endpoint = AuthEndpoint.socialLogin(
             provider: credential.providerType.rawValue,

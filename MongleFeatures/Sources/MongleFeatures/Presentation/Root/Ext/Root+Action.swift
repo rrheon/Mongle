@@ -18,6 +18,9 @@ extension RootFeature {
         case loadDataResponse(Result<RootData, Error>)
         case showLoginScreen
         case logout
+        /// 로그아웃 후 다음 runloop tick에 mainTab/questionDetail을 정리
+        /// (in-flight onAppear 등 자식 액션이 nil 상태에 도달하지 않도록 분리)
+        case completeLogout
         case refreshHomeData
         case pendingInviteCode(String?)
         case loadGroupsResponse(Result<[MongleGroup], Error>)

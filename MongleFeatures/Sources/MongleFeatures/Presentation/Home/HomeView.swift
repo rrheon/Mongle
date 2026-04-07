@@ -191,30 +191,16 @@ struct TopBarView: View {
       headerView
 
       // 2단: 오늘의 질문 카드
+      // 서버 스케줄러가 KST 자정에 새 질문을 배정하므로, 클라이언트는
+      // todayQuestion 이 있으면 그대로 노출한다. (과거엔 11시 이전에는
+      // 어제 질문을 표시하는 분기가 있었으나, 자정 기준으로 통일)
       if let question = state.todayQuestion {
         TodayQuestionCard(question: question, onTap: onQuestionTap)
           .padding(.horizontal, 20)
           .padding(.top, 12)
           .padding(.bottom, 8)
-      } else if isBeforeQuestionTime {
-        // 오전 11시 이전, 어제 질문도 없는 경우 안내 카드 표시 (탭 불가)
-        let placeholder = TopBarQuestion(
-          id: UUID(),
-          text: L10n.tr("home_question_placeholder"),
-          isAnswered: false
-        )
-        TodayQuestionCard(question: placeholder, onTap: nil)
-          .padding(.horizontal, 20)
-          .padding(.top, 12)
-          .padding(.bottom, 8)
       }
     }
-  }
-
-  private var isBeforeQuestionTime: Bool {
-    let cal = Calendar.current
-    let questionTime = cal.date(bySettingHour: 11, minute: 0, second: 0, of: Date()) ?? Date()
-    return Date() < questionTime
   }
 
   private var headerView: some View {

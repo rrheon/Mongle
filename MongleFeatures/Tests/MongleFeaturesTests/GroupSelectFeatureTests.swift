@@ -135,7 +135,7 @@ final class GroupSelectFeatureTests: XCTestCase {
 
     // MARK: - Form input
 
-    func testGroupNameChanged_TruncatesTo15Chars() async {
+    func testGroupNameChanged_TruncatesTo10Chars() async {
         let store = TestStore(
             initialState: GroupSelectFeature.State()
         ) {
@@ -146,7 +146,7 @@ final class GroupSelectFeatureTests: XCTestCase {
 
         let longName = String(repeating: "가", count: 20)
         await store.send(.groupNameChanged(longName)) {
-            $0.groupName = String(repeating: "가", count: 15)
+            $0.groupName = String(repeating: "가", count: 10)
             $0.groupNameError = false
         }
     }

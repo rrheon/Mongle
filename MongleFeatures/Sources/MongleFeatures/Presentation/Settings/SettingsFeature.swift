@@ -91,7 +91,7 @@ public struct SettingsFeature {
         var localizedDescription: String {
             switch self {
             case .networkError:
-                return "네트워크 연결을 확인해주세요."
+                return L10n.tr("error_network_check")
             case .unknown(let message):
                 return message
             }
@@ -209,7 +209,7 @@ public struct SettingsFeature {
                 return .none
 
             case .contactUsTapped:
-                if let url = URL(string: "mailto:support@famtree.app") {
+                if let url = URL(string: "mailto:support@monggle.app") {
                     return .send(.delegate(.openURL(url)))
                 }
                 return .none
