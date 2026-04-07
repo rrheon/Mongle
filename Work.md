@@ -1,6 +1,5 @@
 # 작업
-배포 전 테스트를 진행해줘 - 단위테스트 및 통합테스트
-
+지금 오전 12시에 새 질문이 다시 오고 있는데 오후 12시로 수정해줄래?
 ## 위치
 - 디자인: /Users/yong/Desktop/FamTree/MongleUI
 - iOS: /Users/yong/Desktop/FamTree

@@ -11,7 +11,9 @@ public protocol AuthRepositoryInterface: Sendable {
     /// 소셜 로그인 단일 진입점.
     /// 새로운 제공자 추가 시 이 프로토콜은 수정하지 않고
     /// SocialLoginCredential을 구현하는 타입만 추가합니다.
-    func socialLogin(with credential: any SocialLoginCredential) async throws -> User
+    /// 응답에 약관 동의 필요 여부(needsConsent)가 포함되며, true 면
+    /// 클라이언트는 동의 화면으로 라우팅 후 submitConsent 를 호출해야 한다.
+    func socialLogin(with credential: any SocialLoginCredential) async throws -> SocialLoginResult
 
     func logout() async throws
 
@@ -21,6 +23,12 @@ public protocol AuthRepositoryInterface: Sendable {
     func deleteAccount() async throws
 
     func getCurrentUser() async throws -> User?
+
+    /// 약관/개인정보 동의 저장.
+    /// - Parameters:
+    ///   - termsVersion: nil 이면 약관 동의 미갱신
+    ///   - privacyVersion: nil 이면 개인정보 동의 미갱신
+    func submitConsent(termsVersion: String?, privacyVersion: String?) async throws
 }
 
 public enum AuthError: Error, Equatable, Sendable {

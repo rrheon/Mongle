@@ -29,6 +29,13 @@ public struct RootView: View {
             case .unauthenticated:
                 LoginView(store: store.scope(state: \.login, action: \.login))
 
+            case .consentRequired:
+                if let consentStore = store.scope(state: \.consent, action: \.consent) {
+                    ConsentView(store: consentStore)
+                } else {
+                    LoadingView()
+                }
+
             case .guestBrowsing:
                 if let mainTabStore = store.scope(state: \.mainTab, action: \.mainTab) {
                     MainTabView(store: mainTabStore)

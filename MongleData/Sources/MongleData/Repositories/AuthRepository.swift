@@ -21,7 +21,7 @@ final class AuthRepository: AuthRepositoryInterface {
         self.tokenStorage = tokenStorage
     }
 
-    func socialLogin(with credential: any SocialLoginCredential) async throws -> User {
+    func socialLogin(with credential: any SocialLoginCredential) async throws -> SocialLoginResult {
         let endpoint = AuthEndpoint.socialLogin(
             provider: credential.providerType.rawValue,
             fields: credential.fields
@@ -33,7 +33,28 @@ final class AuthRepository: AuthRepositoryInterface {
             try tokenStorage.saveRefreshToken(refreshToken)
         }
 
-        return UserMapper.toDomain(response.user)
+        let user = UserMapper.toDomain(response.user)
+        let required = (response.requiredConsents ?? [])
+            .compactMap(LegalDocType.init(rawValue:))
+        // 서버가 legalVersions 를 안 내려주면 빈 문자열로 두고 needsConsent=false 로 안전하게 처리
+        let versions = LegalVersions(
+            terms: response.legalVersions?.terms ?? "",
+            privacy: response.legalVersions?.privacy ?? ""
+        )
+        return SocialLoginResult(
+            user: user,
+            needsConsent: response.needsConsent ?? false,
+            requiredConsents: required,
+            legalVersions: versions
+        )
+    }
+
+    func submitConsent(termsVersion: String?, privacyVersion: String?) async throws {
+        let endpoint = AuthEndpoint.submitConsent(
+            termsVersion: termsVersion,
+            privacyVersion: privacyVersion
+        )
+        try await apiClient.request(endpoint)
     }
 
     func logout() async throws {

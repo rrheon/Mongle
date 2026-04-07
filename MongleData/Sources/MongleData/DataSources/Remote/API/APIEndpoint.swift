@@ -87,6 +87,8 @@ enum AuthEndpoint: APIEndpoint {
     case deleteAccount
     case getCurrentUser
     case refreshToken(refreshToken: String)
+    /// 약관/개인정보 동의 저장
+    case submitConsent(termsVersion: String?, privacyVersion: String?)
 
     var path: String {
         switch self {
@@ -100,12 +102,14 @@ enum AuthEndpoint: APIEndpoint {
             return "/users/me"
         case .refreshToken:
             return "/auth/refresh"
+        case .submitConsent:
+            return "/auth/consent"
         }
     }
 
     var method: HTTPMethod {
         switch self {
-        case .socialLogin, .logout, .refreshToken:
+        case .socialLogin, .logout, .refreshToken, .submitConsent:
             return .post
         case .deleteAccount:
             return .delete
@@ -126,6 +130,11 @@ enum AuthEndpoint: APIEndpoint {
         case .refreshToken(let refreshToken):
             let dto = RefreshTokenRequestDTO(refreshToken: refreshToken)
             return try? encoder.encode(dto)
+        case .submitConsent(let termsVersion, let privacyVersion):
+            var params: [String: Any] = [:]
+            if let termsVersion { params["termsVersion"] = termsVersion }
+            if let privacyVersion { params["privacyVersion"] = privacyVersion }
+            return try? JSONSerialization.data(withJSONObject: params)
         case .logout, .getCurrentUser, .deleteAccount:
             return nil
         }

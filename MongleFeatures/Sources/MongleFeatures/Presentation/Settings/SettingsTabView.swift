@@ -6,11 +6,13 @@
 //
 
 import SwiftUI
+import SafariServices
 import ComposableArchitecture
 import Domain
 
 struct SettingsTabView: View {
     @Bindable var store: StoreOf<SettingsFeature>
+    @State private var legalURL: URL?
 
     var body: some View {
         NavigationStack {
@@ -22,6 +24,7 @@ struct SettingsTabView: View {
                     #endif
                     moodSection
                     groupSection
+                    legalSection
                     accountSection
 
                     Text("몽글 v\(store.appVersion)")
@@ -38,6 +41,10 @@ struct SettingsTabView: View {
             .navigationTitle(L10n.tr("settings_app"))
             .navigationBarTitleDisplayMode(.inline)
             .onAppear { store.send(.onAppear) }
+            .sheet(item: $legalURL) { url in
+                SettingsSafariSheet(url: url)
+                    .ignoresSafeArea()
+            }
             .overlay {
                 if store.showLogoutConfirmation {
                     MonglePopupView(
@@ -187,6 +194,30 @@ struct SettingsTabView: View {
         )
     }
 
+    private var legalSection: some View {
+        settingsSection(
+            title: L10n.tr("settings_legal"),
+            rows: [
+                SettingsRowModel(
+                    icon: "doc.text.fill",
+                    iconColor: MongleColor.textPrimary,
+                    iconBackground: MongleColor.bgNeutralWarm,
+                    title: L10n.tr("settings_terms"),
+                    subtitle: "",
+                    action: { legalURL = LegalLinks.termsURL }
+                ),
+                SettingsRowModel(
+                    icon: "lock.shield.fill",
+                    iconColor: MongleColor.primary,
+                    iconBackground: MongleColor.primaryLight,
+                    title: L10n.tr("settings_privacy"),
+                    subtitle: "",
+                    action: { legalURL = LegalLinks.privacyURL }
+                )
+            ]
+        )
+    }
+
     private var accountSection: some View {
         settingsSection(
             title: L10n.tr("settings_account"),
@@ -285,6 +316,16 @@ struct SettingsTabView: View {
             .clipShape(Capsule())
     }
 
+}
+
+private struct SettingsSafariSheet: UIViewControllerRepresentable {
+    let url: URL
+
+    func makeUIViewController(context: Context) -> SFSafariViewController {
+        SFSafariViewController(url: url)
+    }
+
+    func updateUIViewController(_ uiViewController: SFSafariViewController, context: Context) {}
 }
 
 private struct SettingsRowModel: Identifiable {

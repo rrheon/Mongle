@@ -38,9 +38,8 @@ extension RootFeature {
                             let familyResult = try await familyRepository.getMyFamily()
                             let family = familyResult?.0
                             let familyMembers = familyResult?.1 ?? []
-                            // 서버 스케줄러가 KST 자정에 새 질문을 배정하므로 시각 분기 없이 바로 조회.
-                            // (과거엔 오전 11시 이전엔 어제 질문을 대신 보여주는 limbo 구간이 있었으나,
-                            //  자정 기준으로 통일)
+                            // 서버 스케줄러가 KST 정오에 새 질문을 배정하므로 시각 분기 없이 바로 조회.
+                            // (과거엔 오전 11시 이전엔 어제 질문을 대신 보여주는 limbo 구간이 있었음)
                             let todayQuestion: Question? = try await questionRepository.getTodayQuestion()
 
                             // yesterdayQuestion fallback 은 더 이상 필요 없음 — 항상 nil 로 전달
@@ -326,9 +325,44 @@ extension RootFeature {
                     return .none
 
                 // MARK: Login Delegate
-                case .login(.delegate(.loggedIn(let user, let providerType))):
+                case .login(.delegate(.loggedIn(let user, let providerType, let needsConsent, let requiredConsents, let legalVersions))):
                     state.loginProviderType = providerType
+                    state.currentUser = user
+                    if needsConsent {
+                        // 동의 화면으로 라우팅 — 동의 완료 후 .consent(.delegate(.completed))
+                        // 에서 checkAuthResponse 로 이어진다.
+                        state.consent = ConsentFeature.State(
+                            requiredConsents: requiredConsents,
+                            legalVersions: legalVersions
+                        )
+                        state.appState = .consentRequired
+                        return .none
+                    }
                     return .send(.checkAuthResponse(user))
+
+                // MARK: Consent Delegate
+                case .consent(.delegate(.completed)):
+                    state.consent = nil
+                    let user = state.currentUser
+                    return .send(.checkAuthResponse(user))
+
+                case .consent(.delegate(.cancelled)):
+                    // 동의 거부 → 세션 정리하고 로그인 화면으로
+                    state.consent = nil
+                    state.currentUser = nil
+                    state.loginProviderType = nil
+                    state.login = LoginFeature.State()
+                    state.appState = .unauthenticated
+                    return .run { [authRepository] _ in
+                        try? await authRepository.logout()
+                    }
+
+                case .consent(.delegate(.openURL)):
+                    // ConsentView 가 자체적으로 SafariViewController 시트를 띄우므로 no-op
+                    return .none
+
+                case .consent:
+                    return .none
 
                 case .login(.delegate(.browseAsGuest)):
                     state.currentUser = nil
@@ -491,6 +525,10 @@ extension RootFeature {
 
         .ifLet(\.mainTab, action: \.mainTab) {
             MainTabFeature()
+        }
+
+        .ifLet(\.consent, action: \.consent) {
+            ConsentFeature()
         }
 
         .ifLet(\.$questionDetail, action: \.questionDetail) {
