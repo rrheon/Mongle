@@ -64,6 +64,7 @@ extension RootFeature {
         public var login: LoginFeature.State
         public var groupSelect: GroupSelectFeature.State
         public var mainTab: MainTabFeature.State?
+        public var consent: ConsentFeature.State?
 
         // MARK: Auth
         public var currentUser: User?
@@ -87,6 +88,8 @@ extension RootFeature {
             case onboarding
             case unauthenticated
             case guestBrowsing
+            /// 로그인은 됐지만 약관 동의가 필요한 상태
+            case consentRequired
             case groupSelection
             case authenticated
         }

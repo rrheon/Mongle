@@ -191,9 +191,8 @@ struct TopBarView: View {
       headerView
 
       // 2단: 오늘의 질문 카드
-      // 서버 스케줄러가 KST 자정에 새 질문을 배정하므로, 클라이언트는
-      // todayQuestion 이 있으면 그대로 노출한다. (과거엔 11시 이전에는
-      // 어제 질문을 표시하는 분기가 있었으나, 자정 기준으로 통일)
+      // 서버 스케줄러가 KST 정오에 새 질문을 배정하므로, 클라이언트는
+      // todayQuestion 이 있으면 그대로 노출한다.
       if let question = state.todayQuestion {
         TodayQuestionCard(question: question, onTap: onQuestionTap)
           .padding(.horizontal, 20)

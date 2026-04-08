@@ -33,6 +33,7 @@ extension RootFeature {
         case login(LoginFeature.Action)
         case groupSelect(GroupSelectFeature.Action)
         case mainTab(MainTabFeature.Action)
+        case consent(ConsentFeature.Action)
 
         // MARK: Modal
         case questionDetail(PresentationAction<QuestionDetailFeature.Action>)

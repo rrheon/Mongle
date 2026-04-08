@@ -21,6 +21,23 @@
 "login_apple" = "Appleで続ける";
 "login_browse" = "見てみる";
 
+/* Consent */
+"consent_title" = "規約に同意してください";
+"consent_subtitle" = "モングルをご利用いただくには\n下記項目への同意が必要です。";
+"consent_all" = "すべて同意";
+"consent_age" = "（必須）満14歳以上です";
+"consent_terms" = "（必須）利用規約に同意";
+"consent_privacy" = "（必須）プライバシーポリシーに同意";
+"consent_view" = "見る";
+"consent_submit" = "同意して始める";
+
+/* Settings - Legal */
+"settings_legal" = "規約とポリシー";
+"settings_terms" = "利用規約";
+"settings_privacy" = "プライバシーポリシー";
+"settings_privacy_options" = "広告プライバシー設定";
+"settings_privacy_options_desc" = "パーソナライズド広告の同意を変更";
+
 /* Onboarding */
 "onboarding_welcome_title" = "モングルへようこそ";
 "onboarding_welcome_desc" = "家族や友達と毎日気持ちを分かち合う\n温かいコミュニケーション空間";

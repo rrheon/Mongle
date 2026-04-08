@@ -5,8 +5,9 @@ public enum AppConfig {
     /// 서버 API base URL
     public static let apiBaseURL = "https://1cq1kfgvf1.execute-api.ap-northeast-2.amazonaws.com"
 
-    /// Universal Link 도메인 (AASA 파일은 https://monggle.app/.well-known/apple-app-site-association)
-    public static let webDomain = "https://monggle.app"
+    /// 초대링크 랜딩 서버 — 배포 전이라 자체 도메인 없이 API Gateway 직결 사용.
+    /// Universal Link는 불가(도메인 미보유)하지만, 랜딩 HTML이 monggle:// 커스텀 스킴으로 자동 전환.
+    public static let webDomain = "https://1cq1kfgvf1.execute-api.ap-northeast-2.amazonaws.com"
 
     /// 초대 링크 생성 — AASA `/join/*` 및 서버 /join/:code 라우트와 일치
     public static func inviteLink(code: String) -> String {

@@ -28,6 +28,7 @@
 | 소셜 로그인 | Kakao SDK, Google Sign-In, Apple Sign-In |
 | 네트워크 | URLSession (커스텀 APIClient, 지수 백오프 재시도) |
 | 보안 | Keychain (토큰 저장) |
+| 광고 | Google Mobile Ads + UMP (GDPR/CCPA 동의 수집) |
 | 최소 iOS | iOS 17.0 |
 
 ---
@@ -185,7 +186,7 @@ enum Action {
 | 화면 | 기능 | 상태 |
 |------|------|------|
 | 온보딩 | 슬라이드 + 다시보지않기 | ✅ |
-| 로그인 | 카카오 / 구글 / 애플 소셜 로그인, 이메일 로그인 | ✅ |
+| 로그인 | 카카오 / 구글 / 애플 소셜 로그인 | ✅ |
 | 그룹 선택 | 새 그룹 생성, 초대코드 참여 | ✅ |
 | 홈 | 오늘의 질문, 가족 캐릭터 현황, 스트릭, 하트 팝업 | ✅ |
 | 질문 상세 | 답변 제출·수정, 가족 답변 목록 | ✅ |
@@ -202,6 +203,9 @@ enum Action {
 | 토큰 자동 갱신 | 401 → refresh → 재시도, 동시 갱신 방지 | ✅ |
 | 오프라인 감지 | NWPathMonitor 기반 즉시 차단 | ✅ |
 | 푸시 알림 권한 | 최초 로그인 시 1회 요청 | ✅ |
+| 광고 (AdMob) | 리워드/배너 광고, UMP(GDPR/CCPA) 동의 폼, ATT 프롬프트 | ✅ |
+| 약관/개인정보 | Notion 호스팅 페이지를 기기 언어(ko/en/ja) 로 자동 선택 | ✅ |
+| 다국어 지원 | ko / en / ja 리소스 번들 | ✅ |
 
 ---
 
@@ -244,7 +248,8 @@ SPM 패키지는 첫 빌드 시 자동으로 다운로드됩니다.
 | [swift-composable-architecture](https://github.com/pointfreeco/swift-composable-architecture) | TCA 프레임워크 |
 | [kakao-ios-sdk](https://github.com/kakao/kakao-ios-sdk) | 카카오 소셜 로그인 |
 | [GoogleSignIn-iOS](https://github.com/google/GoogleSignIn-iOS) | 구글 소셜 로그인 |
-| Alamofire | HTTP 네트워킹 (MongleData) |
+| [swift-package-manager-google-mobile-ads](https://github.com/googleads/swift-package-manager-google-mobile-ads) | AdMob 배너/리워드 광고 |
+| [swift-package-manager-google-user-messaging-platform](https://github.com/googleads/swift-package-manager-google-user-messaging-platform) | UMP (GDPR/CCPA 동의 수집 CMP) |
 
 ---
 
@@ -254,4 +259,4 @@ SPM 패키지는 첫 빌드 시 자동으로 다운로드됩니다.
 |--------|------|
 | `MongleData` | 데이터 레이어 Swift Package (git submodule) |
 | `Mongle-Android` | Android 포팅 버전 |
-| `FamTreeServer` | Node.js + Prisma 백엔드 서버 |
+| `MongleServer` | Node.js + Prisma 백엔드 서버 |

@@ -21,6 +21,23 @@
 "login_apple" = "Continue with Apple";
 "login_browse" = "Browse";
 
+/* Consent */
+"consent_title" = "Please agree to the terms";
+"consent_subtitle" = "We need your consent to the items\nbelow to use Mongle.";
+"consent_all" = "Agree to all";
+"consent_age" = "(Required) I am 14 or older";
+"consent_terms" = "(Required) Terms of Service";
+"consent_privacy" = "(Required) Privacy Policy";
+"consent_view" = "View";
+"consent_submit" = "Agree and continue";
+
+/* Settings - Legal */
+"settings_legal" = "Legal";
+"settings_terms" = "Terms of Service";
+"settings_privacy" = "Privacy Policy";
+"settings_privacy_options" = "Ad Privacy Options";
+"settings_privacy_options_desc" = "Manage personalized ad consent";
+
 /* Onboarding */
 "onboarding_welcome_title" = "Welcome to Mongle";
 "onboarding_welcome_desc" = "A warm space to share your feelings\nwith family and friends daily";

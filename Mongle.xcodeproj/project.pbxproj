@@ -130,11 +130,13 @@
 				};
 			};
 			buildConfigurationList = EE964B8B2EE97EF000AD2760 /* Build configuration list for PBXProject "Mongle" */;
-			developmentRegion = en;
+			developmentRegion = ko;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
+				ko,
+				ja,
 			);
 			mainGroup = EE964B872EE97EF000AD2760;
 			minimizedProjectReferenceProxies = 1;

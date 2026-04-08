@@ -46,7 +46,7 @@ public struct LoginFeature {
 
         // MARK: - Internal Actions
 
-        case loginResponse(Result<User, AuthError>)
+        case loginResponse(Result<SocialLoginResult, AuthError>)
         case setAppError(AppError?)
 
         // MARK: - Delegate Actions
@@ -54,7 +54,9 @@ public struct LoginFeature {
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
-            case loggedIn(User, SocialProviderType?)
+            /// 로그인 성공.
+            /// - needsConsent: true 면 RootFeature 가 동의 화면으로 라우팅해야 한다.
+            case loggedIn(User, SocialProviderType?, needsConsent: Bool, requiredConsents: [LegalDocType], legalVersions: LegalVersions)
             case browseAsGuest
         }
     }
@@ -76,8 +78,8 @@ public struct LoginFeature {
                 state.lastUsedProviderType = credential.providerType
                 return .run { [credential] send in
                     do {
-                        let user = try await authRepository.socialLogin(with: credential)
-                        await send(.loginResponse(.success(user)))
+                        let result = try await authRepository.socialLogin(with: credential)
+                        await send(.loginResponse(.success(result)))
                     } catch {
                         await send(.setAppError(AppError.from(error)))
                     }
@@ -88,9 +90,15 @@ public struct LoginFeature {
                 state.errorMessage = message
                 return .none
 
-            case .loginResponse(.success(let user)):
+            case .loginResponse(.success(let result)):
                 state.isLoading = false
-                return .send(.delegate(.loggedIn(user, state.lastUsedProviderType)))
+                return .send(.delegate(.loggedIn(
+                    result.user,
+                    state.lastUsedProviderType,
+                    needsConsent: result.needsConsent,
+                    requiredConsents: result.requiredConsents,
+                    legalVersions: result.legalVersions
+                )))
 
             case .loginResponse(.failure(let error)):
                 state.isLoading = false
