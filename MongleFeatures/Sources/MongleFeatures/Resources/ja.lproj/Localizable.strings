@@ -35,6 +35,8 @@
 "settings_legal" = "規約とポリシー";
 "settings_terms" = "利用規約";
 "settings_privacy" = "プライバシーポリシー";
+"settings_privacy_options" = "広告プライバシー設定";
+"settings_privacy_options_desc" = "パーソナライズド広告の同意を変更";
 
 /* Onboarding */
 "onboarding_welcome_title" = "モングルへようこそ";

@@ -35,6 +35,8 @@
 "settings_legal" = "Legal";
 "settings_terms" = "Terms of Service";
 "settings_privacy" = "Privacy Policy";
+"settings_privacy_options" = "Ad Privacy Options";
+"settings_privacy_options_desc" = "Manage personalized ad consent";
 
 /* Onboarding */
 "onboarding_welcome_title" = "Welcome to Mongle";

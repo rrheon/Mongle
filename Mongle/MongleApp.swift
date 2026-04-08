@@ -64,7 +64,9 @@ struct MongleApp: App {
     init() {
         MongleFont.registerFonts()
         SocialSDK.initialize()
-        GADMobileAds.sharedInstance().start(completionHandler: nil)
+        // GDPR/CCPA 동의 흐름(UMP). KR·JP 는 건너뛰고 즉시 AdMob 초기화,
+        // 그 외 지역은 동의 폼 표시 후 AdMob 초기화한다.
+        ConsentManager.shared.startConsentFlowIfNeeded()
     }
 
     var body: some Scene {

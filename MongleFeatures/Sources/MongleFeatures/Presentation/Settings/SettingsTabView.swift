@@ -195,26 +195,40 @@ struct SettingsTabView: View {
     }
 
     private var legalSection: some View {
-        settingsSection(
-            title: L10n.tr("settings_legal"),
-            rows: [
+        var rows: [SettingsRowModel] = [
+            SettingsRowModel(
+                icon: "doc.text.fill",
+                iconColor: MongleColor.textPrimary,
+                iconBackground: MongleColor.bgNeutralWarm,
+                title: L10n.tr("settings_terms"),
+                subtitle: "",
+                action: { legalURL = LegalLinks.termsURL }
+            ),
+            SettingsRowModel(
+                icon: "lock.shield.fill",
+                iconColor: MongleColor.primary,
+                iconBackground: MongleColor.primaryLight,
+                title: L10n.tr("settings_privacy"),
+                subtitle: "",
+                action: { legalURL = LegalLinks.privacyURL }
+            )
+        ]
+        // GDPR/CCPA 대상 사용자에게만 UMP 개인정보 옵션 행을 노출.
+        if store.showPrivacyOptionsRow {
+            rows.append(
                 SettingsRowModel(
-                    icon: "doc.text.fill",
-                    iconColor: MongleColor.textPrimary,
-                    iconBackground: MongleColor.bgNeutralWarm,
-                    title: L10n.tr("settings_terms"),
-                    subtitle: "",
-                    action: { legalURL = LegalLinks.termsURL }
-                ),
-                SettingsRowModel(
-                    icon: "lock.shield.fill",
+                    icon: "slider.horizontal.3",
                     iconColor: MongleColor.primary,
                     iconBackground: MongleColor.primaryLight,
-                    title: L10n.tr("settings_privacy"),
-                    subtitle: "",
-                    action: { legalURL = LegalLinks.privacyURL }
+                    title: L10n.tr("settings_privacy_options"),
+                    subtitle: L10n.tr("settings_privacy_options_desc"),
+                    action: { store.send(.privacyOptionsTapped) }
                 )
-            ]
+            )
+        }
+        return settingsSection(
+            title: L10n.tr("settings_legal"),
+            rows: rows
         )
     }
 

@@ -8,6 +8,9 @@
 import Foundation
 import ComposableArchitecture
 import Domain
+#if os(iOS)
+import UIKit
+#endif
 
 @Reducer
 public struct SettingsFeature {
@@ -22,6 +25,8 @@ public struct SettingsFeature {
         public var showLogoutConfirmation: Bool
         public var showDeleteAccountConfirmation: Bool
         public var errorMessage: String?
+        /// UMP(GDPR/CCPA) 대상 사용자에게만 "개인정보 옵션 다시 열기" 행을 노출한다.
+        public var showPrivacyOptionsRow: Bool
 
         public init(
             currentUser: User? = nil,
@@ -31,7 +36,8 @@ public struct SettingsFeature {
             isLoading: Bool = false,
             showLogoutConfirmation: Bool = false,
             showDeleteAccountConfirmation: Bool = false,
-            errorMessage: String? = nil
+            errorMessage: String? = nil,
+            showPrivacyOptionsRow: Bool = false
         ) {
             self.currentUser = currentUser
             self.loginProviderType = loginProviderType
@@ -41,6 +47,7 @@ public struct SettingsFeature {
             self.showLogoutConfirmation = showLogoutConfirmation
             self.showDeleteAccountConfirmation = showDeleteAccountConfirmation
             self.errorMessage = errorMessage
+            self.showPrivacyOptionsRow = showPrivacyOptionsRow
         }
     }
 
@@ -62,6 +69,7 @@ public struct SettingsFeature {
         case dismissErrorTapped
         case termsOfServiceTapped
         case privacyPolicyTapped
+        case privacyOptionsTapped
         case contactUsTapped
 
         // MARK: - Internal Actions
@@ -102,24 +110,14 @@ public struct SettingsFeature {
 
     public init() {}
 
-    /// 기기 언어에 맞는 법적 문서 URL 반환
-    /// ko → /ko/path, ja → /ja/path, 그 외 → /en/path
-    private static func legalURL(path: String) -> String {
-        let langCode = Locale.current.language.languageCode?.identifier ?? "en"
-        let lang: String
-        switch langCode {
-        case "ko": lang = "ko"
-        case "ja": lang = "ja"
-        default:   lang = "en"
-        }
-        return "https://monggle.app/legal/\(lang)/\(path)"
-    }
-
     public var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                // User data is typically passed from parent, but we can load if needed
+                // UMP 대상 사용자(GDPR/CCPA)에게만 "개인정보 옵션" 행을 노출.
+                #if os(iOS)
+                state.showPrivacyOptionsRow = ConsentManager.shared.isPrivacyOptionsRequired
+                #endif
                 return .none
 
             case .profileEditTapped:
@@ -195,18 +193,25 @@ public struct SettingsFeature {
                 return .none
 
             case .termsOfServiceTapped:
-                let termsURL = Self.legalURL(path: "terms")
-                if let url = URL(string: termsURL) {
-                    return .send(.delegate(.openURL(url)))
-                }
-                return .none
+                return .send(.delegate(.openURL(LegalLinks.termsURL)))
 
             case .privacyPolicyTapped:
-                let privacyURL = Self.legalURL(path: "privacy")
-                if let url = URL(string: privacyURL) {
-                    return .send(.delegate(.openURL(url)))
+                return .send(.delegate(.openURL(LegalLinks.privacyURL)))
+
+            case .privacyOptionsTapped:
+                #if os(iOS)
+                // UMP 동의 재설정 폼 노출. 비GDPR/CCPA 사용자는 폼이 열리지 않고 에러가 무시된다.
+                return .run { _ in
+                    await MainActor.run {
+                        guard let rootVC = UIApplication.shared.connectedScenes
+                            .compactMap({ ($0 as? UIWindowScene)?.keyWindow?.rootViewController })
+                            .first else { return }
+                        ConsentManager.shared.presentPrivacyOptionsForm(from: rootVC, completion: nil)
+                    }
                 }
+                #else
                 return .none
+                #endif
 
             case .contactUsTapped:
                 if let url = URL(string: "mailto:support@monggle.app") {
