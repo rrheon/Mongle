@@ -2,6 +2,15 @@ import SwiftUI
 import ComposableArchitecture
 import Domain
 
+// MARK: - Action Sheet Content Height Preference
+
+struct ActionSheetContentHeightKey: PreferenceKey {
+  static var defaultValue: CGFloat = 0
+  static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+    value = max(value, nextValue())
+  }
+}
+
 // MARK: - Select Step
 
 extension GroupSelectView {
@@ -166,12 +175,29 @@ extension GroupSelectView {
 
   var actionSheetContent: some View {
     VStack(alignment: .leading, spacing: 0) {
-      Text(L10n.tr("group_what_to_do"))
-        .font(MongleFont.body1Bold())
-        .foregroundColor(MongleColor.textPrimary)
-        .padding(.horizontal, MongleSpacing.lg)
-        .padding(.top, MongleSpacing.lg)
-        .padding(.bottom, MongleSpacing.md)
+      // 상단: 제목 + 닫기 X 버튼
+      HStack(alignment: .center) {
+        Text(L10n.tr("group_what_to_do"))
+          .font(MongleFont.body1Bold())
+          .foregroundColor(MongleColor.textPrimary)
+
+        Spacer(minLength: MongleSpacing.sm)
+
+        Button {
+          store.send(.actionSheetDismissed)
+        } label: {
+          Image(systemName: "xmark")
+            .font(.system(size: 14, weight: .semibold))
+            .foregroundColor(MongleColor.textSecondary)
+            .frame(width: 32, height: 32)
+            .background(MongleColor.bgNeutral)
+            .clipShape(Circle())
+        }
+        .buttonStyle(.plain)
+      }
+      .padding(.horizontal, MongleSpacing.lg)
+      .padding(.top, MongleSpacing.lg)
+      .padding(.bottom, MongleSpacing.md)
 
       VStack(spacing: 0) {
         actionSheetRow(
@@ -197,9 +223,17 @@ extension GroupSelectView {
       .background(Color.white)
       .cornerRadius(MongleRadius.xl)
       .padding(.horizontal, MongleSpacing.md)
-
-      Spacer()
+      .padding(.bottom, MongleSpacing.lg)
     }
+    .frame(maxWidth: .infinity, alignment: .top)
+    .background(
+      GeometryReader { geo in
+        Color.clear.preference(
+          key: ActionSheetContentHeightKey.self,
+          value: geo.size.height
+        )
+      }
+    )
     .background(MongleColor.background)
   }
 
@@ -228,7 +262,7 @@ extension GroupSelectView {
             .foregroundColor(MongleColor.textSecondary)
         }
 
-        Spacer()
+        Spacer(minLength: 0)
 
         Image(systemName: "chevron.right")
           .font(.system(size: 14))
@@ -236,6 +270,8 @@ extension GroupSelectView {
       }
       .padding(.horizontal, MongleSpacing.md)
       .padding(.vertical, MongleSpacing.md)
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .contentShape(Rectangle())
     }
     .buttonStyle(.plain)
   }

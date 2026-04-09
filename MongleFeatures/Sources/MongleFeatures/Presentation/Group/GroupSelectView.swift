@@ -11,6 +11,18 @@ public struct GroupSelectView: View {
   @State var codeCopied = false
   @State var linkCopied = false
 
+  // 바텀시트의 실측 높이 (컨텐츠 PreferenceKey로 업데이트)
+  @State var actionSheetHeight: CGFloat = 260
+
+  // 디텐트 안전 범위. 0/NaN/비정상 값 방지 + 디바이스 최대 높이 초과 방지.
+  static let minActionSheetHeight: CGFloat = 200
+  static let maxActionSheetHeight: CGFloat = 520
+
+  static func clampedActionSheetHeight(_ value: CGFloat) -> CGFloat {
+    guard value.isFinite else { return minActionSheetHeight }
+    return max(minActionSheetHeight, min(value, maxActionSheetHeight))
+  }
+
   @FocusState var createGroupFocus: CreateGroupFocusField?
   @FocusState var joinGroupFocus: JoinGroupFocusField?
 
@@ -50,6 +62,10 @@ public struct GroupSelectView: View {
       }
       .background(MongleColor.background)
       .toolbar(.hidden, for: .navigationBar)
+      .onAppear {
+        // 화면 진입 시 알림 미읽음 상태를 갱신해 우상단 배지를 정확히 표시
+        store.send(.onAppear)
+      }
       .mongleErrorToast(
         error: store.appError,
         onDismiss: { store.send(.dismissError) }
@@ -66,8 +82,17 @@ public struct GroupSelectView: View {
       set: { if !$0 { store.send(.actionSheetDismissed) } }
     )) {
       actionSheetContent
-        .presentationDetents([.height(240)])
-        .presentationDragIndicator(.visible)
+        .onPreferenceChange(ActionSheetContentHeightKey.self) { measured in
+          let clamped = Self.clampedActionSheetHeight(measured)
+          if abs(clamped - actionSheetHeight) > 0.5 {
+            withAnimation(.spring(duration: 0.25)) {
+              actionSheetHeight = clamped
+            }
+          }
+        }
+        .presentationDetents([.height(actionSheetHeight)])
+        .presentationDragIndicator(.hidden)
+        .presentationBackground(MongleColor.background)
     }
     .overlay(alignment: .bottom) {
       if store.showGroupLeftToast {

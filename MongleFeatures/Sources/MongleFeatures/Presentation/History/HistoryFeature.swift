@@ -24,6 +24,21 @@ public struct MemberAnswer: Equatable, Identifiable, Sendable {
     }
 }
 
+// MARK: - 질문을 넘긴 멤버 표시용
+public struct SkippedMember: Equatable, Identifiable, Sendable {
+    public let id: UUID
+    public let userId: UUID
+    public let memberName: String
+    public let colorIndex: Int
+
+    public init(id: UUID = UUID(), userId: UUID, memberName: String, colorIndex: Int) {
+        self.id = id
+        self.userId = userId
+        self.memberName = memberName
+        self.colorIndex = colorIndex
+    }
+}
+
 // MARK: - 히스토리 아이템 (날짜별 질문/답변 요약)
 public struct HistoryItem: Equatable, Identifiable, Sendable {
     public let id: UUID
@@ -35,6 +50,8 @@ public struct HistoryItem: Equatable, Identifiable, Sendable {
     public let userAnswered: Bool
     public let userSkipped: Bool
     public let memberAnswers: [MemberAnswer]
+    /// 본인을 제외한, 해당 날짜에 질문을 넘긴 다른 가족들 (서버 memberAnswerStatuses 기반)
+    public let otherSkippedMembers: [SkippedMember]
 
     public init(
         id: UUID = UUID(),
@@ -45,7 +62,8 @@ public struct HistoryItem: Equatable, Identifiable, Sendable {
         isCompleted: Bool,
         userAnswered: Bool,
         userSkipped: Bool = false,
-        memberAnswers: [MemberAnswer] = []
+        memberAnswers: [MemberAnswer] = [],
+        otherSkippedMembers: [SkippedMember] = []
     ) {
         self.id = id
         self.date = date
@@ -56,6 +74,7 @@ public struct HistoryItem: Equatable, Identifiable, Sendable {
         self.userAnswered = userAnswered
         self.userSkipped = userSkipped
         self.memberAnswers = memberAnswers
+        self.otherSkippedMembers = otherSkippedMembers
     }
 }
 
@@ -72,6 +91,8 @@ public struct HistoryFeature {
         public var appError: AppError?     // 새 통합 에러 타입
         public var familyId: UUID?
         public var familyMembers: [User] = []
+        /// 현재 로그인 사용자. 질문 넘김 카드를 렌더링할 때 이름/컬러를 표기하기 위해 사용한다.
+        public var currentUser: User?
         /// 이미 로드한 월 목록 (캐시). 같은 월은 재요청하지 않음.
         public var loadedMonths: Set<String> = []
 
@@ -99,12 +120,14 @@ public struct HistoryFeature {
             selectedDate: Date = Date(),
             currentMonth: Date = Date(),
             familyId: UUID? = nil,
-            familyMembers: [User] = []
+            familyMembers: [User] = [],
+            currentUser: User? = nil
         ) {
             self.selectedDate = selectedDate
             self.currentMonth = currentMonth
             self.familyId = familyId
             self.familyMembers = familyMembers
+            self.currentUser = currentUser
         }
 
         private func generateCalendarDays(for month: Date) -> [Date] {
@@ -202,6 +225,7 @@ public struct HistoryFeature {
                     return .none
                 }
                 let totalMembers = max(state.familyMembers.count, 1)
+                let currentUserId = state.currentUser?.id
                 return .run { [questionRepository] send in
                     do {
                         let historyQuestions = try await questionRepository.getHistory(page: 1, limit: 60)
@@ -218,6 +242,16 @@ public struct HistoryFeature {
                                     colorIndex: colorIndexFromMoodId(answer.moodId)
                                 )
                             } : []
+                            // 본인을 제외한 "질문을 넘긴" 멤버 목록. 본인은 view 의 skippedSelfCard 로 별도 처리.
+                            let otherSkipped: [SkippedMember] = hq.memberStatuses
+                                .filter { $0.status == .skipped && $0.userId != currentUserId }
+                                .map { m in
+                                    SkippedMember(
+                                        userId: m.userId,
+                                        memberName: m.userName,
+                                        colorIndex: colorIndexFromMoodId(m.colorId)
+                                    )
+                                }
                             let item = HistoryItem(
                                 id: UUID(uuidString: hq.dailyQuestionId) ?? UUID(),
                                 date: hq.date,
@@ -227,7 +261,8 @@ public struct HistoryFeature {
                                 isCompleted: hq.familyAnswerCount >= totalMembers,
                                 userAnswered: hq.hasMyAnswer,
                                 userSkipped: hq.hasMySkipped,
-                                memberAnswers: memberAnswers
+                                memberAnswers: memberAnswers,
+                                otherSkippedMembers: otherSkipped
                             )
                             historyItems[calendar.startOfDay(for: hq.date)] = item
                         }

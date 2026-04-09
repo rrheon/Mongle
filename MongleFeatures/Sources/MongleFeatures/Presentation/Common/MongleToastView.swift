@@ -17,6 +17,7 @@ public enum ToastType {
     case maxGroupsReached  // 그룹 3개 한도 초과
     case alreadyMember     // 이미 속해있는 그룹
     case invalidInviteCode // 유효하지 않은 초대코드
+    case customQuestionExists // 이미 가족 누군가가 오늘의 질문을 작성함
     case appError(AppError) // 앱 공통 오류
 
     var icon: String {
@@ -31,6 +32,7 @@ public enum ToastType {
         case .maxGroupsReached: return "exclamationmark.circle.fill"
         case .alreadyMember:    return "person.crop.circle.badge.exclamationmark.fill"
         case .invalidInviteCode: return "key.slash.fill"
+        case .customQuestionExists: return "pencil.slash"
         case .appError(let e):  return e.icon
         }
     }
@@ -47,6 +49,7 @@ public enum ToastType {
         case .maxGroupsReached: return L10n.tr("toast_max_groups")
         case .alreadyMember:    return L10n.tr("toast_already_member")
         case .invalidInviteCode: return L10n.tr("toast_invalid_code")
+        case .customQuestionExists: return L10n.tr("toast_custom_question_exists")
         case .appError(let e):  return e.toastMessage
         }
     }
@@ -63,6 +66,7 @@ public enum ToastType {
         case .maxGroupsReached: return MongleColor.error
         case .alreadyMember:    return MongleColor.error
         case .invalidInviteCode: return MongleColor.error
+        case .customQuestionExists: return MongleColor.error
         case .appError:         return MongleColor.error
         }
     }

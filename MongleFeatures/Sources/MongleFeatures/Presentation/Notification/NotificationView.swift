@@ -172,23 +172,11 @@ private struct NotificationCard: View {
 
     private var iconView: some View {
         Group {
-            if notification.type == .memberAnswered {
-                ZStack {
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                colors: [MongleColor.accentYellowLight, MongleColor.moodHappy],
-                                center: .init(x: 0.35, y: 0.35),
-                                startRadius: 4,
-                                endRadius: 22
-                            )
-                        )
-                    HStack(spacing: 4) {
-                        eye
-                        eye
-                    }
-                    .offset(y: 2)
-                }
+            // 가족 구성원이 트리거한 알림(답변 등록 / 재촉 요청) 은 발신자의 몽글 캐릭터
+            // 현재 색상(서버가 저장한 colorId) 으로 렌더링해 "누가" 보낸 알림인지
+            // 시각적으로 즉시 알 수 있게 한다.
+            if isSenderNotification, let colorId = notification.colorId {
+                MongleMonggle(color: Self.monggleColor(for: colorId), size: 44)
             } else {
                 Circle()
                     .fill(iconBackground)
@@ -200,6 +188,24 @@ private struct NotificationCard: View {
             }
         }
         .frame(width: 44, height: 44)
+    }
+
+    private var isSenderNotification: Bool {
+        switch notification.type {
+        case .memberAnswered, .answerRequest: return true
+        default: return false
+        }
+    }
+
+    private static func monggleColor(for moodId: String) -> Color {
+        switch moodId {
+        case "calm":  return MongleColor.monggleGreen
+        case "happy": return MongleColor.monggleYellow
+        case "loved": return MongleColor.mongglePink
+        case "sad":   return MongleColor.monggleBlue
+        case "tired": return MongleColor.monggleOrange
+        default:      return MongleColor.mongglePink
+        }
     }
 
     private var iconName: String {
@@ -258,12 +264,6 @@ private struct NotificationCard: View {
         Self.relativeFormatter.localizedString(for: notification.createdAt, relativeTo: Date())
     }
 
-    private var eye: some View {
-        Circle()
-            .fill(MongleColor.brown)
-            .frame(width: 6, height: 7)
-            .overlay(Circle().stroke(Color.white, lineWidth: 1))
-    }
 }
 
 #Preview {

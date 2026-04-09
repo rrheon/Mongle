@@ -96,6 +96,16 @@ public struct QuestionSheetView: View {
                             .font(MongleFont.captionBold())
                             .foregroundColor(MongleColor.primary)
                     }
+                } else if store.isSkipped {
+                    Spacer()
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.right.circle.fill")
+                            .font(.system(size: 12))
+                            .foregroundColor(Color.purple)
+                        Text(L10n.tr("home_skipped_label"))
+                            .font(MongleFont.captionBold())
+                            .foregroundColor(Color.purple)
+                    }
                 }
             }
             Text(store.questionText)
@@ -138,14 +148,16 @@ public struct QuestionSheetView: View {
                 store.send(.writeQuestionTapped)
             }
 
-            // 질문 넘기기
-            actionRow(
-                icon: "arrow.right.circle",
-                title: L10n.tr("sheet_skip"),
-                subtitle: L10n.tr("sheet_skip_desc"),
-                iconColor: MongleColor.primary
-            ) {
-                store.send(.refreshQuestionTapped)
+            // 질문 넘기기 — 이미 넘긴 경우 숨김 (서버도 409 거부)
+            if !store.isSkipped && !store.isAnswered {
+                actionRow(
+                    icon: "arrow.right.circle",
+                    title: L10n.tr("sheet_skip"),
+                    subtitle: L10n.tr("sheet_skip_desc"),
+                    iconColor: MongleColor.primary
+                ) {
+                    store.send(.refreshQuestionTapped)
+                }
             }
         }
     }

@@ -14,6 +14,16 @@ struct MainTabView: View {
     @State private var peerAnswerSheetHeight: CGFloat = 400
     @State private var questionSheetHeight: CGFloat = 480
 
+    // 시트 디텐트 안전 범위. 0/음수/NaN 또는 비정상적으로 큰 값이 .presentationDetents(.height:)에
+    // 전달되면 iOS 18에서 런타임 에러가 발생할 수 있어 반드시 클램핑한다.
+    private static let minSheetHeight: CGFloat = 240
+    private static let maxSheetHeight: CGFloat = 900
+
+    private static func clampedSheetHeight(_ value: CGFloat) -> CGFloat {
+        guard value.isFinite else { return minSheetHeight }
+        return max(minSheetHeight, min(value, maxSheetHeight))
+    }
+
     var body: some View {
         tabContent
             .sheet(item: $store.scope(state: \.modal?.peerAnswer, action: \.modal.peerAnswer)) { peerAnswerStore in
@@ -138,7 +148,7 @@ struct MainTabView: View {
 
     private var homeViewSection: some View {
         let currentUserId = store.home.currentUser?.id
-        let memberData: [(name: String, color: Color, hasAnswered: Bool)] = store.home.familyMembers
+        let memberData: [(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool)] = store.home.familyMembers
             .enumerated()
             .map { index, user in
                 let isCurrentUser = user.id == currentUserId
@@ -146,7 +156,8 @@ struct MainTabView: View {
                 return (
                     name: user.name,
                     color: Self.monggleColor(for: moodId, fallback: index),
-                    hasAnswered: store.home.memberAnswerStatus[user.id] ?? false
+                    hasAnswered: store.home.memberAnswerStatus[user.id] ?? false,
+                    hasSkipped: store.home.memberSkippedStatus[user.id] ?? false
                 )
             }
         return HomeView(
@@ -214,10 +225,10 @@ struct MainTabView: View {
             .onPreferenceChange(QuestionSheetContentHeightKey.self) { contentHeight in
                 let total = contentHeight + 60
                 withAnimation(.spring(duration: 0.25)) {
-                    questionSheetHeight = min(total, UIScreen.main.bounds.height * 0.88)
+                    questionSheetHeight = Self.clampedSheetHeight(total)
                 }
             }
-            .presentationDetents([.height(questionSheetHeight)])
+            .presentationDetents([.height(Self.clampedSheetHeight(questionSheetHeight))])
             .presentationDragIndicator(.hidden)
             .presentationCornerRadius(MongleRadius.xl)
             .presentationBackground(MongleColor.cardBackgroundSolid)
@@ -248,6 +259,10 @@ struct MainTabView: View {
                 MongleToastView(type: .answerSubmitted)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
+            if store.showCustomQuestionExistsToast {
+                MongleToastView(type: .customQuestionExists)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
         }
         .padding(.bottom, 90)
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: store.showRefreshToast)
@@ -255,6 +270,7 @@ struct MainTabView: View {
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: store.showNudgeToast)
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: store.showEditAnswerToast)
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: store.showAnswerSubmittedToast)
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: store.showCustomQuestionExistsToast)
     }
 
     // MARK: - Peer Answer Sheet
@@ -264,10 +280,10 @@ struct MainTabView: View {
             .onPreferenceChange(PeerAnswerContentHeightKey.self) { contentHeight in
                 let total = contentHeight + 100
                 withAnimation(.spring(duration: 0.25)) {
-                    peerAnswerSheetHeight = min(total, UIScreen.main.bounds.height * 0.88)
+                    peerAnswerSheetHeight = Self.clampedSheetHeight(total)
                 }
             }
-            .presentationDetents([.height(peerAnswerSheetHeight)])
+            .presentationDetents([.height(Self.clampedSheetHeight(peerAnswerSheetHeight))])
             .presentationDragIndicator(.hidden)
     }
 }

@@ -43,6 +43,13 @@ public struct NotificationFeature {
             unreadCount > 0
         }
 
+        /// 특정 가족 그룹에 한정된 미읽음 여부.
+        /// Home 화면 닫을 때처럼 "현재 그룹 한정" 으로 다시 계산해야 할 때 사용.
+        public func hasUnread(forFamily familyId: UUID?) -> Bool {
+            guard let familyId else { return hasUnread }
+            return notifications.contains { !$0.isRead && $0.familyId == familyId }
+        }
+
         /// 모드에 따라 다른 방식으로 그룹화된 알림 반환
         public var groupedNotifications: [(String, [MongleNotification])] {
             switch mode {

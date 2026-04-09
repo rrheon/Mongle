@@ -35,6 +35,7 @@ extension MainTabFeature {
         public var showNudgeToast = false
         public var showEditAnswerToast = false
         public var showAnswerSubmittedToast = false
+        public var showCustomQuestionExistsToast = false
 
         // MARK: Answer Heart Popup
         public var showAnswerHeartPopup = false

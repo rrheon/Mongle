@@ -54,6 +54,31 @@ final class QuestionRepository: QuestionRepositoryInterface {
         return dto.map { QuestionMapper.toDomain($0) }
     }
 
+    func getTodayQuestionDetailed() async throws -> TodayQuestionDetails? {
+        let dto: DailyQuestionResponseDTO? = try? await apiClient.request(HomeEndpoint.todayQuestion)
+        guard let dto else { return nil }
+        let statuses: [MemberAnswerStatus] = (dto.memberAnswerStatuses ?? []).compactMap { m in
+            guard let userId = UUID(uuidString: m.userId) else { return nil }
+            let status: MemberAnswerStatus.Status
+            switch m.status {
+            case "answered":      status = .answered
+            case "skipped":       status = .skipped
+            case "not_answered":  status = .notAnswered
+            default:              status = .notAnswered
+            }
+            return MemberAnswerStatus(
+                userId: userId,
+                userName: m.userName,
+                colorId: m.colorId,
+                status: status
+            )
+        }
+        return TodayQuestionDetails(
+            question: QuestionMapper.toDomain(dto),
+            memberStatuses: statuses
+        )
+    }
+
     func skipTodayQuestion() async throws -> Int {
         struct SkipResponse: Decodable {
             let heartsRemaining: Int
@@ -90,6 +115,22 @@ final class QuestionRepository: QuestionRepositoryInterface {
                     content: a.content, imageUrl: a.imageUrl, moodId: a.moodId
                 )
             }
+            let memberStatuses: [MemberAnswerStatus] = (dto.memberAnswerStatuses ?? []).compactMap { m in
+                guard let userId = UUID(uuidString: m.userId) else { return nil }
+                let status: MemberAnswerStatus.Status
+                switch m.status {
+                case "answered":     status = .answered
+                case "skipped":      status = .skipped
+                case "not_answered": status = .notAnswered
+                default:             status = .notAnswered
+                }
+                return MemberAnswerStatus(
+                    userId: userId,
+                    userName: m.userName,
+                    colorId: m.colorId,
+                    status: status
+                )
+            }
             return HistoryQuestion(
                 dailyQuestionId: dto.id,
                 question: QuestionMapper.toDomain(dto),
@@ -97,7 +138,8 @@ final class QuestionRepository: QuestionRepositoryInterface {
                 hasMyAnswer: dto.hasMyAnswer,
                 hasMySkipped: dto.hasMySkipped,
                 familyAnswerCount: dto.familyAnswerCount,
-                answers: answers
+                answers: answers,
+                memberStatuses: memberStatuses
             )
         }
     }

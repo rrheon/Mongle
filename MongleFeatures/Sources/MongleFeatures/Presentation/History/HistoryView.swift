@@ -42,7 +42,18 @@ public struct HistoryView: View {
                                 ForEach(item.memberAnswers) { answer in
                                     answerCard(answer)
                                 }
-                                if item.memberAnswers.isEmpty {
+                                // 본인이 질문을 넘긴 경우 (서버 answers 에는 없으므로 클라이언트 합성)
+                                if item.userSkipped, !item.userAnswered {
+                                    skippedSelfCard
+                                }
+                                // 다른 가족이 질문을 넘긴 경우도 동일하게 셀로 표시
+                                ForEach(item.otherSkippedMembers) { member in
+                                    skippedMemberCard(member)
+                                }
+                                // 답변/본인스킵/타인스킵 모두 없을 때만 빈 상태 표시
+                                if item.memberAnswers.isEmpty
+                                    && !(item.userSkipped && !item.userAnswered)
+                                    && item.otherSkippedMembers.isEmpty {
                                     emptyAnswersCard
                                 }
                             }
@@ -205,7 +216,7 @@ public struct HistoryView: View {
                     .foregroundColor(MongleColor.primary)
                 Spacer()
                 if item.userSkipped {
-                    Text(L10n.tr("home_skip_btn"))
+                    Text(L10n.tr("home_skipped_label"))
                         .font(MongleFont.caption())
                         .foregroundColor(MongleColor.textHint)
                         .padding(.horizontal, 8)
@@ -278,6 +289,69 @@ public struct HistoryView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 36)
         .monglePanel(background: Color.white, cornerRadius: 16, borderColor: MongleColor.border, shadowOpacity: 0.03)
+    }
+
+    // MARK: - Skipped Member Card (질문을 넘긴 다른 가족 표시)
+
+    private func skippedMemberCard(_ member: SkippedMember) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            MongleMonggle(
+                color: monggleColor(for: member.colorIndex),
+                name: member.memberName,
+                size: 44
+            )
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(member.memberName)
+                    .font(MongleFont.captionBold())
+                    .foregroundColor(MongleColor.textPrimary)
+                Text(L10n.tr("history_skipped_answer_content"))
+                    .font(MongleFont.body2())
+                    .foregroundColor(MongleColor.textSecondary)
+                    .lineSpacing(4)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .monglePanel(background: Color.white, cornerRadius: 16, borderColor: MongleColor.border, shadowOpacity: 0.03)
+    }
+
+    // MARK: - Skipped Self Card (질문을 넘긴 본인 표시)
+
+    private var skippedSelfCard: some View {
+        let name = store.currentUser?.name ?? L10n.tr("app_name")
+        let color = monggleColorForCurrentUser()
+        return HStack(alignment: .top, spacing: 12) {
+            MongleMonggle(color: color, name: name, size: 44)
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(name)
+                    .font(MongleFont.captionBold())
+                    .foregroundColor(MongleColor.textPrimary)
+                Text(L10n.tr("history_skipped_answer_content"))
+                    .font(MongleFont.body2())
+                    .foregroundColor(MongleColor.textSecondary)
+                    .lineSpacing(4)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .monglePanel(background: Color.white, cornerRadius: 16, borderColor: MongleColor.border, shadowOpacity: 0.03)
+    }
+
+    /// 현재 로그인 사용자의 선택된 무드 → MongleMonggle 색상.
+    /// moodId 가 없으면 기본 pink 로 폴백.
+    private func monggleColorForCurrentUser() -> Color {
+        switch store.currentUser?.moodId {
+        case "calm":  return MongleColor.monggleGreen
+        case "happy": return MongleColor.monggleYellow
+        case "loved": return MongleColor.mongglePink
+        case "sad":   return MongleColor.monggleBlue
+        case "tired": return MongleColor.monggleOrange
+        default:      return MongleColor.mongglePink
+        }
     }
 
     private var emptyAnswersCard: some View {
