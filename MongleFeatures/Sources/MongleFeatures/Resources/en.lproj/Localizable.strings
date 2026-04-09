@@ -425,7 +425,7 @@
 "error_question_load" = "Could not load question data.";
 
 /* Group Leave */
-"group_leave_too_soon" = "You can leave after 24 hours from group creation.\nPlease try again in %d hours.";
+"group_leave_too_soon" = "You can leave 3 days after creating the group. (%d day(s) left)";
 
 /* Character Count */
 "write_char_count" = "%d chars";

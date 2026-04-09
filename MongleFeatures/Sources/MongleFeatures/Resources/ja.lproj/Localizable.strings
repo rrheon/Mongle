@@ -425,7 +425,7 @@
 "error_question_load" = "質問情報を読み込めませんでした。";
 
 /* Group Leave */
-"group_leave_too_soon" = "グループ作成後24時間が経過しないと退出できません。\n%d時間後にもう一度お試しください。";
+"group_leave_too_soon" = "グループ作成後3日が経過しないと退出できません。(あと%d日)";
 
 /* Character Count */
 "write_char_count" = "%d 文字";

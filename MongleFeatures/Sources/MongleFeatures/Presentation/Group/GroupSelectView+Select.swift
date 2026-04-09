@@ -115,21 +115,6 @@ extension GroupSelectView {
         .transition(.opacity)
         .animation(.easeInOut(duration: 0.2), value: store.showLeaveConfirmation)
       }
-      if store.showLeaveTooSoonAlert {
-        MonglePopupView(
-          icon: .init(
-            systemName: "clock.fill",
-            foregroundColor: MongleColor.primary,
-            backgroundColor: MongleColor.primaryLight
-          ),
-          title: L10n.tr("group_disband_error"),
-          description: store.leaveTooSoonMessage,
-          primaryLabel: L10n.tr("common_confirm"),
-          onPrimary: { store.send(.dismissLeaveTooSoonAlert) }
-        )
-        .transition(.opacity)
-        .animation(.easeInOut(duration: 0.2), value: store.showLeaveTooSoonAlert)
-      }
     }
     .navigationDestination(isPresented: Binding(
       get: { store.showTransferSheet },
