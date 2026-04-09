@@ -82,6 +82,61 @@ final class AuthRepository: AuthRepositoryInterface {
         let userDTO: UserDTO = try await apiClient.request(endpoint)
         return UserMapper.toDomain(userDTO)
     }
+
+    // MARK: - Email Auth
+
+    func requestEmailSignupCode(email: String) async throws {
+        let endpoint = AuthEndpoint.emailRequestCode(email: email)
+        try await apiClient.request(endpoint)
+    }
+
+    func emailSignup(
+        email: String,
+        password: String,
+        code: String,
+        name: String?,
+        termsVersion: String,
+        privacyVersion: String
+    ) async throws -> SocialLoginResult {
+        let endpoint = AuthEndpoint.emailSignup(
+            email: email,
+            password: password,
+            code: code,
+            name: name,
+            termsVersion: termsVersion,
+            privacyVersion: privacyVersion
+        )
+        let response: LoginResponseDTO = try await apiClient.request(endpoint)
+        return try handleLoginResponse(response)
+    }
+
+    func emailLogin(email: String, password: String) async throws -> SocialLoginResult {
+        let endpoint = AuthEndpoint.emailLogin(email: email, password: password)
+        let response: LoginResponseDTO = try await apiClient.request(endpoint)
+        return try handleLoginResponse(response)
+    }
+
+    // MARK: - 공통 응답 핸들러
+
+    private func handleLoginResponse(_ response: LoginResponseDTO) throws -> SocialLoginResult {
+        try tokenStorage.saveToken(response.token)
+        if let refreshToken = response.refreshToken {
+            try tokenStorage.saveRefreshToken(refreshToken)
+        }
+        let user = UserMapper.toDomain(response.user)
+        let required = (response.requiredConsents ?? [])
+            .compactMap(LegalDocType.init(rawValue:))
+        let versions = LegalVersions(
+            terms: response.legalVersions?.terms ?? "",
+            privacy: response.legalVersions?.privacy ?? ""
+        )
+        return SocialLoginResult(
+            user: user,
+            needsConsent: response.needsConsent ?? false,
+            requiredConsents: required,
+            legalVersions: versions
+        )
+    }
 }
 
 // MARK: - Token Storage Protocol

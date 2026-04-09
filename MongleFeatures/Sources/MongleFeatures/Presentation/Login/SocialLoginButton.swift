@@ -74,9 +74,11 @@ struct SocialLoginButton: View {
     @ViewBuilder
     private var borderOverlay: some View {
         switch provider {
-        case .google:
+        case .google, .apple:
+            // Apple HIG variant 3: 흰 배경 + 검정 로고/텍스트 + 검정 테두리.
+            // Google 브랜딩 가이드: 흰 배경 + 검정 테두리 허용.
             RoundedRectangle(cornerRadius: provider.cornerRadius)
-                .stroke(MongleColor.googleBorder.opacity(0.3), lineWidth: 1)
+                .stroke(Color.black.opacity(0.3), lineWidth: 1)
         default:
             EmptyView()
         }
@@ -85,7 +87,7 @@ struct SocialLoginButton: View {
     private var backgroundColor: Color {
         switch provider {
         case .kakao:  return MongleColor.kakao
-        case .apple:  return MongleColor.apple
+        case .apple:  return .white // HIG variant 3 (white background)
         case .google: return .white
         }
     }
@@ -93,7 +95,7 @@ struct SocialLoginButton: View {
     private var foregroundColor: Color {
         switch provider {
         case .kakao:  return Color.black.opacity(0.85)
-        case .apple:  return MongleColor.appleText
+        case .apple:  return .black // HIG variant 3 (black logo/text)
         case .google: return MongleColor.textPrimary
         }
     }

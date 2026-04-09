@@ -19,7 +19,34 @@
 "login_kakao" = "Continue with KakaoTalk";
 "login_google" = "Continue with Google";
 "login_apple" = "Continue with Apple";
+"login_email" = "Continue with Email";
 "login_browse" = "Browse";
+"login_email_sheet_title" = "Continue with Email";
+"login_email_sheet_login" = "Log in";
+"login_email_sheet_login_desc" = "Sign in with your registered email and password.";
+"login_email_sheet_signup" = "Sign up";
+"login_email_sheet_signup_desc" = "Create a new account with email.";
+
+/* Email Auth */
+"email_auth_login_title" = "Log in with email";
+"email_auth_login_subtitle" = "Enter your registered email and password.";
+"email_auth_login_submit" = "Log in";
+"email_auth_signup_title" = "Sign up with email";
+"email_auth_signup_subtitle" = "Enter your email and password.\nWe'll send a verification code to your email.";
+"email_auth_email_label" = "Email";
+"email_auth_email_placeholder" = "name@example.com";
+"email_auth_email_invalid" = "Invalid email format.";
+"email_auth_password_label" = "Password";
+"email_auth_password_placeholder" = "Enter your password";
+"email_auth_password_hint" = "At least 10 characters with one special character";
+"email_auth_password_invalid" = "Must be at least 10 characters and include one special character.";
+"email_auth_send_code" = "Send code";
+"email_auth_verify_title" = "Enter verification code";
+"email_auth_verify_subtitle" = "Enter the 6-digit code\nsent to %@.";
+"email_auth_code_label" = "Verification code";
+"email_auth_verify_submit" = "Verify";
+"email_auth_resend" = "Resend code";
+"email_auth_resend_cooldown" = "Resend in %ds";
 
 /* Consent */
 "consent_title" = "Please agree to the terms";
@@ -74,6 +101,8 @@
 "home_skip_title" = "Skip this question?";
 "home_skip_desc" = "Spend 3 hearts to get a new question.\nAfter skipping, you can view other members' answers.";
 "home_skip_btn" = "Skip";
+"home_skipped_label" = "Skipped";
+"history_skipped_answer_content" = "Skipped today's question.";
 "home_hearts_insufficient" = "Not enough hearts";
 "home_hearts_write_needed" = "You need 3 hearts to write a question.\nCurrent hearts: %d";
 "home_hearts_skip_needed" = "You need 3 hearts to skip.\nCurrent hearts: %d";
@@ -301,6 +330,7 @@
 "toast_max_groups" = "Up to 3 groups allowed";
 "toast_already_member" = "Already a member";
 "toast_invalid_code" = "Please check the invite code";
+"toast_custom_question_exists" = "A family member already posted today's question";
 
 /* Error Messages */
 "error_title" = "Error";

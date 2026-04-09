@@ -36,6 +36,20 @@ public struct RootView: View {
                     LoadingView()
                 }
 
+            case .emailSignup:
+                if let emailStore = store.scope(state: \.emailSignup, action: \.emailSignup) {
+                    EmailSignupView(store: emailStore)
+                } else {
+                    LoadingView()
+                }
+
+            case .emailLogin:
+                if let emailLoginStore = store.scope(state: \.emailLogin, action: \.emailLogin) {
+                    EmailLoginView(store: emailLoginStore)
+                } else {
+                    LoadingView()
+                }
+
             case .guestBrowsing:
                 if let mainTabStore = store.scope(state: \.mainTab, action: \.mainTab) {
                     MainTabView(store: mainTabStore)

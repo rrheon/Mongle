@@ -19,7 +19,34 @@
 "login_kakao" = "カカオトークで続ける";
 "login_google" = "Googleで続ける";
 "login_apple" = "Appleで続ける";
+"login_email" = "メールで続ける";
 "login_browse" = "見てみる";
+"login_email_sheet_title" = "メールで続ける";
+"login_email_sheet_login" = "ログイン";
+"login_email_sheet_login_desc" = "登録済みのメールアドレスとパスワードでログインします。";
+"login_email_sheet_signup" = "新規登録";
+"login_email_sheet_signup_desc" = "メールで新しいアカウントを作成します。";
+
+/* Email Auth */
+"email_auth_login_title" = "メールでログイン";
+"email_auth_login_subtitle" = "登録したメールアドレスとパスワードを入力してください。";
+"email_auth_login_submit" = "ログイン";
+"email_auth_signup_title" = "メールで登録";
+"email_auth_signup_subtitle" = "メールアドレスとパスワードを入力してください。\n入力いただいたメールに認証コードを送信します。";
+"email_auth_email_label" = "メールアドレス";
+"email_auth_email_placeholder" = "name@example.com";
+"email_auth_email_invalid" = "メールアドレスの形式が正しくありません。";
+"email_auth_password_label" = "パスワード";
+"email_auth_password_placeholder" = "パスワードを入力してください";
+"email_auth_password_hint" = "10文字以上・特殊文字を1つ以上含む";
+"email_auth_password_invalid" = "10文字以上、特殊文字を1つ以上含めてください。";
+"email_auth_send_code" = "認証コードを受け取る";
+"email_auth_verify_title" = "認証コードを入力してください";
+"email_auth_verify_subtitle" = "%@ に送信した\n6桁のコードを入力してください。";
+"email_auth_code_label" = "認証コード";
+"email_auth_verify_submit" = "認証完了";
+"email_auth_resend" = "コードを再送信";
+"email_auth_resend_cooldown" = "%d秒後に再送信できます";
 
 /* Consent */
 "consent_title" = "規約に同意してください";
@@ -74,6 +101,8 @@
 "home_skip_title" = "質問をスキップしますか？";
 "home_skip_desc" = "ハート3個を消費して新しい質問に変更されます。\nスキップ後は他のメンバーの回答を閲覧できます。";
 "home_skip_btn" = "スキップ";
+"home_skipped_label" = "スキップ済み";
+"history_skipped_answer_content" = "今日の質問をスキップしました。";
 "home_hearts_insufficient" = "ハートが足りません";
 "home_hearts_write_needed" = "質問を作成するにはハート3個が必要です。\n現在のハート: %d個";
 "home_hearts_skip_needed" = "質問をスキップするにはハート3個が必要です。\n現在のハート: %d個";
@@ -301,6 +330,7 @@
 "toast_max_groups" = "グループは最大3つまで作成できます";
 "toast_already_member" = "すでに参加しているグループです";
 "toast_invalid_code" = "招待コードを再確認してください";
+"toast_custom_question_exists" = "すでに家族が今日の質問を投稿しました";
 
 /* Error Messages */
 "error_title" = "エラー";

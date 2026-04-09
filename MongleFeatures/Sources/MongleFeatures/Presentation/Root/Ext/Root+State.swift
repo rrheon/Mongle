@@ -19,6 +19,7 @@ extension RootFeature {
         public let hasAnsweredToday: Bool
         public let hasSkippedToday: Bool
         public let memberAnswerStatus: [UUID: Bool]
+        public let memberSkippedStatus: [UUID: Bool]
         public let streakDays: Int
         public let allFamilies: [MongleGroup]
         public let hasUnreadNotifications: Bool
@@ -33,6 +34,7 @@ extension RootFeature {
             hasAnsweredToday: Bool = false,
             hasSkippedToday: Bool = false,
             memberAnswerStatus: [UUID: Bool] = [:],
+            memberSkippedStatus: [UUID: Bool] = [:],
             streakDays: Int = 0,
             allFamilies: [MongleGroup] = [],
             hasUnreadNotifications: Bool = false
@@ -46,6 +48,7 @@ extension RootFeature {
             self.hasAnsweredToday = hasAnsweredToday
             self.hasSkippedToday = hasSkippedToday
             self.memberAnswerStatus = memberAnswerStatus
+            self.memberSkippedStatus = memberSkippedStatus
             self.streakDays = streakDays
             self.allFamilies = allFamilies
             self.hasUnreadNotifications = hasUnreadNotifications
@@ -65,6 +68,8 @@ extension RootFeature {
         public var groupSelect: GroupSelectFeature.State
         public var mainTab: MainTabFeature.State?
         public var consent: ConsentFeature.State?
+        public var emailSignup: EmailSignupFeature.State?
+        public var emailLogin: EmailLoginFeature.State?
 
         // MARK: Auth
         public var currentUser: User?
@@ -90,6 +95,10 @@ extension RootFeature {
             case guestBrowsing
             /// 로그인은 됐지만 약관 동의가 필요한 상태
             case consentRequired
+            /// 이메일 회원가입 플로우 진행 중 (Consent→입력→코드)
+            case emailSignup
+            /// 이메일 로그인 플로우 진행 중 (입력 폼)
+            case emailLogin
             case groupSelection
             case authenticated
         }

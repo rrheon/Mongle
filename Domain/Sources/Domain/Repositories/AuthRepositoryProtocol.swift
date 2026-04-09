@@ -29,6 +29,25 @@ public protocol AuthRepositoryInterface: Sendable {
     ///   - termsVersion: nil 이면 약관 동의 미갱신
     ///   - privacyVersion: nil 이면 개인정보 동의 미갱신
     func submitConsent(termsVersion: String?, privacyVersion: String?) async throws
+
+    // MARK: - Email Auth (이메일/비밀번호 회원가입)
+
+    /// 이메일 회원가입 6자리 인증코드 발송. 이미 가입된 이메일이면 에러.
+    func requestEmailSignupCode(email: String) async throws
+
+    /// 이메일 회원가입 완료. 인증코드 + 약관 버전 검증 후 유저 생성.
+    /// 성공 시 토큰이 저장되며 결과는 소셜 로그인과 동일한 형식으로 반환된다.
+    func emailSignup(
+        email: String,
+        password: String,
+        code: String,
+        name: String?,
+        termsVersion: String,
+        privacyVersion: String
+    ) async throws -> SocialLoginResult
+
+    /// 이메일/비밀번호 로그인 (기존 회원)
+    func emailLogin(email: String, password: String) async throws -> SocialLoginResult
 }
 
 public enum AuthError: Error, Equatable, Sendable {
