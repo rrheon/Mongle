@@ -17,6 +17,8 @@ public struct LoginFeature {
         public var errorMessage: String?
         public var appError: AppError?
         public var lastUsedProviderType: SocialProviderType?
+        /// "이메일로 계속하기" 탭 시 로그인/가입 선택 바텀시트 표시 여부
+        public var showEmailChoiceSheet: Bool = false
 
         public init(
             isLoading: Bool = false,
@@ -42,6 +44,10 @@ public struct LoginFeature {
         case socialLoginFailed(String)
 
         case browseTapped
+        case emailContinueTapped
+        case emailChoiceSheetDismissed
+        case emailLoginOptionTapped
+        case emailSignupOptionTapped
         case dismissError
 
         // MARK: - Internal Actions
@@ -58,6 +64,10 @@ public struct LoginFeature {
             /// - needsConsent: true 면 RootFeature 가 동의 화면으로 라우팅해야 한다.
             case loggedIn(User, SocialProviderType?, needsConsent: Bool, requiredConsents: [LegalDocType], legalVersions: LegalVersions)
             case browseAsGuest
+            /// 바텀시트에서 "회원가입" 선택 → Root 가 EmailSignup 화면으로 라우팅
+            case emailSignupFlowRequested
+            /// 바텀시트에서 "로그인" 선택 → Root 가 EmailLogin 화면으로 라우팅
+            case emailLoginFlowRequested
         }
     }
 
@@ -107,6 +117,23 @@ public struct LoginFeature {
 
             case .browseTapped:
                 return .send(.delegate(.browseAsGuest))
+
+            case .emailContinueTapped:
+                state.errorMessage = nil
+                state.showEmailChoiceSheet = true
+                return .none
+
+            case .emailChoiceSheetDismissed:
+                state.showEmailChoiceSheet = false
+                return .none
+
+            case .emailLoginOptionTapped:
+                state.showEmailChoiceSheet = false
+                return .send(.delegate(.emailLoginFlowRequested))
+
+            case .emailSignupOptionTapped:
+                state.showEmailChoiceSheet = false
+                return .send(.delegate(.emailSignupFlowRequested))
 
             case .setAppError(let error):
                 state.appError = error

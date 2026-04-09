@@ -76,7 +76,7 @@ struct HomeView: View {
     let topBarState: HomeTopBarState
     let hasCurrentUserAnswered: Bool
     let hasCurrentUserSkipped: Bool
-    let members: [(name: String, color: Color, hasAnswered: Bool)]
+    let members: [(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool)]
     var currentUserName: String?
     var actions: HomeViewActions
     var showNotificationPermission: Bool = false
@@ -87,7 +87,7 @@ struct HomeView: View {
         topBarState: HomeTopBarState = .preview,
         hasCurrentUserAnswered: Bool = false,
         hasCurrentUserSkipped: Bool = false,
-        members: [(name: String, color: Color, hasAnswered: Bool)] = [],
+        members: [(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool)] = [],
         currentUserName: String? = nil,
         actions: HomeViewActions = HomeViewActions(),
         showNotificationPermission: Bool = false
@@ -468,7 +468,7 @@ private struct GroupDropdownView: View {
         .buttonStyle(.plain)
       }
       .monglePanel(background: Color.white, cornerRadius: MongleRadius.large, borderColor: .clear, shadowOpacity: 0.12)
-      .frame(width: UIScreen.main.bounds.width / 2)
+      .containerRelativeFrame(.horizontal) { width, _ in width / 2 }
       .padding(.leading, 16)
 
       Spacer()

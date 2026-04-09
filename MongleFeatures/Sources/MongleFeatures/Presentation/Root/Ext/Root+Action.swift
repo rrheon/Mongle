@@ -34,6 +34,8 @@ extension RootFeature {
         case groupSelect(GroupSelectFeature.Action)
         case mainTab(MainTabFeature.Action)
         case consent(ConsentFeature.Action)
+        case emailSignup(EmailSignupFeature.Action)
+        case emailLogin(EmailLoginFeature.Action)
 
         // MARK: Modal
         case questionDetail(PresentationAction<QuestionDetailFeature.Action>)

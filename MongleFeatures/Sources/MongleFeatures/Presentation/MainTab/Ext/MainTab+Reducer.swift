@@ -21,6 +21,44 @@ private func monggleColor(for moodId: String?) -> Color {
     }
 }
 
+// MARK: - Current User 상태 동기화 헬퍼
+//
+// Home.State 에는 현재 사용자의 "답변/패스" 상태가 이중으로 저장된다:
+//   1) hasAnsweredToday / hasSkippedToday  — (본인 뱃지, 버튼 노출 분기)
+//   2) memberAnswerStatus[me] / memberSkippedStatus[me]  — (다른 멤버 뷰 렌더링 / 공통)
+// 두 소스는 항상 일치해야 하며, 부분 업데이트는 UI 상태 불일치로 이어진다.
+// 아래 두 함수는 "현재 사용자" 에 대한 모든 관련 필드를 원자적으로 세팅한다.
+
+private func setCurrentUserAnswered(_ state: inout HomeFeature.State) {
+    state.hasAnsweredToday = true
+    // answer 가 들어오면 skip 상태는 반드시 해제 (server 는 answer-after-skip 을 허용)
+    state.hasSkippedToday = false
+    if let userId = state.currentUser?.id {
+        state.memberAnswerStatus[userId] = true
+        state.memberSkippedStatus[userId] = nil
+    }
+}
+
+private func setCurrentUserSkipped(_ state: inout HomeFeature.State) {
+    state.hasSkippedToday = true
+    // skip 이 들어오면 answer 는 반드시 해제 (server 는 skip-after-answer 를 차단하므로
+    // 실제론 도달 불가능하지만 방어적으로 동기화)
+    state.hasAnsweredToday = false
+    if let userId = state.currentUser?.id {
+        state.memberSkippedStatus[userId] = true
+        state.memberAnswerStatus[userId] = nil
+    }
+}
+
+private func resetCurrentUserDailyState(_ state: inout HomeFeature.State) {
+    // 새 질문이 배정되는 케이스 (나만의 질문 작성 등) 에서 본인 상태를 포함해 전체 초기화.
+    state.hasAnsweredToday = false
+    state.hasSkippedToday = false
+    state.memberAnswerStatus = [:]
+    state.memberSkippedStatus = [:]
+    state.familyAnswerCount = 0
+}
+
 private func formatAnswerTime(_ date: Date) -> String {
     let calendar = Calendar.current
     let timeFormatter = DateFormatter()
@@ -71,10 +109,15 @@ extension MainTabFeature {
                     let isAnswered = state.home.todayQuestion != nil
                         ? state.home.hasAnsweredToday
                         : state.home.hasAnsweredYesterday
+                    // 어제 질문에는 skip 이 적용 안 되므로, 오늘 질문일 때만 skip 상태 전달.
+                    let isSkipped = state.home.todayQuestion != nil
+                        ? state.home.hasSkippedToday
+                        : false
                     state.modal = .questionSheet(
                         QuestionSheetFeature.State(
                             questionText: question.content,
-                            isAnswered: isAnswered
+                            isAnswered: isAnswered,
+                            isSkipped: isSkipped
                         )
                     )
                     return .none
@@ -187,7 +230,11 @@ extension MainTabFeature {
                     state.currentUserMoodId = nil
                     state.history.historyItems = [:]
                     state.history.loadedMonths = []
-                    return .send(.delegate(.groupSelected(family)))
+                    // 그룹이 바뀌면 검색 캐시도 그룹별로 분리되어야 하므로 초기화
+                    return .merge(
+                        .send(.search(.reset)),
+                        .send(.delegate(.groupSelected(family)))
+                    )
 
                 case .home(.delegate(.navigateToGroupSelect)):
                   return .send(.delegate(.navigateToGroupSelect()))
@@ -204,6 +251,11 @@ extension MainTabFeature {
                     state.home.currentUser = user
                     state.currentUserMoodId = user.moodId
                     state.previewMoodId = nil
+                    // HistoryFeature 의 currentUser 도 같이 갱신해야 "질문 넘김" 카드 색상이 최신 상태.
+                    state.history.currentUser = user
+                    if let idx = state.history.familyMembers.firstIndex(where: { $0.id == user.id }) {
+                        state.history.familyMembers[idx] = user
+                    }
                     return .none
 
                 case .profile(.delegate(.colorPreview(let moodId))):
@@ -239,6 +291,16 @@ extension MainTabFeature {
                     }
 
                 case .modal(.presented(.questionSheet(.delegate(.showWriteQuestionCost)))):
+                    // 오늘의 질문이 이미 가족 누군가가 작성한 나만의 질문이면 그 시점에 차단.
+                    // (기존엔 작성 화면 진입 후 submit 시점에서야 서버 에러로 알려줘 UX가 나빴음)
+                    if state.home.todayQuestion?.isCustom == true {
+                        state.modal = nil
+                        state.showCustomQuestionExistsToast = true
+                        return .run { send in
+                            try await Task.sleep(nanoseconds: 2_500_000_000)
+                            await send(.dismissCustomQuestionExistsToast)
+                        }
+                    }
                     state.modal = .heartCostPopup(HeartCostPopupFeature.State(costType: .writeQuestion, hearts: state.home.hearts))
                     return .none
 
@@ -365,12 +427,10 @@ extension MainTabFeature {
 
                 case .path(.element(id: _, action: .writeQuestion(.delegate(.questionSubmitted(let question, let heartsRemaining))))):
                     state.path.removeLast()
-                    // 오늘의 질문 교체 + 하트 잔액 업데이트 + 답변 상태 초기화
+                    // 오늘의 질문 교체 + 하트 잔액 업데이트 + 본인 일일 상태 완전 초기화
                     state.home.todayQuestion = question
                     state.home.hearts = heartsRemaining
-                    state.home.memberAnswerStatus = [:]
-                    state.home.hasAnsweredToday = false
-                    state.home.familyAnswerCount = 0
+                    resetCurrentUserDailyState(&state.home)
                     // 오늘 질문이 바뀌었으므로 히스토리 캐시 무효화
                     state.history.historyItems = [:]
                     state.history.loadedMonths = []
@@ -409,10 +469,8 @@ extension MainTabFeature {
                     return .none
 
                 case .path(.element(id: _, action: .questionDetail(.delegate(.answerSubmitted(_, let moodId))))):
-                    state.home.hasAnsweredToday = true
-                    if let userId = state.home.currentUser?.id {
-                        state.home.memberAnswerStatus[userId] = true
-                    }
+                    // 본인 답변 상태 (플래그 + 맵 동시) 를 원자적으로 세팅
+                    setCurrentUserAnswered(&state.home)
                     state.home.hearts += 1
                     // moodId로 유저 객체 생성 (HomeView + 프로필 화면 즉시 반영용)
                     let updatedUser: User? = {
@@ -435,6 +493,10 @@ extension MainTabFeature {
                             state.home.familyMembers[idx] = updated
                         }
                         state.profile.user = updated
+                        state.history.currentUser = updated
+                        if let idx = state.history.familyMembers.firstIndex(where: { $0.id == updated.id }) {
+                            state.history.familyMembers[idx] = updated
+                        }
                     }
                     state.path.removeLast()
                     state.showAnswerSubmittedToast = true
@@ -474,6 +536,10 @@ extension MainTabFeature {
                             state.home.familyMembers[idx] = updated
                         }
                         state.profile.user = updated
+                        state.history.currentUser = updated
+                        if let idx = state.history.familyMembers.firstIndex(where: { $0.id == updated.id }) {
+                            state.history.familyMembers[idx] = updated
+                        }
                     }
                     state.showEditAnswerToast = true
                     return .merge(
@@ -493,13 +559,21 @@ extension MainTabFeature {
                     return .none
 
                 case .path(.element(id: let id, action: .notification(.delegate(.close)))):
+                    // 알림 화면에서 뒤로가기 — Home 의 배지는 "현재 그룹" 한정 미읽음으로 재계산
                     if case let .notification(notifState) = state.path[id: id] {
-                        state.home.hasUnreadNotifications = notifState.hasUnread
+                        let currentFamilyId = state.home.family?.id
+                        state.home.hasUnreadNotifications = notifState.hasUnread(forFamily: currentFamilyId)
                     }
                     state.path.removeLast()
                     return .none
 
-                case .path(.element(id: _, action: .notification(.delegate(.navigateToQuestion(let markAsReadId))))):
+                case .path(.element(id: let id, action: .notification(.delegate(.navigateToQuestion(let markAsReadId))))):
+                    // 알림 카드를 탭해 질문 화면으로 이동 — pop 전에 현재 알림 스코프의 미읽음을 다시 계산.
+                    // (해당 알림은 NotificationFeature 에서 이미 optimistic 하게 isRead=true 처리됨)
+                    if case let .notification(notifState) = state.path[id: id] {
+                        let currentFamilyId = state.home.family?.id
+                        state.home.hasUnreadNotifications = notifState.hasUnread(forFamily: currentFamilyId)
+                    }
                     state.path.removeLast()
                     guard let question = state.home.todayQuestion else { return .none }
                     state.path.append(.questionDetail(QuestionDetailFeature.State(
@@ -514,9 +588,9 @@ extension MainTabFeature {
                     }
 
                 case .skipQuestionResponse(.success(let heartsRemaining)):
-                    // 개인 패스: 질문 유지, 하트 차감, 패스 상태 기록
+                    // 개인 패스: 질문 유지, 하트 차감, 본인 패스 상태 원자적 세팅
                     state.home.hearts = heartsRemaining
-                    state.home.hasSkippedToday = true
+                    setCurrentUserSkipped(&state.home)
                     state.showRefreshToast = true
                     return .merge(
                         .send(.history(.forceReload)),
@@ -564,6 +638,10 @@ extension MainTabFeature {
 
                 case .dismissAnswerSubmittedToast:
                     state.showAnswerSubmittedToast = false
+                    return .none
+
+                case .dismissCustomQuestionExistsToast:
+                    state.showCustomQuestionExistsToast = false
                     return .none
 
                 case .logout:

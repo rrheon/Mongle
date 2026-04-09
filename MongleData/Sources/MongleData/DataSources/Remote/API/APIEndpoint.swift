@@ -89,6 +89,12 @@ enum AuthEndpoint: APIEndpoint {
     case refreshToken(refreshToken: String)
     /// 약관/개인정보 동의 저장
     case submitConsent(termsVersion: String?, privacyVersion: String?)
+    /// 이메일 회원가입용 6자리 인증코드 발송 요청
+    case emailRequestCode(email: String)
+    /// 이메일 회원가입 완료 (인증코드 + 약관 버전 포함)
+    case emailSignup(email: String, password: String, code: String, name: String?, termsVersion: String, privacyVersion: String)
+    /// 이메일/비밀번호 로그인 (기존 회원)
+    case emailLogin(email: String, password: String)
 
     var path: String {
         switch self {
@@ -104,12 +110,19 @@ enum AuthEndpoint: APIEndpoint {
             return "/auth/refresh"
         case .submitConsent:
             return "/auth/consent"
+        case .emailRequestCode:
+            return "/auth/email/request-code"
+        case .emailSignup:
+            return "/auth/email/signup"
+        case .emailLogin:
+            return "/auth/email/login"
         }
     }
 
     var method: HTTPMethod {
         switch self {
-        case .socialLogin, .logout, .refreshToken, .submitConsent:
+        case .socialLogin, .logout, .refreshToken, .submitConsent,
+             .emailRequestCode, .emailSignup, .emailLogin:
             return .post
         case .deleteAccount:
             return .delete
@@ -135,6 +148,23 @@ enum AuthEndpoint: APIEndpoint {
             if let termsVersion { params["termsVersion"] = termsVersion }
             if let privacyVersion { params["privacyVersion"] = privacyVersion }
             return try? JSONSerialization.data(withJSONObject: params)
+        case .emailRequestCode(let email):
+            return try? JSONSerialization.data(withJSONObject: ["email": email])
+        case .emailSignup(let email, let password, let code, let name, let termsVersion, let privacyVersion):
+            var params: [String: Any] = [
+                "email": email,
+                "password": password,
+                "code": code,
+                "termsVersion": termsVersion,
+                "privacyVersion": privacyVersion
+            ]
+            if let name, !name.isEmpty { params["name"] = name }
+            return try? JSONSerialization.data(withJSONObject: params)
+        case .emailLogin(let email, let password):
+            return try? JSONSerialization.data(withJSONObject: [
+                "email": email,
+                "password": password
+            ])
         case .logout, .getCurrentUser, .deleteAccount:
             return nil
         }

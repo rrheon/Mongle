@@ -7,10 +7,12 @@ public struct QuestionSheetFeature {
     public struct State: Equatable {
         public var questionText: String
         public var isAnswered: Bool
+        public var isSkipped: Bool
 
-        public init(questionText: String, isAnswered: Bool = false) {
+        public init(questionText: String, isAnswered: Bool = false, isSkipped: Bool = false) {
             self.questionText = questionText
             self.isAnswered = isAnswered
+            self.isSkipped = isSkipped
         }
     }
 

@@ -1101,16 +1101,18 @@ public struct MongleCharacter: Identifiable {
     public let name: String
     public var color: Color
     public var hasAnswered: Bool
+    public var hasSkipped: Bool
     public var position: CGPoint
     public var targetPosition: CGPoint
     public var overlapCounter: Int = 0  // 충돌 지속 프레임 수
     public var stepCount: Int = 0       // 이동 누적 스텝 수 (hop 위상 계산용)
     public var restFramesLeft: Int = 0  // 휴식 남은 프레임 수 (> 0 이면 정지)
 
-    public init(name: String, color: Color, hasAnswered: Bool, position: CGPoint, targetPosition: CGPoint) {
+    public init(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool = false, position: CGPoint, targetPosition: CGPoint) {
         self.name = name
         self.color = color
         self.hasAnswered = hasAnswered
+        self.hasSkipped = hasSkipped
         self.position = position
         self.targetPosition = targetPosition
     }
@@ -1122,6 +1124,8 @@ public struct MongleView: View {
     public let name: String
     public let color: Color
     public let hasAnswered: Bool
+    /// 해당 멤버가 오늘 질문을 패스했는지 (다른 가족에게도 "질문 넘김" 뱃지가 보이도록 사용)
+    public let hasSkipped: Bool
     public let hasCurrentUserAnswered: Bool
     public let hasCurrentUserSkipped: Bool
     public let isCurrentUser: Bool
@@ -1132,7 +1136,9 @@ public struct MongleView: View {
     public let onAnswerFirstToView: (String) -> Void
     public let onAnswerFirstToNudge: (String) -> Void
 
-    public init(name: String, color: Color, hasAnswered: Bool, hasCurrentUserAnswered: Bool,
+    public init(name: String, color: Color, hasAnswered: Bool,
+                hasSkipped: Bool = false,
+                hasCurrentUserAnswered: Bool,
                 hasCurrentUserSkipped: Bool = false,
                 isCurrentUser: Bool = false,
                 onViewAnswer: @escaping () -> Void,
@@ -1143,6 +1149,7 @@ public struct MongleView: View {
         self.name = name
         self.color = color
         self.hasAnswered = hasAnswered
+        self.hasSkipped = hasSkipped
         self.hasCurrentUserAnswered = hasCurrentUserAnswered
         self.hasCurrentUserSkipped = hasCurrentUserSkipped
         self.isCurrentUser = isCurrentUser
@@ -1162,6 +1169,11 @@ public struct MongleView: View {
 
       // 패스했거나 답변한 경우 → 상대 답변 볼 수 있음
       let canView = hasCurrentUserAnswered || hasCurrentUserSkipped
+
+      // 상대가 "패스" 한 경우 — 재촉/답변보기 모두 해당 없음 (가족 간 강요 방지)
+      if hasSkipped {
+          return
+      }
 
       // 상대의 답변여부, 내가 볼 수 있는지
       switch (hasAnswered, canView) {
@@ -1193,7 +1205,7 @@ public struct MongleView: View {
     private var statusBadge: some View {
         if isCurrentUser {
             let icon: String = hasAnswered ? "checkmark.circle.fill" : (hasCurrentUserSkipped ? "arrow.right.circle.fill" : "pencil.circle")
-            let label: String = hasAnswered ? L10n.tr("home_answer_complete") : (hasCurrentUserSkipped ? L10n.tr("home_skip_btn") : L10n.tr("home_answer_btn"))
+            let label: String = hasAnswered ? L10n.tr("home_answer_complete") : (hasCurrentUserSkipped ? L10n.tr("home_skipped_label") : L10n.tr("home_answer_btn"))
             let bgColor: Color = hasAnswered ? MongleColor.primary.opacity(0.85) : (hasCurrentUserSkipped ? Color.purple.opacity(0.7) : MongleColor.accentOrange.opacity(0.85))
             HStack(spacing: 4) {
                 Image(systemName: icon)
@@ -1207,17 +1219,29 @@ public struct MongleView: View {
             .foregroundColor(.white)
             .clipShape(Capsule())
         } else {
+            // 상대방 뱃지: 답변함 / 패스함 / 미답변 3가지 상태 구분
+            let style = peerBadgeStyle
             HStack(spacing: 4) {
-                Image(systemName: hasAnswered ? "checkmark.circle.fill" : "clock")
+                Image(systemName: style.icon)
                     .font(.system(size: 10, weight: .bold))
-                Text(hasAnswered ? L10n.tr("home_answer_complete") : L10n.tr("nudge_send"))
+                Text(style.label)
                     .font(.caption2.bold())
             }
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
-            .background(hasAnswered ? Color.green.opacity(0.85) : Color.gray.opacity(0.4))
+            .background(style.bgColor)
             .foregroundColor(.white)
             .clipShape(Capsule())
+        }
+    }
+
+    private var peerBadgeStyle: (icon: String, label: String, bgColor: Color) {
+        if hasAnswered {
+            return ("checkmark.circle.fill", L10n.tr("home_answer_complete"), Color.green.opacity(0.85))
+        } else if hasSkipped {
+            return ("arrow.right.circle.fill", L10n.tr("home_skipped_label"), Color.purple.opacity(0.7))
+        } else {
+            return ("clock", L10n.tr("nudge_send"), Color.gray.opacity(0.4))
         }
     }
 }
@@ -1227,7 +1251,7 @@ public struct MongleView: View {
 public struct MongleSceneView: View {
     public var hasCurrentUserAnswered: Bool = false
     public var hasCurrentUserSkipped: Bool = false
-    public var members: [(name: String, color: Color, hasAnswered: Bool)]
+    public var members: [(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool)]
     public var currentUserName: String?
     public var onViewAnswer: (String) -> Void = { _ in }
     public var onNudge: (String) -> Void = { _ in }
@@ -1245,17 +1269,17 @@ public struct MongleSceneView: View {
     @State private var mongles: [MongleCharacter] = []
     @State private var timer: Timer?
 
-    private static let defaultMemberData: [(String, Color, Bool)] = [
-        ("Dad", .orange, true),
-        ("Mom", .green, false),
-        ("Lily", .yellow, true),
-        ("Ben", .blue, false),
-        ("Alex", .pink, true)
+    private static let defaultMemberData: [(String, Color, Bool, Bool)] = [
+        ("Dad", .orange, true, false),
+        ("Mom", .green, false, false),
+        ("Lily", .yellow, true, false),
+        ("Ben", .blue, false, false),
+        ("Alex", .pink, true, false)
     ]
 
     public init(hasCurrentUserAnswered: Bool = false,
                 hasCurrentUserSkipped: Bool = false,
-                members: [(name: String, color: Color, hasAnswered: Bool)] = [],
+                members: [(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool)] = [],
                 currentUserName: String? = nil,
                 onViewAnswer: @escaping (String) -> Void = { _ in },
                 onNudge: @escaping (String) -> Void = { _ in },
@@ -1273,8 +1297,8 @@ public struct MongleSceneView: View {
         self.onAnswerFirstToNudge = onAnswerFirstToNudge
     }
 
-    private var effectiveMembers: [(String, Color, Bool)] {
-        members.isEmpty ? Self.defaultMemberData : members.map { ($0.name, $0.color, $0.hasAnswered) }
+    private var effectiveMembers: [(String, Color, Bool, Bool)] {
+        members.isEmpty ? Self.defaultMemberData : members.map { ($0.name, $0.color, $0.hasAnswered, $0.hasSkipped) }
     }
 
     public var body: some View {
@@ -1286,6 +1310,7 @@ public struct MongleSceneView: View {
                         name: h.name,
                         color: h.color,
                         hasAnswered: h.hasAnswered,
+                        hasSkipped: h.hasSkipped,
                         hasCurrentUserAnswered: hasCurrentUserAnswered,
                         hasCurrentUserSkipped: hasCurrentUserSkipped,
                         isCurrentUser: currentUserName != nil && h.name == currentUserName,
@@ -1321,6 +1346,13 @@ public struct MongleSceneView: View {
                     }
                 }
             }
+            .onChange(of: members.map { $0.hasSkipped }) { _, _ in
+                for i in mongles.indices {
+                    if let member = members.first(where: { $0.name == mongles[i].name }) {
+                        mongles[i].hasSkipped = member.hasSkipped
+                    }
+                }
+            }
             .onChange(of: members.map { $0.color }) { _, _ in
                 for i in mongles.indices {
                     if let member = members.first(where: { $0.name == mongles[i].name }) {
@@ -1339,7 +1371,7 @@ public struct MongleSceneView: View {
     private func initMongles(size: CGSize) {
         guard size.width > 0, size.height > 0 else { return }
         var placed: [CGPoint] = []
-        mongles = effectiveMembers.map { name, color, hasAnswered in
+        mongles = effectiveMembers.map { name, color, hasAnswered, hasSkipped in
             var pos = randomPos(size: size)
             for _ in 0..<30 {
                 let overlaps = placed.contains { hypot(pos.x - $0.x, pos.y - $0.y) < collisionRadius }
@@ -1351,6 +1383,7 @@ public struct MongleSceneView: View {
                 name: name,
                 color: color,
                 hasAnswered: hasAnswered,
+                hasSkipped: hasSkipped,
                 position: pos,
                 targetPosition: randomPos(size: size)
             )

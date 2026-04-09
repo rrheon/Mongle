@@ -23,13 +23,16 @@ class MongleAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         store?.send(.deviceTokenReceived(deviceToken))
     }
 
-    /// 포그라운드에서 알림 수신 시 배너 표시
+    /// 포그라운드에서 알림 수신 시 배너 표시 + 홈 알림 배지 즉시 갱신
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
         completionHandler([.banner, .sound, .badge])
+        // 포그라운드에서 푸시가 도착한 경우, 홈/그룹선택 화면의 우상단 빨간 점이
+        // 즉시 반영되도록 데이터 리프레시를 트리거한다.
+        store?.send(.refreshHomeData)
     }
 
     /// 알림 탭 처리

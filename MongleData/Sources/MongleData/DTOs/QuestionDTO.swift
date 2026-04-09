@@ -39,6 +39,17 @@ struct DailyQuestionResponseDTO: Codable {
     let familyAnswerCount: Int
     /// GET /questions 히스토리에서만 포함 (N+1 제거용)
     let answers: [HistoryAnswerSummaryDTO]?
+    /// 각 가족 멤버의 답변/스킵/미답변 상태. 서버가 오늘/히스토리 응답에 같이 내려준다.
+    /// 구버전 서버 호환을 위해 optional.
+    let memberAnswerStatuses: [MemberAnswerStatusDTO]?
+}
+
+struct MemberAnswerStatusDTO: Codable {
+    let userId: String
+    let userName: String
+    let colorId: String
+    /// "answered" | "skipped" | "not_answered"
+    let status: String
 }
 
 /// 질문 데이터 전송 객체 (레거시)

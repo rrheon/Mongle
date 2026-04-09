@@ -45,6 +45,7 @@ extension MainTabFeature {
         case dismissNudgeToast
         case dismissEditAnswerToast
         case dismissAnswerSubmittedToast
+        case dismissCustomQuestionExistsToast
 
         // MARK: Answer Heart Popup
         case dismissAnswerHeartPopup

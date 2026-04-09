@@ -48,6 +48,7 @@ private struct NotificationDTO: Decodable {
     let body: String
     let isRead: Bool
     let createdAt: String
+    let colorId: String?
 
     func toDomain() -> Domain.Notification? {
         let formatter = ISO8601DateFormatter()
@@ -66,7 +67,8 @@ private struct NotificationDTO: Decodable {
             title: title,
             body: body,
             isRead: isRead,
-            createdAt: date
+            createdAt: date,
+            colorId: colorId
         )
     }
 

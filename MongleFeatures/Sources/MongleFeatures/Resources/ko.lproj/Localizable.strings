@@ -19,7 +19,34 @@
 "login_kakao" = "카카오톡으로 계속하기";
 "login_google" = "Google로 계속하기";
 "login_apple" = "Apple로 계속하기";
+"login_email" = "이메일로 계속하기";
 "login_browse" = "둘러보기";
+"login_email_sheet_title" = "이메일로 계속하기";
+"login_email_sheet_login" = "로그인";
+"login_email_sheet_login_desc" = "가입한 이메일과 비밀번호로 로그인해요.";
+"login_email_sheet_signup" = "회원가입";
+"login_email_sheet_signup_desc" = "이메일로 새 계정을 만들어요.";
+
+/* Email Auth */
+"email_auth_login_title" = "이메일로 로그인";
+"email_auth_login_subtitle" = "가입하신 이메일과 비밀번호를 입력해주세요.";
+"email_auth_login_submit" = "로그인";
+"email_auth_signup_title" = "이메일로 가입하기";
+"email_auth_signup_subtitle" = "이메일과 비밀번호를 입력해주세요.\n입력하신 이메일로 인증 코드를 보내드려요.";
+"email_auth_email_label" = "이메일";
+"email_auth_email_placeholder" = "name@example.com";
+"email_auth_email_invalid" = "이메일 형식이 올바르지 않아요.";
+"email_auth_password_label" = "비밀번호";
+"email_auth_password_placeholder" = "비밀번호를 입력해주세요";
+"email_auth_password_hint" = "10자 이상, 특수문자 1개 이상 포함";
+"email_auth_password_invalid" = "10자 이상, 특수문자를 1개 이상 포함해야 해요.";
+"email_auth_send_code" = "인증코드 받기";
+"email_auth_verify_title" = "인증코드를 입력해주세요";
+"email_auth_verify_subtitle" = "%@ 으로 보낸\n6자리 코드를 입력해주세요.";
+"email_auth_code_label" = "인증 코드";
+"email_auth_verify_submit" = "인증 완료";
+"email_auth_resend" = "코드 다시 받기";
+"email_auth_resend_cooldown" = "%d초 후 재전송 가능";
 
 /* Consent */
 "consent_title" = "약관에 동의해주세요";
@@ -74,6 +101,8 @@
 "home_skip_title" = "질문을 넘기시겠어요?";
 "home_skip_desc" = "하트 3개를 소모하여 새로운 질문으로\n변경됩니다. 넘긴 후에는 다른 멤버의\n답변을 열람할 수 있어요.";
 "home_skip_btn" = "넘기기";
+"home_skipped_label" = "질문 넘김";
+"history_skipped_answer_content" = "오늘의 질문은 넘겼어요.";
 "home_hearts_insufficient" = "하트가 부족해요";
 "home_hearts_write_needed" = "질문을 작성하려면 하트 3개가 필요해요.\n현재 하트: %d개";
 "home_hearts_skip_needed" = "질문을 넘기려면 하트 3개가 필요해요.\n현재 하트: %d개";
@@ -301,6 +330,7 @@
 "toast_max_groups" = "그룹은 최대 3개까지 만들 수 있어요";
 "toast_already_member" = "이미 속해있는 그룹이에요";
 "toast_invalid_code" = "초대코드를 다시 확인해주세요";
+"toast_custom_question_exists" = "이미 가족이 오늘의 질문을 등록했어요";
 
 /* Error Messages */
 "error_title" = "오류";

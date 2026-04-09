@@ -33,6 +33,8 @@ public struct HomeFeature {
         public var familyAnswerCount: Int
         // 각 멤버별 답변 상태 (userId: hasAnswered)
         public var memberAnswerStatus: [UUID: Bool] = [:]
+        // 각 멤버별 패스 여부 (userId: hasSkipped) — 서버 memberAnswerStatuses 에서 파생
+        public var memberSkippedStatus: [UUID: Bool] = [:]
         public var showGuestLoginPrompt: Bool = false
         public var streakDays: Int = 0
         public var allFamilies: [MongleGroup] = []
@@ -57,6 +59,7 @@ public struct HomeFeature {
             hearts: Int = 5,
             familyAnswerCount: Int = 0,
             memberAnswerStatus: [UUID: Bool] = [:],
+            memberSkippedStatus: [UUID: Bool] = [:],
             streakDays: Int = 0,
             allFamilies: [MongleGroup] = [],
             hasUnreadNotifications: Bool = false
@@ -76,6 +79,7 @@ public struct HomeFeature {
             self.hearts = hearts
             self.familyAnswerCount = familyAnswerCount
             self.memberAnswerStatus = memberAnswerStatus
+            self.memberSkippedStatus = memberSkippedStatus
             self.streakDays = streakDays
             self.allFamilies = allFamilies
             self.hasUnreadNotifications = hasUnreadNotifications

@@ -170,9 +170,9 @@ public final class ConsentManager {
     private func startMobileAdsIfNeeded() {
         guard !isMobileAdsStarted else { return }
         isMobileAdsStarted = true
-        DispatchQueue.main.async {
-            GADMobileAds.sharedInstance().start(completionHandler: nil)
-        }
+        // MobileAdsInitializer 를 통해 초기화 완료 시점을 추적할 수 있도록 위임.
+        // 이렇게 하면 광고 요청 시점에 초기화 완료를 정확히 await 할 수 있다.
+        MobileAdsInitializer.shared.startIfNeeded()
     }
 
     private static func isExemptedRegion() -> Bool {

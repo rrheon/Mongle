@@ -363,7 +363,9 @@ public struct GroupSelectFeature {
                 return .none
 
             case .onAppear:
-                state.isLoadingGroups = true
+                // 그룹 목록은 RootFeature 가 별도로 로드하므로 여기선 알림 미읽음만 갱신.
+                // (예전엔 isLoadingGroups = true 로 잘못 세팅해서 Root 의 loadGroupsResponse 와
+                //  레이스가 발생할 수 있었다.)
                 return .run { [notificationRepository] send in
                     let items = (try? await notificationRepository.getNotifications(limit: 50)) ?? []
                     let hasUnread = items.contains { !$0.isRead }
