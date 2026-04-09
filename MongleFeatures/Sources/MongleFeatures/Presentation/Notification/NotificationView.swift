@@ -22,7 +22,7 @@ public struct NotificationView: View {
 
             if store.isLoading && store.notifications.isEmpty {
                 loadingView
-            } else if store.notifications.isEmpty {
+            } else if isEffectivelyEmpty {
                 emptyView
             } else {
                 notificationList
@@ -34,6 +34,12 @@ public struct NotificationView: View {
         }
     }
 
+    /// .filtered 모드에서 현재 그룹 기준으로 결과가 비어 있는 경우에도 emptyView 를 노출하기 위해
+    /// 모드 필터링이 적용된 groupedNotifications 기준으로 비어 있는지 판정한다.
+    private var isEffectivelyEmpty: Bool {
+        store.groupedNotifications.allSatisfy { $0.1.isEmpty } || store.groupedNotifications.isEmpty
+    }
+
     private var headerView: some View {
         VStack(spacing: 0) {
             MongleNavigationHeader(title: L10n.tr("notif_title")) {
@@ -42,7 +48,7 @@ public struct NotificationView: View {
                 EmptyView()
             }
 
-            if !store.notifications.isEmpty {
+            if !isEffectivelyEmpty {
                 HStack(spacing: MongleSpacing.md) {
                     Spacer()
 
