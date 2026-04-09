@@ -18,6 +18,7 @@ public enum ToastType {
     case alreadyMember     // 이미 속해있는 그룹
     case invalidInviteCode // 유효하지 않은 초대코드
     case customQuestionExists // 이미 가족 누군가가 오늘의 질문을 작성함
+    case leaveTooSoon(String) // 그룹 생성 후 3일(72시간) 미경과 시 나가기 차단
     case appError(AppError) // 앱 공통 오류
 
     var icon: String {
@@ -33,6 +34,7 @@ public enum ToastType {
         case .alreadyMember:    return "person.crop.circle.badge.exclamationmark.fill"
         case .invalidInviteCode: return "key.slash.fill"
         case .customQuestionExists: return "pencil.slash"
+        case .leaveTooSoon:     return "clock.fill"
         case .appError(let e):  return e.icon
         }
     }
@@ -50,6 +52,7 @@ public enum ToastType {
         case .alreadyMember:    return L10n.tr("toast_already_member")
         case .invalidInviteCode: return L10n.tr("toast_invalid_code")
         case .customQuestionExists: return L10n.tr("toast_custom_question_exists")
+        case .leaveTooSoon(let msg): return msg
         case .appError(let e):  return e.toastMessage
         }
     }
@@ -67,6 +70,7 @@ public enum ToastType {
         case .alreadyMember:    return MongleColor.error
         case .invalidInviteCode: return MongleColor.error
         case .customQuestionExists: return MongleColor.error
+        case .leaveTooSoon:     return MongleColor.primary
         case .appError:         return MongleColor.error
         }
     }

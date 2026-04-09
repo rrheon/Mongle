@@ -97,6 +97,19 @@ public struct GroupManagementView: View {
       }
     }
     .animation(.easeInOut(duration: 0.3), value: store.showCopiedToast)
+    .overlay(alignment: .bottom) {
+      if store.showLeaveTooSoonToast {
+        MongleToastView(type: .leaveTooSoon(store.leaveTooSoonMessage))
+          .transition(.move(edge: .bottom).combined(with: .opacity))
+          .padding(.bottom, MongleSpacing.lg)
+      }
+    }
+    .animation(.easeInOut(duration: 0.3), value: store.showLeaveTooSoonToast)
+    .task(id: store.showLeaveTooSoonToast) {
+      guard store.showLeaveTooSoonToast else { return }
+      try? await Task.sleep(for: .seconds(2))
+      store.send(.dismissLeaveTooSoonToast)
+    }
     .preferredColorScheme(.light)
     .onAppear { store.send(.onAppear) }
   }

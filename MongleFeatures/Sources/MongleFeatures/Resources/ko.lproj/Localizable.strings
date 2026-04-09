@@ -425,7 +425,7 @@
 "error_question_load" = "질문 정보를 불러올 수 없습니다.";
 
 /* Group Leave */
-"group_leave_too_soon" = "그룹 생성 후 24시간이 지나야 해제할 수 있어요.\n%d시간 후에 다시 시도해 주세요.";
+"group_leave_too_soon" = "그룹 생성 후 3일이 지나야 나갈 수 있어요. (%d일 남음)";
 
 /* Character Count */
 "write_char_count" = "%d 자";

@@ -77,7 +77,7 @@ public struct GroupSelectFeature {
         public var currentUserId: UUID? = nil
         public var groupToLeave: MongleGroup? = nil
         public var showLeaveConfirmation: Bool = false
-        public var showLeaveTooSoonAlert: Bool = false   // 24시간 미경과 안내
+        public var showLeaveTooSoonToast: Bool = false   // 72시간(3일) 미경과 안내 토스트
         public var leaveTooSoonMessage: String = ""
         public var transferCandidates: [User] = []
         public var showTransferSheet: Bool = false
@@ -135,7 +135,7 @@ public struct GroupSelectFeature {
         case leaveGroupTapped(MongleGroup)
         case confirmLeave
         case cancelLeaveConfirmation
-        case dismissLeaveTooSoonAlert
+        case dismissLeaveTooSoonToast
         case setTransferCandidates([User])
         case transferMemberSelected(UUID)
         case confirmTransferAndLeave
@@ -418,16 +418,20 @@ public struct GroupSelectFeature {
             // MARK: - 그룹 나가기
 
             case .leaveGroupTapped(let group):
-                // 그룹 생성 후 24시간 이내에는 해제 불가
-                let hoursSinceCreation = Date().timeIntervalSince(group.createdAt) / 3600
-                if hoursSinceCreation < 24 {
-                    let hoursLeft = Int(ceil(24 - hoursSinceCreation))
-                    state.leaveTooSoonMessage = L10n.tr("group_leave_too_soon", hoursLeft)
-                    state.showLeaveTooSoonAlert = true
-                    return .none
+                let isOwner = state.currentUserId.map { group.createdBy == $0 } ?? false
+                // 그룹 생성 후 3일(72시간) 이내에는 그룹장이 나갈 수 없음 (반복 생성/삭제 방지)
+                // 일반 멤버나 위임 후 나가기는 이 제한에 해당하지 않음
+                if isOwner {
+                    let hoursSinceCreation = Date().timeIntervalSince(group.createdAt) / 3600
+                    if hoursSinceCreation < 72 {
+                        let daysLeft = Int(ceil((72 - hoursSinceCreation) / 24))
+                        state.leaveTooSoonMessage = L10n.tr("group_leave_too_soon", daysLeft)
+                        state.showLeaveTooSoonToast = true
+                        return .none
+                    }
                 }
                 state.groupToLeave = group
-                if let userId = state.currentUserId, group.createdBy == userId {
+                if isOwner {
                     // 방장: 먼저 위임할 멤버 목록 요청
                     return .send(.delegate(.requestMembersForGroup(group)))
                 } else {
@@ -436,8 +440,8 @@ public struct GroupSelectFeature {
                     return .none
                 }
 
-            case .dismissLeaveTooSoonAlert:
-                state.showLeaveTooSoonAlert = false
+            case .dismissLeaveTooSoonToast:
+                state.showLeaveTooSoonToast = false
                 return .none
 
             case .confirmLeave:

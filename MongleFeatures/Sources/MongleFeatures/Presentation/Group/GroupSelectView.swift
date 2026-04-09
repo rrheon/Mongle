@@ -146,6 +146,19 @@ public struct GroupSelectView: View {
       try? await Task.sleep(for: .seconds(2))
       store.send(.maxGroupsToastDismissed)
     }
+    .overlay(alignment: .bottom) {
+      if store.showLeaveTooSoonToast {
+        MongleToastView(type: .leaveTooSoon(store.leaveTooSoonMessage))
+          .transition(.move(edge: .bottom).combined(with: .opacity))
+          .padding(.bottom, MongleSpacing.lg)
+      }
+    }
+    .animation(.easeInOut(duration: 0.3), value: store.showLeaveTooSoonToast)
+    .task(id: store.showLeaveTooSoonToast) {
+      guard store.showLeaveTooSoonToast else { return }
+      try? await Task.sleep(for: .seconds(2))
+      store.send(.dismissLeaveTooSoonToast)
+    }
     .onChange(of: store.createGroupFocusField) { _, newValue in
       guard let field = newValue else { return }
       switch field {
