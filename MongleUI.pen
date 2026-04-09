@@ -1,5 +1,5 @@
 {
-  "version": "2.9",
+  "version": "2.10",
   "children": [
     {
       "type": "frame",
@@ -40194,6 +40194,1799 @@
           ]
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "DCjcz",
+      "x": -2124,
+      "y": 7181,
+      "name": "Store Preview — 한국어",
+      "width": 1840,
+      "height": 932,
+      "gap": 40,
+      "children": [
+        {
+          "type": "frame",
+          "id": "7uhl1",
+          "name": "KO-1 Home",
+          "clip": true,
+          "width": 430,
+          "height": 932,
+          "fill": {
+            "type": "gradient",
+            "gradientType": "linear",
+            "enabled": true,
+            "rotation": 180,
+            "size": {
+              "height": 1
+            },
+            "colors": [
+              {
+                "color": "#E8F5E1",
+                "position": 0
+              },
+              {
+                "color": "#FFF5F0",
+                "position": 0.5
+              },
+              {
+                "color": "#FFE5D9",
+                "position": 1
+              }
+            ]
+          },
+          "cornerRadius": 12,
+          "layout": "vertical",
+          "gap": 28,
+          "padding": [
+            60,
+            30,
+            40,
+            30
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "vy4vi",
+              "name": "t1",
+              "layout": "vertical",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "mEUeQ",
+                  "fill": "#1A1A1A",
+                  "textGrowth": "fixed-width",
+                  "width": 370,
+                  "content": "우리 가족의 오늘\n몽글이 전해줄게",
+                  "lineHeight": 1.25,
+                  "textAlign": "center",
+                  "fontFamily": "Outfit",
+                  "fontSize": 36,
+                  "fontWeight": "800"
+                },
+                {
+                  "type": "text",
+                  "id": "BOcfn",
+                  "fill": "#6D6D6D",
+                  "content": "가족 모두의 감정을 한눈에",
+                  "textAlign": "center",
+                  "fontFamily": "Outfit",
+                  "fontSize": 18,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "H0GFw",
+              "name": "phoneMock",
+              "clip": true,
+              "width": 280,
+              "height": 600,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "IMG_3502.PNG",
+                "mode": "fill"
+              },
+              "cornerRadius": 32,
+              "stroke": {
+                "thickness": 1,
+                "fill": "#00000010"
+              },
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#00000020",
+                "offset": {
+                  "x": 0,
+                  "y": 12
+                },
+                "blur": 40
+              },
+              "children": [
+                {
+                  "type": "rectangle",
+                  "id": "LjNl1",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 0,
+                  "fill": "#FFFFFF",
+                  "width": 280,
+                  "height": 26
+                },
+                {
+                  "type": "rectangle",
+                  "id": "031hr",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 580,
+                  "fill": "#FFFFFF",
+                  "width": 280,
+                  "height": 20
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "IxaFt",
+          "name": "KO-2 Answer",
+          "clip": true,
+          "width": 430,
+          "height": 932,
+          "fill": {
+            "type": "gradient",
+            "gradientType": "linear",
+            "enabled": true,
+            "rotation": 180,
+            "size": {
+              "height": 1
+            },
+            "colors": [
+              {
+                "color": "#D4EDDA",
+                "position": 0
+              },
+              {
+                "color": "#E8F5E1",
+                "position": 0.5
+              },
+              {
+                "color": "#FFF8F0",
+                "position": 1
+              }
+            ]
+          },
+          "cornerRadius": 12,
+          "layout": "vertical",
+          "gap": 28,
+          "padding": [
+            60,
+            30,
+            40,
+            30
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "wooz6",
+              "name": "t2",
+              "layout": "vertical",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "R0ciC",
+                  "fill": "#1A1A1A",
+                  "textGrowth": "fixed-width",
+                  "width": 370,
+                  "content": "오늘의 감정을\n자유롭게 남겨보세요",
+                  "lineHeight": 1.25,
+                  "textAlign": "center",
+                  "fontFamily": "Outfit",
+                  "fontSize": 36,
+                  "fontWeight": "800"
+                },
+                {
+                  "type": "text",
+                  "id": "xoAkU",
+                  "fill": "#6D6D6D",
+                  "content": "몽글 캐릭터로 기분을 표현해요",
+                  "textAlign": "center",
+                  "fontFamily": "Outfit",
+                  "fontSize": 16,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "2DEdJ",
+              "name": "phoneMock",
+              "clip": true,
+              "width": 280,
+              "height": 600,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "IMG_3499.PNG",
+                "mode": "fill"
+              },
+              "cornerRadius": 32,
+              "stroke": {
+                "thickness": 1,
+                "fill": "#00000010"
+              },
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#00000020",
+                "offset": {
+                  "x": 0,
+                  "y": 12
+                },
+                "blur": 40
+              },
+              "children": [
+                {
+                  "type": "rectangle",
+                  "id": "v4Iyt",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 0,
+                  "fill": "#FFFFFF",
+                  "width": 280,
+                  "height": 26
+                },
+                {
+                  "type": "rectangle",
+                  "id": "BUTAa",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 580,
+                  "fill": "#FFFFFF",
+                  "width": 280,
+                  "height": 20
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "ebJOZ",
+          "name": "KO-3 History",
+          "clip": true,
+          "width": 430,
+          "height": 932,
+          "fill": {
+            "type": "gradient",
+            "gradientType": "linear",
+            "enabled": true,
+            "rotation": 180,
+            "size": {
+              "height": 1
+            },
+            "colors": [
+              {
+                "color": "#FFF3C4",
+                "position": 0
+              },
+              {
+                "color": "#FFE5D9",
+                "position": 0.5
+              },
+              {
+                "color": "#FFF5F0",
+                "position": 1
+              }
+            ]
+          },
+          "cornerRadius": 12,
+          "layout": "vertical",
+          "gap": 28,
+          "padding": [
+            60,
+            30,
+            40,
+            30
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "N7efU",
+              "name": "t3",
+              "layout": "vertical",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "YZjkp",
+                  "fill": "#1A1A1A",
+                  "textGrowth": "fixed-width",
+                  "width": 370,
+                  "content": "감정의 기록이\n쌓여가는 캘린더",
+                  "lineHeight": 1.25,
+                  "textAlign": "center",
+                  "fontFamily": "Outfit",
+                  "fontSize": 36,
+                  "fontWeight": "800"
+                },
+                {
+                  "type": "text",
+                  "id": "4il8L",
+                  "fill": "#6D6D6D",
+                  "content": "한 달의 마음을 한눈에 돌아봐요",
+                  "textAlign": "center",
+                  "fontFamily": "Outfit",
+                  "fontSize": 16,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "QmCuQ",
+              "name": "phoneMock",
+              "clip": true,
+              "width": 280,
+              "height": 600,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "IMG_3500.PNG",
+                "mode": "fill"
+              },
+              "cornerRadius": 32,
+              "stroke": {
+                "thickness": 1,
+                "fill": "#00000010"
+              },
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#00000020",
+                "offset": {
+                  "x": 0,
+                  "y": 12
+                },
+                "blur": 40
+              },
+              "children": [
+                {
+                  "type": "rectangle",
+                  "id": "zHHGK",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 0,
+                  "fill": "#FFFFFF",
+                  "width": 280,
+                  "height": 26
+                },
+                {
+                  "type": "rectangle",
+                  "id": "1SOGs",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 580,
+                  "fill": "#FFFFFF",
+                  "width": 280,
+                  "height": 20
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "QJ5MQ",
+          "name": "KO-4 Groups",
+          "clip": true,
+          "width": 430,
+          "height": 932,
+          "fill": {
+            "type": "gradient",
+            "gradientType": "linear",
+            "enabled": true,
+            "rotation": 180,
+            "size": {
+              "height": 1
+            },
+            "colors": [
+              {
+                "color": "#F5A8A0",
+                "position": 0
+              },
+              {
+                "color": "#FFE5D9",
+                "position": 0.5
+              },
+              {
+                "color": "#A8DFBC",
+                "position": 1
+              }
+            ]
+          },
+          "cornerRadius": 12,
+          "layout": "vertical",
+          "gap": 28,
+          "padding": [
+            60,
+            30,
+            40,
+            30
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "hPlPl",
+              "name": "t4",
+              "layout": "vertical",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "AgpMP",
+                  "fill": "#1A1A1A",
+                  "textGrowth": "fixed-width",
+                  "width": 370,
+                  "content": "우리만의\n감정 공간을 만들어요",
+                  "lineHeight": 1.25,
+                  "textAlign": "center",
+                  "fontFamily": "Outfit",
+                  "fontSize": 36,
+                  "fontWeight": "800"
+                },
+                {
+                  "type": "text",
+                  "id": "QuNaD",
+                  "fill": "#6D6D6D",
+                  "content": "가족, 친구 누구와도 함께",
+                  "textAlign": "center",
+                  "fontFamily": "Outfit",
+                  "fontSize": 16,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "omenQ",
+              "name": "phoneMock",
+              "clip": true,
+              "width": 280,
+              "height": 600,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "IMG_3501.PNG",
+                "mode": "fill"
+              },
+              "cornerRadius": 32,
+              "stroke": {
+                "thickness": 1,
+                "fill": "#00000010"
+              },
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#00000020",
+                "offset": {
+                  "x": 0,
+                  "y": 12
+                },
+                "blur": 40
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ZlhhY",
+                  "layoutPosition": "absolute",
+                  "x": 20,
+                  "y": 115,
+                  "name": "ov1",
+                  "width": 65,
+                  "height": 28,
+                  "fill": "#FFFFFF",
+                  "padding": [
+                    0,
+                    6
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "RVQrG",
+                      "fill": "#1A1A1A",
+                      "content": "몽글",
+                      "fontFamily": "Outfit",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "id": "xERQZ",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 0,
+                  "fill": "#FFFFFF",
+                  "width": 280,
+                  "height": 26
+                },
+                {
+                  "type": "rectangle",
+                  "id": "0uZDB",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 580,
+                  "fill": "#FFFFFF",
+                  "width": 280,
+                  "height": 20
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "JUdOg",
+      "x": -2124,
+      "y": 8213,
+      "name": "Store Preview — English",
+      "width": 1840,
+      "height": 932,
+      "gap": 40,
+      "children": [
+        {
+          "type": "frame",
+          "id": "fwF1h",
+          "name": "EN-1 Home",
+          "clip": true,
+          "width": 430,
+          "height": 932,
+          "fill": {
+            "type": "gradient",
+            "gradientType": "linear",
+            "enabled": true,
+            "rotation": 180,
+            "size": {
+              "height": 1
+            },
+            "colors": [
+              {
+                "color": "#E8F5E1",
+                "position": 0
+              },
+              {
+                "color": "#FFF5F0",
+                "position": 0.5
+              },
+              {
+                "color": "#FFE5D9",
+                "position": 1
+              }
+            ]
+          },
+          "cornerRadius": 12,
+          "layout": "vertical",
+          "gap": 28,
+          "padding": [
+            60,
+            30,
+            40,
+            30
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "Tqk6E",
+              "name": "et1",
+              "layout": "vertical",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "YEVdB",
+                  "fill": "#1A1A1A",
+                  "textGrowth": "fixed-width",
+                  "width": 370,
+                  "content": "Your Family's Day,\nDelivered by Monggle",
+                  "lineHeight": 1.25,
+                  "textAlign": "center",
+                  "fontFamily": "Outfit",
+                  "fontSize": 36,
+                  "fontWeight": "800"
+                },
+                {
+                  "type": "text",
+                  "id": "HRywX",
+                  "fill": "#6D6D6D",
+                  "content": "See everyone's feelings at a glance",
+                  "textAlign": "center",
+                  "fontFamily": "Outfit",
+                  "fontSize": 18,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Wc935",
+              "name": "ep1",
+              "clip": true,
+              "width": 280,
+              "height": 600,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "IMG_3502.PNG",
+                "mode": "fill"
+              },
+              "cornerRadius": 32,
+              "stroke": {
+                "thickness": 1,
+                "fill": "#00000010"
+              },
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#00000020",
+                "offset": {
+                  "x": 0,
+                  "y": 12
+                },
+                "blur": 40
+              },
+              "children": [
+                {
+                  "type": "rectangle",
+                  "id": "5pvAu",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 0,
+                  "fill": "#FFFFFF",
+                  "width": 280,
+                  "height": 26
+                },
+                {
+                  "type": "rectangle",
+                  "id": "og5Ym",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 580,
+                  "fill": "#FFFFFF",
+                  "width": 280,
+                  "height": 20
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "9mIjh",
+          "name": "EN-2 Answer",
+          "clip": true,
+          "width": 430,
+          "height": 932,
+          "fill": {
+            "type": "gradient",
+            "gradientType": "linear",
+            "enabled": true,
+            "rotation": 180,
+            "size": {
+              "height": 1
+            },
+            "colors": [
+              {
+                "color": "#D4EDDA",
+                "position": 0
+              },
+              {
+                "color": "#E8F5E1",
+                "position": 0.5
+              },
+              {
+                "color": "#FFF8F0",
+                "position": 1
+              }
+            ]
+          },
+          "cornerRadius": 12,
+          "layout": "vertical",
+          "gap": 28,
+          "padding": [
+            60,
+            30,
+            40,
+            30
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "RT5xV",
+              "name": "et2",
+              "layout": "vertical",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "vl3sT",
+                  "fill": "#1A1A1A",
+                  "textGrowth": "fixed-width",
+                  "width": 370,
+                  "content": "Share How You\nFeel Today",
+                  "lineHeight": 1.25,
+                  "textAlign": "center",
+                  "fontFamily": "Outfit",
+                  "fontSize": 36,
+                  "fontWeight": "800"
+                },
+                {
+                  "type": "text",
+                  "id": "gkNuR",
+                  "fill": "#6D6D6D",
+                  "content": "Express your mood with Monggle characters",
+                  "textAlign": "center",
+                  "fontFamily": "Outfit",
+                  "fontSize": 16,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "oSBwh",
+              "name": "ep2",
+              "clip": true,
+              "width": 280,
+              "height": 600,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "IMG_3499.PNG",
+                "mode": "fill"
+              },
+              "cornerRadius": 32,
+              "stroke": {
+                "thickness": 1,
+                "fill": "#00000010"
+              },
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#00000020",
+                "offset": {
+                  "x": 0,
+                  "y": 12
+                },
+                "blur": 40
+              },
+              "children": [
+                {
+                  "type": "rectangle",
+                  "id": "S4Ijz",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 0,
+                  "fill": "#FFFFFF",
+                  "width": 280,
+                  "height": 26
+                },
+                {
+                  "type": "rectangle",
+                  "id": "5WmS4",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 580,
+                  "fill": "#FFFFFF",
+                  "width": 280,
+                  "height": 20
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "RAPVK",
+          "name": "EN-3 History",
+          "clip": true,
+          "width": 430,
+          "height": 932,
+          "fill": {
+            "type": "gradient",
+            "gradientType": "linear",
+            "enabled": true,
+            "rotation": 180,
+            "size": {
+              "height": 1
+            },
+            "colors": [
+              {
+                "color": "#FFF3C4",
+                "position": 0
+              },
+              {
+                "color": "#FFE5D9",
+                "position": 0.5
+              },
+              {
+                "color": "#FFF5F0",
+                "position": 1
+              }
+            ]
+          },
+          "cornerRadius": 12,
+          "layout": "vertical",
+          "gap": 28,
+          "padding": [
+            60,
+            30,
+            40,
+            30
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "YjIS0",
+              "name": "et3",
+              "layout": "vertical",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "3EmZq",
+                  "fill": "#1A1A1A",
+                  "textGrowth": "fixed-width",
+                  "width": 370,
+                  "content": "A Calendar Full\nof Emotions",
+                  "lineHeight": 1.25,
+                  "textAlign": "center",
+                  "fontFamily": "Outfit",
+                  "fontSize": 36,
+                  "fontWeight": "800"
+                },
+                {
+                  "type": "text",
+                  "id": "ZP4jH",
+                  "fill": "#6D6D6D",
+                  "content": "Look back on a month of feelings",
+                  "textAlign": "center",
+                  "fontFamily": "Outfit",
+                  "fontSize": 16,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "B1VnO",
+              "name": "ep3",
+              "clip": true,
+              "width": 280,
+              "height": 600,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "IMG_3500.PNG",
+                "mode": "fill"
+              },
+              "cornerRadius": 32,
+              "stroke": {
+                "thickness": 1,
+                "fill": "#00000010"
+              },
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#00000020",
+                "offset": {
+                  "x": 0,
+                  "y": 12
+                },
+                "blur": 40
+              },
+              "children": [
+                {
+                  "type": "rectangle",
+                  "id": "GK40y",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 0,
+                  "fill": "#FFFFFF",
+                  "width": 280,
+                  "height": 26
+                },
+                {
+                  "type": "rectangle",
+                  "id": "Lo7Hp",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 580,
+                  "fill": "#FFFFFF",
+                  "width": 280,
+                  "height": 20
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Q09eE",
+          "name": "EN-4 Groups",
+          "clip": true,
+          "width": 430,
+          "height": 932,
+          "fill": {
+            "type": "gradient",
+            "gradientType": "linear",
+            "enabled": true,
+            "rotation": 180,
+            "size": {
+              "height": 1
+            },
+            "colors": [
+              {
+                "color": "#F5A8A0",
+                "position": 0
+              },
+              {
+                "color": "#FFE5D9",
+                "position": 0.5
+              },
+              {
+                "color": "#A8DFBC",
+                "position": 1
+              }
+            ]
+          },
+          "cornerRadius": 12,
+          "layout": "vertical",
+          "gap": 28,
+          "padding": [
+            60,
+            30,
+            40,
+            30
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "o1s1T",
+              "name": "et4",
+              "layout": "vertical",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "1ZpFg",
+                  "fill": "#1A1A1A",
+                  "textGrowth": "fixed-width",
+                  "width": 370,
+                  "content": "Create Your Own\nEmotion Space",
+                  "lineHeight": 1.25,
+                  "textAlign": "center",
+                  "fontFamily": "Outfit",
+                  "fontSize": 36,
+                  "fontWeight": "800"
+                },
+                {
+                  "type": "text",
+                  "id": "mKMmf",
+                  "fill": "#6D6D6D",
+                  "content": "For family, friends, and anyone you care about",
+                  "textAlign": "center",
+                  "fontFamily": "Outfit",
+                  "fontSize": 16,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "x9Igz",
+              "name": "ep4",
+              "clip": true,
+              "width": 280,
+              "height": 600,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "IMG_3501.PNG",
+                "mode": "fill"
+              },
+              "cornerRadius": 32,
+              "stroke": {
+                "thickness": 1,
+                "fill": "#00000010"
+              },
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#00000020",
+                "offset": {
+                  "x": 0,
+                  "y": 12
+                },
+                "blur": 40
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "09aa4",
+                  "layoutPosition": "absolute",
+                  "x": 20,
+                  "y": 115,
+                  "name": "ov2",
+                  "width": 65,
+                  "height": 28,
+                  "fill": "#FFFFFF",
+                  "padding": [
+                    0,
+                    6
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "cBiB8",
+                      "fill": "#1A1A1A",
+                      "content": "몽글",
+                      "fontFamily": "Outfit",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "id": "YcEmJ",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 0,
+                  "fill": "#FFFFFF",
+                  "width": 280,
+                  "height": 26
+                },
+                {
+                  "type": "rectangle",
+                  "id": "VhWGj",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 580,
+                  "fill": "#FFFFFF",
+                  "width": 280,
+                  "height": 20
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "hP1f2",
+      "x": -2124,
+      "y": 9245,
+      "name": "Store Preview — 日本語",
+      "width": 1840,
+      "height": 932,
+      "gap": 40,
+      "children": [
+        {
+          "type": "frame",
+          "id": "glamn",
+          "name": "JP-1 Home",
+          "clip": true,
+          "width": 430,
+          "height": 932,
+          "fill": {
+            "type": "gradient",
+            "gradientType": "linear",
+            "enabled": true,
+            "rotation": 180,
+            "size": {
+              "height": 1
+            },
+            "colors": [
+              {
+                "color": "#E8F5E1",
+                "position": 0
+              },
+              {
+                "color": "#FFF5F0",
+                "position": 0.5
+              },
+              {
+                "color": "#FFE5D9",
+                "position": 1
+              }
+            ]
+          },
+          "cornerRadius": 12,
+          "layout": "vertical",
+          "gap": 28,
+          "padding": [
+            60,
+            30,
+            40,
+            30
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "zUPxO",
+              "name": "jt1",
+              "layout": "vertical",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "jlSLF",
+                  "fill": "#1A1A1A",
+                  "textGrowth": "fixed-width",
+                  "width": 370,
+                  "content": "家族の今日を\nモングルが届けるよ",
+                  "lineHeight": 1.25,
+                  "textAlign": "center",
+                  "fontFamily": "Outfit",
+                  "fontSize": 34,
+                  "fontWeight": "800"
+                },
+                {
+                  "type": "text",
+                  "id": "Bh4Z3",
+                  "fill": "#6D6D6D",
+                  "content": "みんなの気持ちをひと目で",
+                  "textAlign": "center",
+                  "fontFamily": "Outfit",
+                  "fontSize": 15,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "A2SqG",
+              "name": "jp1",
+              "clip": true,
+              "width": 280,
+              "height": 600,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "IMG_3502.PNG",
+                "mode": "fill"
+              },
+              "cornerRadius": 32,
+              "stroke": {
+                "thickness": 1,
+                "fill": "#00000010"
+              },
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#00000020",
+                "offset": {
+                  "x": 0,
+                  "y": 12
+                },
+                "blur": 40
+              },
+              "children": [
+                {
+                  "type": "rectangle",
+                  "id": "Miyyg",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 0,
+                  "fill": "#FFFFFF",
+                  "width": 280,
+                  "height": 26
+                },
+                {
+                  "type": "rectangle",
+                  "id": "egxLd",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 580,
+                  "fill": "#FFFFFF",
+                  "width": 280,
+                  "height": 20
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "zYXzB",
+          "name": "JP-2 Answer",
+          "clip": true,
+          "width": 430,
+          "height": 932,
+          "fill": {
+            "type": "gradient",
+            "gradientType": "linear",
+            "enabled": true,
+            "rotation": 180,
+            "size": {
+              "height": 1
+            },
+            "colors": [
+              {
+                "color": "#D4EDDA",
+                "position": 0
+              },
+              {
+                "color": "#E8F5E1",
+                "position": 0.5
+              },
+              {
+                "color": "#FFF8F0",
+                "position": 1
+              }
+            ]
+          },
+          "cornerRadius": 12,
+          "layout": "vertical",
+          "gap": 28,
+          "padding": [
+            60,
+            30,
+            40,
+            30
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "AoooF",
+              "name": "jt2",
+              "layout": "vertical",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "uTHFQ",
+                  "fill": "#1A1A1A",
+                  "textGrowth": "fixed-width",
+                  "width": 370,
+                  "content": "今日の気持ちを\n自由に残そう",
+                  "lineHeight": 1.25,
+                  "textAlign": "center",
+                  "fontFamily": "Outfit",
+                  "fontSize": 34,
+                  "fontWeight": "800"
+                },
+                {
+                  "type": "text",
+                  "id": "w8nl2",
+                  "fill": "#6D6D6D",
+                  "content": "モングルキャラクターで気分を表現",
+                  "textAlign": "center",
+                  "fontFamily": "Outfit",
+                  "fontSize": 15,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "I2GjO",
+              "name": "jp2",
+              "clip": true,
+              "width": 280,
+              "height": 600,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "IMG_3499.PNG",
+                "mode": "fill"
+              },
+              "cornerRadius": 32,
+              "stroke": {
+                "thickness": 1,
+                "fill": "#00000010"
+              },
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#00000020",
+                "offset": {
+                  "x": 0,
+                  "y": 12
+                },
+                "blur": 40
+              },
+              "children": [
+                {
+                  "type": "rectangle",
+                  "id": "7IHBf",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 0,
+                  "fill": "#FFFFFF",
+                  "width": 280,
+                  "height": 26
+                },
+                {
+                  "type": "rectangle",
+                  "id": "LlP8N",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 580,
+                  "fill": "#FFFFFF",
+                  "width": 280,
+                  "height": 20
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "lAnW5",
+          "name": "JP-3 History",
+          "clip": true,
+          "width": 430,
+          "height": 932,
+          "fill": {
+            "type": "gradient",
+            "gradientType": "linear",
+            "enabled": true,
+            "rotation": 180,
+            "size": {
+              "height": 1
+            },
+            "colors": [
+              {
+                "color": "#FFF3C4",
+                "position": 0
+              },
+              {
+                "color": "#FFE5D9",
+                "position": 0.5
+              },
+              {
+                "color": "#FFF5F0",
+                "position": 1
+              }
+            ]
+          },
+          "cornerRadius": 12,
+          "layout": "vertical",
+          "gap": 28,
+          "padding": [
+            60,
+            30,
+            40,
+            30
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "z2ffA",
+              "name": "jt3",
+              "layout": "vertical",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "KsgPc",
+                  "fill": "#1A1A1A",
+                  "textGrowth": "fixed-width",
+                  "width": 370,
+                  "content": "感情の記録が積み重なる\nカレンダー",
+                  "lineHeight": 1.25,
+                  "textAlign": "center",
+                  "fontFamily": "Outfit",
+                  "fontSize": 34,
+                  "fontWeight": "800"
+                },
+                {
+                  "type": "text",
+                  "id": "6GHTX",
+                  "fill": "#6D6D6D",
+                  "content": "1ヶ月の気持ちを振り返ろう",
+                  "textAlign": "center",
+                  "fontFamily": "Outfit",
+                  "fontSize": 15,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "QIX8Y",
+              "name": "jp3",
+              "clip": true,
+              "width": 280,
+              "height": 600,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "IMG_3500.PNG",
+                "mode": "fill"
+              },
+              "cornerRadius": 32,
+              "stroke": {
+                "thickness": 1,
+                "fill": "#00000010"
+              },
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#00000020",
+                "offset": {
+                  "x": 0,
+                  "y": 12
+                },
+                "blur": 40
+              },
+              "children": [
+                {
+                  "type": "rectangle",
+                  "id": "75I4A",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 0,
+                  "fill": "#FFFFFF",
+                  "width": 280,
+                  "height": 26
+                },
+                {
+                  "type": "rectangle",
+                  "id": "wikJl",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 580,
+                  "fill": "#FFFFFF",
+                  "width": 280,
+                  "height": 20
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "qfUe2",
+          "name": "JP-4 Groups",
+          "clip": true,
+          "width": 430,
+          "height": 932,
+          "fill": {
+            "type": "gradient",
+            "gradientType": "linear",
+            "enabled": true,
+            "rotation": 180,
+            "size": {
+              "height": 1
+            },
+            "colors": [
+              {
+                "color": "#F5A8A0",
+                "position": 0
+              },
+              {
+                "color": "#FFE5D9",
+                "position": 0.5
+              },
+              {
+                "color": "#A8DFBC",
+                "position": 1
+              }
+            ]
+          },
+          "cornerRadius": 12,
+          "layout": "vertical",
+          "gap": 28,
+          "padding": [
+            60,
+            30,
+            40,
+            30
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "nPCNn",
+              "name": "jt4",
+              "layout": "vertical",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Y5uzL",
+                  "fill": "#1A1A1A",
+                  "textGrowth": "fixed-width",
+                  "width": 370,
+                  "content": "自分だけの\n感情スペースを作ろう",
+                  "lineHeight": 1.25,
+                  "textAlign": "center",
+                  "fontFamily": "Outfit",
+                  "fontSize": 34,
+                  "fontWeight": "800"
+                },
+                {
+                  "type": "text",
+                  "id": "7SSWj",
+                  "fill": "#6D6D6D",
+                  "content": "家族・友達、誰とでも一緒に",
+                  "textAlign": "center",
+                  "fontFamily": "Outfit",
+                  "fontSize": 15,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "cpFFh",
+              "name": "jp4",
+              "clip": true,
+              "width": 280,
+              "height": 600,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "IMG_3501.PNG",
+                "mode": "fill"
+              },
+              "cornerRadius": 32,
+              "stroke": {
+                "thickness": 1,
+                "fill": "#00000010"
+              },
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#00000020",
+                "offset": {
+                  "x": 0,
+                  "y": 12
+                },
+                "blur": 40
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "BOXsR",
+                  "layoutPosition": "absolute",
+                  "x": 20,
+                  "y": 115,
+                  "name": "ov3",
+                  "width": 65,
+                  "height": 28,
+                  "fill": "#FFFFFF",
+                  "padding": [
+                    0,
+                    6
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "9mhK3",
+                      "fill": "#1A1A1A",
+                      "content": "몽글",
+                      "fontFamily": "Outfit",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "id": "49ER9",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 0,
+                  "fill": "#FFFFFF",
+                  "width": 280,
+                  "height": 26
+                },
+                {
+                  "type": "rectangle",
+                  "id": "HSbSm",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 580,
+                  "fill": "#FFFFFF",
+                  "width": 280,
+                  "height": 20
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "rectangle",
+      "id": "DTpBi",
+      "x": -3827,
+      "y": 6458,
+      "fill": {
+        "type": "image",
+        "enabled": true,
+        "url": "IMG_3502.PNG",
+        "mode": "fill"
+      },
+      "width": 1179,
+      "height": 2556
+    },
+    {
+      "type": "rectangle",
+      "id": "3A2F1",
+      "x": -3827,
+      "y": 6458,
+      "fill": {
+        "type": "image",
+        "enabled": true,
+        "url": "IMG_3500.PNG",
+        "mode": "fill"
+      },
+      "width": 1179,
+      "height": 2556
+    },
+    {
+      "type": "rectangle",
+      "id": "mMOGZ",
+      "x": -3827,
+      "y": 6458,
+      "fill": {
+        "type": "image",
+        "enabled": true,
+        "url": "IMG_3499.PNG",
+        "mode": "fill"
+      },
+      "width": 1179,
+      "height": 2556
+    },
+    {
+      "type": "rectangle",
+      "id": "Rcf53",
+      "x": -3827,
+      "y": 6458,
+      "fill": {
+        "type": "image",
+        "enabled": true,
+        "url": "IMG_3501.PNG",
+        "mode": "fill"
+      },
+      "width": 1179,
+      "height": 2556
+    },
+    {
+      "type": "rectangle",
+      "id": "8vgWG",
+      "x": -5220,
+      "y": 6458,
+      "fill": {
+        "type": "image",
+        "enabled": true,
+        "url": "IMG_3501.PNG",
+        "mode": "fill"
+      },
+      "width": 1179,
+      "height": 2556
+    },
+    {
+      "type": "rectangle",
+      "id": "5MJx1",
+      "x": -5220,
+      "y": 6458,
+      "fill": {
+        "type": "image",
+        "enabled": true,
+        "url": "IMG_3500.PNG",
+        "mode": "fill"
+      },
+      "width": 1179,
+      "height": 2556
+    },
+    {
+      "type": "rectangle",
+      "id": "Bhfur",
+      "x": -5220,
+      "y": 6458,
+      "fill": {
+        "type": "image",
+        "enabled": true,
+        "url": "IMG_3502.PNG",
+        "mode": "fill"
+      },
+      "width": 1179,
+      "height": 2556
+    },
+    {
+      "type": "rectangle",
+      "id": "G46KY",
+      "x": -5220,
+      "y": 6458,
+      "fill": {
+        "type": "image",
+        "enabled": true,
+        "url": "IMG_3499.PNG",
+        "mode": "fill"
+      },
+      "width": 1179,
+      "height": 2556
+    },
+    {
+      "type": "rectangle",
+      "id": "ZnH0Q",
+      "x": -8083,
+      "y": 6369,
+      "fill": {
+        "type": "image",
+        "enabled": true,
+        "url": "IMG_3502.PNG",
+        "mode": "fill"
+      },
+      "width": 1179,
+      "height": 2556
+    },
+    {
+      "type": "rectangle",
+      "id": "0HJyF",
+      "x": -6746,
+      "y": 6369,
+      "fill": {
+        "type": "image",
+        "enabled": true,
+        "url": "IMG_3500.PNG",
+        "mode": "fill"
+      },
+      "width": 1179,
+      "height": 2556
     }
   ],
   "variables": {
