@@ -200,8 +200,12 @@ private struct SearchResultCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: MongleSpacing.xs) {
-            // Question (highlighted)
-            HighlightedText(text: result.questionContent, query: query, baseFont: MongleFont.body2Bold())
+            // Question — 매칭 여부와 무관하게 항상 표시.
+            // (HighlightedText 의 AttributedString 경로 이슈를 회피하기 위해 직접 Text 로 렌더링)
+            Text(result.questionContent)
+                .font(MongleFont.body2Bold())
+                .foregroundColor(MongleColor.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .fixedSize(horizontal: false, vertical: true)
 
             if !result.matchedAnswers.isEmpty {
@@ -292,25 +296,29 @@ private struct HighlightedText: View {
     let baseFont: Font
 
     var body: some View {
-        if query.isEmpty {
-            Text(text).font(baseFont)
+        // 텍스트가 비어 있어도 부모 레이아웃이 무너지지 않도록 빈 Text 라도 항상 그린다.
+        let normalizedText = text.precomposedStringWithCanonicalMapping
+        let normalizedQuery = query.precomposedStringWithCanonicalMapping.lowercased()
+
+        // query 가 비었거나 텍스트에 포함되지 않으면, 안정적인 일반 Text 로 그대로 노출.
+        // (AttributedString 경로에서 발생할 수 있는 미묘한 렌더링 이슈를 회피)
+        if normalizedQuery.isEmpty || !normalizedText.lowercased().contains(normalizedQuery) {
+            Text(normalizedText).font(baseFont)
         } else {
-            Text(buildAttributedString())
+            Text(buildAttributedString(normalizedText: normalizedText, lowerQuery: normalizedQuery))
         }
     }
 
-    private func buildAttributedString() -> AttributedString {
-        var attributed = AttributedString(text)
+    private func buildAttributedString(normalizedText: String, lowerQuery: String) -> AttributedString {
+        var attributed = AttributedString(normalizedText)
         attributed.font = baseFont
 
-        let lowerText = text.lowercased()
-        let lowerQuery = query.lowercased()
+        let lowerText = normalizedText.lowercased()
         var searchRange = lowerText.startIndex..<lowerText.endIndex
 
         while let range = lowerText.range(of: lowerQuery, range: searchRange) {
-            // Convert to AttributedString range
-            let start = text.distance(from: text.startIndex, to: range.lowerBound)
-            let length = query.count
+            let start = lowerText.distance(from: lowerText.startIndex, to: range.lowerBound)
+            let length = lowerText.distance(from: range.lowerBound, to: range.upperBound)
             if let attrRange = Range(NSRange(location: start, length: length), in: attributed) {
                 attributed[attrRange].foregroundColor = UIColor(hex: "56A96B")
                 attributed[attrRange].font = baseFont.bold()
