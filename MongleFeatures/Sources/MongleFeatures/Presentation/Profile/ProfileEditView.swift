@@ -95,6 +95,11 @@ public struct ProfileEditView: View {
             ) { accountStore in
                 AccountManagementView(store: accountStore)
             }
+            .navigationDestination(
+                item: $store.scope(state: \.badges, action: \.badges)
+            ) { badgesStore in
+                BadgesView(store: badgesStore)
+            }
         }
     }
 
@@ -156,6 +161,14 @@ public struct ProfileEditView: View {
                     title: L10n.tr("settings_profile_edit"),
                     subtitle: L10n.tr("settings_profile_edit_desc"),
                     action: { store.send(.moodSettingTapped) }
+                ),
+                ProfileSettingsRow(
+                    icon: "rosette",
+                    iconColor: MongleColor.bgMintLight,
+                    iconBackground: MongleColor.primaryLight,
+                    title: L10n.tr("settings_badges"),
+                    subtitle: L10n.tr("settings_badges_desc"),
+                    action: { store.send(.badgesTapped) }
                 )
             ]
         )

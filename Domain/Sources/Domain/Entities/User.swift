@@ -16,6 +16,10 @@ public struct User: Identifiable, Equatable, Sendable {
     public let hearts: Int
     public let moodId: String?
     public let createdAt: Date
+    /// v2 PRD §3.3 — 본인 응답에서만 채워짐. 서버 미응답 시 기본 true.
+    public let streakRiskNotify: Bool
+    /// v2 PRD §9 — 본인 응답에서만 채워짐. 서버 미응답 시 기본 true.
+    public let badgeEarnedNotify: Bool
 
     public init(
         id: UUID,
@@ -25,7 +29,9 @@ public struct User: Identifiable, Equatable, Sendable {
         role: FamilyRole,
         hearts: Int = 0,
         moodId: String? = "loved",
-        createdAt: Date
+        createdAt: Date,
+        streakRiskNotify: Bool = true,
+        badgeEarnedNotify: Bool = true
     ) {
         self.id = id
         self.email = email
@@ -35,6 +41,8 @@ public struct User: Identifiable, Equatable, Sendable {
         self.hearts = hearts
         self.moodId = moodId
         self.createdAt = createdAt
+        self.streakRiskNotify = streakRiskNotify
+        self.badgeEarnedNotify = badgeEarnedNotify
     }
 }
 

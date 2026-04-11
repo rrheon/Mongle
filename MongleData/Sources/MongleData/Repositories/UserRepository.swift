@@ -49,4 +49,26 @@ final class UserRepository: UserRepositoryInterface {
         let response: Response = try await apiClient.request(UserEndpoint.adHeartReward(amount: amount))
         return response.heartsRemaining
     }
+
+    // MARK: - v2 (PRD §2.2 / §4 / §9)
+
+    func getCharacterStage() async throws -> CharacterStage {
+        let dto: CharacterStageDTO = try await apiClient.request(UserEndpoint.getCharacterStage)
+        return CharacterStageMapper.toDomain(dto)
+    }
+
+    func getBadges() async throws -> BadgeList {
+        let dto: BadgeListResponseDTO = try await apiClient.request(UserEndpoint.getBadges)
+        return BadgeMapper.toDomain(dto)
+    }
+
+    func markBadgesSeen(codes: [String]) async throws {
+        let _: OkResponseDTO = try await apiClient.request(UserEndpoint.markBadgesSeen(codes: codes))
+    }
+
+    func updateNotificationPrefs(streakRisk: Bool?, badgeEarned: Bool?) async throws {
+        let _: UserDTO = try await apiClient.request(
+            UserEndpoint.updateNotificationPrefs(streakRisk: streakRisk, badgeEarned: badgeEarned)
+        )
+    }
 }

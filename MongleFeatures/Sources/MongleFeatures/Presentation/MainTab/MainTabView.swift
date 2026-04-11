@@ -148,16 +148,19 @@ struct MainTabView: View {
 
     private var homeViewSection: some View {
         let currentUserId = store.home.currentUser?.id
-        let memberData: [(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool)] = store.home.familyMembers
+        let memberData: [(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool, sizeMultiplier: CGFloat)] = store.home.familyMembers
             .enumerated()
             .map { index, user in
                 let isCurrentUser = user.id == currentUserId
                 let moodId = isCurrentUser ? (store.previewMoodId ?? store.currentUserMoodId ?? user.moodId) : user.moodId
+                // PRD §2.3: 현재 사용자만 stage 반영. 가족 다른 멤버는 1.0 고정.
+                let sizeMultiplier: CGFloat = isCurrentUser ? store.home.sizeMultiplier : 1.0
                 return (
                     name: user.name,
                     color: Self.monggleColor(for: moodId, fallback: index),
                     hasAnswered: store.home.memberAnswerStatus[user.id] ?? false,
-                    hasSkipped: store.home.memberSkippedStatus[user.id] ?? false
+                    hasSkipped: store.home.memberSkippedStatus[user.id] ?? false,
+                    sizeMultiplier: sizeMultiplier
                 )
             }
         return HomeView(
@@ -197,6 +200,14 @@ struct MainTabView: View {
             error: store.home.appError,
             onDismiss: { store.send(.home(.dismissError)) }
         )
+        .overlay(alignment: .top) {
+            if let stage = store.home.stageUpToastStage {
+                StageUpToast(stage: stage)
+                    .padding(.top, 120)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .animation(.spring(response: 0.5, dampingFraction: 0.75), value: store.home.stageUpToastStage)
+            }
+        }
         .overlay {
             if store.home.showGuestLoginPrompt {
                 MonglePopupView(
@@ -285,5 +296,30 @@ struct MainTabView: View {
             }
             .presentationDetents([.height(Self.clampedSheetHeight(peerAnswerSheetHeight))])
             .presentationDragIndicator(.hidden)
+    }
+}
+
+// MARK: - Stage Up Toast (PRD §2.4)
+
+private struct StageUpToast: View {
+    let stage: Int
+
+    private var stageName: String {
+        L10n.tr("stage_name_\(stage)")
+    }
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Text("✨")
+                .font(.system(size: 18))
+            Text(String(format: L10n.tr("stage_up_toast"), stageName))
+                .font(MongleFont.body2Bold())
+                .foregroundColor(.white)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(MongleColor.primary.opacity(0.92))
+        .clipShape(Capsule())
+        .shadow(color: .black.opacity(0.18), radius: 8, y: 3)
     }
 }

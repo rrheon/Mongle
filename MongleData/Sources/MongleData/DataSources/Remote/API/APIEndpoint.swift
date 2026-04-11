@@ -195,7 +195,11 @@ enum UserEndpoint: APIEndpoint {
     case fetchUser(userId: String)
     case updateUser(userId: String, data: UserDTO)
     case updateMe(name: String)
+    case updateNotificationPrefs(streakRisk: Bool?, badgeEarned: Bool?)
     case getMyStreak
+    case getCharacterStage
+    case getBadges
+    case markBadgesSeen(codes: [String])
     case registerDeviceToken(token: String)
     case adHeartReward(amount: Int)
 
@@ -207,8 +211,16 @@ enum UserEndpoint: APIEndpoint {
             return "/users/me"
         case .updateMe:
             return "/users/me"
+        case .updateNotificationPrefs:
+            return "/users/me"
         case .getMyStreak:
             return "/users/me/streak"
+        case .getCharacterStage:
+            return "/users/me/character-stage"
+        case .getBadges:
+            return "/users/me/badges"
+        case .markBadgesSeen:
+            return "/users/me/badges/mark-seen"
         case .registerDeviceToken:
             return "/users/me/device-token"
         case .adHeartReward:
@@ -218,13 +230,13 @@ enum UserEndpoint: APIEndpoint {
 
     var method: HTTPMethod {
         switch self {
-        case .fetchUser, .getMyStreak:
+        case .fetchUser, .getMyStreak, .getCharacterStage, .getBadges:
             return .get
-        case .updateUser, .updateMe:
+        case .updateUser, .updateMe, .updateNotificationPrefs:
             return .put
         case .registerDeviceToken:
             return .patch
-        case .adHeartReward:
+        case .adHeartReward, .markBadgesSeen:
             return .post
         }
     }
@@ -238,9 +250,19 @@ enum UserEndpoint: APIEndpoint {
             var params: [String: Any] = ["name": data.name, "role": data.role]
             if let moodId = data.moodId { params["moodId"] = moodId }
             if let profileImageUrl = data.profileImageUrl { params["profileImageUrl"] = profileImageUrl }
+            if let streakRiskNotify = data.streakRiskNotify { params["streakRiskNotify"] = streakRiskNotify }
+            if let badgeEarnedNotify = data.badgeEarnedNotify { params["badgeEarnedNotify"] = badgeEarnedNotify }
             return try? JSONSerialization.data(withJSONObject: params)
         case .updateMe(let name):
             return try? JSONEncoder().encode(["name": name])
+        case .updateNotificationPrefs(let streakRisk, let badgeEarned):
+            // Engine-8: PUT /users/me 의 부분 업데이트로 알림 옵트아웃 두 필드만 전달.
+            var params: [String: Any] = [:]
+            if let streakRisk { params["streakRiskNotify"] = streakRisk }
+            if let badgeEarned { params["badgeEarnedNotify"] = badgeEarned }
+            return try? JSONSerialization.data(withJSONObject: params)
+        case .markBadgesSeen(let codes):
+            return try? JSONSerialization.data(withJSONObject: ["codes": codes])
         case .adHeartReward(let amount):
             return try? JSONSerialization.data(withJSONObject: ["amount": amount])
         default:

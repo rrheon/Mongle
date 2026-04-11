@@ -431,7 +431,7 @@ public struct MongleMonggle: View {
                     .foregroundColor(MongleColor.textPrimary)
             }
         }
-        .frame(width: name != nil ? 72 : size)
+        .frame(width: name != nil ? max(72, size + 16) : size)
     }
 }
 
@@ -1102,17 +1102,19 @@ public struct MongleCharacter: Identifiable {
     public var color: Color
     public var hasAnswered: Bool
     public var hasSkipped: Bool
+    public var sizeMultiplier: CGFloat
     public var position: CGPoint
     public var targetPosition: CGPoint
     public var overlapCounter: Int = 0  // 충돌 지속 프레임 수
     public var stepCount: Int = 0       // 이동 누적 스텝 수 (hop 위상 계산용)
     public var restFramesLeft: Int = 0  // 휴식 남은 프레임 수 (> 0 이면 정지)
 
-    public init(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool = false, position: CGPoint, targetPosition: CGPoint) {
+    public init(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool = false, sizeMultiplier: CGFloat = 1.0, position: CGPoint, targetPosition: CGPoint) {
         self.name = name
         self.color = color
         self.hasAnswered = hasAnswered
         self.hasSkipped = hasSkipped
+        self.sizeMultiplier = sizeMultiplier
         self.position = position
         self.targetPosition = targetPosition
     }
@@ -1129,6 +1131,8 @@ public struct MongleView: View {
     public let hasCurrentUserAnswered: Bool
     public let hasCurrentUserSkipped: Bool
     public let isCurrentUser: Bool
+    /// 본체 크기 배율 (PRD §2.2: 1.0 ~ 1.6). 가족 다른 멤버는 항상 1.0.
+    public let sizeMultiplier: CGFloat
     public let onViewAnswer: () -> Void
     public let onNudge: () -> Void
     public let onSelfTap: () -> Void
@@ -1141,6 +1145,7 @@ public struct MongleView: View {
                 hasCurrentUserAnswered: Bool,
                 hasCurrentUserSkipped: Bool = false,
                 isCurrentUser: Bool = false,
+                sizeMultiplier: CGFloat = 1.0,
                 onViewAnswer: @escaping () -> Void,
                 onNudge: @escaping () -> Void,
                 onSelfTap: @escaping () -> Void = {},
@@ -1153,6 +1158,7 @@ public struct MongleView: View {
         self.hasCurrentUserAnswered = hasCurrentUserAnswered
         self.hasCurrentUserSkipped = hasCurrentUserSkipped
         self.isCurrentUser = isCurrentUser
+        self.sizeMultiplier = sizeMultiplier
         self.onViewAnswer = onViewAnswer
         self.onNudge = onNudge
         self.onSelfTap = onSelfTap
@@ -1195,7 +1201,8 @@ public struct MongleView: View {
         Button(action: handleTap) {
             VStack(spacing: 4) {
                 statusBadge
-                MongleMonggle(color: color, name: name)
+                MongleMonggle(color: color, name: name, size: 56 * sizeMultiplier)
+                    .animation(.spring(response: 0.6, dampingFraction: 0.7), value: sizeMultiplier)
             }
         }
         .buttonStyle(.plain)
@@ -1251,7 +1258,7 @@ public struct MongleView: View {
 public struct MongleSceneView: View {
     public var hasCurrentUserAnswered: Bool = false
     public var hasCurrentUserSkipped: Bool = false
-    public var members: [(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool)]
+    public var members: [(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool, sizeMultiplier: CGFloat)]
     public var currentUserName: String?
     public var onViewAnswer: (String) -> Void = { _ in }
     public var onNudge: (String) -> Void = { _ in }
@@ -1269,17 +1276,17 @@ public struct MongleSceneView: View {
     @State private var mongles: [MongleCharacter] = []
     @State private var timer: Timer?
 
-    private static let defaultMemberData: [(String, Color, Bool, Bool)] = [
-        ("Dad", .orange, true, false),
-        ("Mom", .green, false, false),
-        ("Lily", .yellow, true, false),
-        ("Ben", .blue, false, false),
-        ("Alex", .pink, true, false)
+    private static let defaultMemberData: [(String, Color, Bool, Bool, CGFloat)] = [
+        ("Dad", .orange, true, false, 1.0),
+        ("Mom", .green, false, false, 1.0),
+        ("Lily", .yellow, true, false, 1.0),
+        ("Ben", .blue, false, false, 1.0),
+        ("Alex", .pink, true, false, 1.0)
     ]
 
     public init(hasCurrentUserAnswered: Bool = false,
                 hasCurrentUserSkipped: Bool = false,
-                members: [(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool)] = [],
+                members: [(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool, sizeMultiplier: CGFloat)] = [],
                 currentUserName: String? = nil,
                 onViewAnswer: @escaping (String) -> Void = { _ in },
                 onNudge: @escaping (String) -> Void = { _ in },
@@ -1297,8 +1304,8 @@ public struct MongleSceneView: View {
         self.onAnswerFirstToNudge = onAnswerFirstToNudge
     }
 
-    private var effectiveMembers: [(String, Color, Bool, Bool)] {
-        members.isEmpty ? Self.defaultMemberData : members.map { ($0.name, $0.color, $0.hasAnswered, $0.hasSkipped) }
+    private var effectiveMembers: [(String, Color, Bool, Bool, CGFloat)] {
+        members.isEmpty ? Self.defaultMemberData : members.map { ($0.name, $0.color, $0.hasAnswered, $0.hasSkipped, $0.sizeMultiplier) }
     }
 
     public var body: some View {
@@ -1314,6 +1321,7 @@ public struct MongleSceneView: View {
                         hasCurrentUserAnswered: hasCurrentUserAnswered,
                         hasCurrentUserSkipped: hasCurrentUserSkipped,
                         isCurrentUser: currentUserName != nil && h.name == currentUserName,
+                        sizeMultiplier: h.sizeMultiplier,
                         onViewAnswer: { onViewAnswer(h.name) },
                         onNudge: { onNudge(h.name) },
                         onSelfTap: onSelfTap,
@@ -1360,6 +1368,13 @@ public struct MongleSceneView: View {
                     }
                 }
             }
+            .onChange(of: members.map { $0.sizeMultiplier }) { _, _ in
+                for i in mongles.indices {
+                    if let member = members.first(where: { $0.name == mongles[i].name }) {
+                        mongles[i].sizeMultiplier = member.sizeMultiplier
+                    }
+                }
+            }
             .onDisappear {
                 timer?.invalidate()
                 timer = nil
@@ -1371,7 +1386,7 @@ public struct MongleSceneView: View {
     private func initMongles(size: CGSize) {
         guard size.width > 0, size.height > 0 else { return }
         var placed: [CGPoint] = []
-        mongles = effectiveMembers.map { name, color, hasAnswered, hasSkipped in
+        mongles = effectiveMembers.map { name, color, hasAnswered, hasSkipped, sizeMultiplier in
             var pos = randomPos(size: size)
             for _ in 0..<30 {
                 let overlaps = placed.contains { hypot(pos.x - $0.x, pos.y - $0.y) < collisionRadius }
@@ -1384,6 +1399,7 @@ public struct MongleSceneView: View {
                 color: color,
                 hasAnswered: hasAnswered,
                 hasSkipped: hasSkipped,
+                sizeMultiplier: sizeMultiplier,
                 position: pos,
                 targetPosition: randomPos(size: size)
             )

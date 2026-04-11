@@ -272,6 +272,46 @@
 "settings_group_desc" = "Invite members, group settings";
 "settings_account" = "Account Management";
 "settings_account_desc" = "Logout, delete account";
+
+// v2: Badges
+"settings_badges" = "My Badges";
+"settings_badges_desc" = "See all the badges you've earned";
+"badges_title" = "My Badges";
+"badges_section_earned" = "Earned";
+"badges_section_locked" = "In Progress";
+"badges_empty" = "No badges yet. Answer today's question to start collecting!";
+"badges_awarded_at" = "Earned %@";
+"badge_streak_3_name" = "First Sprout";
+"badge_streak_3_condition" = "Answer 3 days in a row";
+"badge_streak_7_name" = "One Week";
+"badge_streak_7_condition" = "Answer 7 days in a row";
+"badge_streak_30_name" = "One Month";
+"badge_streak_30_condition" = "Answer 30 days in a row";
+"badge_streak_100_name" = "Century";
+"badge_streak_100_condition" = "Answer 100 days in a row";
+"badge_answers_10_name" = "Ten Stories";
+"badge_answers_10_condition" = "Write 10 answers total";
+"badge_answers_50_name" = "Fifty Stories";
+"badge_answers_50_condition" = "Write 50 answers total";
+"badge_earned_popup_title" = "You earned a new badge!";
+"badge_earned_popup_action" = "OK";
+
+// v2: Character stages
+"stage_name_0" = "Seed";
+"stage_name_1" = "Sprout";
+"stage_name_2" = "Leaf";
+"stage_name_3" = "Bud";
+"stage_name_4" = "Bloom";
+"stage_name_5" = "Radiance";
+"stage_up_toast" = "You became a %@!";
+
+// v2: Notification opt-out toggles (PRD §3.3 / §9)
+"settings_notif_streak_risk" = "Streak risk alerts";
+"settings_notif_streak_risk_desc" = "Get a heads-up when your streak is about to end today";
+"settings_notif_badge_earned" = "Badge earned alerts";
+"settings_notif_badge_earned_desc" = "Get a push notification when you earn a new badge";
+"settings_notif_sync_failed" = "Couldn't save notification settings. Please try again later.";
+
 "settings_version" = "Mongle v%@";
 "settings_name_label" = "Name";
 "settings_name_placeholder" = "Enter name";

@@ -41,6 +41,18 @@ public struct HomeFeature {
         public var hasUnreadNotifications: Bool = false
         public var showNotificationPermission: Bool = false
 
+        // MARK: - v2 Character Growth (PRD §2)
+        /// 현재 사용자 캐릭터 스테이지 (0~5). 서버 `GET /users/me/character-stage` 응답.
+        public var characterStage: Int = 0
+        /// 본체 크기 배율. 서버에서 stage→multiplier 매핑으로 내려옴 (1.0~1.6).
+        public var sizeMultiplier: CGFloat = 1.0
+        /// 클라이언트가 마지막으로 확인한 stage. UserDefaults 로 영속화. stage up 토스트 트리거에 사용.
+        public var lastSeenStage: Int = 0
+        /// 다음 stage 까지 필요한 streak (최종 단계면 nil)
+        public var nextStageStreak: Int? = nil
+        /// stage up 토스트 표시 중인 경우 새 stage 값 (PRD §2.4). nil = 비표시.
+        public var stageUpToastStage: Int? = nil
+
         public var isGuest: Bool { currentUser == nil }
 
         public init(
@@ -105,6 +117,9 @@ public struct HomeFeature {
         case navigateToGroupSelectTapped
 
         // MARK: - Internal Actions
+        case stageUpToastDismissed
+        case characterStageFetched(CharacterStage)
+        case characterStageFetchFailed
         case setLoading(Bool)
         case setRefreshing(Bool)
         case setError(String?)
@@ -134,6 +149,23 @@ public struct HomeFeature {
 
     public init() {}
 
+    /// PRD §2.2 stage→sizeMultiplier 매핑. 서버 응답이 진실 소스이지만,
+    /// 캐시/오프라인/mock 단계에서 클라이언트 폴백으로 사용한다.
+    public static func sizeMultiplier(forStage stage: Int) -> CGFloat {
+        switch stage {
+        case 0: return 1.00
+        case 1: return 1.10
+        case 2: return 1.20
+        case 3: return 1.32
+        case 4: return 1.45
+        default: return 1.60
+        }
+    }
+
+    private static let lastSeenStageKey = "mongle.character.lastSeenStage"
+
+    @Dependency(\.userRepository) var userRepository
+
     public var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
@@ -146,11 +178,68 @@ public struct HomeFeature {
                         state.showNotificationPermission = true
                     }
                 }
+                // v2: lastSeenStage 복원
+                state.lastSeenStage = UserDefaults.standard.integer(forKey: Self.lastSeenStageKey)
+
+                // PRD §2.2 — 캐릭터 스테이지 라이브 호출 (Engine-4).
+                // stage up 감지/토스트는 .characterStageFetched 에서 처리.
+                let stageEffect: Effect<Action> = state.isGuest ? .none : .run { send in
+                    do {
+                        let stage = try await userRepository.getCharacterStage()
+                        await send(.characterStageFetched(stage))
+                    } catch {
+                        await send(.characterStageFetchFailed)
+                    }
+                }
+
                 // 오늘·어제 질문 모두 없을 때만 로딩 요청
                 if state.todayQuestion == nil && state.yesterdayQuestion == nil && !state.isLoading {
                     state.isLoading = true
-                    return .send(.delegate(.requestRefresh))
+                    return .merge(stageEffect, .send(.delegate(.requestRefresh)))
                 }
+                return stageEffect
+
+            case .characterStageFetched(let stage):
+                let newStage = stage.stage
+                state.characterStage = newStage
+                state.sizeMultiplier = CGFloat(stage.sizeMultiplier)
+                state.nextStageStreak = stage.nextStageStreak
+                state.streakDays = stage.streakDays
+                // PRD §2.4: stage up 감지 + 토스트 + 햅틱. 첫 진입(lastSeen=0)은 연출 억제.
+                if state.lastSeenStage > 0 && newStage > state.lastSeenStage {
+                    state.stageUpToastStage = newStage
+                    UserDefaults.standard.set(newStage, forKey: Self.lastSeenStageKey)
+                    state.lastSeenStage = newStage
+                    return .run { send in
+                        #if os(iOS)
+                        await MainActor.run {
+                            UINotificationFeedbackGenerator().notificationOccurred(.success)
+                        }
+                        #endif
+                        try? await Task.sleep(nanoseconds: 1_500_000_000)
+                        await send(.stageUpToastDismissed)
+                    }
+                } else if state.lastSeenStage == 0 || newStage > state.lastSeenStage {
+                    UserDefaults.standard.set(newStage, forKey: Self.lastSeenStageKey)
+                    state.lastSeenStage = newStage
+                }
+                return .none
+
+            case .characterStageFetchFailed:
+                // 오프라인/실패 시: streakDays 기반 로컬 폴백 매핑.
+                // streakDays 가 아직 모르는 경우 stage 0 유지.
+                let streak = state.streakDays
+                let fallbackStage: Int
+                switch streak {
+                case 0...2:    fallbackStage = 0
+                case 3...6:    fallbackStage = 1
+                case 7...29:   fallbackStage = 2
+                case 30...99:  fallbackStage = 3
+                case 100...364: fallbackStage = 4
+                default:       fallbackStage = 5
+                }
+                state.characterStage = fallbackStage
+                state.sizeMultiplier = Self.sizeMultiplier(forStage: fallbackStage)
                 return .none
 
             case .questionTapped:
@@ -252,6 +341,10 @@ public struct HomeFeature {
                 return .send(.delegate(.navigateToGroupSelect))
 
             // MARK: - Internal Actions
+            case .stageUpToastDismissed:
+                state.stageUpToastStage = nil
+                return .none
+
             case .setLoading(let isLoading):
                 state.isLoading = isLoading
                 if !isLoading {

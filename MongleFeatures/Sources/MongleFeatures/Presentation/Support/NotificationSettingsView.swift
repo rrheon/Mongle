@@ -51,6 +51,20 @@ public struct NotificationSettingsView: View {
             .background(MongleColor.background)
         }
         .toolbar(.hidden, for: .navigationBar)
+        .overlay(alignment: .top) {
+            if let toast = store.errorToast {
+                Text(toast)
+                    .font(MongleFont.caption())
+                    .foregroundColor(.white)
+                    .padding(.horizontal, MongleSpacing.md)
+                    .padding(.vertical, MongleSpacing.sm)
+                    .background(Color.black.opacity(0.78))
+                    .clipShape(Capsule())
+                    .padding(.top, MongleSpacing.lg)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
+        .animation(.spring(response: 0.4, dampingFraction: 0.85), value: store.errorToast)
     }
 
     private func settingsSection(title: String, items: [NotificationSettingsFeature.State.ToggleItem]) -> some View {

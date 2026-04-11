@@ -26,6 +26,7 @@ public struct ProfileEditFeature {
         @Presents public var groupManagement: GroupManagementFeature.State?
         @Presents public var moodHistory: MoodHistoryFeature.State?
         @Presents public var accountManagement: AccountManagementFeature.State?
+        @Presents public var badges: BadgesFeature.State?
 
         public init(user: User? = nil, familyId: UUID? = nil, familyCreatedById: UUID? = nil, isGuest: Bool = false) {
             self.user = user
@@ -44,6 +45,7 @@ public struct ProfileEditFeature {
         case notificationSettingsTapped
         case groupManagementTapped
         case accountManagementTapped
+        case badgesTapped
         case dismissError
         case guestLoginTapped
         case guestLoginDismissed
@@ -55,6 +57,7 @@ public struct ProfileEditFeature {
         case groupManagement(PresentationAction<GroupManagementFeature.Action>)
         case moodHistory(PresentationAction<MoodHistoryFeature.Action>)
         case accountManagement(PresentationAction<AccountManagementFeature.Action>)
+        case badges(PresentationAction<BadgesFeature.Action>)
 
         // MARK: - Delegate Actions
         case delegate(Delegate)
@@ -104,7 +107,7 @@ public struct ProfileEditFeature {
 
             case .notificationSettingsTapped:
                 if state.isGuest { state.showGuestLoginPrompt = true; return .none }
-                state.notificationSettings = NotificationSettingsFeature.State()
+                state.notificationSettings = NotificationSettingsFeature.State(currentUser: state.user)
                 return .none
 
             case .groupManagementTapped:
@@ -119,6 +122,11 @@ public struct ProfileEditFeature {
             case .accountManagementTapped:
                 if state.isGuest { state.showGuestLoginPrompt = true; return .none }
                 state.accountManagement = AccountManagementFeature.State()
+                return .none
+
+            case .badgesTapped:
+                if state.isGuest { state.showGuestLoginPrompt = true; return .none }
+                state.badges = BadgesFeature.State()
                 return .none
 
             case .guestLoginTapped:
@@ -194,6 +202,13 @@ public struct ProfileEditFeature {
             case .accountManagement:
                 return .none
 
+            case .badges(.presented(.delegate(.close))):
+                state.badges = nil
+                return .none
+
+            case .badges:
+                return .none
+
             case .delegate:
                 return .none
             }
@@ -212,6 +227,9 @@ public struct ProfileEditFeature {
         }
         .ifLet(\.$accountManagement, action: \.accountManagement) {
             AccountManagementFeature()
+        }
+        .ifLet(\.$badges, action: \.badges) {
+            BadgesFeature()
         }
     }
 }

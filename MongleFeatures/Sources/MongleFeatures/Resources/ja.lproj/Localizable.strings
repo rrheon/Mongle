@@ -272,6 +272,46 @@
 "settings_group_desc" = "メンバー招待、グループ設定";
 "settings_account" = "アカウント管理";
 "settings_account_desc" = "ログアウト、退会";
+
+// v2: バッジ
+"settings_badges" = "マイバッジ";
+"settings_badges_desc" = "今までに獲得したバッジを確認";
+"badges_title" = "マイバッジ";
+"badges_section_earned" = "獲得済み";
+"badges_section_locked" = "挑戦中";
+"badges_empty" = "まだバッジがありません。回答を続けるとバッジを集められます！";
+"badges_awarded_at" = "%@ 獲得";
+"badge_streak_3_name" = "めばえ";
+"badge_streak_3_condition" = "3日連続で回答";
+"badge_streak_7_name" = "いっしゅうかん";
+"badge_streak_7_condition" = "7日連続で回答";
+"badge_streak_30_name" = "ひとつき";
+"badge_streak_30_condition" = "30日連続で回答";
+"badge_streak_100_name" = "百日";
+"badge_streak_100_condition" = "100日連続で回答";
+"badge_answers_10_name" = "10の物語";
+"badge_answers_10_condition" = "回答を10回";
+"badge_answers_50_name" = "50の物語";
+"badge_answers_50_condition" = "回答を50回";
+"badge_earned_popup_title" = "新しいバッジを獲得しました！";
+"badge_earned_popup_action" = "OK";
+
+// v2: キャラクターステージ
+"stage_name_0" = "たね";
+"stage_name_1" = "めばえ";
+"stage_name_2" = "はっぱ";
+"stage_name_3" = "つぼみ";
+"stage_name_4" = "はな";
+"stage_name_5" = "まんかい";
+"stage_up_toast" = "%@になりました！";
+
+// v2: 通知オプトアウトトグル (PRD §3.3 / §9)
+"settings_notif_streak_risk" = "連続記録のお知らせ";
+"settings_notif_streak_risk_desc" = "今日まだ回答していない時、連続記録が途切れそうな時にお知らせします";
+"settings_notif_badge_earned" = "バッジ獲得のお知らせ";
+"settings_notif_badge_earned_desc" = "新しいバッジを獲得した時にプッシュでお知らせします";
+"settings_notif_sync_failed" = "通知設定の保存に失敗しました。しばらくしてからもう一度お試しください";
+
 "settings_version" = "モングル v%@";
 "settings_name_label" = "名前";
 "settings_name_placeholder" = "名前入力";

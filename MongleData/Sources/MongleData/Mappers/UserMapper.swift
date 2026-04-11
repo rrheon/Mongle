@@ -20,7 +20,9 @@ struct UserMapper {
             role: familyRole(from: dto.role),
             hearts: dto.hearts ?? 0,
             moodId: dto.moodId ?? "loved",
-            createdAt: ISO8601DateFormatter().date(from: dto.createdAt) ?? Date()
+            createdAt: ISO8601DateFormatter().date(from: dto.createdAt) ?? Date(),
+            streakRiskNotify: dto.streakRiskNotify ?? true,
+            badgeEarnedNotify: dto.badgeEarnedNotify ?? true
         )
     }
 
@@ -46,7 +48,9 @@ struct UserMapper {
             familyId: nil,
             hearts: nil,
             moodId: domain.moodId,
-            createdAt: ISO8601DateFormatter().string(from: domain.createdAt)
+            createdAt: ISO8601DateFormatter().string(from: domain.createdAt),
+            streakRiskNotify: nil,
+            badgeEarnedNotify: nil
         )
     }
 

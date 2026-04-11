@@ -272,6 +272,45 @@
 "settings_group_desc" = "멤버 초대, 그룹 설정";
 "settings_account" = "계정 관리";
 "settings_account_desc" = "로그아웃, 탈퇴";
+
+// v2: 배지 (Badges)
+"settings_badges" = "내 배지";
+"settings_badges_desc" = "지금까지 받은 배지를 확인해요";
+"badges_title" = "내 배지";
+"badges_section_earned" = "획득한 배지";
+"badges_section_locked" = "도전 중인 배지";
+"badges_empty" = "아직 받은 배지가 없어요. 답변을 남기면 배지를 모을 수 있어요!";
+"badges_awarded_at" = "%@ 획득";
+"badge_streak_3_name" = "새싹";
+"badge_streak_3_condition" = "3일 연속 답변";
+"badge_streak_7_name" = "한 주의 약속";
+"badge_streak_7_condition" = "7일 연속 답변";
+"badge_streak_30_name" = "한 달의 결실";
+"badge_streak_30_condition" = "30일 연속 답변";
+"badge_streak_100_name" = "백일의 기록";
+"badge_streak_100_condition" = "100일 연속 답변";
+"badge_answers_10_name" = "열 번의 이야기";
+"badge_answers_10_condition" = "누적 답변 10개";
+"badge_answers_50_name" = "쉰 번의 이야기";
+"badge_answers_50_condition" = "누적 답변 50개";
+"badge_earned_popup_title" = "새 배지를 받았어요!";
+"badge_earned_popup_action" = "확인";
+
+// v2: 캐릭터 스테이지
+"stage_name_0" = "씨앗";
+"stage_name_1" = "새싹";
+"stage_name_2" = "잎사귀";
+"stage_name_3" = "꽃봉오리";
+"stage_name_4" = "꽃";
+"stage_name_5" = "만개";
+"stage_up_toast" = "%@이(가) 되었어요!";
+
+// v2: 알림 옵트아웃 토글 (PRD §3.3 / §9)
+"settings_notif_streak_risk" = "스트릭 위험 알림";
+"settings_notif_streak_risk_desc" = "오늘 답변하지 않으면 연속 기록이 끊어질 때 알려드려요";
+"settings_notif_badge_earned" = "배지 획득 알림";
+"settings_notif_badge_earned_desc" = "새로운 배지를 받았을 때 푸시로 알려드려요";
+"settings_notif_sync_failed" = "알림 설정 저장에 실패했어요. 잠시 후 다시 시도해주세요";
 "settings_version" = "몽글 v%@";
 "settings_name_label" = "이름";
 "settings_name_placeholder" = "이름 입력";
