@@ -1208,17 +1208,17 @@ public struct MongleView: View {
         )
         // 흔들기 효과: 누르는 동안 좌우 회전 반복
         .rotationEffect(.degrees(isPressed ? 5 : 0))
+        // 찌부 y 오프셋
+        .offset(y: isPressed ? 8 : 0)
         .animation(
             isPressed
                 ? .easeInOut(duration: 0.12).repeatForever(autoreverses: true)
                 : .spring(response: 0.4, dampingFraction: 0.4),
             value: isPressed
         )
-        // 찌부 y 오프셋
-        .offset(y: isPressed ? 8 : 0)
-        .animation(.spring(response: 0.4, dampingFraction: 0.4), value: isPressed)
+        .accessibilityAddTraits(.isButton)
         .onTapGesture { handleTap() }
-        .onLongPressGesture(minimumDuration: 0.3, pressing: { pressing in
+        .onLongPressGesture(minimumDuration: 0.15, pressing: { pressing in
             if pressing {
                 isPressed = true
                 UIImpactFeedbackGenerator(style: .medium).impactOccurred()
@@ -1331,7 +1331,7 @@ public struct MongleSceneView: View {
     public var body: some View {
         GeometryReader { geo in
             ZStack {
-                ForEach(Array(mongles.enumerated()), id: \.element.id) { index, h in
+                ForEach(mongles) { h in
                     let hopY = h.isDragging ? 0 : -abs(sin(CGFloat(h.stepCount) * .pi / 5.0)) * 12
                     MongleView(
                         name: h.name,
@@ -1357,11 +1357,12 @@ public struct MongleSceneView: View {
                         LongPressGesture(minimumDuration: 0.3)
                             .sequenced(before: DragGesture())
                             .onChanged { value in
+                                guard let idx = mongles.firstIndex(where: { $0.id == h.id }) else { return }
                                 switch value {
                                 case .first(true):
                                     // LongPress 인식됨, 드래그 시작 대기
-                                    if !mongles[index].isDragging {
-                                        mongles[index].isDragging = true
+                                    if !mongles[idx].isDragging {
+                                        mongles[idx].isDragging = true
                                         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                                     }
                                 case .second(true, let drag):
@@ -1369,16 +1370,17 @@ public struct MongleSceneView: View {
                                     if let drag = drag {
                                         let newX = min(max(drag.location.x, wallPadding), geo.size.width - wallPadding)
                                         let newY = min(max(drag.location.y, wallPadding), geo.size.height - wallPadding)
-                                        mongles[index].position = CGPoint(x: newX, y: newY)
+                                        mongles[idx].position = CGPoint(x: newX, y: newY)
                                     }
                                 default:
                                     break
                                 }
                             }
                             .onEnded { _ in
+                                guard let idx = mongles.firstIndex(where: { $0.id == h.id }) else { return }
                                 // 착지: bounce 애니메이션 + 자동 이동 재개
-                                mongles[index].isDragging = false
-                                mongles[index].targetPosition = randomPos(size: geo.size)
+                                mongles[idx].isDragging = false
+                                mongles[idx].targetPosition = randomPos(size: geo.size)
                                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
                             }
                     )
