@@ -592,11 +592,11 @@ extension MainTabFeature {
                         state.home.hasUnreadNotifications = notifState.hasUnread(forFamily: currentFamilyId)
                     }
                     state.path.removeLast()
-                    // 읽음 처리 API 호출 (navigation 성공 여부와 무관하게 실행)
+                    // 알림 삭제 API 호출 (navigation 성공 여부와 무관하게 실행)
                     let markReadEffect: Effect<Action> = {
                         guard let notifId = markAsReadId else { return .none }
                         return .run { [notificationRepository] _ in
-                            _ = try? await notificationRepository.markAsRead(id: notifId)
+                            _ = try? await notificationRepository.delete(id: notifId)
                         }
                     }()
                     guard let question = state.home.todayQuestion ?? state.home.yesterdayQuestion else {

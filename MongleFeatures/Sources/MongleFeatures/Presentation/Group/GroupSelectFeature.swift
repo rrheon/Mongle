@@ -404,7 +404,7 @@ public struct GroupSelectFeature {
                 let markEffect: Effect<Action> = {
                     guard let notifId = markAsReadId else { return .none }
                     return .run { [notificationRepository] _ in
-                        _ = try? await notificationRepository.markAsRead(id: notifId)
+                        _ = try? await notificationRepository.delete(id: notifId)
                     }
                 }()
                 if let group = state.groups.first(where: { $0.id == familyId }) {
