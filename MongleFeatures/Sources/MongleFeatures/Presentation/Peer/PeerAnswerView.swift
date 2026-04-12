@@ -122,14 +122,25 @@ public struct PeerAnswerView: View {
   // MARK: 답변카드
 
     private var answerCard: some View {
-        Text(store.peerAnswer)
-            .font(MongleFont.body2())
-            .foregroundColor(MongleColor.textSecondary)
-            .multilineTextAlignment(.leading)
-            .fixedSize(horizontal: false, vertical: true)
-            .padding(MongleSpacing.lg)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(MongleColor.cardGlass)
-            .clipShape(RoundedRectangle(cornerRadius: MongleRadius.xl))
+        VStack(spacing: MongleSpacing.md) {
+            Text(store.peerAnswer)
+                .font(MongleFont.body2())
+                .foregroundColor(MongleColor.textSecondary)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(MongleSpacing.lg)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(MongleColor.cardGlass)
+                .clipShape(RoundedRectangle(cornerRadius: MongleRadius.xl))
+
+            if store.isMine {
+                MongleButtonSecondary(
+                    L10n.tr("peer_edit_answer"),
+                    icon: "pencil"
+                ) {
+                    store.send(.editAnswerTapped)
+                }
+            }
+        }
     }
 }
