@@ -419,6 +419,7 @@
 
 /* Peer Answer */
 "peer_today_question" = "오늘의 질문";
+"peer_edit_answer" = "수정하기";
 
 /* Validation */
 "error_answer_empty" = "답변을 입력해주세요.";

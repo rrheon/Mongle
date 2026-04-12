@@ -419,6 +419,7 @@
 
 /* Peer Answer */
 "peer_today_question" = "今日の質問";
+"peer_edit_answer" = "修正する";
 
 /* Validation */
 "error_answer_empty" = "回答を入力してください。";

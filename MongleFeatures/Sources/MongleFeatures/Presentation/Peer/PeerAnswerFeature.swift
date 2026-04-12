@@ -13,6 +13,7 @@ public struct PeerAnswerFeature {
         public var myAnswer: String
         public var peerAnswerTime: String
         public var myAnswerTime: String
+        public var isMine: Bool
 
         public init(
             memberName: String,
@@ -21,7 +22,8 @@ public struct PeerAnswerFeature {
             peerAnswer: String,
             myAnswer: String,
             peerAnswerTime: String = "오늘 오전 9:23",
-            myAnswerTime: String = "오늘 오전 8:41"
+            myAnswerTime: String = "오늘 오전 8:41",
+            isMine: Bool = false
         ) {
             self.memberName = memberName
             self.monggleColor = monggleColor
@@ -30,6 +32,7 @@ public struct PeerAnswerFeature {
             self.myAnswer = myAnswer
             self.peerAnswerTime = peerAnswerTime
             self.myAnswerTime = myAnswerTime
+            self.isMine = isMine
         }
     }
 
@@ -37,10 +40,12 @@ public struct PeerAnswerFeature {
         case closeTapped
         case reactTapped
         case commentTapped
+        case editAnswerTapped
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
             case close
+            case editAnswer
         }
     }
 
@@ -51,6 +56,8 @@ public struct PeerAnswerFeature {
             switch action {
             case .closeTapped:
                 return .send(.delegate(.close))
+            case .editAnswerTapped:
+                return .send(.delegate(.editAnswer))
             case .reactTapped, .commentTapped, .delegate:
                 return .none
             }

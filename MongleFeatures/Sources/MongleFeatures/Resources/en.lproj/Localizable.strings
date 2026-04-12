@@ -419,6 +419,7 @@
 
 /* Peer Answer */
 "peer_today_question" = "Today's Question";
+"peer_edit_answer" = "Edit Answer";
 
 /* Validation */
 "error_answer_empty" = "Please enter your answer.";

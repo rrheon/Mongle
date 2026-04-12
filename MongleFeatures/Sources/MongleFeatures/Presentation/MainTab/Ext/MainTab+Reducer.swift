@@ -164,7 +164,8 @@ extension MainTabFeature {
                         questionText: questionText,
                         peerAnswer: answerText,
                         myAnswer: answerText,
-                        peerAnswerTime: answerTime.isEmpty ? L10n.tr("date_today") : answerTime
+                        peerAnswerTime: answerTime.isEmpty ? L10n.tr("date_today") : answerTime,
+                        isMine: true
                     ))
                     return .none
 
@@ -392,6 +393,22 @@ extension MainTabFeature {
                     state.modal = nil
                     return .none
 
+                case .modal(.presented(.peerAnswer(.delegate(.editAnswer)))):
+                    state.modal = nil
+                    let activeQuestion = state.home.todayQuestion ?? state.home.yesterdayQuestion
+                    guard let question = activeQuestion else { return .none }
+                    state.path.append(
+                        .questionDetail(
+                            QuestionDetailFeature.State(
+                                question: question,
+                                currentUser: state.home.currentUser,
+                                familyMembers: state.home.familyMembers,
+                                hearts: state.home.hearts
+                            )
+                        )
+                    )
+                    return .none
+
                 // MARK: - PeerNudge Delegate
 
                 case .path(.element(id: _, action: .peerNudge(.delegate(.close)))):
@@ -575,17 +592,23 @@ extension MainTabFeature {
                         state.home.hasUnreadNotifications = notifState.hasUnread(forFamily: currentFamilyId)
                     }
                     state.path.removeLast()
-                    guard let question = state.home.todayQuestion else { return .none }
+                    // 읽음 처리 API 호출 (navigation 성공 여부와 무관하게 실행)
+                    let markReadEffect: Effect<Action> = {
+                        guard let notifId = markAsReadId else { return .none }
+                        return .run { [notificationRepository] _ in
+                            _ = try? await notificationRepository.markAsRead(id: notifId)
+                        }
+                    }()
+                    guard let question = state.home.todayQuestion ?? state.home.yesterdayQuestion else {
+                        return markReadEffect
+                    }
                     state.path.append(.questionDetail(QuestionDetailFeature.State(
                         question: question,
                         currentUser: state.home.currentUser,
                         familyMembers: state.home.familyMembers,
                         hearts: state.home.hearts
                     )))
-                    guard let notifId = markAsReadId else { return .none }
-                    return .run { [notificationRepository] _ in
-                        _ = try? await notificationRepository.markAsRead(id: notifId)
-                    }
+                    return markReadEffect
 
                 case .skipQuestionResponse(.success(let heartsRemaining)):
                     // 개인 패스: 질문 유지, 하트 차감, 본인 패스 상태 원자적 세팅
