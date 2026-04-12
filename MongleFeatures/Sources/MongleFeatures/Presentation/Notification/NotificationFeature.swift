@@ -180,28 +180,21 @@ public struct NotificationFeature {
                 }
 
             case .notificationTapped(let notification):
-                // Optimistic UI update
-                let markId: UUID? = notification.isRead ? nil : notification.id
-                if !notification.isRead,
-                   let index = state.notifications.firstIndex(where: { $0.id == notification.id }) {
-                    state.notifications[index] = MongleNotification(
-                        id: notification.id,
-                        userId: notification.userId,
-                        familyId: notification.familyId,
-                        type: notification.type,
-                        title: notification.title,
-                        body: notification.body,
-                        isRead: true,
-                        createdAt: notification.createdAt
-                    )
-                }
-                // API 호출은 부모(MainTab)에서 처리 — 이 scope가 pop되어도 취소되지 않도록
-                switch state.mode {
-                case .grouped:
-                    guard let familyId = notification.familyId else { return .none }
-                    return .send(.delegate(.navigateToGroup(familyId, markAsReadId: markId)))
-                default:
-                    return .send(.delegate(.navigateToQuestion(markAsReadId: markId)))
+                // 터치한 알림을 리스트에서 즉시 제거하고, 서버 삭제 완료 후 화면 이동
+                let deleteId = notification.id
+                // 새 배열 할당으로 @ObservableState 뷰 갱신 보장
+                state.notifications = state.notifications.filter { $0.id != notification.id }
+                let mode = state.mode
+                return .run { [notificationRepository] send in
+                    try? await notificationRepository.delete(id: deleteId)
+                    switch mode {
+                    case .grouped:
+                        if let familyId = notification.familyId {
+                            await send(.delegate(.navigateToGroup(familyId, markAsReadId: nil)))
+                        }
+                    default:
+                        await send(.delegate(.navigateToQuestion(markAsReadId: nil)))
+                    }
                 }
 
             case .markAsRead(let notification):
@@ -240,7 +233,7 @@ public struct NotificationFeature {
                 }
 
             case .deleteNotification(let notification):
-                state.notifications.removeAll { $0.id == notification.id }
+                state.notifications = state.notifications.filter { $0.id != notification.id }
                 return .run { [notificationRepository] _ in
                     _ = try? await notificationRepository.delete(id: notification.id)
                 }
@@ -277,7 +270,7 @@ public struct NotificationFeature {
                 return .none
 
             case .notificationDeleted(let id):
-                state.notifications.removeAll { $0.id == id }
+                state.notifications = state.notifications.filter { $0.id != id }
                 return .none
 
             case .delegate:

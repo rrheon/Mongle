@@ -101,6 +101,7 @@ public struct NotificationView: View {
             }
             .padding(.bottom, 24)
         }
+        .id(store.notifications.count)
         .refreshable {
             store.send(.refresh)
         }
