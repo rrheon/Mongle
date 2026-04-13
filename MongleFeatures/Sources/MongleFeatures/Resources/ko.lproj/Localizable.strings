@@ -318,6 +318,9 @@
 "notif_settings_nudge_detail" = "맴버에게 답변 재촉 알림을 받으면 알림";
 "notif_settings_question_desc" = "새 질문 알림";
 "notif_settings_question_detail" = "매일 오전 새 질문이 등록되면 알림";
+"notif_system_off_title" = "시스템 알림이 꺼져있어요";
+"notif_system_off_desc" = "알림을 받으려면 시스템 설정에서 알림을 허용해주세요";
+"notif_system_off_button" = "설정으로 이동";
 
 /* Toast Messages */
 "toast_skip" = "질문을 넘겼어요. 다른 멤버 답변을 확인해보세요!";

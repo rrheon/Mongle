@@ -318,6 +318,9 @@
 "notif_settings_nudge_detail" = "Notify when you receive a nudge";
 "notif_settings_question_desc" = "New question notification";
 "notif_settings_question_detail" = "Notify when new daily question arrives";
+"notif_system_off_title" = "System notifications are off";
+"notif_system_off_desc" = "Please enable notifications in system settings to receive alerts";
+"notif_system_off_button" = "Go to Settings";
 
 /* Toast Messages */
 "toast_skip" = "Question skipped. Check other answers!";
