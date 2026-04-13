@@ -56,6 +56,14 @@ public struct NotificationSettingsView: View {
             .background(MongleColor.background)
         }
         .toolbar(.hidden, for: .navigationBar)
+        .overlay(alignment: .bottom) {
+            if store.showSaveError {
+                MongleToastView(type: .appError(.domain(L10n.tr("toast_notif_save_error"))))
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .padding(.bottom, MongleSpacing.xl)
+            }
+        }
+        .animation(.easeInOut(duration: 0.3), value: store.showSaveError)
         .onAppear { store.send(.onAppear) }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
             store.send(.scenePhaseActive)

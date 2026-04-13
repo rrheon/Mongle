@@ -28,6 +28,8 @@ public struct NotificationSettingsFeature {
         public var isLoading: Bool = true
         /// 시스템 알림이 차단된 상태인지 (배너 표시용)
         public var isSystemNotificationDenied: Bool = false
+        /// 알림 설정 저장 실패 시 토스트 표시
+        public var showSaveError: Bool = false
 
         public init() {
             let ud = UserDefaults.standard
@@ -55,6 +57,9 @@ public struct NotificationSettingsFeature {
         case quietHoursToggleChanged(Bool)
         case openSystemSettingsTapped
         case serverUpdateCompleted
+        case saveFailedRollback(id: String, previousValue: Bool)
+        case quietHoursSaveFailedRollback(previousValue: Bool)
+        case dismissSaveError
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
@@ -119,6 +124,7 @@ public struct NotificationSettingsFeature {
                 return .send(.delegate(.close))
 
             case .toggleChanged(let id, let isOn):
+                let previousValue = state.notificationItems.first(where: { $0.id == id })?.isOn ?? !isOn
                 if let index = state.notificationItems.firstIndex(where: { $0.id == id }) {
                     state.notificationItems[index].isOn = isOn
                     UserDefaults.standard.set(isOn, forKey: "notification.\(id)")
@@ -130,16 +136,49 @@ public struct NotificationSettingsFeature {
                 case "r5": paramKey = "notifQuestion"
                 default: return .none
                 }
-                return .run { [userRepository] _ in
-                    _ = try? await userRepository.updateNotificationPreferences([paramKey: isOn])
+                return .run { [userRepository] send in
+                    do {
+                        _ = try await userRepository.updateNotificationPreferences([paramKey: isOn])
+                    } catch {
+                        await send(.saveFailedRollback(id: id, previousValue: previousValue))
+                    }
+                }
+
+            case .saveFailedRollback(let id, let previousValue):
+                if let index = state.notificationItems.firstIndex(where: { $0.id == id }) {
+                    state.notificationItems[index].isOn = previousValue
+                    UserDefaults.standard.set(previousValue, forKey: "notification.\(id)")
+                }
+                state.showSaveError = true
+                return .run { send in
+                    try await Task.sleep(nanoseconds: 2_000_000_000)
+                    await send(.dismissSaveError)
                 }
 
             case .quietHoursToggleChanged(let isOn):
+                let previousValue = state.quietHoursEnabled
                 state.quietHoursEnabled = isOn
                 UserDefaults.standard.set(isOn, forKey: "notification.quietHours")
-                return .run { [userRepository] _ in
-                    _ = try? await userRepository.updateNotificationPreferences(["quietHoursEnabled": isOn])
+                return .run { [userRepository] send in
+                    do {
+                        _ = try await userRepository.updateNotificationPreferences(["quietHoursEnabled": isOn])
+                    } catch {
+                        await send(.quietHoursSaveFailedRollback(previousValue: previousValue))
+                    }
                 }
+
+            case .quietHoursSaveFailedRollback(let previousValue):
+                state.quietHoursEnabled = previousValue
+                UserDefaults.standard.set(previousValue, forKey: "notification.quietHours")
+                state.showSaveError = true
+                return .run { send in
+                    try await Task.sleep(nanoseconds: 2_000_000_000)
+                    await send(.dismissSaveError)
+                }
+
+            case .dismissSaveError:
+                state.showSaveError = false
+                return .none
 
             case .openSystemSettingsTapped:
                 return .run { _ in

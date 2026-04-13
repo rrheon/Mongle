@@ -334,6 +334,7 @@
 "toast_already_member" = "Already a member";
 "toast_invalid_code" = "Please check the invite code";
 "toast_custom_question_exists" = "A family member already posted today's question";
+"toast_notif_save_error" = "Failed to save notification settings. Please try again";
 
 /* Error Messages */
 "error_title" = "Error";
