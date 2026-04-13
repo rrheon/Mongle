@@ -17,7 +17,7 @@ struct MemberMapper {
             userId: UUID(uuidString: dto.userId) ?? UUID(),
             familyId: UUID(uuidString: dto.familyId) ?? UUID(),
             role: FamilyRole(rawValue: dto.role) ?? .other,
-            joinedAt: ISO8601DateFormatter().date(from: dto.joinedAt) ?? Date(),
+            joinedAt: parseISO8601(dto.joinedAt),
             isActive: dto.isActive
         )
     }

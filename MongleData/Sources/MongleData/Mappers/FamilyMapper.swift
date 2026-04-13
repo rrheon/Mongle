@@ -18,7 +18,7 @@ struct FamilyMapper {
             name: dto.name,
             memberIds: members.map { $0.id },
             createdBy: UUID(uuidString: dto.createdById) ?? UUID(),
-            createdAt: ISO8601DateFormatter().date(from: dto.createdAt) ?? Date(),
+            createdAt: parseISO8601(dto.createdAt),
             inviteCode: dto.inviteCode,
             memberMoodIds: dto.members.map { $0.moodId ?? "loved" },
             streakDays: dto.streakDays ?? 0
@@ -33,7 +33,7 @@ struct FamilyMapper {
             name: dto.name,
             memberIds: dto.memberIds.compactMap { UUID(uuidString: $0) },
             createdBy: UUID(uuidString: dto.createdBy) ?? UUID(),
-            createdAt: ISO8601DateFormatter().date(from: dto.createdAt) ?? Date(),
+            createdAt: parseISO8601(dto.createdAt),
             inviteCode: dto.inviteCode
         )
     }
