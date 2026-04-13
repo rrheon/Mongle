@@ -49,4 +49,34 @@ final class UserRepository: UserRepositoryInterface {
         let response: Response = try await apiClient.request(UserEndpoint.adHeartReward(amount: amount))
         return response.heartsRemaining
     }
+
+    func getNotificationPreferences() async throws -> NotificationPreferences {
+        let dto: NotificationPreferencesDTO = try await apiClient.request(UserEndpoint.getNotificationPreferences)
+        return dto.toDomain()
+    }
+
+    func updateNotificationPreferences(_ params: [String: Any]) async throws -> NotificationPreferences {
+        let dto: NotificationPreferencesDTO = try await apiClient.request(UserEndpoint.updateNotificationPreferences(params: params))
+        return dto.toDomain()
+    }
+}
+
+struct NotificationPreferencesDTO: Decodable {
+    let notifAnswer: Bool
+    let notifNudge: Bool
+    let notifQuestion: Bool
+    let quietHoursEnabled: Bool
+    let quietHoursStart: String
+    let quietHoursEnd: String
+
+    func toDomain() -> NotificationPreferences {
+        NotificationPreferences(
+            notifAnswer: notifAnswer,
+            notifNudge: notifNudge,
+            notifQuestion: notifQuestion,
+            quietHoursEnabled: quietHoursEnabled,
+            quietHoursStart: quietHoursStart,
+            quietHoursEnd: quietHoursEnd
+        )
+    }
 }

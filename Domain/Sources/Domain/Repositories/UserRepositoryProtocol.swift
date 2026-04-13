@@ -15,6 +15,27 @@ public protocol UserRepositoryInterface: Sendable {
     func registerDeviceToken(token: String) async throws
     /// 광고 시청 보상으로 하트를 지급하고 남은 하트 수를 반환합니다.
     func grantAdHearts(amount: Int) async throws -> Int
+    func getNotificationPreferences() async throws -> NotificationPreferences
+    func updateNotificationPreferences(_ params: [String: Any]) async throws -> NotificationPreferences
+}
+
+public struct NotificationPreferences: Equatable, Sendable {
+    public let notifAnswer: Bool
+    public let notifNudge: Bool
+    public let notifQuestion: Bool
+    public let quietHoursEnabled: Bool
+    public let quietHoursStart: String
+    public let quietHoursEnd: String
+
+    public init(notifAnswer: Bool, notifNudge: Bool, notifQuestion: Bool,
+                quietHoursEnabled: Bool, quietHoursStart: String, quietHoursEnd: String) {
+        self.notifAnswer = notifAnswer
+        self.notifNudge = notifNudge
+        self.notifQuestion = notifQuestion
+        self.quietHoursEnabled = quietHoursEnabled
+        self.quietHoursStart = quietHoursStart
+        self.quietHoursEnd = quietHoursEnd
+    }
 }
 
 public enum UserError: Error, Equatable, Sendable {

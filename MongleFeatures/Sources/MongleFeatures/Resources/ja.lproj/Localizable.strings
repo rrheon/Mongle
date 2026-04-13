@@ -318,6 +318,9 @@
 "notif_settings_nudge_detail" = "メンバーから回答催促を受けたら通知";
 "notif_settings_question_desc" = "新しい質問通知";
 "notif_settings_question_detail" = "毎朝新しい質問が登録されたら通知";
+"notif_system_off_title" = "システム通知がオフです";
+"notif_system_off_desc" = "通知を受け取るにはシステム設定で通知を許可してください";
+"notif_system_off_button" = "設定へ移動";
 
 /* Toast Messages */
 "toast_skip" = "質問をスキップしました。他のメンバーの回答を確認しましょう！";
@@ -331,6 +334,7 @@
 "toast_already_member" = "すでに参加しているグループです";
 "toast_invalid_code" = "招待コードを再確認してください";
 "toast_custom_question_exists" = "すでに家族が今日の質問を投稿しました";
+"toast_notif_save_error" = "通知設定の保存に失敗しました。もう一度お試しください";
 
 /* Error Messages */
 "error_title" = "エラー";

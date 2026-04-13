@@ -1,9 +1,50 @@
 # 작업
 
-개별알림 터치
-- 현재 개별알림 터치 시 화면이동은 되는데 터치한 알림에 대해 해당 알림이 사라지지 않는 문제가 있음 이걸 버그티켓을 발급받아서 진행하고 qa에이전트에게 실기기테스트를 받도록해
-- zxx 그룹에서 재촉하기 알림을 눌렀는데 삭제되지 않고 알림화면에 계속 살아있는 오류가 있음
-  - 데이터베이스 서버에서 해당 내용을 삭제해 더 이상 불러오지 못하게 수정
+## 이슈 목록 및 처리 현황 (2026-04-13)
+
+### Bug 1: 알림설정(답변/재촉/시스템) 변경이 푸시 발송에 반영되지 않음 — P0
+- **현상**: 알림설정 화면에서 답변알림·재촉알림·시스템알림을 OFF해도 푸시가 계속 수신됨
+- **재현**: 재촉 알림 OFF → 상대방이 재촉하기 실행 → 알림 수신됨
+- **노션 티켓**: [Bug] 알림설정(답변/재촉/시스템) 변경이 실제 푸시 발송에 반영되지 않음
+
+**근본 원인 분석:**
+1. 서버(MongleServer)에 알림 선호도 체크 로직은 정상 구현되어 있음:
+   - `NudgeService.ts:76` — `if (target.notifNudge)` 체크
+   - `AnswerService.ts:117` — `if (member.notifAnswer)` 체크
+   - `scheduler.ts:122` — `if (!target.notifQuestion) continue` 체크
+2. 커밋 `70f4f83`(알림 선호도 API + 푸시 필터링)이 Lambda 배포(21:46 KST) 이후(21:51 KST)에 커밋됨
+3. **서버 재배포로 해결** — `deploy:dev` 실행 완료, `deploy:prod`는 이미 최신 배포 확인(No changes)
+
+**iOS 추가 수정:**
+- `NotificationSettingsFeature.swift` — `try?`를 `do/catch`로 변경, API 실패 시 토글 롤백 + 에러 토스트 표시
+- 로컬라이제이션 추가: `toast_notif_save_error` (ko/en/ja)
+- **빌드 확인: BUILD SUCCEEDED**
+
+**상태: ✅ 완료 (서버 배포 확인 + iOS 에러핸들링 개선)**
+
+---
+
+### Bug 2: 알림 텍스트에 나뭇잎(🌿) 이모지 잔존 — P1
+- **현상**: 푸시 알림 텍스트(재촉하기 등)에 🌿 이모지가 표시됨
+- **노션 티켓**: [Bug] 알림 텍스트에 나뭇잎(🌿) 이모지 잔존
+
+**근본 원인 분석:**
+- 서버 코드(`src/utils/i18n/push.ts`)에서 커밋 `bf2e909`로 이미 🌿 제거 완료
+- Bug 1과 동일한 배포 타이밍 이슈
+
+**상태: ✅ 완료 (서버 재배포로 해결, 코드 변경 불필요)**
+
+---
+
+### 수정 파일 요약
+| 위치 | 파일 | 변경 내용 |
+|------|------|-----------|
+| iOS | `NotificationSettingsFeature.swift` | try? → do/catch, 실패 시 롤백 + 에러 토스트 |
+| iOS | `NotificationSettingsView.swift` | 에러 토스트 오버레이 추가 |
+| iOS | `ko/en/ja Localizable.strings` | `toast_notif_save_error` 문자열 추가 |
+| Server | (코드 변경 없음) | dev 재배포 완료, prod 최신 확인 |
+
+---
 
 ## 위치
 - 디자인: /Users/yong/Desktop/FamTree/MongleUI

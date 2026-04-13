@@ -198,6 +198,8 @@ enum UserEndpoint: APIEndpoint {
     case getMyStreak
     case registerDeviceToken(token: String)
     case adHeartReward(amount: Int)
+    case getNotificationPreferences
+    case updateNotificationPreferences(params: [String: Any])
 
     var path: String {
         switch self {
@@ -213,16 +215,18 @@ enum UserEndpoint: APIEndpoint {
             return "/users/me/device-token"
         case .adHeartReward:
             return "/users/me/hearts/ad-reward"
+        case .getNotificationPreferences, .updateNotificationPreferences:
+            return "/users/me/notification-preferences"
         }
     }
 
     var method: HTTPMethod {
         switch self {
-        case .fetchUser, .getMyStreak:
+        case .fetchUser, .getMyStreak, .getNotificationPreferences:
             return .get
         case .updateUser, .updateMe:
             return .put
-        case .registerDeviceToken:
+        case .registerDeviceToken, .updateNotificationPreferences:
             return .patch
         case .adHeartReward:
             return .post
@@ -243,6 +247,8 @@ enum UserEndpoint: APIEndpoint {
             return try? JSONEncoder().encode(["name": name])
         case .adHeartReward(let amount):
             return try? JSONSerialization.data(withJSONObject: ["amount": amount])
+        case .updateNotificationPreferences(let params):
+            return try? JSONSerialization.data(withJSONObject: params)
         default:
             return nil
         }
