@@ -26,7 +26,7 @@ protocol APIEndpoint {
 
 extension APIEndpoint {
     var baseURL: String {
-        return "https://1cq1kfgvf1.execute-api.ap-northeast-2.amazonaws.com"
+        return "https://15i45fprse.execute-api.ap-northeast-2.amazonaws.com"
     }
 
     var headers: [String: String]? {
