@@ -214,6 +214,9 @@ public enum MongleShadow {
 
 // MARK: - Color Extension
 public extension Color {
+    // 디자인 기준이 Display P3 색공간이라 sRGB로 해석 시 구형 LCD(iPhone 11 등)와
+    // Android 기본 gamut에서 파스텔톤이 진하게 렌더링되는 현상이 있음.
+    // Display P3로 통일해 모든 P3 지원 기기에서 동일한 색역을 사용.
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0
@@ -230,7 +233,7 @@ public extension Color {
             (a, r, g, b) = (1, 1, 1, 0)
         }
         self.init(
-            .sRGB,
+            .displayP3,
             red: Double(r) / 255,
             green: Double(g) / 255,
             blue: Double(b) / 255,
