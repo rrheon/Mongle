@@ -275,10 +275,22 @@ extension RootFeature {
                     if appError.requiresLogin {
                         return .send(.showLoginScreen)
                     }
+                    // 실패 시 대기 중이던 푸시 딥링크도 정리 — 다음 refresh 에 의도치 않게
+                    // 오래된 질문 화면이 열리는 것을 막는다.
+                    state.pendingOpenQuestion = false
                     if state.mainTab != nil {
                         state.mainTab?.home.isLoading = false
                         state.mainTab?.home.isRefreshing = false
                         state.mainTab?.home.appError = appError
+                        // 무한로딩 방지:
+                        //   .groupSelected 델리게이트는 appState 를 .loading 으로 선전환한 뒤
+                        //   selectFamily/refreshHomeData 를 실행한다. 이 체인이 실패하면 기존엔
+                        //   appState 가 .loading 으로 남아 LoadingView 가 계속 표시됐다.
+                        //   mainTab 이 이미 있으므로 복귀 위치를 (그룹 여부에 따라) 결정한다.
+                        if state.appState == .loading {
+                            let hasFamily = state.mainTab?.home.family != nil
+                            state.appState = hasFamily ? .authenticated : .groupSelection
+                        }
                     } else {
                         state.appState = .unauthenticated
                     }
