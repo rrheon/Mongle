@@ -26,7 +26,7 @@ protocol APIEndpoint {
 
 extension APIEndpoint {
     var baseURL: String {
-        return "https://1cq1kfgvf1.execute-api.ap-northeast-2.amazonaws.com"
+        return "https://15i45fprse.execute-api.ap-northeast-2.amazonaws.com"
     }
 
     var headers: [String: String]? {
@@ -202,6 +202,8 @@ enum UserEndpoint: APIEndpoint {
     case markBadgesSeen(codes: [String])
     case registerDeviceToken(token: String)
     case adHeartReward(amount: Int)
+    case getNotificationPreferences
+    case updateNotificationPreferences(params: [String: Any])
 
     var path: String {
         switch self {
@@ -225,16 +227,18 @@ enum UserEndpoint: APIEndpoint {
             return "/users/me/device-token"
         case .adHeartReward:
             return "/users/me/hearts/ad-reward"
+        case .getNotificationPreferences, .updateNotificationPreferences:
+            return "/users/me/notification-preferences"
         }
     }
 
     var method: HTTPMethod {
         switch self {
-        case .fetchUser, .getMyStreak, .getCharacterStage, .getBadges:
+        case .fetchUser, .getMyStreak, .getNotificationPreferences:
             return .get
         case .updateUser, .updateMe, .updateNotificationPrefs:
             return .put
-        case .registerDeviceToken:
+        case .registerDeviceToken, .updateNotificationPreferences:
             return .patch
         case .adHeartReward, .markBadgesSeen:
             return .post
@@ -265,6 +269,8 @@ enum UserEndpoint: APIEndpoint {
             return try? JSONSerialization.data(withJSONObject: ["codes": codes])
         case .adHeartReward(let amount):
             return try? JSONSerialization.data(withJSONObject: ["amount": amount])
+        case .updateNotificationPreferences(let params):
+            return try? JSONSerialization.data(withJSONObject: params)
         default:
             return nil
         }

@@ -18,6 +18,12 @@ class MongleAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 
     weak var store: StoreOf<RootFeature>?
 
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        // 앱 실행 시 아이콘 뱃지 초기화
+        UNUserNotificationCenter.current().setBadgeCount(0)
+        return true
+    }
+
     /// APNs 토큰 등록 성공
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         store?.send(.deviceTokenReceived(deviceToken))
@@ -72,6 +78,8 @@ struct MongleApp: App {
         ConsentManager.shared.startConsentFlowIfNeeded()
     }
 
+    @Environment(\.scenePhase) private var scenePhase
+
     var body: some Scene {
         WindowGroup {
             RootView(store: store)
@@ -87,6 +95,11 @@ struct MongleApp: App {
                     appDelegate.store = store
                     UNUserNotificationCenter.current().delegate = appDelegate
                 }
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                UNUserNotificationCenter.current().setBadgeCount(0)
+            }
         }
     }
 }

@@ -1,4 +1,6 @@
 import Foundation
+import UIKit
+import UserNotifications
 import ComposableArchitecture
 import Domain
 
@@ -23,8 +25,11 @@ public struct NotificationSettingsFeature {
         public var notificationItems: [ToggleItem]
         public var quietHours: String
         public var quietHoursEnabled: Bool
-        /// PRD §3.3/§9 — toggle PUT 실패 시 사용자에게 표시할 토스트 메시지.
-        public var errorToast: String?
+        public var isLoading: Bool = true
+        /// 시스템 알림이 차단된 상태인지 (배너 표시용)
+        public var isSystemNotificationDenied: Bool = false
+        /// 알림 설정 저장 실패 시 토스트 표시
+        public var showSaveError: Bool = false
 
         public init(currentUser: User? = nil) {
             let ud = UserDefaults.standard
@@ -61,11 +66,19 @@ public struct NotificationSettingsFeature {
     }
 
     public enum Action: Sendable, Equatable {
+        case onAppear
+        case scenePhaseActive
+        case systemPermissionChecked(isDenied: Bool)
+        case preferencesLoaded(NotificationPreferences)
+        case loadFailed
         case closeTapped
         case toggleChanged(String, Bool)
         case quietHoursToggleChanged(Bool)
-        case prefsSyncFailed(id: String, previousValue: Bool)
-        case errorToastDismissed
+        case openSystemSettingsTapped
+        case serverUpdateCompleted
+        case saveFailedRollback(id: String, previousValue: Bool)
+        case quietHoursSaveFailedRollback(previousValue: Bool)
+        case dismissSaveError
         case delegate(Delegate)
 
         public enum Delegate: Sendable, Equatable {
@@ -80,59 +93,122 @@ public struct NotificationSettingsFeature {
     public var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
+            case .onAppear, .scenePhaseActive:
+                let isInitialLoad = state.isLoading
+                if action == .onAppear { state.isLoading = true }
+                return .run { send in
+                    // 시스템 알림 권한 상태 체크
+                    let settings = await UNUserNotificationCenter.current().notificationSettings()
+                    let isDenied = settings.authorizationStatus == .denied
+                    await send(.systemPermissionChecked(isDenied: isDenied))
+
+                    // 최초 로드 시에만 서버 선호도 가져오기
+                    if isInitialLoad {
+                        do {
+                            let prefs = try await userRepository.getNotificationPreferences()
+                            await send(.preferencesLoaded(prefs))
+                        } catch {
+                            await send(.loadFailed)
+                        }
+                    }
+                }
+
+            case .systemPermissionChecked(let isDenied):
+                state.isSystemNotificationDenied = isDenied
+                return .none
+
+            case .preferencesLoaded(let prefs):
+                state.isLoading = false
+                if let idx = state.notificationItems.firstIndex(where: { $0.id == "r1" }) {
+                    state.notificationItems[idx].isOn = prefs.notifAnswer
+                }
+                if let idx = state.notificationItems.firstIndex(where: { $0.id == "r3" }) {
+                    state.notificationItems[idx].isOn = prefs.notifNudge
+                }
+                if let idx = state.notificationItems.firstIndex(where: { $0.id == "r5" }) {
+                    state.notificationItems[idx].isOn = prefs.notifQuestion
+                }
+                state.quietHoursEnabled = prefs.quietHoursEnabled
+                UserDefaults.standard.set(prefs.notifAnswer, forKey: "notification.r1")
+                UserDefaults.standard.set(prefs.notifNudge, forKey: "notification.r3")
+                UserDefaults.standard.set(prefs.notifQuestion, forKey: "notification.r5")
+                UserDefaults.standard.set(prefs.quietHoursEnabled, forKey: "notification.quietHours")
+                return .none
+
+            case .loadFailed:
+                state.isLoading = false
+                return .none
+
             case .closeTapped:
                 return .send(.delegate(.close))
 
             case .toggleChanged(let id, let isOn):
-                let previous = !isOn
+                let previousValue = state.notificationItems.first(where: { $0.id == id })?.isOn ?? !isOn
                 if let index = state.notificationItems.firstIndex(where: { $0.id == id }) {
                     state.notificationItems[index].isOn = isOn
                     UserDefaults.standard.set(isOn, forKey: "notification.\(id)")
                 }
-                // Engine-8: streakRisk / badgeEarned 두 토글만 PUT /users/me 부분 업데이트로 동기화.
-                // 실패 시 이전 값으로 롤백 + 에러 토스트 (PRD 확정).
+                let paramKey: String
                 switch id {
-                case "streakRisk":
-                    return .run { send in
-                        do {
-                            try await userRepository.updateNotificationPrefs(streakRisk: isOn, badgeEarned: nil)
-                        } catch {
-                            await send(.prefsSyncFailed(id: id, previousValue: previous))
-                        }
+                case "r1": paramKey = "notifAnswer"
+                case "r3": paramKey = "notifNudge"
+                case "r5": paramKey = "notifQuestion"
+                default: return .none
+                }
+                return .run { [userRepository] send in
+                    do {
+                        _ = try await userRepository.updateNotificationPreferences([paramKey: isOn])
+                    } catch {
+                        await send(.saveFailedRollback(id: id, previousValue: previousValue))
                     }
-                case "badgeEarned":
-                    return .run { send in
-                        do {
-                            try await userRepository.updateNotificationPrefs(streakRisk: nil, badgeEarned: isOn)
-                        } catch {
-                            await send(.prefsSyncFailed(id: id, previousValue: previous))
-                        }
-                    }
-                default:
-                    return .none
                 }
 
-            case .prefsSyncFailed(let id, let previousValue):
+            case .saveFailedRollback(let id, let previousValue):
                 if let index = state.notificationItems.firstIndex(where: { $0.id == id }) {
                     state.notificationItems[index].isOn = previousValue
                     UserDefaults.standard.set(previousValue, forKey: "notification.\(id)")
                 }
-                state.errorToast = L10n.tr("settings_notif_sync_failed")
+                state.showSaveError = true
                 return .run { send in
-                    try? await Task.sleep(nanoseconds: 2_500_000_000)
-                    await send(.errorToastDismissed)
+                    try await Task.sleep(nanoseconds: 2_000_000_000)
+                    await send(.dismissSaveError)
                 }
 
-            case .errorToastDismissed:
-                state.errorToast = nil
-                return .none
-
             case .quietHoursToggleChanged(let isOn):
+                let previousValue = state.quietHoursEnabled
                 state.quietHoursEnabled = isOn
                 UserDefaults.standard.set(isOn, forKey: "notification.quietHours")
+                return .run { [userRepository] send in
+                    do {
+                        _ = try await userRepository.updateNotificationPreferences(["quietHoursEnabled": isOn])
+                    } catch {
+                        await send(.quietHoursSaveFailedRollback(previousValue: previousValue))
+                    }
+                }
+
+            case .quietHoursSaveFailedRollback(let previousValue):
+                state.quietHoursEnabled = previousValue
+                UserDefaults.standard.set(previousValue, forKey: "notification.quietHours")
+                state.showSaveError = true
+                return .run { send in
+                    try await Task.sleep(nanoseconds: 2_000_000_000)
+                    await send(.dismissSaveError)
+                }
+
+            case .dismissSaveError:
+                state.showSaveError = false
                 return .none
 
-            case .delegate:
+            case .openSystemSettingsTapped:
+                return .run { _ in
+                    await MainActor.run {
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            UIApplication.shared.open(url)
+                        }
+                    }
+                }
+
+            case .serverUpdateCompleted, .delegate:
                 return .none
             }
         }

@@ -21,3 +21,11 @@ GoogleService-Info.plist
 *.env
 Secrets.swift
 **/Secrets.swift
+*.p8
+AuthKey_*.p8
+
+# 로컬 전용 — 디자인/미디어/참고 자료
+*.pen
+몽글 시연영상.mp4
+Store등록정보.md
+미리보기 화면/

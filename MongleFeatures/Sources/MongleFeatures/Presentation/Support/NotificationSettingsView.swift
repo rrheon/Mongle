@@ -18,6 +18,11 @@ public struct NotificationSettingsView: View {
 
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: MongleSpacing.md) {
+                    // 시스템 알림 차단 경고 배너
+                    if store.isSystemNotificationDenied {
+                        systemNotificationBanner
+                    }
+
                     settingsSection(title: L10n.tr("notif_settings_answer"), items: Array(store.notificationItems.prefix(1)))
                     settingsSection(title: L10n.tr("notif_settings_nudge"), items: Array(store.notificationItems.dropFirst(1).prefix(1)))
                     settingsSection(title: L10n.tr("notif_settings_system"), items: Array(store.notificationItems.dropFirst(2)))
@@ -51,20 +56,48 @@ public struct NotificationSettingsView: View {
             .background(MongleColor.background)
         }
         .toolbar(.hidden, for: .navigationBar)
-        .overlay(alignment: .top) {
-            if let toast = store.errorToast {
-                Text(toast)
-                    .font(MongleFont.caption())
-                    .foregroundColor(.white)
-                    .padding(.horizontal, MongleSpacing.md)
-                    .padding(.vertical, MongleSpacing.sm)
-                    .background(Color.black.opacity(0.78))
-                    .clipShape(Capsule())
-                    .padding(.top, MongleSpacing.lg)
-                    .transition(.move(edge: .top).combined(with: .opacity))
+        .overlay(alignment: .bottom) {
+            if store.showSaveError {
+                MongleToastView(type: .appError(.domain(L10n.tr("toast_notif_save_error"))))
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .padding(.bottom, MongleSpacing.xl)
             }
         }
-        .animation(.spring(response: 0.4, dampingFraction: 0.85), value: store.errorToast)
+        .animation(.easeInOut(duration: 0.3), value: store.showSaveError)
+        .onAppear { store.send(.onAppear) }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            store.send(.scenePhaseActive)
+        }
+    }
+
+    /// 시스템 알림이 꺼져있을 때 표시하는 경고 배너
+    private var systemNotificationBanner: some View {
+        HStack(spacing: MongleSpacing.sm) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundColor(MongleColor.error)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(L10n.tr("notif_system_off_title"))
+                    .font(MongleFont.body2Bold())
+                    .foregroundColor(MongleColor.textPrimary)
+                Text(L10n.tr("notif_system_off_desc"))
+                    .font(MongleFont.caption())
+                    .foregroundColor(MongleColor.textSecondary)
+            }
+            Spacer()
+            Button {
+                store.send(.openSystemSettingsTapped)
+            } label: {
+                Text(L10n.tr("notif_system_off_button"))
+                    .font(MongleFont.captionBold())
+                    .foregroundColor(.white)
+                    .padding(.horizontal, MongleSpacing.sm)
+                    .padding(.vertical, MongleSpacing.xxs)
+                    .background(MongleColor.primary)
+                    .cornerRadius(MongleRadius.medium)
+            }
+        }
+        .padding(MongleSpacing.md)
+        .monglePanel(background: MongleColor.error.opacity(0.08), cornerRadius: MongleRadius.large, borderColor: MongleColor.error.opacity(0.3), shadowOpacity: 0)
     }
 
     private func settingsSection(title: String, items: [NotificationSettingsFeature.State.ToggleItem]) -> some View {

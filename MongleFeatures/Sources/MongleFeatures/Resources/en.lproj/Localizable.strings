@@ -358,6 +358,9 @@
 "notif_settings_nudge_detail" = "Notify when you receive a nudge";
 "notif_settings_question_desc" = "New question notification";
 "notif_settings_question_detail" = "Notify when new daily question arrives";
+"notif_system_off_title" = "System notifications are off";
+"notif_system_off_desc" = "Please enable notifications in system settings to receive alerts";
+"notif_system_off_button" = "Go to Settings";
 
 /* Toast Messages */
 "toast_skip" = "Question skipped. Check other answers!";
@@ -371,6 +374,7 @@
 "toast_already_member" = "Already a member";
 "toast_invalid_code" = "Please check the invite code";
 "toast_custom_question_exists" = "A family member already posted today's question";
+"toast_notif_save_error" = "Failed to save notification settings. Please try again";
 
 /* Error Messages */
 "error_title" = "Error";
@@ -459,6 +463,7 @@
 
 /* Peer Answer */
 "peer_today_question" = "Today's Question";
+"peer_edit_answer" = "Edit Answer";
 
 /* Validation */
 "error_answer_empty" = "Please enter your answer.";

@@ -20,9 +20,7 @@ struct UserMapper {
             role: familyRole(from: dto.role),
             hearts: dto.hearts ?? 0,
             moodId: dto.moodId ?? "loved",
-            createdAt: ISO8601DateFormatter().date(from: dto.createdAt) ?? Date(),
-            streakRiskNotify: dto.streakRiskNotify ?? true,
-            badgeEarnedNotify: dto.badgeEarnedNotify ?? true
+            createdAt: parseISO8601(dto.createdAt)
         )
     }
 

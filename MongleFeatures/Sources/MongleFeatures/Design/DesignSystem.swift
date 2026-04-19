@@ -12,14 +12,16 @@ import UIKit
 
 public enum MongleColor {
     // Primary / Brand
-    public static let primary = Color(light: "4CAF50", dark: "7BC8A0")
-    public static let primaryLight = Color(light: "A5D6A7", dark: "C2E8D4")
-    public static let primaryDark = Color(light: "388E3C", dark: "5BAF85")
-    public static let primarySoft = Color(light: "43A047", dark: "6BBF93")
+    // iPhone 11 LCD 에서 Material Green 500(#4CAF50) 류 값이 과채도화되어 진한 초록으로 보이는 이슈 대응.
+    // 주요 초록 계열은 Asset Catalog Color Set(Display P3)으로 이동했고, 값도 iPhone 15 Pro 파스텔 기준으로 재지정.
+    public static let primary = Color("MonglePrimary", bundle: .module)
+    public static let primaryLight = Color("MonglePrimaryLight", bundle: .module)
+    public static let primaryDark = Color("MonglePrimaryDark", bundle: .module)
+    public static let primarySoft = Color("MonglePrimarySoft", bundle: .module)
 
     // Primary gradient (button, badge gradients)
-    public static let primaryGradientStart = Color(hex: "6BBF93")
-    public static let primaryGradientEnd = Color(hex: "7BC8A0")
+    public static let primaryGradientStart = Color("MonglePrimaryGradientStart", bundle: .module)
+    public static let primaryGradientEnd = Color("MonglePrimaryGradientEnd", bundle: .module)
     public static let primaryXLight = Color(hex: "C2E8D4")
     public static let primaryMuted = Color(hex: "5BAF85")
     public static let primaryDeep = Color(hex: "2E7D32")
@@ -80,12 +82,12 @@ public enum MongleColor {
     // Status
     public static let error = Color(hex: "F44336")
     public static let warning = Color(hex: "FF9800")
-    public static let success = Color(light: "4CAF50", dark: "66BB6A")
+    public static let success = Color("MongleSuccess", bundle: .module)
     public static let info = Color(hex: "42A5F5")
     public static let notificationDot = Color(hex: "F44336")
 
     // Monggle character colors
-    public static let monggleGreen = Color(light: "66BB6A", dark: "8DD4AE")
+    public static let monggleGreen = Color("MongleMonggleGreen", bundle: .module)
     public static let monggleYellow = Color(hex: "FFD54F")
     public static let monggleBlue = Color(hex: "42A5F5")
     public static let mongglePink = Color(hex: "F06292")
@@ -214,6 +216,9 @@ public enum MongleShadow {
 
 // MARK: - Color Extension
 public extension Color {
+    // 디자인 기준이 Display P3 색공간이라 sRGB로 해석 시 구형 LCD(iPhone 11 등)와
+    // Android 기본 gamut에서 파스텔톤이 진하게 렌더링되는 현상이 있음.
+    // Display P3로 통일해 모든 P3 지원 기기에서 동일한 색역을 사용.
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0
@@ -230,7 +235,7 @@ public extension Color {
             (a, r, g, b) = (1, 1, 1, 0)
         }
         self.init(
-            .sRGB,
+            .displayP3,
             red: Double(r) / 255,
             green: Double(g) / 255,
             blue: Double(b) / 255,

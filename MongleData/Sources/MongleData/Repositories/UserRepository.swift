@@ -50,25 +50,33 @@ final class UserRepository: UserRepositoryInterface {
         return response.heartsRemaining
     }
 
-    // MARK: - v2 (PRD §2.2 / §4 / §9)
-
-    func getCharacterStage() async throws -> CharacterStage {
-        let dto: CharacterStageDTO = try await apiClient.request(UserEndpoint.getCharacterStage)
-        return CharacterStageMapper.toDomain(dto)
+    func getNotificationPreferences() async throws -> NotificationPreferences {
+        let dto: NotificationPreferencesDTO = try await apiClient.request(UserEndpoint.getNotificationPreferences)
+        return dto.toDomain()
     }
 
-    func getBadges() async throws -> BadgeList {
-        let dto: BadgeListResponseDTO = try await apiClient.request(UserEndpoint.getBadges)
-        return BadgeMapper.toDomain(dto)
+    func updateNotificationPreferences(_ params: [String: Any]) async throws -> NotificationPreferences {
+        let dto: NotificationPreferencesDTO = try await apiClient.request(UserEndpoint.updateNotificationPreferences(params: params))
+        return dto.toDomain()
     }
+}
 
-    func markBadgesSeen(codes: [String]) async throws {
-        let _: OkResponseDTO = try await apiClient.request(UserEndpoint.markBadgesSeen(codes: codes))
-    }
+struct NotificationPreferencesDTO: Decodable {
+    let notifAnswer: Bool
+    let notifNudge: Bool
+    let notifQuestion: Bool
+    let quietHoursEnabled: Bool
+    let quietHoursStart: String
+    let quietHoursEnd: String
 
-    func updateNotificationPrefs(streakRisk: Bool?, badgeEarned: Bool?) async throws {
-        let _: UserDTO = try await apiClient.request(
-            UserEndpoint.updateNotificationPrefs(streakRisk: streakRisk, badgeEarned: badgeEarned)
+    func toDomain() -> NotificationPreferences {
+        NotificationPreferences(
+            notifAnswer: notifAnswer,
+            notifNudge: notifNudge,
+            notifQuestion: notifQuestion,
+            quietHoursEnabled: quietHoursEnabled,
+            quietHoursStart: quietHoursStart,
+            quietHoursEnd: quietHoursEnd
         )
     }
 }
