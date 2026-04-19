@@ -1560,7 +1560,10 @@ public struct MongleSceneView: View {
         }
     }
 
-    /// 위치 샘플 버퍼 기반 흔들기 감지 — 0.5초 윈도우에서 방향 반전 ≥3, 진폭 range ≥60pt이면 기절.
+    /// 위치 샘플 버퍼 기반 흔들기 감지.
+    /// 일반 드래그(곡선 경로 포함)가 오인되지 않도록:
+    /// - 드래그 시작 직후 0.25초 동안은 감지 skip (의도적 흔들기 진입 시간 확보)
+    /// - 0.5초 윈도우에서 방향 반전 ≥4, 진폭 range ≥80pt 충족 시에만 기절
     private func detectShake(idx: Int, sampleX: CGFloat) {
         let now = Date().timeIntervalSince1970
         var buf = mongles[idx].shakeBuffer
@@ -1568,13 +1571,15 @@ public struct MongleSceneView: View {
         buf = buf.filter { now - $0.t <= 0.5 }
         mongles[idx].shakeBuffer = buf
 
-        guard buf.count >= 4 else { return }
+        guard buf.count >= 6 else { return }
+        // 윈도우 시작점이 0.25초 이상 누적된 후에만 평가
+        guard let firstT = buf.first?.t, now - firstT >= 0.25 else { return }
 
         var changes = 0
         var lastDir = 0
         for i in 1..<buf.count {
             let dx = buf[i].x - buf[i-1].x
-            let dir = dx > 1.5 ? 1 : (dx < -1.5 ? -1 : 0)
+            let dir = dx > 2.0 ? 1 : (dx < -2.0 ? -1 : 0)
             if dir != 0 && lastDir != 0 && dir != lastDir {
                 changes += 1
             }
@@ -1584,7 +1589,7 @@ public struct MongleSceneView: View {
         let xs = buf.map { $0.x }
         let range = (xs.max() ?? 0) - (xs.min() ?? 0)
 
-        if changes >= 3 && range >= 60 {
+        if changes >= 4 && range >= 80 {
             mongles[idx].isFainted = true
             mongles[idx].faintFramesLeft = Int(2.5 / interval)
             mongles[idx].isDragging = false
@@ -1641,10 +1646,16 @@ public struct MongleSceneView: View {
                 mongles[i].targetPosition = randomPos(size: size)
             }
 
+            // 60fps + stepSize 0.3 환경에서는 드래그 후 다른 캐릭터 옆에 떨어지면
+            // 모든 방향이 collisionRadius 안이라 어떤 step도 거부되어 정지함.
+            // → 충돌 영역 안이라도 "멀어지는 방향"은 허용. 가까워지는 진입만 거부.
             let collides = mongles.indices.contains { j in
                 guard j != i else { return false }
-                return hypot(pos.x - mongles[j].position.x,
-                             pos.y - mongles[j].position.y) < collisionRadius
+                let oldDist = hypot(mongles[i].position.x - mongles[j].position.x,
+                                    mongles[i].position.y - mongles[j].position.y)
+                let newDist = hypot(pos.x - mongles[j].position.x,
+                                    pos.y - mongles[j].position.y)
+                return newDist < collisionRadius && newDist <= oldDist
             }
             if collides {
                 mongles[i].overlapCounter += 1
