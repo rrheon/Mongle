@@ -534,6 +534,11 @@ extension RootFeature {
                     }
 
                 case .groupSelect(.delegate(.groupSelected(let family))):
+                    // MG-13: 그룹 전환 시 반드시 Home 탭으로 이동
+                    //   loadDataResponse 내부의 wasOnGroupSelect 체크는 .loading 으로 선전환되므로
+                    //   항상 false 가 되어 탭 리셋이 누락된다. 여기서 선제적으로 초기화한다.
+                    state.mainTab?.selectedTab = .home
+                    state.mainTab?.path.removeAll()
                     state.appState = .loading
                     return .run { [familyRepository] send in
                         do {
