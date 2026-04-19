@@ -27,7 +27,7 @@ struct QuestionMapper {
             content: q.content,
             category: category,
             order: 0,
-            createdAt: ISO8601DateFormatter().date(from: q.createdAt) ?? Date(),
+            createdAt: parseISO8601(q.createdAt),
             dailyQuestionId: dto.id,
             familyAnswerCount: dto.familyAnswerCount,
             hasMyAnswer: dto.hasMyAnswer,
@@ -43,7 +43,7 @@ struct QuestionMapper {
             content: dto.content,
             category: QuestionCategory(rawValue: dto.category) ?? .daily,
             order: dto.order,
-            createdAt: ISO8601DateFormatter().date(from: dto.createdAt) ?? Date()
+            createdAt: parseISO8601(dto.createdAt)
         )
     }
 

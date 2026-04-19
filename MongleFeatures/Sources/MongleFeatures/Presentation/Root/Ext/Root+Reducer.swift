@@ -31,8 +31,9 @@ extension RootFeature {
                     }
 
                 case .refreshHomeData:
-                    return .run { send in
+                    return .run { [authRepository, familyRepository, questionRepository, answerRepository, userRepository, notificationRepository] send in
                         do {
+                            let data = try await Self.withTimeout(10) { () -> RootData in
                             // 최신 사용자 정보 조회 (닉네임 변경 등 반영)
                             let currentUser = try? await authRepository.getCurrentUser()
                             let familyResult = try await familyRepository.getMyFamily()
@@ -108,7 +109,7 @@ extension RootFeature {
                                 !$0.isRead && $0.familyId == currentFamilyId
                             }
 
-                            let data = RootData(
+                            return RootData(
                                 user: currentUser,
                                 question: todayQuestion,
                                 yesterdayQuestion: yesterdayQuestion,
@@ -123,6 +124,7 @@ extension RootFeature {
                                 allFamilies: allFamilies,
                                 hasUnreadNotifications: hasUnreadNotifications
                             )
+                            }
                             await send(.loadDataResponse(.success(data)))
                         } catch {
                             await send(.loadDataResponse(.failure(error)))
@@ -275,10 +277,22 @@ extension RootFeature {
                     if appError.requiresLogin {
                         return .send(.showLoginScreen)
                     }
+                    // 실패 시 대기 중이던 푸시 딥링크도 정리 — 다음 refresh 에 의도치 않게
+                    // 오래된 질문 화면이 열리는 것을 막는다.
+                    state.pendingOpenQuestion = false
                     if state.mainTab != nil {
                         state.mainTab?.home.isLoading = false
                         state.mainTab?.home.isRefreshing = false
                         state.mainTab?.home.appError = appError
+                        // 무한로딩 방지:
+                        //   .groupSelected 델리게이트는 appState 를 .loading 으로 선전환한 뒤
+                        //   selectFamily/refreshHomeData 를 실행한다. 이 체인이 실패하면 기존엔
+                        //   appState 가 .loading 으로 남아 LoadingView 가 계속 표시됐다.
+                        //   mainTab 이 이미 있으므로 복귀 위치를 (그룹 여부에 따라) 결정한다.
+                        if state.appState == .loading {
+                            let hasFamily = state.mainTab?.home.family != nil
+                            state.appState = hasFamily ? .authenticated : .groupSelection
+                        }
                     } else {
                         state.appState = .unauthenticated
                     }
@@ -534,10 +548,18 @@ extension RootFeature {
                     }
 
                 case .groupSelect(.delegate(.groupSelected(let family))):
+                    // MG-13: 그룹 전환 시 반드시 Home 탭으로 이동
+                    //   loadDataResponse 내부의 wasOnGroupSelect 체크는 .loading 으로 선전환되므로
+                    //   항상 false 가 되어 탭 리셋이 누락된다. 여기서 선제적으로 초기화한다.
+                    state.mainTab?.selectedTab = .home
+                    state.mainTab?.path.removeAll()
                     state.appState = .loading
                     return .run { [familyRepository] send in
                         do {
-                            _ = try await familyRepository.selectFamily(familyId: family.id)
+                            // MG-14: 네트워크 불안정 시 selectFamily 가 무한 대기하지 않도록 10초 타임아웃.
+                            try await Self.withTimeout(10) {
+                                _ = try await familyRepository.selectFamily(familyId: family.id)
+                            }
                             await send(.refreshHomeData)
                         } catch {
                             await send(.loadDataResponse(.failure(error)))
@@ -670,6 +692,30 @@ extension RootFeature {
 
         .ifLet(\.$questionDetail, action: \.questionDetail) {
             QuestionDetailFeature()
+        }
+    }
+
+    // MARK: - Timeout Helper
+
+    /// 그룹 진입·홈 리프레시 경로가 네트워크 불안정으로 무한 대기되지 않도록
+    /// 전체 작업을 `seconds` 후 `URLError(.timedOut)` 로 실패시킨다.
+    ///
+    /// `URLSessionConfiguration.timeoutIntervalForRequest` 가 15초지만
+    /// `refreshHomeData` 는 최대 7개의 API 호출을 순차 실행하므로 최악의
+    /// 경우 100초 이상 hang 할 수 있다. 리듀서 단에서 10초로 잘라 UX 를
+    /// 확보한다.
+    static func withTimeout<T: Sendable>(
+        _ seconds: Double,
+        _ work: @escaping @Sendable () async throws -> T
+    ) async throws -> T {
+        try await withThrowingTaskGroup(of: T.self) { group in
+            group.addTask { try await work() }
+            group.addTask { () async throws -> T in
+                try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+                throw URLError(.timedOut)
+            }
+            defer { group.cancelAll() }
+            return try await group.next()!
         }
     }
 
