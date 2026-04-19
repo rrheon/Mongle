@@ -394,11 +394,13 @@ public struct MongleMonggle: View {
     let color: Color
     var name: String? = nil
     var size: CGFloat = 56
+    var isFainted: Bool = false
 
-    public init(color: Color, name: String? = nil, size: CGFloat = 56) {
+    public init(color: Color, name: String? = nil, size: CGFloat = 56, isFainted: Bool = false) {
         self.color = color
         self.name = name
         self.size = size
+        self.isFainted = isFainted
     }
 
     private var eyeSize: CGFloat { size * 0.18 }
@@ -413,14 +415,8 @@ public struct MongleMonggle: View {
                     .shadow(color: color.opacity(0.3), radius: size * 0.2, x: 0, y: size * 0.07)
 
                 HStack(spacing: eyeSize * 0.6) {
-                    Circle()
-                        .fill(MongleColor.textPrimary)
-                        .frame(width: eyeSize, height: eyeSize)
-                        .overlay(Circle().stroke(Color.white, lineWidth: 1.5))
-                    Circle()
-                        .fill(MongleColor.textPrimary)
-                        .frame(width: eyeSize, height: eyeSize)
-                        .overlay(Circle().stroke(Color.white, lineWidth: 1.5))
+                    eyeView
+                    eyeView
                 }
                 .offset(y: eyeOffset)
             }
@@ -432,6 +428,67 @@ public struct MongleMonggle: View {
             }
         }
         .frame(width: name != nil ? 72 : size)
+    }
+
+    /// isFainted 토글 시 view 구조 diff가 SwiftUI 애니메이션 시스템에 잡혀
+    /// invalid sample 경고를 유발하므로 두 view를 동시에 렌더하고 opacity로만 전환.
+    @ViewBuilder
+    private var eyeView: some View {
+        ZStack {
+            Circle()
+                .fill(MongleColor.textPrimary)
+                .frame(width: eyeSize, height: eyeSize)
+                .overlay(Circle().stroke(Color.white, lineWidth: 1.5))
+                .opacity(isFainted ? 0 : 1)
+            Image(systemName: "xmark")
+                .font(.system(size: eyeSize, weight: .heavy))
+                .foregroundColor(MongleColor.textPrimary)
+                .frame(width: eyeSize, height: eyeSize)
+                .opacity(isFainted ? 1 : 0)
+        }
+    }
+}
+
+// MARK: - Dizzy Overlay (헤롱헤롱: 머리 위 별 회전 + 본체 sway)
+
+/// `TimelineView`로 매 프레임 sin 위상 계산 → repeatForever 의존 없이 안정적 회전.
+struct DizzyOverlay: View {
+    private let starCount = 3
+    private let radius: CGFloat = 16
+
+    var body: some View {
+        TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { context in
+            let t = context.date.timeIntervalSinceReferenceDate
+            let angle = (t * 200).truncatingRemainder(dividingBy: 360)
+            ZStack {
+                ForEach(0..<starCount, id: \.self) { i in
+                    let baseAngle = Double(i) * (360.0 / Double(starCount))
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(MongleColor.accentOrange)
+                        .offset(
+                            x: radius * CGFloat(cos((baseAngle + angle) * .pi / 180)),
+                            y: radius * 0.5 * CGFloat(sin((baseAngle + angle) * .pi / 180))
+                        )
+                }
+            }
+            .frame(width: radius * 2 + 12, height: radius + 12)
+        }
+    }
+}
+
+/// 캐릭터 본체를 좌우로 천천히 sway시키는 modifier (헤롱헤롱).
+/// active 토글 시 TimelineView 분기로 구조 diff가 일어나면 invalid sample 경고를
+/// 유발하므로 항상 TimelineView로 감싸고 active일 때만 회전 각도 적용.
+struct DizzyWobbleModifier: ViewModifier {
+    let active: Bool
+    func body(content: Content) -> some View {
+        TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { context in
+            let t = context.date.timeIntervalSinceReferenceDate
+            let angle = active ? sin(t * 4.5) * 12 : 0
+            content
+                .rotationEffect(.degrees(angle), anchor: .bottom)
+        }
     }
 }
 
@@ -1096,6 +1153,11 @@ struct MongleRowButtonStyle: ButtonStyle {
 
 // MARK: - Mongle Character Movement Model
 
+public struct ShakeSample {
+    public let t: Double
+    public let x: CGFloat
+}
+
 public struct MongleCharacter: Identifiable {
     public let id = UUID()
     public let name: String
@@ -1107,6 +1169,11 @@ public struct MongleCharacter: Identifiable {
     public var overlapCounter: Int = 0  // 충돌 지속 프레임 수
     public var stepCount: Int = 0       // 이동 누적 스텝 수 (hop 위상 계산용)
     public var restFramesLeft: Int = 0  // 휴식 남은 프레임 수 (> 0 이면 정지)
+    public var isDragging: Bool = false // 드래그 중 여부 (true이면 자동 이동 skip)
+    // 흔들기 감지 + 기절 상태
+    public var shakeBuffer: [ShakeSample] = []
+    public var isFainted: Bool = false
+    public var faintFramesLeft: Int = 0    // 기절 남은 프레임 수 (interval 기준)
 
     public init(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool = false, position: CGPoint, targetPosition: CGPoint) {
         self.name = name
@@ -1136,11 +1203,16 @@ public struct MongleView: View {
     public let onAnswerFirstToView: (String) -> Void
     public let onAnswerFirstToNudge: (String) -> Void
 
+    // 찌부(squish) one-shot 인터랙션 상태
+    @State private var isPressed: Bool = false
+    public var isFainted: Bool = false
+
     public init(name: String, color: Color, hasAnswered: Bool,
                 hasSkipped: Bool = false,
                 hasCurrentUserAnswered: Bool,
                 hasCurrentUserSkipped: Bool = false,
                 isCurrentUser: Bool = false,
+                isFainted: Bool = false,
                 onViewAnswer: @escaping () -> Void,
                 onNudge: @escaping () -> Void,
                 onSelfTap: @escaping () -> Void = {},
@@ -1153,11 +1225,25 @@ public struct MongleView: View {
         self.hasCurrentUserAnswered = hasCurrentUserAnswered
         self.hasCurrentUserSkipped = hasCurrentUserSkipped
         self.isCurrentUser = isCurrentUser
+        self.isFainted = isFainted
         self.onViewAnswer = onViewAnswer
         self.onNudge = onNudge
         self.onSelfTap = onSelfTap
         self.onAnswerFirstToView = onAnswerFirstToView
         self.onAnswerFirstToNudge = onAnswerFirstToNudge
+    }
+
+    /// 한 번 짧게 squish 후 복귀하는 "띠용" 액션
+    private func playSquish() {
+        withAnimation(.spring(response: 0.18, dampingFraction: 0.45)) {
+            isPressed = true
+        }
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.13) {
+            withAnimation(.spring(response: 0.42, dampingFraction: 0.55)) {
+                isPressed = false
+            }
+        }
     }
 
     private func handleTap() {
@@ -1192,13 +1278,30 @@ public struct MongleView: View {
     }
 
     public var body: some View {
-        Button(action: handleTap) {
-            VStack(spacing: 4) {
-                statusBadge
-                MongleMonggle(color: color, name: name)
+        VStack(spacing: 4) {
+            statusBadge
+            ZStack {
+                MongleMonggle(color: color, name: name, isFainted: isFainted)
+                    .modifier(DizzyWobbleModifier(active: isFainted))
+                if isFainted {
+                    DizzyOverlay()
+                        .offset(y: -34)
+                }
             }
         }
-        .buttonStyle(.plain)
+        // 찌부 효과: 꾹 누르면 납작해짐
+        .scaleEffect(
+            x: isPressed ? 1.15 : 1.0,
+            y: isPressed ? 0.7 : 1.0,
+            anchor: .bottom
+        )
+        // 찌부 y 오프셋
+        .offset(y: isPressed ? 8 : 0)
+        .accessibilityAddTraits(.isButton)
+        .onTapGesture {
+            playSquish()
+            handleTap()
+        }
     }
 
     @ViewBuilder
@@ -1259,12 +1362,17 @@ public struct MongleSceneView: View {
     public var onAnswerFirstToView: (String) -> Void = { _ in }
     public var onAnswerFirstToNudge: (String) -> Void = { _ in }
 
-    private let stepSize: CGFloat = 2.0
-    private let interval: TimeInterval = 0.12
+    // 60fps tick으로 동작. 0.12s 간격 + withAnimation linear 보간 방식이
+    // ForEach 내 다른 캐릭터 mutation과 같은 transaction에 묶여 invalid sample
+    // 경고를 유발했기 때문. 각 프레임에서 position을 직접 갱신해 어떤
+    // animation transaction에도 의존하지 않는다.
+    private let stepSize: CGFloat = 0.3
+    private let interval: TimeInterval = 1.0 / 60.0
     private let collisionRadius: CGFloat = 76
     private let targetThreshold: CGFloat = 12
     private let wallPadding: CGFloat = 50
-    private let overlapLimit: Int = 10
+    // 60fps 환경에서 frame 단위 카운터 재조정 (이전 0.12s 환경의 ×7.2)
+    private let overlapLimit: Int = 60
 
     @State private var mongles: [MongleCharacter] = []
     @State private var timer: Timer?
@@ -1305,7 +1413,8 @@ public struct MongleSceneView: View {
         GeometryReader { geo in
             ZStack {
                 ForEach(mongles) { h in
-                    let hopY = -abs(sin(CGFloat(h.stepCount) * .pi / 5.0)) * 12
+                    // 60fps tick 기준 hop 주기 1.2s 유지: π / 36
+                    let hopY = (h.isDragging || h.isFainted) ? 0 : -abs(sin(CGFloat(h.stepCount) * .pi / 36.0)) * 12
                     MongleView(
                         name: h.name,
                         color: h.color,
@@ -1314,14 +1423,61 @@ public struct MongleSceneView: View {
                         hasCurrentUserAnswered: hasCurrentUserAnswered,
                         hasCurrentUserSkipped: hasCurrentUserSkipped,
                         isCurrentUser: currentUserName != nil && h.name == currentUserName,
+                        isFainted: h.isFainted,
                         onViewAnswer: { onViewAnswer(h.name) },
                         onNudge: { onNudge(h.name) },
                         onSelfTap: onSelfTap,
                         onAnswerFirstToView: onAnswerFirstToView,
                         onAnswerFirstToNudge: onAnswerFirstToNudge
                     )
+                    .scaleEffect(h.isDragging ? 1.1 : 1.0)
+                    .shadow(color: h.isDragging ? Color.black.opacity(0.25) : Color.clear,
+                            radius: h.isDragging ? 12 : 0, x: 0, y: 6)
                     .position(CGPoint(x: h.position.x, y: h.position.y + hopY))
-                    .animation(.linear(duration: interval), value: h.stepCount)
+                    .gesture(
+                        LongPressGesture(minimumDuration: 0.12)
+                            .sequenced(before: DragGesture(minimumDistance: 0))
+                            .onChanged { value in
+                                guard let idx = mongles.firstIndex(where: { $0.id == h.id }) else { return }
+                                if mongles[idx].isFainted { return }
+                                switch value {
+                                case .first(true):
+                                    if !mongles[idx].isDragging {
+                                        withAnimation(.spring(response: 0.4, dampingFraction: 0.5)) {
+                                            mongles[idx].isDragging = true
+                                        }
+                                        mongles[idx].shakeBuffer.removeAll()
+                                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                    }
+                                case .second(true, let drag):
+                                    if let drag = drag {
+                                        let newX = min(max(drag.location.x, wallPadding), geo.size.width - wallPadding)
+                                        let newY = min(max(drag.location.y, wallPadding), geo.size.height - wallPadding)
+                                        // 드래그 중 position 갱신은 어떤 애니메이션 컨텍스트에도
+                                        // 휘말리지 않도록 명시적으로 disable.
+                                        var t = Transaction()
+                                        t.disablesAnimations = true
+                                        withTransaction(t) {
+                                            mongles[idx].position = CGPoint(x: newX, y: newY)
+                                        }
+                                        detectShake(idx: idx, sampleX: drag.location.x)
+                                    }
+                                default:
+                                    break
+                                }
+                            }
+                            .onEnded { _ in
+                                guard let idx = mongles.firstIndex(where: { $0.id == h.id }) else { return }
+                                withAnimation(.spring(response: 0.4, dampingFraction: 0.5)) {
+                                    mongles[idx].isDragging = false
+                                }
+                                mongles[idx].shakeBuffer.removeAll()
+                                if !mongles[idx].isFainted {
+                                    mongles[idx].targetPosition = randomPos(size: geo.size)
+                                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                }
+                            }
+                    )
                 }
             }
             .onAppear {
@@ -1404,8 +1560,59 @@ public struct MongleSceneView: View {
         }
     }
 
+    /// 위치 샘플 버퍼 기반 흔들기 감지.
+    /// 일반 드래그(곡선 경로 포함)가 오인되지 않도록:
+    /// - 드래그 시작 직후 0.25초 동안은 감지 skip (의도적 흔들기 진입 시간 확보)
+    /// - 0.5초 윈도우에서 방향 반전 ≥4, 진폭 range ≥80pt 충족 시에만 기절
+    private func detectShake(idx: Int, sampleX: CGFloat) {
+        let now = Date().timeIntervalSince1970
+        var buf = mongles[idx].shakeBuffer
+        buf.append(ShakeSample(t: now, x: sampleX))
+        buf = buf.filter { now - $0.t <= 0.5 }
+        mongles[idx].shakeBuffer = buf
+
+        guard buf.count >= 6 else { return }
+        // 윈도우 시작점이 0.25초 이상 누적된 후에만 평가
+        guard let firstT = buf.first?.t, now - firstT >= 0.25 else { return }
+
+        var changes = 0
+        var lastDir = 0
+        for i in 1..<buf.count {
+            let dx = buf[i].x - buf[i-1].x
+            let dir = dx > 2.0 ? 1 : (dx < -2.0 ? -1 : 0)
+            if dir != 0 && lastDir != 0 && dir != lastDir {
+                changes += 1
+            }
+            if dir != 0 { lastDir = dir }
+        }
+
+        let xs = buf.map { $0.x }
+        let range = (xs.max() ?? 0) - (xs.min() ?? 0)
+
+        if changes >= 4 && range >= 80 {
+            mongles[idx].isFainted = true
+            mongles[idx].faintFramesLeft = Int(2.5 / interval)
+            mongles[idx].isDragging = false
+            mongles[idx].shakeBuffer.removeAll()
+            UINotificationFeedbackGenerator().notificationOccurred(.warning)
+        }
+    }
+
     private func step(size: CGSize) {
-        for i in mongles.indices {
+      for i in mongles.indices {
+            // 기절 중인 캐릭터: 카운트다운만 진행
+            if mongles[i].isFainted {
+                mongles[i].faintFramesLeft -= 1
+                if mongles[i].faintFramesLeft <= 0 {
+                    mongles[i].isFainted = false
+                    mongles[i].faintFramesLeft = 0
+                    mongles[i].targetPosition = randomPos(size: size)
+                }
+                continue
+            }
+            // 드래그 중인 캐릭터는 자동 이동 skip
+            if mongles[i].isDragging { continue }
+
             if mongles[i].restFramesLeft > 0 {
                 mongles[i].restFramesLeft -= 1
                 if mongles[i].restFramesLeft == 0 {
@@ -1422,7 +1629,7 @@ public struct MongleSceneView: View {
 
             if dist < targetThreshold {
                 if Bool.random() {
-                    mongles[i].restFramesLeft = Int.random(in: 10...50)
+                    mongles[i].restFramesLeft = Int.random(in: 60...360)
                 } else {
                     mongles[i].targetPosition = randomPos(size: size)
                 }
@@ -1439,10 +1646,16 @@ public struct MongleSceneView: View {
                 mongles[i].targetPosition = randomPos(size: size)
             }
 
+            // 60fps + stepSize 0.3 환경에서는 드래그 후 다른 캐릭터 옆에 떨어지면
+            // 모든 방향이 collisionRadius 안이라 어떤 step도 거부되어 정지함.
+            // → 충돌 영역 안이라도 "멀어지는 방향"은 허용. 가까워지는 진입만 거부.
             let collides = mongles.indices.contains { j in
                 guard j != i else { return false }
-                return hypot(pos.x - mongles[j].position.x,
-                             pos.y - mongles[j].position.y) < collisionRadius
+                let oldDist = hypot(mongles[i].position.x - mongles[j].position.x,
+                                    mongles[i].position.y - mongles[j].position.y)
+                let newDist = hypot(pos.x - mongles[j].position.x,
+                                    pos.y - mongles[j].position.y)
+                return newDist < collisionRadius && newDist <= oldDist
             }
             if collides {
                 mongles[i].overlapCounter += 1
