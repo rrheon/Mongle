@@ -79,6 +79,7 @@ private struct NotificationDTO: Decodable {
         case "ALL_ANSWERED": return .allAnswered
         case "ANSWER_REQUEST": return .answerRequest
         case "BADGE_EARNED": return .badgeEarned
+        case "REMINDER": return .reminder
         default: return nil
         }
     }
