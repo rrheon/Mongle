@@ -13,6 +13,9 @@ struct MainTabView: View {
     @Bindable var store: StoreOf<MainTabFeature>
     @State private var peerAnswerSheetHeight: CGFloat = 400
     @State private var questionSheetHeight: CGFloat = 480
+    /// 바텀시트 dismiss 시마다 증가 — MongleSceneView가 감지해 모든 캐릭터 이동을
+    /// 강제 재개시킨다. (시트 present 중 timer/state가 꼬여 고정되는 현상 회피.)
+    @State private var mongleResumeSignal: Int = 0
 
     // 시트 디텐트 안전 범위. 0/음수/NaN 또는 비정상적으로 큰 값이 .presentationDetents(.height:)에
     // 전달되면 iOS 18에서 런타임 에러가 발생할 수 있어 반드시 클램핑한다.
@@ -26,10 +29,16 @@ struct MainTabView: View {
 
     var body: some View {
         tabContent
-            .sheet(item: $store.scope(state: \.modal?.peerAnswer, action: \.modal.peerAnswer)) { peerAnswerStore in
+            .sheet(
+                item: $store.scope(state: \.modal?.peerAnswer, action: \.modal.peerAnswer),
+                onDismiss: { mongleResumeSignal += 1 }
+            ) { peerAnswerStore in
                 peerAnswerSheet(store: peerAnswerStore)
             }
-            .sheet(item: $store.scope(state: \.modal?.questionSheet, action: \.modal.questionSheet)) { sheetStore in
+            .sheet(
+                item: $store.scope(state: \.modal?.questionSheet, action: \.modal.questionSheet),
+                onDismiss: { mongleResumeSignal += 1 }
+            ) { sheetStore in
                 questionSheetView(store: sheetStore)
             }
             .overlay {
@@ -148,7 +157,7 @@ struct MainTabView: View {
 
     private var homeViewSection: some View {
         let currentUserId = store.home.currentUser?.id
-        let memberData: [(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool)] = store.home.familyMembers
+        let memberData: [(name: String, color: Color, moodId: String?, hasAnswered: Bool, hasSkipped: Bool)] = store.home.familyMembers
             .enumerated()
             .map { index, user in
                 let isCurrentUser = user.id == currentUserId
@@ -156,6 +165,7 @@ struct MainTabView: View {
                 return (
                     name: user.name,
                     color: Self.monggleColor(for: moodId, fallback: index),
+                    moodId: moodId,
                     hasAnswered: store.home.memberAnswerStatus[user.id] ?? false,
                     hasSkipped: store.home.memberSkippedStatus[user.id] ?? false
                 )
@@ -177,6 +187,7 @@ struct MainTabView: View {
             hasCurrentUserSkipped: store.home.hasSkippedToday,
             members: memberData,
             currentUserName: store.home.currentUser?.name,
+            resumeSignal: mongleResumeSignal,
             actions: HomeViewActions(
                 onQuestionTap: { store.send(.home(.questionTapped)) },
                 onNotificationTap: { store.send(.home(.notificationTapped)) },

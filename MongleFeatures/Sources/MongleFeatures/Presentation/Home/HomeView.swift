@@ -76,8 +76,10 @@ struct HomeView: View {
     let topBarState: HomeTopBarState
     let hasCurrentUserAnswered: Bool
     let hasCurrentUserSkipped: Bool
-    let members: [(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool)]
+    let members: [(name: String, color: Color, moodId: String?, hasAnswered: Bool, hasSkipped: Bool)]
     var currentUserName: String?
+    /// 바텀시트 dismiss 시 parent가 증가시키는 시그널. MongleSceneView가 감지해 이동 재개.
+    var resumeSignal: Int = 0
     var actions: HomeViewActions
     var showNotificationPermission: Bool = false
 
@@ -87,8 +89,9 @@ struct HomeView: View {
         topBarState: HomeTopBarState = .preview,
         hasCurrentUserAnswered: Bool = false,
         hasCurrentUserSkipped: Bool = false,
-        members: [(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool)] = [],
+        members: [(name: String, color: Color, moodId: String?, hasAnswered: Bool, hasSkipped: Bool)] = [],
         currentUserName: String? = nil,
+        resumeSignal: Int = 0,
         actions: HomeViewActions = HomeViewActions(),
         showNotificationPermission: Bool = false
     ) {
@@ -97,6 +100,7 @@ struct HomeView: View {
         self.hasCurrentUserSkipped = hasCurrentUserSkipped
         self.members = members
         self.currentUserName = currentUserName
+        self.resumeSignal = resumeSignal
         self.actions = actions
         self.showNotificationPermission = showNotificationPermission
     }
@@ -121,6 +125,7 @@ struct HomeView: View {
                     hasCurrentUserSkipped: hasCurrentUserSkipped,
                     members: members,
                     currentUserName: currentUserName,
+                    resumeSignal: resumeSignal,
                     onViewAnswer: actions.onPeerAnswerTap,
                     onNudge: actions.onPeerNudgeTap,
                     onSelfTap: actions.onMyMonggleTap,

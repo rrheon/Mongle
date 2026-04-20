@@ -395,16 +395,25 @@ public struct MongleMonggle: View {
     var name: String? = nil
     var size: CGFloat = 56
     var isFainted: Bool = false
+    /// 탭 등 인터랙션으로 전환되는 눈 표정 (mood 기반).
+    /// `isFainted`가 true면 이 값은 무시되고 `.fainted`로 오버라이드.
+    var eyeExpression: EyeExpression = .neutral
 
-    public init(color: Color, name: String? = nil, size: CGFloat = 56, isFainted: Bool = false) {
+    public init(color: Color, name: String? = nil, size: CGFloat = 56,
+                isFainted: Bool = false,
+                eyeExpression: EyeExpression = .neutral) {
         self.color = color
         self.name = name
         self.size = size
         self.isFainted = isFainted
+        self.eyeExpression = eyeExpression
     }
 
     private var eyeSize: CGFloat { size * 0.18 }
     private var eyeOffset: CGFloat { size * 0.04 }
+    private var effectiveExpression: EyeExpression {
+        isFainted ? .fainted : eyeExpression
+    }
 
     public var body: some View {
         VStack(spacing: 4) {
@@ -430,22 +439,94 @@ public struct MongleMonggle: View {
         .frame(width: name != nil ? 72 : size)
     }
 
-    /// isFainted 토글 시 view 구조 diff가 SwiftUI 애니메이션 시스템에 잡혀
-    /// invalid sample 경고를 유발하므로 두 view를 동시에 렌더하고 opacity로만 전환.
-    @ViewBuilder
+    /// 7개 표정 레이어를 항상 렌더하고 opacity로만 전환.
+    /// (구조 diff 시 SwiftUI invalid sample 경고 회피 — DizzyWobbleModifier 주석 참조.)
     private var eyeView: some View {
-        ZStack {
+        let expr = effectiveExpression
+        return ZStack {
+            // neutral: 흰 테두리 검은 원 (기본)
             Circle()
                 .fill(MongleColor.textPrimary)
                 .frame(width: eyeSize, height: eyeSize)
                 .overlay(Circle().stroke(Color.white, lineWidth: 1.5))
-                .opacity(isFainted ? 0 : 1)
+                .opacity(expr == .neutral ? 1 : 0)
+            // fainted: xmark
             Image(systemName: "xmark")
                 .font(.system(size: eyeSize, weight: .heavy))
                 .foregroundColor(MongleColor.textPrimary)
                 .frame(width: eyeSize, height: eyeSize)
-                .opacity(isFainted ? 1 : 0)
+                .opacity(expr == .fainted ? 1 : 0)
+            // happy: 웃는 눈 (위로 볼록 반달)
+            happyEye
+                .opacity(expr == .happy ? 1 : 0)
+            // calm: 작은 점 (반쯤 감김)
+            Circle()
+                .fill(MongleColor.textPrimary)
+                .frame(width: eyeSize * 0.5, height: eyeSize * 0.5)
+                .opacity(expr == .calm ? 1 : 0)
+            // loved: 하트
+            Image(systemName: "heart.fill")
+                .font(.system(size: eyeSize * 0.95, weight: .bold))
+                .foregroundColor(MongleColor.mongglePink)
+                .frame(width: eyeSize, height: eyeSize)
+                .opacity(expr == .loved ? 1 : 0)
+            // sad: 처진 호 + 작은 눈물 방울
+            sadEye
+                .opacity(expr == .sad ? 1 : 0)
+            // tired: 가로 일자선
+            Capsule()
+                .fill(MongleColor.textPrimary)
+                .frame(width: eyeSize, height: eyeSize * 0.25)
+                .opacity(expr == .tired ? 1 : 0)
         }
+        .frame(width: eyeSize, height: eyeSize)
+        .animation(.easeInOut(duration: 0.18), value: expr)
+    }
+
+    /// happy: 위로 볼록한 반달 아치 (웃는 눈).
+    private var happyEye: some View {
+        let size = eyeSize
+        return Canvas { ctx, canvasSize in
+            let w = canvasSize.width, h = canvasSize.height
+            var p = Path()
+            p.move(to: CGPoint(x: w * 0.12, y: h * 0.62))
+            p.addQuadCurve(
+                to: CGPoint(x: w * 0.88, y: h * 0.62),
+                control: CGPoint(x: w * 0.5, y: h * 0.05)
+            )
+            ctx.stroke(
+                p,
+                with: .color(MongleColor.textPrimary),
+                style: StrokeStyle(lineWidth: size * 0.22, lineCap: .round)
+            )
+        }
+        .frame(width: size, height: size)
+    }
+
+    /// sad: 아래로 볼록한 처진 호 + 작은 눈물 방울.
+    private var sadEye: some View {
+        let size = eyeSize
+        return ZStack {
+            Canvas { ctx, canvasSize in
+                let w = canvasSize.width, h = canvasSize.height
+                var p = Path()
+                p.move(to: CGPoint(x: w * 0.12, y: h * 0.38))
+                p.addQuadCurve(
+                    to: CGPoint(x: w * 0.88, y: h * 0.38),
+                    control: CGPoint(x: w * 0.5, y: h * 0.92)
+                )
+                ctx.stroke(
+                    p,
+                    with: .color(MongleColor.textPrimary),
+                    style: StrokeStyle(lineWidth: size * 0.2, lineCap: .round)
+                )
+            }
+            Circle()
+                .fill(MongleColor.monggleBlue.opacity(0.85))
+                .frame(width: size * 0.28, height: size * 0.28)
+                .offset(y: size * 0.55)
+        }
+        .frame(width: size, height: size)
     }
 }
 
@@ -1162,6 +1243,7 @@ public struct MongleCharacter: Identifiable {
     public let id = UUID()
     public let name: String
     public var color: Color
+    public var moodId: String?           // 기분 식별자 (happy/calm/loved/sad/tired)
     public var hasAnswered: Bool
     public var hasSkipped: Bool
     public var position: CGPoint
@@ -1174,10 +1256,25 @@ public struct MongleCharacter: Identifiable {
     public var shakeBuffer: [ShakeSample] = []
     public var isFainted: Bool = false
     public var faintFramesLeft: Int = 0    // 기절 남은 프레임 수 (interval 기준)
+    // 탭 액션 상태 (1.5초 동안 움직임 정지 + mood별 눈 표정 변경)
+    // 프레임 카운터 대신 시간 기반으로 관리해 Timer 프레임 드롭 / view re-render 꼬임에
+    // 영향받지 않도록 한다.
+    public var actEndAt: Date? = nil
+    public var interactionMood: String? = nil
 
-    public init(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool = false, position: CGPoint, targetPosition: CGPoint) {
+    /// 마지막으로 movement가 진행된(또는 의도적으로 리셋된) 시각. Watchdog이
+    /// 2초 이상 정체를 감지하면 강제 이동 재개.
+    public var lastMovedAt: Date = Date()
+
+    public var isActing: Bool {
+        guard let endAt = actEndAt else { return false }
+        return Date() < endAt
+    }
+
+    public init(name: String, color: Color, moodId: String? = nil, hasAnswered: Bool, hasSkipped: Bool = false, position: CGPoint, targetPosition: CGPoint) {
         self.name = name
         self.color = color
+        self.moodId = moodId
         self.hasAnswered = hasAnswered
         self.hasSkipped = hasSkipped
         self.position = position
@@ -1203,7 +1300,14 @@ public struct MongleView: View {
     public let onAnswerFirstToView: (String) -> Void
     public let onAnswerFirstToNudge: (String) -> Void
 
-    // 찌부(squish) one-shot 인터랙션 상태
+    /// 탭 액션 재생 중 여부. MongleSceneView가 60fps 카운트다운으로 토글.
+    public var isActing: Bool = false
+    /// 탭 액션 중 적용할 눈 표정 (mood 기반). acting 아닐 땐 .neutral.
+    public var eyeExpression: EyeExpression = .neutral
+    /// 탭 순간 상위 Scene에 알려주는 콜백 (scene이 acting 상태로 전환).
+    public var onTapInteract: () -> Void = {}
+
+    // 찌부(squish) one-shot 인터랙션 상태 (짧은 탭 피드백)
     @State private var isPressed: Bool = false
     public var isFainted: Bool = false
 
@@ -1213,11 +1317,14 @@ public struct MongleView: View {
                 hasCurrentUserSkipped: Bool = false,
                 isCurrentUser: Bool = false,
                 isFainted: Bool = false,
+                isActing: Bool = false,
+                eyeExpression: EyeExpression = .neutral,
                 onViewAnswer: @escaping () -> Void,
                 onNudge: @escaping () -> Void,
                 onSelfTap: @escaping () -> Void = {},
                 onAnswerFirstToView: @escaping (String) -> Void = { _ in },
-                onAnswerFirstToNudge: @escaping (String) -> Void = { _ in }) {
+                onAnswerFirstToNudge: @escaping (String) -> Void = { _ in },
+                onTapInteract: @escaping () -> Void = {}) {
         self.name = name
         self.color = color
         self.hasAnswered = hasAnswered
@@ -1226,11 +1333,14 @@ public struct MongleView: View {
         self.hasCurrentUserSkipped = hasCurrentUserSkipped
         self.isCurrentUser = isCurrentUser
         self.isFainted = isFainted
+        self.isActing = isActing
+        self.eyeExpression = eyeExpression
         self.onViewAnswer = onViewAnswer
         self.onNudge = onNudge
         self.onSelfTap = onSelfTap
         self.onAnswerFirstToView = onAnswerFirstToView
         self.onAnswerFirstToNudge = onAnswerFirstToNudge
+        self.onTapInteract = onTapInteract
     }
 
     /// 한 번 짧게 squish 후 복귀하는 "띠용" 액션
@@ -1281,8 +1391,13 @@ public struct MongleView: View {
         VStack(spacing: 4) {
             statusBadge
             ZStack {
-                MongleMonggle(color: color, name: name, isFainted: isFainted)
-                    .modifier(DizzyWobbleModifier(active: isFainted))
+                MongleMonggle(
+                    color: color,
+                    name: name,
+                    isFainted: isFainted,
+                    eyeExpression: eyeExpression
+                )
+                .modifier(DizzyWobbleModifier(active: isFainted))
                 if isFainted {
                     DizzyOverlay()
                         .offset(y: -34)
@@ -1295,11 +1410,12 @@ public struct MongleView: View {
             y: isPressed ? 0.7 : 1.0,
             anchor: .bottom
         )
-        // 찌부 y 오프셋
         .offset(y: isPressed ? 8 : 0)
         .accessibilityAddTraits(.isButton)
         .onTapGesture {
+            guard !isFainted else { return }
             playSquish()
+            onTapInteract()
             handleTap()
         }
     }
@@ -1354,8 +1470,11 @@ public struct MongleView: View {
 public struct MongleSceneView: View {
     public var hasCurrentUserAnswered: Bool = false
     public var hasCurrentUserSkipped: Bool = false
-    public var members: [(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool)]
+    public var members: [(name: String, color: Color, moodId: String?, hasAnswered: Bool, hasSkipped: Bool)]
     public var currentUserName: String?
+    /// 바텀시트 dismiss 등 외부 이벤트로 이동 재개가 필요한 시점에 parent가 값을 변경.
+    /// 이 값이 바뀌면 모든 캐릭터 state를 강제로 리셋해 이동을 재개한다.
+    public var resumeSignal: Int = 0
     public var onViewAnswer: (String) -> Void = { _ in }
     public var onNudge: (String) -> Void = { _ in }
     public var onSelfTap: () -> Void = {}
@@ -1373,22 +1492,32 @@ public struct MongleSceneView: View {
     private let wallPadding: CGFloat = 50
     // 60fps 환경에서 frame 단위 카운터 재조정 (이전 0.12s 환경의 ×7.2)
     private let overlapLimit: Int = 60
+    // 탭 후 이동 정지 시간
+    private let tapActDuration: TimeInterval = 1.5
+    // Watchdog: 이 시간 이상 움직임 없으면 강제 이동 재개
+    private let stuckTimeout: TimeInterval = 2.0
 
     @State private var mongles: [MongleCharacter] = []
     @State private var timer: Timer?
+    /// 드래그 종료 시각. simultaneousGesture 전환 여파로 drag onEnded 직후
+    /// inner `.onTapGesture`가 동시 발동해 acting(1.5초 정지)으로 진입하는 부작용을
+    /// 막기 위한 가드. 이 window 내의 tap은 무시한다.
+    @State private var recentDragEndAt: [UUID: Date] = [:]
+    private let dragTapIgnoreWindow: TimeInterval = 0.4
 
-    private static let defaultMemberData: [(String, Color, Bool, Bool)] = [
-        ("Dad", .orange, true, false),
-        ("Mom", .green, false, false),
-        ("Lily", .yellow, true, false),
-        ("Ben", .blue, false, false),
-        ("Alex", .pink, true, false)
+    private static let defaultMemberData: [(String, Color, String?, Bool, Bool)] = [
+        ("Dad", .orange, "tired", true, false),
+        ("Mom", .green, "calm", false, false),
+        ("Lily", .yellow, "happy", true, false),
+        ("Ben", .blue, "sad", false, false),
+        ("Alex", .pink, "loved", true, false)
     ]
 
     public init(hasCurrentUserAnswered: Bool = false,
                 hasCurrentUserSkipped: Bool = false,
-                members: [(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool)] = [],
+                members: [(name: String, color: Color, moodId: String?, hasAnswered: Bool, hasSkipped: Bool)] = [],
                 currentUserName: String? = nil,
+                resumeSignal: Int = 0,
                 onViewAnswer: @escaping (String) -> Void = { _ in },
                 onNudge: @escaping (String) -> Void = { _ in },
                 onSelfTap: @escaping () -> Void = {},
@@ -1398,6 +1527,7 @@ public struct MongleSceneView: View {
         self.hasCurrentUserSkipped = hasCurrentUserSkipped
         self.members = members
         self.currentUserName = currentUserName
+        self.resumeSignal = resumeSignal
         self.onViewAnswer = onViewAnswer
         self.onNudge = onNudge
         self.onSelfTap = onSelfTap
@@ -1405,8 +1535,8 @@ public struct MongleSceneView: View {
         self.onAnswerFirstToNudge = onAnswerFirstToNudge
     }
 
-    private var effectiveMembers: [(String, Color, Bool, Bool)] {
-        members.isEmpty ? Self.defaultMemberData : members.map { ($0.name, $0.color, $0.hasAnswered, $0.hasSkipped) }
+    private var effectiveMembers: [(String, Color, String?, Bool, Bool)] {
+        members.isEmpty ? Self.defaultMemberData : members.map { ($0.name, $0.color, $0.moodId, $0.hasAnswered, $0.hasSkipped) }
     }
 
     public var body: some View {
@@ -1414,7 +1544,8 @@ public struct MongleSceneView: View {
             ZStack {
                 ForEach(mongles) { h in
                     // 60fps tick 기준 hop 주기 1.2s 유지: π / 36
-                    let hopY = (h.isDragging || h.isFainted) ? 0 : -abs(sin(CGFloat(h.stepCount) * .pi / 36.0)) * 12
+                    // acting 중이거나 드래그/기절 중에는 hop 정지
+                    let hopY = (h.isDragging || h.isFainted || h.isActing) ? 0 : -abs(sin(CGFloat(h.stepCount) * .pi / 36.0)) * 12
                     MongleView(
                         name: h.name,
                         color: h.color,
@@ -1424,17 +1555,25 @@ public struct MongleSceneView: View {
                         hasCurrentUserSkipped: hasCurrentUserSkipped,
                         isCurrentUser: currentUserName != nil && h.name == currentUserName,
                         isFainted: h.isFainted,
+                        isActing: h.isActing,
+                        eyeExpression: h.isActing
+                            ? EyeExpression.forMood(h.interactionMood ?? h.moodId)
+                            : .neutral,
                         onViewAnswer: { onViewAnswer(h.name) },
                         onNudge: { onNudge(h.name) },
                         onSelfTap: onSelfTap,
                         onAnswerFirstToView: onAnswerFirstToView,
-                        onAnswerFirstToNudge: onAnswerFirstToNudge
+                        onAnswerFirstToNudge: onAnswerFirstToNudge,
+                        onTapInteract: { triggerTap(id: h.id) }
                     )
                     .scaleEffect(h.isDragging ? 1.1 : 1.0)
                     .shadow(color: h.isDragging ? Color.black.opacity(0.25) : Color.clear,
                             radius: h.isDragging ? 12 : 0, x: 0, y: 6)
                     .position(CGPoint(x: h.position.x, y: h.position.y + hopY))
-                    .gesture(
+                    // simultaneousGesture로 두어 MongleView 내부의 `.onTapGesture`가
+                    // 짧은 탭에서도 반드시 발동되도록 보장한다. (`.gesture`는 outer/inner
+                    // 경합으로 짧은 탭이 때때로 흡수되는 문제가 있었다.)
+                    .simultaneousGesture(
                         LongPressGesture(minimumDuration: 0.12)
                             .sequenced(before: DragGesture(minimumDistance: 0))
                             .onChanged { value in
@@ -1460,6 +1599,7 @@ public struct MongleSceneView: View {
                                         withTransaction(t) {
                                             mongles[idx].position = CGPoint(x: newX, y: newY)
                                         }
+                                        mongles[idx].lastMovedAt = Date()
                                         detectShake(idx: idx, sampleX: drag.location.x)
                                     }
                                 default:
@@ -1472,8 +1612,20 @@ public struct MongleSceneView: View {
                                     mongles[idx].isDragging = false
                                 }
                                 mongles[idx].shakeBuffer.removeAll()
+                                // 직후 발동될 수 있는 tap gesture가 acting에 진입하지
+                                // 않도록 drag-end 시각 기록.
+                                recentDragEndAt[h.id] = Date()
                                 if !mongles[idx].isFainted {
-                                    mongles[idx].targetPosition = randomPos(size: geo.size)
+                                    // acting/rest 잔여 상태가 있다면 정리하고 즉시 이동 재개.
+                                    mongles[idx].actEndAt = nil
+                                    mongles[idx].interactionMood = nil
+                                    mongles[idx].restFramesLeft = 0
+                                    mongles[idx].overlapCounter = 0
+                                    mongles[idx].targetPosition = farRandomPos(
+                                        from: mongles[idx].position,
+                                        size: geo.size
+                                    )
+                                    mongles[idx].lastMovedAt = Date()
                                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
                                 }
                             }
@@ -1490,6 +1642,30 @@ public struct MongleSceneView: View {
                 guard newSize.width > 0, newSize.height > 0 else { return }
                 if mongles.isEmpty { initMongles(size: newSize) }
                 if timer == nil { startTimer(size: newSize) }
+            }
+            .onChange(of: resumeSignal) { _, _ in
+                // 바텀시트 dismiss 등 외부 신호 수신. 모든 캐릭터 state를 강제
+                // 정상화해 이동 재개 — 시트 present 중 timer/state가 꼬인 경우 복구.
+                guard geo.size.width > 0, geo.size.height > 0 else { return }
+                let now = Date()
+                for i in mongles.indices {
+                    guard !mongles[i].isFainted else { continue }
+                    mongles[i].actEndAt = nil
+                    mongles[i].interactionMood = nil
+                    mongles[i].restFramesLeft = 0
+                    mongles[i].overlapCounter = 0
+                    mongles[i].isDragging = false
+                    mongles[i].targetPosition = farRandomPos(
+                        from: mongles[i].position,
+                        size: geo.size
+                    )
+                    mongles[i].lastMovedAt = now
+                }
+                // 시트 present 동안 timer가 invalidate된 적이 있을 수 있으므로
+                // 확실하게 재시작.
+                if timer == nil {
+                    startTimer(size: geo.size)
+                }
             }
             .onChange(of: members.map { $0.name }) { _, _ in
                 guard geo.size.width > 0, geo.size.height > 0 else { return }
@@ -1516,6 +1692,13 @@ public struct MongleSceneView: View {
                     }
                 }
             }
+            .onChange(of: members.map { $0.moodId }) { _, _ in
+                for i in mongles.indices {
+                    if let member = members.first(where: { $0.name == mongles[i].name }) {
+                        mongles[i].moodId = member.moodId
+                    }
+                }
+            }
             .onDisappear {
                 timer?.invalidate()
                 timer = nil
@@ -1527,7 +1710,7 @@ public struct MongleSceneView: View {
     private func initMongles(size: CGSize) {
         guard size.width > 0, size.height > 0 else { return }
         var placed: [CGPoint] = []
-        mongles = effectiveMembers.map { name, color, hasAnswered, hasSkipped in
+        mongles = effectiveMembers.map { name, color, moodId, hasAnswered, hasSkipped in
             var pos = randomPos(size: size)
             for _ in 0..<30 {
                 let overlaps = placed.contains { hypot(pos.x - $0.x, pos.y - $0.y) < collisionRadius }
@@ -1538,12 +1721,48 @@ public struct MongleSceneView: View {
             return MongleCharacter(
                 name: name,
                 color: color,
+                moodId: moodId,
                 hasAnswered: hasAnswered,
                 hasSkipped: hasSkipped,
                 position: pos,
                 targetPosition: randomPos(size: size)
             )
         }
+    }
+
+    /// 캐릭터 탭 시 1.5초 동안 이동을 정지하고 mood 기반 눈 표정을 재생.
+    /// 연타 시엔 타이머를 리셋 (responsive feel).
+    private func triggerTap(id: UUID) {
+        guard let idx = mongles.firstIndex(where: { $0.id == id }) else { return }
+        guard !mongles[idx].isFainted else { return }
+        // 드래그 중에는 탭 이벤트 무시.
+        guard !mongles[idx].isDragging else { return }
+        // 드래그 직후(window 내)엔 동반 발동된 tap gesture를 무시해 acting 진입 방지.
+        if let endedAt = recentDragEndAt[id],
+           Date().timeIntervalSince(endedAt) < dragTapIgnoreWindow {
+            return
+        }
+        let now = Date()
+        mongles[idx].actEndAt = now.addingTimeInterval(tapActDuration)
+        mongles[idx].interactionMood = mongles[idx].moodId
+        mongles[idx].restFramesLeft = 0
+        mongles[idx].overlapCounter = 0
+        mongles[idx].shakeBuffer.removeAll()
+        // 탭은 의도적 이벤트 — watchdog 기준점도 업데이트해 1.5초 정지를 정상으로 인정.
+        mongles[idx].lastMovedAt = now
+    }
+
+    /// `current` 에서 최소 `collisionRadius * 1.5` 이상 떨어진 무작위 지점을 반환.
+    /// acting 복귀 시 현재 위치와 가까운 target이 뽑혀 바로 rest로 빠지는 것을 방지.
+    private func farRandomPos(from current: CGPoint, size: CGSize) -> CGPoint {
+        let minDist = collisionRadius * 1.5
+        for _ in 0..<20 {
+            let candidate = randomPos(size: size)
+            if hypot(candidate.x - current.x, candidate.y - current.y) >= minDist {
+                return candidate
+            }
+        }
+        return randomPos(size: size)
     }
 
     private func randomPos(size: CGSize) -> CGPoint {
@@ -1555,9 +1774,15 @@ public struct MongleSceneView: View {
 
     private func startTimer(size: CGSize) {
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { _ in
+        // `.common` 모드로 runloop에 부착해 제스처/스크롤 등 tracking 모드 중에도
+        // timer가 멈추지 않고 step()을 계속 호출하도록 한다. (`.default` 전용일 때
+        // 탭 후 runloop가 잠시 tracking으로 전환되면 countdown이 정체되어 복귀가
+        // 지연되는 문제가 관찰됐다.)
+        let t = Timer(timeInterval: interval, repeats: true) { _ in
             step(size: size)
         }
+        RunLoop.main.add(t, forMode: .common)
+        timer = t
     }
 
     /// 위치 샘플 버퍼 기반 흔들기 감지.
@@ -1599,7 +1824,24 @@ public struct MongleSceneView: View {
     }
 
     private func step(size: CGSize) {
+      let now = Date()
       for i in mongles.indices {
+            // === Watchdog ===
+            // 드래그/기절이 아닌데 `stuckTimeout` 이상 움직임이 없으면 어떤 상태에
+            // 갇혔든 강제 리셋해 이동 재개. (acting의 1.5초 정지는 lastMovedAt을
+            // 탭 시점으로 갱신하므로 2초 타임아웃에 걸리지 않음.)
+            if !mongles[i].isFainted && !mongles[i].isDragging {
+                if now.timeIntervalSince(mongles[i].lastMovedAt) > stuckTimeout {
+                    mongles[i].actEndAt = nil
+                    mongles[i].interactionMood = nil
+                    mongles[i].restFramesLeft = 0
+                    mongles[i].overlapCounter = 0
+                    mongles[i].targetPosition = farRandomPos(from: mongles[i].position, size: size)
+                    mongles[i].lastMovedAt = now
+                    continue
+                }
+            }
+
             // 기절 중인 캐릭터: 카운트다운만 진행
             if mongles[i].isFainted {
                 mongles[i].faintFramesLeft -= 1
@@ -1607,7 +1849,23 @@ public struct MongleSceneView: View {
                     mongles[i].isFainted = false
                     mongles[i].faintFramesLeft = 0
                     mongles[i].targetPosition = randomPos(size: size)
+                    mongles[i].lastMovedAt = now
                 }
+                continue
+            }
+            // 탭 액션 재생 중 (시간 기반): 위치·hop 고정.
+            if mongles[i].isActing {
+                continue
+            }
+            // 탭 액션이 방금 끝난 프레임: state 정리 + 이동 target 갱신 + 복귀.
+            if mongles[i].actEndAt != nil {
+                mongles[i].actEndAt = nil
+                mongles[i].interactionMood = nil
+                mongles[i].restFramesLeft = 0
+                mongles[i].overlapCounter = 0
+                mongles[i].isDragging = false
+                mongles[i].targetPosition = farRandomPos(from: mongles[i].position, size: size)
+                mongles[i].lastMovedAt = now
                 continue
             }
             // 드래그 중인 캐릭터는 자동 이동 skip
@@ -1669,6 +1927,7 @@ public struct MongleSceneView: View {
             mongles[i].overlapCounter = 0
             mongles[i].stepCount += 1
             mongles[i].position = pos
+            mongles[i].lastMovedAt = now
         }
     }
 }
