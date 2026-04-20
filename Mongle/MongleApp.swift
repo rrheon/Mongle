@@ -50,7 +50,9 @@ class MongleAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         let userInfo = response.notification.request.content.userInfo
         if let type = userInfo["type"] as? String {
             switch type {
-            case "ANSWER_REQUEST", "MEMBER_ANSWERED", "NEW_QUESTION":
+            case "ANSWER_REQUEST", "MEMBER_ANSWERED", "NEW_QUESTION", "REMINDER":
+                // REMINDER는 홈으로 보내 오늘의 질문 카드를 즉시 노출.
+                // (답변자는 재촉하기 버튼, 미답변자는 답변 작성 CTA로 자연스럽게 유도.)
                 store?.send(.openQuestion)
             default:
                 break
