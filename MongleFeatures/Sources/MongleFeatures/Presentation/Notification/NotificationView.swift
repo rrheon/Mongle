@@ -227,6 +227,8 @@ private struct NotificationCard: View {
             return "bell.badge.fill"
         case .badgeEarned:
             return "gift.fill"
+        case .reminder:
+            return "clock.badge.fill"
         }
     }
 
@@ -242,6 +244,8 @@ private struct NotificationCard: View {
             return MongleColor.accentOrange
         case .badgeEarned:
             return MongleColor.moodLoved
+        case .reminder:
+            return MongleColor.accentOrange
         }
     }
 
@@ -257,6 +261,8 @@ private struct NotificationCard: View {
             return MongleColor.bgWarmLight
         case .badgeEarned:
             return MongleColor.bgErrorLight
+        case .reminder:
+            return MongleColor.bgWarmLight
         }
     }
 
