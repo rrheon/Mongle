@@ -39,9 +39,9 @@ final class UserRepository: UserRepositoryInterface {
         return response.streakDays
     }
 
-    func registerDeviceToken(token: String) async throws {
+    func registerDeviceToken(token: String, environment: String) async throws {
         struct OkResponse: Decodable { let ok: Bool }
-        let _: OkResponse = try await apiClient.request(UserEndpoint.registerDeviceToken(token: token))
+        let _: OkResponse = try await apiClient.request(UserEndpoint.registerDeviceToken(token: token, environment: environment))
     }
 
     func grantAdHearts(amount: Int) async throws -> Int {
