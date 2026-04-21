@@ -196,7 +196,7 @@ enum UserEndpoint: APIEndpoint {
     case updateUser(userId: String, data: UserDTO)
     case updateMe(name: String)
     case getMyStreak
-    case registerDeviceToken(token: String)
+    case registerDeviceToken(token: String, environment: String)
     case adHeartReward(amount: Int)
     case getNotificationPreferences
     case updateNotificationPreferences(params: [String: Any])
@@ -235,8 +235,8 @@ enum UserEndpoint: APIEndpoint {
 
     var body: Data? {
         switch self {
-        case .registerDeviceToken(let token):
-            return try? JSONSerialization.data(withJSONObject: ["token": token])
+        case .registerDeviceToken(let token, let environment):
+            return try? JSONSerialization.data(withJSONObject: ["token": token, "environment": environment])
         case .updateUser(_, let data):
             // UpdateUserRequest 허용 필드만 전송 (TSOA noImplicitAdditionalProperties: throw-on-extras)
             var params: [String: Any] = ["name": data.name, "role": data.role]

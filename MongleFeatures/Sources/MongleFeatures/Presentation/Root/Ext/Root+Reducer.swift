@@ -649,8 +649,16 @@ extension RootFeature {
 
                 case .deviceTokenReceived(let data):
                     let token = data.map { String(format: "%02x", $0) }.joined()
+                    // aps-environment entitlement은 Xcode Run에서 항상 development로 고정되고,
+                    // Archive/Distribute 단계에서만 production으로 치환된다. 서버가 토큰별로
+                    // 올바른 APNs 호스트(sandbox / production)를 선택하도록 빌드 환경을 전송.
+                    #if DEBUG
+                    let environment = "sandbox"
+                    #else
+                    let environment = "production"
+                    #endif
                     return .run { [userRepository] _ in
-                        try? await userRepository.registerDeviceToken(token: token)
+                        try? await userRepository.registerDeviceToken(token: token, environment: environment)
                     }
 
                 case .openQuestion:
