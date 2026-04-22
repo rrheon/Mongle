@@ -630,16 +630,16 @@ enum MoodEndpoint: APIEndpoint {
 // MARK: - Notification Endpoints
 
 enum NotificationEndpoint: APIEndpoint {
-    /// GET /notifications?limit=N
-    case getAll(limit: Int)
+    /// GET /notifications?limit=N&group_id=ID
+    case getAll(limit: Int, familyId: String?)
     /// PATCH /notifications/{id}/read
     case markAsRead(id: String)
-    /// PATCH /notifications/read-all
-    case markAllAsRead
+    /// PATCH /notifications/read-all?group_id=ID
+    case markAllAsRead(familyId: String?)
     /// DELETE /notifications/{id}
     case delete(id: String)
-    /// DELETE /notifications
-    case deleteAll
+    /// DELETE /notifications?group_id=ID
+    case deleteAll(familyId: String?)
 
     var path: String {
         switch self {
@@ -661,8 +661,16 @@ enum NotificationEndpoint: APIEndpoint {
 
     var queryItems: [URLQueryItem]? {
         switch self {
-        case .getAll(let limit):
-            return [URLQueryItem(name: "limit", value: "\(limit)")]
+        case .getAll(let limit, let familyId):
+            var items = [URLQueryItem(name: "limit", value: "\(limit)")]
+            if let familyId { items.append(URLQueryItem(name: "group_id", value: familyId)) }
+            return items
+        case .markAllAsRead(let familyId):
+            if let familyId { return [URLQueryItem(name: "group_id", value: familyId)] }
+            return nil
+        case .deleteAll(let familyId):
+            if let familyId { return [URLQueryItem(name: "group_id", value: familyId)] }
+            return nil
         default:
             return nil
         }

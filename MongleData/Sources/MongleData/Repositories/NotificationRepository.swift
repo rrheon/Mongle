@@ -8,11 +8,13 @@ final class NotificationRepository: NotificationRepositoryProtocol {
         self.apiClient = apiClient
     }
 
-    func getNotifications(limit: Int) async throws -> [Domain.Notification] {
+    func getNotifications(limit: Int, familyId: UUID?) async throws -> [Domain.Notification] {
         struct Response: Decodable {
             let notifications: [NotificationDTO]
         }
-        let response: Response = try await apiClient.request(NotificationEndpoint.getAll(limit: limit))
+        let response: Response = try await apiClient.request(
+            NotificationEndpoint.getAll(limit: limit, familyId: familyId?.uuidString.lowercased())
+        )
         return response.notifications.compactMap { $0.toDomain() }
     }
 
@@ -22,9 +24,11 @@ final class NotificationRepository: NotificationRepositoryProtocol {
         return notification
     }
 
-    func markAllAsRead() async throws -> Int {
+    func markAllAsRead(familyId: UUID?) async throws -> Int {
         struct Response: Decodable { let count: Int }
-        let response: Response = try await apiClient.request(NotificationEndpoint.markAllAsRead)
+        let response: Response = try await apiClient.request(
+            NotificationEndpoint.markAllAsRead(familyId: familyId?.uuidString.lowercased())
+        )
         return response.count
     }
 
@@ -32,9 +36,11 @@ final class NotificationRepository: NotificationRepositoryProtocol {
         try await apiClient.request(NotificationEndpoint.delete(id: id.uuidString))
     }
 
-    func deleteAll() async throws -> Int {
+    func deleteAll(familyId: UUID?) async throws -> Int {
         struct Response: Decodable { let count: Int }
-        let response: Response = try await apiClient.request(NotificationEndpoint.deleteAll)
+        let response: Response = try await apiClient.request(
+            NotificationEndpoint.deleteAll(familyId: familyId?.uuidString.lowercased())
+        )
         return response.count
     }
 }

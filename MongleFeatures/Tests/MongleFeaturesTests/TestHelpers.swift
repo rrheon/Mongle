@@ -12,7 +12,7 @@ final class MockNotificationRepository: NotificationRepositoryProtocol, @uncheck
     var deleteError: Error?
     var deleteAllResult: Int = 0
 
-    func getNotifications(limit: Int) async throws -> [Domain.Notification] {
+    func getNotifications(limit: Int, familyId: UUID?) async throws -> [Domain.Notification] {
         if let error = getNotificationsError { throw error }
         return getNotificationsResult
     }
@@ -22,7 +22,7 @@ final class MockNotificationRepository: NotificationRepositoryProtocol, @uncheck
         return markAsReadResult!
     }
 
-    func markAllAsRead() async throws -> Int {
+    func markAllAsRead(familyId: UUID?) async throws -> Int {
         markAllAsReadResult
     }
 
@@ -30,7 +30,7 @@ final class MockNotificationRepository: NotificationRepositoryProtocol, @uncheck
         if let error = deleteError { throw error }
     }
 
-    func deleteAll() async throws -> Int {
+    func deleteAll(familyId: UUID?) async throws -> Int {
         deleteAllResult
     }
 }
