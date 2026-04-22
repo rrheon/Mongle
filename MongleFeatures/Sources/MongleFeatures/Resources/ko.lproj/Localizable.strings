@@ -72,7 +72,7 @@
 "onboarding_group_desc" = "가족, 친구, 커플 등\n함께하고 싶은 사람들을 초대해요";
 "onboarding_question_title" = "매일 함께\n마음을 나눠요";
 "onboarding_question_desc" = "매일 새로운 질문에 답하고\n서로의 마음을 들여다보세요";
-"onboarding_sample_group" = "우리 그룹 🩷";
+"onboarding_sample_group" = "우리 그룹";
 "onboarding_sample_question" = "오늘 당신을 웃게 한 건 무엇인가요?";
 "onboarding_today_question" = "오늘의 질문";
 "onboarding_start" = "시작하기";
@@ -219,7 +219,7 @@
 "group_code_placeholder" = "초대 코드를 입력해주세요";
 "group_code_hint" = "대문자와 숫자로 이루어진 코드에요";
 "group_join_btn" = "참여하기";
-"group_created_title" = "공간이 만들어졌어요! 🎉";
+"group_created_title" = "공간이 만들어졌어요!";
 "group_created_desc" = "아래 코드나 링크로 친구를 초대해보세요";
 "group_invite_code" = "초대 코드";
 "group_invite_link" = "초대 링크";
@@ -227,19 +227,19 @@
 "group_go_home" = "홈으로 가기";
 "group_leave" = "그룹 나가기";
 "group_leave_title" = "그룹 나가기";
-"group_leave_desc" = "%@에서 나가시겠어요?\n그룹 관련 데이터가 삭제되지만 작성한 답변은 유지됩니다.";
+"group_leave_desc" = "%@에서 나가시겠어요?\n그룹 관련 데이터는 사라지지만, 내가 작성한 답변은 그대로 남아요.";
 "group_leave_btn" = "나가기";
 "group_disband_error" = "그룹 해제 불가";
 
 /* Notification Permission */
-"perm_notif_title" = "알림을 허용해 주세요 🔔";
+"perm_notif_title" = "알림을 허용해 주세요";
 "perm_notif_desc" = "그룹 소식을 놓치지 않을 수 있어요";
 "perm_notif_answer" = "맴버가 답변했을 때";
 "perm_notif_nudge" = "재촉 알림을 받았을 때";
 "perm_notif_question" = "새 질문 알림";
 "perm_notif_allow" = "허용하기";
 "perm_notif_later" = "나중에";
-"perm_dnd_title" = "방해 금지 시간 🌙";
+"perm_dnd_title" = "방해 금지 시간";
 "perm_dnd_desc" = "취침 시간에는 알림을 받지 않아요";
 "perm_dnd_time" = "오후 10:00 - 오전 8:00";
 "perm_dnd_hint" = "이 시간 동안은 알림이 전송되지 않아요";
@@ -299,14 +299,14 @@
 "mgmt_invite_section" = "그룹 초대";
 "mgmt_invite_desc" = "초대 코드나 링크를 공유해 멤버를 초대하세요";
 "mgmt_leave" = "그룹 나가기";
-"mgmt_leave_desc" = "그룹을 나가면 모든 멤버와의 답변 기록이 연결 해제됩니다.";
+"mgmt_leave_desc" = "그룹을 나가면 멤버와의 답변 기록 연결이 해제돼요.";
 "mgmt_leave_btn" = "나가기";
 "group_leave_final_title" = "정말 나가실 건가요?";
 "group_leave_final_desc" = "이 가족과의 하루하루가 여기서 끊길 수 있어요.\n돌아오려면 다시 초대받아야 해요.";
 "group_leave_final_confirm" = "네, 나갈게요";
 "group_leave_final_cancel" = "더 있어볼게요";
 "mgmt_kick" = "%@님을 내보낼까요?";
-"mgmt_kick_desc" = "해당 멤버는 그룹에서 제외됩니다.";
+"mgmt_kick_desc" = "이 멤버는 그룹에서 나가게 돼요.";
 "mgmt_kick_btn" = "내보내기";
 "mgmt_kick_error_title" = "내보내기 실패";
 "mgmt_kick_error_desc" = "멤버를 내보내는 중 문제가 발생했습니다. 다시 시도해 주세요.";
@@ -337,7 +337,7 @@
 "toast_edit" = "답변을 수정했어요!";
 "toast_answer" = "마음을 남겼어요!";
 "toast_group_left" = "그룹에서 나왔어요";
-"toast_code_copied" = "초대 코드가 복사되었습니다";
+"toast_code_copied" = "초대 코드를 복사했어요";
 "toast_max_groups" = "그룹은 최대 3개까지 만들 수 있어요";
 "toast_already_member" = "이미 속해있는 그룹이에요";
 "toast_invalid_code" = "초대코드를 다시 확인해주세요";
@@ -373,10 +373,11 @@
 "heart_title" = "하트";
 "heart_info_title" = "하트는 관계를 움직이는 작은 자원이에요";
 "heart_info_desc" = "재촉, 질문 교체 같은 행동에만 제한적으로 사용돼요.";
-"heart_popup_ad" = "광고 보고 하트 받기 💚";
+"heart_popup_ad" = "광고 보고 하트 받기";
 "heart_granted_title" = "하트 +1";
-"heart_granted_desc" = "오늘 처음 접속하셨네요!\n하트 1개를 드렸어요 ❤️";
-"heart_cost" = "하트 %d";
+"heart_granted_desc" = "오늘 처음 접속하셨네요!\n하트 1개를 드렸어요.";
+"heart_cost" = "하트 %d개";
+"heart_earned" = "하트 %d개 획득!";
 
 /* Calendar */
 "calendar_day_sun" = "일";
@@ -399,7 +400,7 @@
 "heart_cost_edit_btn" = "수정하기";
 
 /* Hearts System */
-"hearts_title" = "하트 💗";
+"hearts_title" = "하트";
 "hearts_desc" = "그룹 멤버에게 마음을 더 전하고 싶을 때 쓰는 작은 응원이에요.";
 "hearts_today" = "오늘 기준";
 "hearts_earn_title" = "하트 얻는 방법";
@@ -423,8 +424,8 @@
 "hearts_save_desc" = "답변을 꾸준히 남길수록 더 안정적으로 모을 수 있어요.";
 
 /* Heart Info Popup */
-"heart_info_replace" = "질문 다시받기에 하트 1개가 사용돼요";
-"heart_info_write" = "나만의 질문 작성에 하트 1개가 사용돼요";
+"heart_info_replace" = "질문 다시받기에 하트 3개가 사용돼요";
+"heart_info_write" = "나만의 질문 작성에 하트 3개가 사용돼요";
 "heart_info_nudge" = "재촉하기에 하트 1개가 사용돼요";
 "heart_info_daily" = "매일 오전 6시에 하트 1개가 충전돼요";
 "heart_info_answer" = "답변을 완료하면 하트 1개를 얻을 수 있어요";

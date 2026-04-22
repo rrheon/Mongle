@@ -283,7 +283,7 @@ private struct HeartCalloutView: View {
 
       Divider()
 
-      heartRow(icon: "arrow.clockwise.circle.fill", color: MongleColor.secondary, text: L10n.tr("home_heart_replace"), cost: L10n.tr("heart_cost", 1))
+      heartRow(icon: "arrow.clockwise.circle.fill", color: MongleColor.secondary, text: L10n.tr("home_heart_replace"), cost: L10n.tr("heart_cost", 3))
       heartRow(icon: "pencil.circle.fill", color: MongleColor.accentOrange, text: L10n.tr("home_heart_write"), cost: L10n.tr("heart_cost", 3))
       heartRow(icon: "megaphone.fill", color: MongleColor.heartRed, text: L10n.tr("home_heart_nudge"), cost: L10n.tr("heart_cost", 1))
 

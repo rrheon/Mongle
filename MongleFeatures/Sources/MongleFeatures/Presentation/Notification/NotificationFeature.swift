@@ -24,6 +24,14 @@ public struct NotificationFeature {
         case grouped
         /// 기본(하위 호환)
         case all
+
+        /// 서버 API에 전달할 그룹 스코프. `.filtered`만 특정 그룹으로 제한.
+        var scopeFamilyId: UUID? {
+            switch self {
+            case .filtered(let familyId, _): return familyId
+            case .grouped, .all: return nil
+            }
+        }
     }
 
     @ObservableState
@@ -164,8 +172,9 @@ public struct NotificationFeature {
             case .onAppear:
                 guard state.notifications.isEmpty else { return .none }
                 state.isLoading = true
+                let scopeFamilyId = state.mode.scopeFamilyId
                 return .run { [notificationRepository] send in
-                    let items = (try? await notificationRepository.getNotifications(limit: 50)) ?? []
+                    let items = (try? await notificationRepository.getNotifications(limit: 50, familyId: scopeFamilyId)) ?? []
                     await send(.notificationsLoaded(items))
                 }
 
@@ -174,8 +183,9 @@ public struct NotificationFeature {
 
             case .refresh:
                 state.isLoading = true
+                let scopeFamilyId = state.mode.scopeFamilyId
                 return .run { [notificationRepository] send in
-                    let items = (try? await notificationRepository.getNotifications(limit: 50)) ?? []
+                    let items = (try? await notificationRepository.getNotifications(limit: 50, familyId: scopeFamilyId)) ?? []
                     await send(.notificationsLoaded(items))
                 }
 
@@ -216,8 +226,12 @@ public struct NotificationFeature {
                 }
 
             case .markAllAsRead:
+                let scopeFamilyId = state.mode.scopeFamilyId
                 state.notifications = state.notifications.map { n in
-                    MongleNotification(
+                    // .filtered 모드에서는 해당 그룹 알림만 읽음 처리, 그 외는 전체
+                    let shouldMark = scopeFamilyId == nil || n.familyId == scopeFamilyId
+                    guard shouldMark else { return n }
+                    return MongleNotification(
                         id: n.id,
                         userId: n.userId,
                         familyId: n.familyId,
@@ -229,7 +243,7 @@ public struct NotificationFeature {
                     )
                 }
                 return .run { [notificationRepository] _ in
-                    _ = try? await notificationRepository.markAllAsRead()
+                    _ = try? await notificationRepository.markAllAsRead(familyId: scopeFamilyId)
                 }
 
             case .deleteNotification(let notification):
@@ -239,10 +253,15 @@ public struct NotificationFeature {
                 }
 
             case .deleteAll:
-                state.notifications = []
+                let scopeFamilyId = state.mode.scopeFamilyId
+                if let scopeFamilyId {
+                    state.notifications = state.notifications.filter { $0.familyId != scopeFamilyId }
+                } else {
+                    state.notifications = []
+                }
                 return .run { [notificationRepository] _ in
-                    _ = try? await notificationRepository.markAllAsRead()
-                    _ = try? await notificationRepository.deleteAll()
+                    _ = try? await notificationRepository.markAllAsRead(familyId: scopeFamilyId)
+                    _ = try? await notificationRepository.deleteAll(familyId: scopeFamilyId)
                 }
 
             case .dismissError:
