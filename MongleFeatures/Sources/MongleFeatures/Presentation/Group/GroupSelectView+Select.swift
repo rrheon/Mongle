@@ -109,11 +109,24 @@ extension GroupSelectView {
           primaryLabel: L10n.tr("group_leave_btn"),
           secondaryLabel: L10n.tr("common_cancel"),
           isDestructive: true,
-          onPrimary: { store.send(.confirmLeave) },
+          onPrimary: { store.send(.firstConfirmLeave) },
           onSecondary: { store.send(.cancelLeaveConfirmation) }
         )
         .transition(.opacity)
         .animation(.easeInOut(duration: 0.2), value: store.showLeaveConfirmation)
+      }
+      if store.showLeaveFinalConfirmation {
+        MonglePopupView(
+          title: L10n.tr("group_leave_final_title"),
+          description: L10n.tr("group_leave_final_desc"),
+          primaryLabel: L10n.tr("group_leave_final_confirm"),
+          secondaryLabel: L10n.tr("group_leave_final_cancel"),
+          isDestructive: true,
+          onPrimary: { store.send(.confirmLeave) },
+          onSecondary: { store.send(.cancelLeaveFinalConfirmation) }
+        )
+        .transition(.opacity)
+        .animation(.easeInOut(duration: 0.2), value: store.showLeaveFinalConfirmation)
       }
     }
     .navigationDestination(isPresented: Binding(

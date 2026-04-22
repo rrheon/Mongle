@@ -285,6 +285,10 @@
 "settings_delete_account_desc" = "All data will be deleted permanently";
 "settings_delete_confirm" = "All data will be deleted.\nThis cannot be undone.";
 "settings_delete_btn" = "Delete Account";
+"settings_delete_final_title" = "One last check";
+"settings_delete_final_desc" = "Are you sure you want to leave Mongle?\nThis choice cannot be undone.";
+"settings_delete_final_confirm" = "Yes, delete my account";
+"settings_delete_final_cancel" = "I'll think it over";
 "settings_login_required" = "Login Required";
 "settings_login_required_desc" = "Login required to use this feature.";
 "settings_login_btn" = "Log In";
@@ -297,6 +301,10 @@
 "mgmt_leave" = "Leave Group";
 "mgmt_leave_desc" = "Leaving disconnects all answer records.";
 "mgmt_leave_btn" = "Leave";
+"group_leave_final_title" = "Are you sure?";
+"group_leave_final_desc" = "Your daily moments with this family end here.\nYou'll need a new invite to return.";
+"group_leave_final_confirm" = "Yes, leave";
+"group_leave_final_cancel" = "I'll stay for now";
 "mgmt_kick" = "Remove %@?";
 "mgmt_kick_desc" = "This member will be removed.";
 "mgmt_kick_btn" = "Remove";

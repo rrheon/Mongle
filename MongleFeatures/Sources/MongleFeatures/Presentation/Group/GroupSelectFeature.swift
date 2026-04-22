@@ -77,6 +77,7 @@ public struct GroupSelectFeature {
         public var currentUserId: UUID? = nil
         public var groupToLeave: MongleGroup? = nil
         public var showLeaveConfirmation: Bool = false
+        public var showLeaveFinalConfirmation: Bool = false
         public var showLeaveTooSoonToast: Bool = false   // 72시간(3일) 미경과 안내 토스트
         public var leaveTooSoonMessage: String = ""
         public var transferCandidates: [User] = []
@@ -133,6 +134,8 @@ public struct GroupSelectFeature {
 
         // MARK: - 그룹 나가기
         case leaveGroupTapped(MongleGroup)
+        case firstConfirmLeave
+        case cancelLeaveFinalConfirmation
         case confirmLeave
         case cancelLeaveConfirmation
         case dismissLeaveTooSoonToast
@@ -444,14 +447,25 @@ public struct GroupSelectFeature {
                 state.showLeaveTooSoonToast = false
                 return .none
 
+            case .firstConfirmLeave:
+                state.showLeaveConfirmation = false
+                state.showLeaveFinalConfirmation = true
+                return .none
+
+            case .cancelLeaveFinalConfirmation:
+                state.showLeaveFinalConfirmation = false
+                return .none
+
             case .confirmLeave:
                 state.showLeaveConfirmation = false
+                state.showLeaveFinalConfirmation = false
                 guard let group = state.groupToLeave else { return .none }
                 state.isProcessingLeave = true
                 return .send(.delegate(.leaveGroup(group)))
 
             case .cancelLeaveConfirmation:
                 state.showLeaveConfirmation = false
+                state.showLeaveFinalConfirmation = false
                 state.groupToLeave = nil
                 return .none
 
