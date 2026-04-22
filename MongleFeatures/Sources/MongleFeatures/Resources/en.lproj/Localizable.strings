@@ -72,7 +72,7 @@
 "onboarding_group_desc" = "Invite family, friends, couples\nand anyone you want";
 "onboarding_question_title" = "Share your feelings\ntogether daily";
 "onboarding_question_desc" = "Answer new questions daily\nand peek into each other's hearts";
-"onboarding_sample_group" = "My Group 🩷";
+"onboarding_sample_group" = "My Group";
 "onboarding_sample_question" = "What made you smile today?";
 "onboarding_today_question" = "Today's Question";
 "onboarding_start" = "Get Started";
@@ -219,7 +219,7 @@
 "group_code_placeholder" = "Enter invite code";
 "group_code_hint" = "Code with uppercase letters and numbers";
 "group_join_btn" = "Join";
-"group_created_title" = "Space created! 🎉";
+"group_created_title" = "Space created!";
 "group_created_desc" = "Invite friends with the code or link below";
 "group_invite_code" = "Invite Code";
 "group_invite_link" = "Invite Link";
@@ -227,19 +227,19 @@
 "group_go_home" = "Go to Home";
 "group_leave" = "Leave Group";
 "group_leave_title" = "Leave Group";
-"group_leave_desc" = "Leave %@?\nGroup data will be deleted but your answers will be kept.";
+"group_leave_desc" = "Leave %@?\nGroup data will be removed, but your answers stay with you.";
 "group_leave_btn" = "Leave";
 "group_disband_error" = "Cannot disband group";
 
 /* Notification Permission */
-"perm_notif_title" = "Allow notifications 🔔";
+"perm_notif_title" = "Allow notifications";
 "perm_notif_desc" = "Don't miss updates from your group";
 "perm_notif_answer" = "When a member answers";
 "perm_notif_nudge" = "When you receive a nudge";
 "perm_notif_question" = "New question notification";
 "perm_notif_allow" = "Allow";
 "perm_notif_later" = "Later";
-"perm_dnd_title" = "Do Not Disturb 🌙";
+"perm_dnd_title" = "Do Not Disturb";
 "perm_dnd_desc" = "No notifications during bedtime";
 "perm_dnd_time" = "10:00 PM - 8:00 AM";
 "perm_dnd_hint" = "Notifications won't be sent during this time";
@@ -299,14 +299,14 @@
 "mgmt_invite_section" = "Group Invite";
 "mgmt_invite_desc" = "Share invite code or link";
 "mgmt_leave" = "Leave Group";
-"mgmt_leave_desc" = "Leaving disconnects all answer records.";
+"mgmt_leave_desc" = "Leaving disconnects your answer records with members.";
 "mgmt_leave_btn" = "Leave";
 "group_leave_final_title" = "Are you sure?";
 "group_leave_final_desc" = "Your daily moments with this family end here.\nYou'll need a new invite to return.";
 "group_leave_final_confirm" = "Yes, leave";
 "group_leave_final_cancel" = "I'll stay for now";
 "mgmt_kick" = "Remove %@?";
-"mgmt_kick_desc" = "This member will be removed.";
+"mgmt_kick_desc" = "This member will leave the group.";
 "mgmt_kick_btn" = "Remove";
 "mgmt_kick_error_title" = "Remove Failed";
 "mgmt_kick_error_desc" = "Something went wrong while removing the member. Please try again.";
@@ -337,7 +337,7 @@
 "toast_edit" = "Answer edited!";
 "toast_answer" = "Heart left!";
 "toast_group_left" = "Left the group";
-"toast_code_copied" = "Invite code copied";
+"toast_code_copied" = "Invite code copied!";
 "toast_max_groups" = "Up to 3 groups allowed";
 "toast_already_member" = "Already a member";
 "toast_invalid_code" = "Please check the invite code";
@@ -373,10 +373,11 @@
 "heart_title" = "Hearts";
 "heart_info_title" = "Hearts are a small resource that moves relationships";
 "heart_info_desc" = "Used only for actions like nudging and replacing questions.";
-"heart_popup_ad" = "Watch ad for hearts 💚";
+"heart_popup_ad" = "Watch ad for hearts";
 "heart_granted_title" = "Heart +1";
-"heart_granted_desc" = "Welcome back today!\nYou received 1 heart ❤️";
+"heart_granted_desc" = "Welcome back today!\nYou received 1 heart.";
 "heart_cost" = "%d hearts";
+"heart_earned" = "You earned %d heart!";
 
 /* Calendar */
 "calendar_day_sun" = "Sun";
@@ -399,7 +400,7 @@
 "heart_cost_edit_btn" = "Edit";
 
 /* Hearts System */
-"hearts_title" = "Hearts 💗";
+"hearts_title" = "Hearts";
 "hearts_desc" = "A small token of support when you want to share more love with your group.";
 "hearts_today" = "As of today";
 "hearts_earn_title" = "How to earn hearts";
@@ -423,8 +424,8 @@
 "hearts_save_desc" = "Answering consistently helps you accumulate more hearts.";
 
 /* Heart Info Popup */
-"heart_info_replace" = "1 heart is used for replacing a question";
-"heart_info_write" = "1 heart is used for writing your own question";
+"heart_info_replace" = "3 hearts are used for replacing a question";
+"heart_info_write" = "3 hearts are used for writing your own question";
 "heart_info_nudge" = "1 heart is used for nudging";
 "heart_info_daily" = "1 heart is recharged every day at 6 AM";
 "heart_info_answer" = "You earn 1 heart for completing an answer";

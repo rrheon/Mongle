@@ -64,7 +64,7 @@ struct MainTabView: View {
                             foregroundColor: .red,
                             backgroundColor: Color.red.opacity(0.12)
                         ),
-                        title: L10n.tr("heart_cost", 1),
+                        title: L10n.tr("heart_earned", 1),
                         description: L10n.tr("toast_answer"),
                         primaryLabel: L10n.tr("common_confirm"),
                         onPrimary: { store.send(.dismissAnswerHeartPopup) }
