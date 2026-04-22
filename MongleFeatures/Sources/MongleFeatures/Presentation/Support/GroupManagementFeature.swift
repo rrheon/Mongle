@@ -31,6 +31,7 @@ public struct GroupManagementFeature {
         public var familyCreatedById: UUID?
         public var familyCreatedAt: Date?
         public var showLeaveConfirm: Bool = false
+        public var showLeaveFinalConfirm: Bool = false
         public var showLeaveTooSoonToast: Bool = false   // 72시간(3일) 미경과 안내 토스트
         public var leaveTooSoonMessage: String = ""
         public var isLeaving: Bool = false
@@ -64,6 +65,8 @@ public struct GroupManagementFeature {
         case inviteCodeCopyTapped
         case copiedToastDismissed
         case leaveGroupTapped
+        case leaveGroupFirstConfirmed
+        case leaveGroupFinalCancelled
         case leaveGroupConfirmed
         case leaveGroupAlertDismissed
         case leaveGroupFailure(AppError)
@@ -139,12 +142,23 @@ public struct GroupManagementFeature {
                 state.showLeaveConfirm = true
                 return .none
 
+            case .leaveGroupFirstConfirmed:
+                state.showLeaveConfirm = false
+                state.showLeaveFinalConfirm = true
+                return .none
+
+            case .leaveGroupFinalCancelled:
+                state.showLeaveFinalConfirm = false
+                return .none
+
             case .leaveGroupAlertDismissed:
                 state.showLeaveConfirm = false
+                state.showLeaveFinalConfirm = false
                 return .none
 
             case .leaveGroupConfirmed:
                 state.showLeaveConfirm = false
+                state.showLeaveFinalConfirm = false
                 if state.isCurrentUserOwner {
                     // 방장은 멤버 수와 무관하게 그룹 생성 후 72시간 이내 나가기 불가
                     // (위임 후 나가기로 빠져나가는 것도 차단 — GroupSelectFeature / Android 와 동일 정책)

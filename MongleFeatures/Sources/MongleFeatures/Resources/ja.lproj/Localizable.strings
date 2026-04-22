@@ -285,6 +285,10 @@
 "settings_delete_account_desc" = "すべてのデータが削除され復元できません";
 "settings_delete_confirm" = "退会するとすべてのデータが削除されます。\nこの操作は元に戻せません。";
 "settings_delete_btn" = "退会する";
+"settings_delete_final_title" = "最終確認です";
+"settings_delete_final_desc" = "本当にMongleとお別れしますか？\nこの選択は取り消せません。";
+"settings_delete_final_confirm" = "はい、退会します";
+"settings_delete_final_cancel" = "もう少し考えます";
 "settings_login_required" = "ログインが必要です";
 "settings_login_required_desc" = "この機能を利用するにはログインが必要です。";
 "settings_login_btn" = "ログインする";
@@ -297,6 +301,10 @@
 "mgmt_leave" = "グループを退出";
 "mgmt_leave_desc" = "グループを退出すると全ての回答記録の接続が解除されます。";
 "mgmt_leave_btn" = "退出する";
+"group_leave_final_title" = "本当に退出しますか？";
+"group_leave_final_desc" = "この家族との毎日がここで途切れるかもしれません。\n戻るには再度招待が必要です。";
+"group_leave_final_confirm" = "はい、退出します";
+"group_leave_final_cancel" = "もう少しいます";
 "mgmt_kick" = "%@さんを退出させますか？";
 "mgmt_kick_desc" = "このメンバーはグループから除外されます。";
 "mgmt_kick_btn" = "退出させる";

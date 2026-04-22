@@ -24,6 +24,7 @@ public struct SettingsFeature {
         public var isLoading: Bool
         public var showLogoutConfirmation: Bool
         public var showDeleteAccountConfirmation: Bool
+        public var showDeleteAccountFinalConfirmation: Bool
         public var errorMessage: String?
         /// UMP(GDPR/CCPA) 대상 사용자에게만 "개인정보 옵션 다시 열기" 행을 노출한다.
         public var showPrivacyOptionsRow: Bool
@@ -36,6 +37,7 @@ public struct SettingsFeature {
             isLoading: Bool = false,
             showLogoutConfirmation: Bool = false,
             showDeleteAccountConfirmation: Bool = false,
+            showDeleteAccountFinalConfirmation: Bool = false,
             errorMessage: String? = nil,
             showPrivacyOptionsRow: Bool = false
         ) {
@@ -46,6 +48,7 @@ public struct SettingsFeature {
             self.isLoading = isLoading
             self.showLogoutConfirmation = showLogoutConfirmation
             self.showDeleteAccountConfirmation = showDeleteAccountConfirmation
+            self.showDeleteAccountFinalConfirmation = showDeleteAccountFinalConfirmation
             self.errorMessage = errorMessage
             self.showPrivacyOptionsRow = showPrivacyOptionsRow
         }
@@ -64,6 +67,8 @@ public struct SettingsFeature {
         case logoutConfirmed
         case logoutCancelled
         case deleteAccountTapped
+        case deleteAccountFirstConfirmed
+        case deleteAccountFinalCancelled
         case deleteAccountConfirmed
         case deleteAccountCancelled
         case dismissErrorTapped
@@ -158,10 +163,21 @@ public struct SettingsFeature {
 
             case .deleteAccountCancelled:
                 state.showDeleteAccountConfirmation = false
+                state.showDeleteAccountFinalConfirmation = false
+                return .none
+
+            case .deleteAccountFirstConfirmed:
+                state.showDeleteAccountConfirmation = false
+                state.showDeleteAccountFinalConfirmation = true
+                return .none
+
+            case .deleteAccountFinalCancelled:
+                state.showDeleteAccountFinalConfirmation = false
                 return .none
 
             case .deleteAccountConfirmed:
                 state.showDeleteAccountConfirmation = false
+                state.showDeleteAccountFinalConfirmation = false
                 state.isLoading = true
                 let providerType = state.loginProviderType
                 return .run { send in

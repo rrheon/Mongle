@@ -39,11 +39,24 @@ public struct GroupManagementView: View {
           primaryLabel: L10n.tr("mgmt_leave_btn"),
           secondaryLabel: L10n.tr("common_cancel"),
           isDestructive: true,
-          onPrimary: { store.send(.leaveGroupConfirmed) },
+          onPrimary: { store.send(.leaveGroupFirstConfirmed) },
           onSecondary: { store.send(.leaveGroupAlertDismissed) }
         )
         .transition(.opacity)
         .animation(.easeInOut(duration: 0.2), value: store.showLeaveConfirm)
+      }
+      if store.showLeaveFinalConfirm {
+        MonglePopupView(
+          title: L10n.tr("group_leave_final_title"),
+          description: L10n.tr("group_leave_final_desc"),
+          primaryLabel: L10n.tr("group_leave_final_confirm"),
+          secondaryLabel: L10n.tr("group_leave_final_cancel"),
+          isDestructive: true,
+          onPrimary: { store.send(.leaveGroupConfirmed) },
+          onSecondary: { store.send(.leaveGroupFinalCancelled) }
+        )
+        .transition(.opacity)
+        .animation(.easeInOut(duration: 0.2), value: store.showLeaveFinalConfirm)
       }
     }
     .overlay {

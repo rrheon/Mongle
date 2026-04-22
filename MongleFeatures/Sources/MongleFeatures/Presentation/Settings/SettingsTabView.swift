@@ -75,11 +75,24 @@ struct SettingsTabView: View {
                         description: L10n.tr("settings_delete_confirm"),
                         primaryLabel: L10n.tr("settings_delete_btn"),
                         secondaryLabel: L10n.tr("common_cancel"),
-                        onPrimary: { store.send(.deleteAccountConfirmed) },
+                        onPrimary: { store.send(.deleteAccountFirstConfirmed) },
                         onSecondary: { store.send(.deleteAccountCancelled) }
                     )
                     .transition(.opacity)
                     .animation(.easeInOut(duration: 0.2), value: store.showDeleteAccountConfirmation)
+                }
+                if store.showDeleteAccountFinalConfirmation {
+                    MonglePopupView(
+                        title: L10n.tr("settings_delete_final_title"),
+                        description: L10n.tr("settings_delete_final_desc"),
+                        primaryLabel: L10n.tr("settings_delete_final_confirm"),
+                        secondaryLabel: L10n.tr("settings_delete_final_cancel"),
+                        isDestructive: true,
+                        onPrimary: { store.send(.deleteAccountConfirmed) },
+                        onSecondary: { store.send(.deleteAccountFinalCancelled) }
+                    )
+                    .transition(.opacity)
+                    .animation(.easeInOut(duration: 0.2), value: store.showDeleteAccountFinalConfirmation)
                 }
             }
         }

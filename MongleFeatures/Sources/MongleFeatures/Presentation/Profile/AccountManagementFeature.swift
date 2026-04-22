@@ -6,6 +6,7 @@ public struct AccountManagementFeature {
     public struct State: Equatable {
         public var showLogoutConfirm = false
         public var showDeleteConfirm = false
+        public var showDeleteFinalConfirm = false
         public var isLoading = false
         public var errorMessage: String? = nil
         public var appError: AppError? = nil
@@ -18,6 +19,8 @@ public struct AccountManagementFeature {
         case logoutTapped
         case logoutConfirmed
         case deleteAccountTapped
+        case deleteAccountFirstConfirmed
+        case deleteAccountFinalCancelled
         case deleteAccountConfirmed
         case alertDismissed
         case setLoading(Bool)
@@ -63,8 +66,18 @@ public struct AccountManagementFeature {
                 state.showDeleteConfirm = true
                 return .none
 
+            case .deleteAccountFirstConfirmed:
+                state.showDeleteConfirm = false
+                state.showDeleteFinalConfirm = true
+                return .none
+
+            case .deleteAccountFinalCancelled:
+                state.showDeleteFinalConfirm = false
+                return .none
+
             case .deleteAccountConfirmed:
                 state.showDeleteConfirm = false
+                state.showDeleteFinalConfirm = false
                 state.isLoading = true
                 return .run { send in
                     do {
@@ -78,6 +91,7 @@ public struct AccountManagementFeature {
             case .alertDismissed:
                 state.showLogoutConfirm = false
                 state.showDeleteConfirm = false
+                state.showDeleteFinalConfirm = false
                 return .none
 
             case .setLoading(let loading):
