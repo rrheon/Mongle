@@ -1,118 +1,21 @@
 # 작업
-ios에서 광고가 testmode로 뜨는데 아래 사항을 확인해줘.
+아래 항목을 자세히 파악하고 수정할 것 (버그 수정 에이전트 생성 및 qa 에이전트 생성)
+7시에 알림이 안울림,노티안옴
+- zxx 그룹에 알림이 왔는데 노티피케이션이 오지 않음
 
----
+재촉, 답변완료 알림 및 노티는 옴
 
-## 1. 테스트 기기 등록 상태 확인
-가장 흔한 이유입니다. 개발 중에 사용하던 iPhone이나 시뮬레이터의 **광고 ID(IDFA)**를 애드몹 설정에 '테스트 기기'로 등록해두셨다면, 앱의 승인 상태와 상관없이 해당 기기에는 항상 테스트 광고만 송출됩니다.
+# 추후
+앱 전체 디자인 컨펌 필요
+- 디자이너 에이전트 및 qa 에이전트 생성 후 피드백 받기
+- 피드백을 수정해서 pencil 파일에 적용하기, 코드수정x
 
-* **확인 방법:** 애드몹 설정 -> 기기 설정 -> 테스트 기기에 본인의 기기가 등록되어 있는지 확인해 보세요.
-* **해결:** 실제 광고가 보고 싶다면 테스트 기기 목록에서 삭제하면 되지만, **운영 중에도 본인 기기에는 테스트 광고가 나오게 두는 것이 안전**합니다. (본인 광고를 직접 클릭하면 계정 정지 위험이 있기 때문입니다.)
-
-## 2. 코드 내 테스트 광고 단위 ID 사용
-애드몹 연동 코드 내에 구글에서 제공하는 **샘플 광고 단위 ID**(`ca-app-pub-3940256099942544/...`)를 그대로 사용 중인지 확인해 보세요.
-
-* **해결:** 애드몹 대시보드에서 생성한 **본인의 실제 광고 단위 ID**로 코드를 교체하고 다시 빌드해서 배포해야 합니다.
-
-## 3. 광고 요청 제한 (신규 앱의 특성)
-앱이 이제 막 승인되었다면, 구글 시스템이 실제 광고를 서빙할 준비를 하는 데 시간이 걸립니다. 이 기간에는 '광고 게재 제한'이 걸리기도 하며, 구글이 적절한 광고주를 매칭하기 전까지는 테스트 광고를 대신 띄우는 경우가 많습니다.
-
-* **상태:** 애드몹 홈 화면 상단에 "광고 게재 제한" 알림이 있는지 확인해 보세요.
-* **시간:** 보통 승인 후 **수 시간에서 최대 며칠**이 지나야 유효한 광고가 채워지기 시작합니다.
-
----
-
-## 4. SKAdNetwork 및 ATT 설정 (iOS 전용)
-iOS 앱이라면 `Info.plist`에 `SKAdNetworkIdentifier`들이 제대로 등록되어 있는지, 그리고 **App Tracking Transparency(ATT)** 권한 요청을 구현했는지 확인해야 합니다.
-
-* 사용자가 '추적 허용'을 하지 않더라도 광고는 나오지만, 설정이 누락되어 있으면 광고 요청 자체가 실패하거나 테스트 광고 위주로 나올 수 있습니다.
-
----
-
-### 💡 팁: 실제 광고 확인법
-만약 코드를 실제 ID로 바꿨고 테스트 기기 등록도 안 되어 있는데 테스트 배너가 뜬다면, **"실제 광고가 아직 준비되지 않아 구글이 안전하게 테스트용을 보내주고 있다"**고 이해하시면 됩니다. 
-
-사용자님께서 개발하신 **Monggle** 앱의 경우, 스토어에 출시된 빌드 버전이 실제 광고 ID를 포함하고 있는지 마지막으로 체크해 보시는 것을 추천드려요!
-
-혹시 지금 앱 코드에서 광고 ID를 어떤 것으로 넣으셨나요? (샘플 ID인지, 본인의 pub-으로 시작하는 ID인지)
-
----
-
-## 점검 결과 (2026-04-14)
-
-### 결론
-**가장 유력한 원인: DEBUG 빌드로 실행 중이기 때문.** `AdConstants.swift`가 `#if DEBUG`에서 Google 공식 테스트 단위 ID를 강제하도록 설계되어 있음. Xcode에서 Run 버튼으로 실행(Debug Configuration)하면 **100% 테스트 광고만** 송출됨. 실제 광고를 확인하려면 Release 빌드(Archive → TestFlight)로 검증해야 함.
-
-### 1. 테스트 기기 등록 상태 — 문제 없음
-- `MongleFeatures/Sources/MongleFeatures/Presentation/Common/ConsentManager.swift:41` 의 `debugTestDeviceIdentifiers` 배열은 비어 있음(주석 예시만 존재).
-- `AdBannerView.swift` 의 `GADRequest()` 에도 별도 test device 지정 없음.
-- 즉 AdMob 대시보드 "테스트 기기" 강제 등록은 코드에 박혀있지 않음.
-
-### 2. 코드 내 테스트 광고 단위 ID 사용 — **여기가 핵심**
-파일: `MongleFeatures/Sources/MongleFeatures/AdConstants.swift`
-```swift
-#if DEBUG
-static let bannerAdUnitID   = "ca-app-pub-3940256099942544/2934735716"   // Google 테스트 ID
-static let rewardedAdUnitID = "ca-app-pub-3940256099942544/1712485313"   // Google 테스트 ID
-#else
-static let bannerAdUnitID   = "ca-app-pub-4718464707406824/5359748516"   // 실제 ID
-static let rewardedAdUnitID = "ca-app-pub-4718464707406824/2869316545"   // 실제 ID
-#endif
-```
-
-→ **의도된 설계.** DEBUG 빌드면 테스트 광고가 뜨는 게 정상.
-→ 실제 광고 확인 방법:
-1. Xcode → Product → Scheme → Edit Scheme → Run → Build Configuration 을 **Release** 로 변경 후 실행
-2. 또는 Archive → TestFlight 배포 빌드에서 확인
-
-### 3. 광고 요청 제한 (신규 앱)
-- Info.plist `GADApplicationIdentifier` 정상: `ca-app-pub-4718464707406824~3555712259`
-- Release 빌드에서도 테스트 광고가 뜬다면 AdMob 대시보드에서 다음 확인 필요 (코드로는 확인 불가, 사용자 액션):
-  - AdMob 홈 "광고 게재 제한" 알림 유무
-  - 앱 승인 상태 (ready vs. pending)
-  - 신규 앱 ad fill 워밍업 기간(수 시간~며칠)
-
-### 4. SKAdNetwork 및 ATT 설정 — 재검증
-
-**GADApplicationIdentifier 값 확인 ✅**
-- `Mongle/Info.plist:58-59` 에 `ca-app-pub-4718464707406824~3555712259` 로 정확히 등록됨
-- 사용자 제공 iOS 앱 ID와 문자 단위로 일치. 문제 없음.
-
-**ATT 구현 ✅ (이전 리포트 수정)**
-- `NSUserTrackingUsageDescription`: `Info.plist:60-61` 존재
-- 실제 호출 코드: `MongleFeatures/Sources/MongleFeatures/Presentation/Common/ConsentManager.swift:161`
-  ```swift
-  ATTrackingManager.requestTrackingAuthorization { _ in
-      self?.startMobileAdsIfNeeded()
-  }
-  ```
-- 플로우:
-  1. UMP 동의 수집 완료(또는 KR/JP 면제 지역에서 UMP 스킵) 후 `requestTrackingAuthorizationThenStartAds()` 진입
-  2. `trackingAuthorizationStatus == .notDetermined` 일 때만 0.2초 지연 후 프롬프트
-  3. 결과 무관하게 `startMobileAdsIfNeeded()` 호출 → AdMob 초기화
-- Google 권장 순서(UMP → ATT → AdMob init) 준수. **정상 동작.**
-
-**SKAdNetwork 누락 확정 ❌**
-- `Mongle/Info.plist` 전체 재스캔: `SKAdNetworkItems` / `SKAdNetworkIdentifier` 키 **0건**
-- 영향:
-  - iOS 14.5+ 에서 광고 어트리뷰션이 제한되어 입찰 광고주 풀 축소
-  - fill rate 저하 → 구글이 안전하게 테스트 광고로 대체 노출할 가능성 증가
-- 해결: AdMob 공식 SKAdNetwork ID 목록(100+개)을 `SKAdNetworkItems` 배열로 Info.plist에 추가
-  - 공식 목록: https://developers.google.com/admob/ios/ios14#skadnetwork
-
-### 부가 이슈 검증 요약
-| 항목 | 상태 | 근거 |
-|------|------|------|
-| GADApplicationIdentifier 값 | ✅ 정상 | Info.plist:59 |
-| NSUserTrackingUsageDescription | ✅ 정상 | Info.plist:60-61 |
-| ATT 실제 호출 구현 | ✅ 정상 | ConsentManager.swift:161 |
-| UMP → ATT → AdMob 순서 | ✅ 정상 | ConsentManager.swift |
-| SKAdNetworkItems 배열 | ❌ 누락 | Info.plist에 키 없음 |
-
-### 권장 조치 (우선순위)
-1. **즉시**: Release 빌드(Scheme → Run → Build Configuration = Release 또는 Archive)로 광고 확인 — 99% 여기서 해결됨
-2. Release에서도 테스트 광고면 → Info.plist에 `SKAdNetworkItems` 추가
-3. AdMob 대시보드 게재 제한/승인 상태 확인
+추가 기능 기획 필요
+- 하트 사용처 추가
+- 배경  
+  - 2d 스타일로 다양한 배경을 구매하여 적용가능하게 할 수 있도록 
+- 몽글캐릭터를 꾸밀 수 있는 것
+  - 몽글캐릭터의 모자, 왼쪽 오른쪽에 장착할 수 있는 것? 
 
 ---
 
