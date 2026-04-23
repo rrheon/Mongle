@@ -650,8 +650,8 @@ https://mongle.app
 | `dec_h_flowerring` | 들꽃 화관 | 35 | common | 분홍·노랑·민트 들꽃 5송이 봄 화관 |
 | `dec_h_starhalo` | 별 후광 | 40 | common | 머리 위 노란 별 5개 호 (천사 메타포) |
 | `dec_h_ribbon` | 새틴 리본 | 25 | common | 정수리 옆 큰 리본 |
-| `dec_h_balloon` | 풍선 한 다발 | 50 | rare | 머리 위 끈 3가닥에 매달린 파스텔 풍선 3개 (※ 슬롯 분류는 §L-3 G-2-4 사용자 결정) |
-| `dec_h_santahat` | 산타 모자 | 60 | seasonal | 12월 한정. 빨강+화이트 폼폼 |
+| `dec_h_balloon` | 풍선 한 다발 | 50 | rare | 머리 위 끈 3가닥에 매달린 파스텔 풍선 3개 (등 `dec_b_balloonback`과 분리 보유 — 사용자 확정 §O-2-6) |
+| `dec_h_santahat` | 산타 모자 | 60 | seasonal | 12월 한정. 빨강+화이트 폼폼. **시즌 외에도 영구 사용 가능, 시즌 외 장착 시 톤다운 25% 자동 적용** (§O-2-7) |
 
 **등 슬롯 (`dec_b_*`) — 5종**
 
@@ -671,7 +671,7 @@ https://mongle.app
 | `dec_f_petcat` | 발치 고양이 | 50 | rare | 둥근 크림 새끼 고양이 |
 | `dec_f_petpuppy` | 발치 강아지 | 50 | rare | 베이지 닥스훈트 톤, 꼬리 살랑 |
 | `dec_f_bubbles` | 비눗방울 | 30 | common | 발밑 투명 방울 3입자 |
-| `dec_f_petalrain` | 꽃잎 발자국 | 40 | seasonal | 봄 한정. 분홍 꽃잎 5장 흩어짐 |
+| `dec_f_petalrain` | 꽃잎 발자국 | 40 | seasonal | 봄 한정. 분홍 꽃잎 5장 흩어짐. **시즌 외 영구 사용 + 톤다운 25%** (§O-2-7) |
 
 **가족 친화 가드 (15종 공통)**
 - 외곽선 1.5pt `#1A1A1A@60%`, 플랫 + 1단 셰이드(밝기 -8%).
@@ -1165,9 +1165,13 @@ Jira 프로젝트 `MG` 기준 하위 티켓 안 (YCompany 티켓 워크플로우
 3. **iOS 브랜치 전략**: `feat/v2-character-interaction` 만 새 `feat/v2`로 머지. 기존 `feat/v2`, `feat/v2-character-growth`는 `archive/*`로 rename 보존(폐기 아님).
 4. **3개 레포 v2 트랙 분리**: iOS·Android·Server 모두 main 기준 새 `feat/v2` 브랜치. 기존 `feat/v2-character-growth`는 archive rename.
 5. **MG-29 알림 멤버 조회 fix 선행 머지** (2026-04-23 prod 배포 완료): `prisma.user.findMany({where:{familyId}})` → `FamilyMembership.findMany`. 향후 v2 알림 fan-out 코드도 동일 패턴 사용.
+6. **풍선 슬롯 분류**: 머리 `dec_h_balloon` + 등 `dec_b_balloonback` **양쪽 분리 보유** (서로 다른 형태). 사용자 확정.
+7. **시즌 한정 장식 만료 정책**: **영구 사용 허용 + 시즌 외 장착 시 톤다운 25% 자동 적용**. 보관함 미사용. 사용자 확정.
+8. **워크플로우 — 코드 작업 전 .pen 컨펌 필수**: v2 디자인 변경(슬롯·아이템·레이아웃)은 **반드시 Pencil(.pen) 파일 수정 → 사용자 컨펌 → 코드 구현** 순서. 컨펌 없이 iOS/Android/Server 구현 착수 금지. 사용자 확정.
 
 #### O-3. 라운드 2 사용자 결정 대기 (§L-5 동기화)
 
-§L-5의 4건(시즌 만료 정책·BG-G 처리·종 수·풍선 슬롯)이 본 §O로 승격 시 본문(§D-3, §C-6) 갱신 필요.
+- [ ] BG-G 우주 처리: 사용자 추가 검토 중 (§L-5 #2). 추천(B 폐기 후 6종) 응답 대기.
+- [ ] 장식 카탈로그 v2.0 출시 종 수: 5종 추천 응답 대기.
 
 
