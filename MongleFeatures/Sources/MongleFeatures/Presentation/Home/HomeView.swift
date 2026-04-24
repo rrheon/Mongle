@@ -13,6 +13,7 @@ import Domain
 struct HomeTopBarState {
   var streakDays: Int
   var groupName: String
+  var groupId: UUID?
   var hasNotification: Bool
   var hearts: Int
   var todayQuestion: TopBarQuestion?
@@ -21,6 +22,7 @@ struct HomeTopBarState {
   init(
     streakDays: Int,
     groupName: String,
+    groupId: UUID? = nil,
     hasNotification: Bool,
     hearts: Int,
     todayQuestion: TopBarQuestion? = nil,
@@ -28,6 +30,7 @@ struct HomeTopBarState {
   ) {
     self.streakDays = streakDays
     self.groupName = groupName
+    self.groupId = groupId
     self.hasNotification = hasNotification
     self.hearts = hearts
     self.todayQuestion = todayQuestion
@@ -141,7 +144,7 @@ struct HomeView: View {
 
                 GroupDropdownView(
                     families: topBarState.allFamilies,
-                    currentGroupName: topBarState.groupName,
+                    currentGroupId: topBarState.groupId,
                     onGroupSelected: { family in
                         withAnimation(.easeInOut(duration: 0.15)) { showGroupDropdown = false }
                         actions.onGroupSelected(family)
@@ -403,7 +406,7 @@ private struct TodayQuestionCard: View {
 
 private struct GroupDropdownView: View {
   let families: [MongleGroup]
-  let currentGroupName: String
+  let currentGroupId: UUID?
   var onGroupSelected: (MongleGroup) -> Void
   var onNavigateToGroupSelect: () -> Void
 
@@ -419,12 +422,12 @@ private struct GroupDropdownView: View {
               Text(family.name)
                 .font(MongleFont.body1())
                 .foregroundColor(
-                  family.name == currentGroupName
+                  family.id == currentGroupId
                     ? MongleColor.primary
                     : MongleColor.textPrimary
                 )
               Spacer()
-              if family.name == currentGroupName {
+              if family.id == currentGroupId {
                 Image(systemName: "checkmark")
                   .font(.system(size: 13, weight: .semibold))
                   .foregroundColor(MongleColor.primary)

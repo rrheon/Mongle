@@ -244,7 +244,8 @@ extension RootFeature {
                             state.mainTab?.path.append(.questionDetail(QuestionDetailFeature.State(
                                 question: question,
                                 currentUser: data.user,
-                                familyMembers: data.familyMembers
+                                familyMembers: data.familyMembers,
+                                hearts: data.user?.hearts ?? 0
                             )))
                         }
                         return .run { _ in
@@ -667,11 +668,13 @@ extension RootFeature {
                        state.appState == .authenticated {
                         let currentUser = state.mainTab?.home.currentUser
                         let familyMembers = state.mainTab?.home.familyMembers ?? []
+                        let hearts = state.mainTab?.home.hearts ?? 0
                         state.mainTab?.path.removeAll()
                         state.mainTab?.path.append(.questionDetail(QuestionDetailFeature.State(
                             question: question,
                             currentUser: currentUser,
-                            familyMembers: familyMembers
+                            familyMembers: familyMembers,
+                            hearts: hearts
                         )))
                     } else {
                         // 아직 데이터 로딩 중 → 로딩 완료 후 이동
