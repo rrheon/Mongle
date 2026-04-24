@@ -262,6 +262,15 @@ public struct GroupSelectFeature {
                 return .none
 
             case .completeTapped:
+                // step 을 리셋해야 Root.loadDataResponse 의 invite-화면-유지 가드
+                // (preserveInviteCodeScreen) 가 .completed 로 트리거된 정상 refresh 를
+                // 막지 않는다. 동시에 초대코드/폼 상태도 함께 비움.
+                state.step = .select
+                state.inviteCode = ""
+                state.groupName = ""
+                state.nickname = ""
+                state.selectedColorId = "loved"
+                state.isColorExplicitlySelected = false
                 return .send(.delegate(.completed))
 
             case .joinBackTapped:
@@ -314,7 +323,13 @@ public struct GroupSelectFeature {
                 return .none
 
             case .setJoinSuccess:
+                // completeTapped 와 마찬가지로 다음 방문 시 이전 입력이 남지 않도록 폼을 리셋.
                 state.isLoading = false
+                state.step = .select
+                state.joinCode = ""
+                state.nickname = ""
+                state.selectedColorId = "loved"
+                state.isColorExplicitlySelected = false
                 return .send(.delegate(.completed))
 
             case .notificationPermissionAllowed:

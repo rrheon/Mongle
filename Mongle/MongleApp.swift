@@ -36,9 +36,13 @@ class MongleAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
         completionHandler([.banner, .sound, .badge])
-        // 포그라운드에서 푸시가 도착한 경우, 홈/그룹선택 화면의 우상단 빨간 점이
-        // 즉시 반영되도록 데이터 리프레시를 트리거한다.
-        store?.send(.refreshHomeData)
+        // 포그라운드 push 가 도착했을 때 홈 배지 갱신은 authenticated 상태에서만 의미가 있다.
+        // 그룹 선택/초대코드/로그인/동의 화면 중에는 refreshHomeData 가 loadDataResponse 를
+        // 통해 appState 를 강제로 .authenticated 로 전환해 현재 화면을 덮어쓰므로 발송 금지.
+        // (RootView 의 scenePhase 핸들러 가드와 동일한 규칙)
+        if store?.state.appState == .authenticated {
+            store?.send(.refreshHomeData)
+        }
     }
 
     /// 알림 탭 처리
