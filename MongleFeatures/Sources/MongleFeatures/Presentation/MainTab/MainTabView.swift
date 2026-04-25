@@ -164,6 +164,7 @@ struct MainTabView: View {
             topBarState: HomeTopBarState(
                 streakDays: store.home.streakDays,
                 groupName: store.home.family?.name ?? L10n.tr("home_default_group"),
+                groupId: store.home.family?.id,
                 hasNotification: store.home.hasUnreadNotifications,
                 hearts: store.home.hearts,
                 todayQuestion: store.home.todayQuestion.map {
