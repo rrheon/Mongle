@@ -397,17 +397,15 @@ extension MainTabFeature {
                     state.modal = nil
                     let activeQuestion = state.home.todayQuestion ?? state.home.yesterdayQuestion
                     guard let question = activeQuestion else { return .none }
-                    state.path.append(
-                        .questionDetail(
-                            QuestionDetailFeature.State(
-                                question: question,
-                                currentUser: state.home.currentUser,
-                                familyMembers: state.home.familyMembers,
-                                hearts: state.home.hearts
-                            )
-                        )
-                    )
-                    return .none
+                    let homeSnapshot = state.home
+                    // sheet dismiss 애니메이션(~350ms)과 NavigationStack push 가 같은
+                    // reduce 에서 발생하면 push 가 drop 되거나 navigation bar 가 깨진다.
+                    // questionSheet→navigateToAnswer 경로의 동일 패턴 적용.
+                    return .run { send in
+                        try await Task.sleep(nanoseconds: 350_000_000)
+                        await send(.delegate(.navigateToQuestionDetail(question)))
+                        _ = homeSnapshot
+                    }
 
                 // MARK: - PeerNudge Delegate
 
@@ -522,8 +520,9 @@ extension MainTabFeature {
                         }
                     }
                     state.path.removeLast()
-                    state.showAnswerSubmittedToast = true
-                    state.showAnswerHeartPopup = true
+                    // popup/toast 는 NavigationStack pop 애니메이션 (~350ms) 완료 후 표시.
+                    // 같은 reduce 에서 즉시 켜면 popup overlay 가 pop 진행 중 mount 되어
+                    // 이전 화면 hit-test 차단 + toast 가 popup 에 가려져 사용자가 못 봄.
                     return .merge(
                         .send(.history(.forceReload)),
                         .run { [userRepository] _ in
@@ -531,10 +530,18 @@ extension MainTabFeature {
                             _ = try? await userRepository.update(user)
                         },
                         .run { send in
-                            try await Task.sleep(nanoseconds: 4_000_000_000)
-                            await send(.dismissAnswerSubmittedToast)
+                            try await Task.sleep(nanoseconds: 350_000_000)
+                            await send(.showAnswerHeartAndToast)
                         }
                     )
+
+                case .showAnswerHeartAndToast:
+                    state.showAnswerSubmittedToast = true
+                    state.showAnswerHeartPopup = true
+                    return .run { send in
+                        try await Task.sleep(nanoseconds: 4_000_000_000)
+                        await send(.dismissAnswerSubmittedToast)
+                    }
 
                 case .path(.element(id: _, action: .questionDetail(.delegate(.answerEdited(_, let moodId))))):
                     state.path.removeLast()

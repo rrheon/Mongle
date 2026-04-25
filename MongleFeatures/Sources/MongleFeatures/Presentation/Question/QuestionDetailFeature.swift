@@ -368,7 +368,11 @@ public struct QuestionDetailFeature {
                 return .none
 
             case .closeTapped:
+                // 제출 중인 동안 close 입력은 무시 — 사용자가 dismiss 한 뒤 응답이 도착해도
+                // 부모가 path.removeLast 시점이 충돌해 다음 화면이 비정상 표시되는 race 차단.
+                guard !state.isSubmitting else { return .none }
                 state.appError = nil
+                state.editCostPopup = nil
                 return .send(.delegate(.closed))
 
             // MARK: - Internal Actions
