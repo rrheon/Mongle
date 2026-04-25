@@ -94,6 +94,12 @@ public struct QuestionDetailFeature {
         // MARK: - Presentation Actions
         case editCostPopup(PresentationAction<HeartCostPopupFeature.Action>)
         case adHeartGranted(Int)
+        /// 수정 confirm 후 update API 가 실패했을 때 옵티미스틱 차감을 되돌리기 위한 내부 액션
+        case editRollback
+        /// 광고 시청을 사용자가 취소했거나 보상 미지급된 경우 — submitting 플래그 해제
+        case adWatchAborted
+        /// 광고 시청은 완료했으나 grantAdHearts 가 retry 후에도 실패 — 사용자에게 명시적 안내
+        case adGrantFailed(AppError)
 
         // MARK: - Delegate Actions
         case delegate(Delegate)
@@ -221,6 +227,13 @@ public struct QuestionDetailFeature {
             case .editCostPopup(.presented(.delegate(.confirmed))):
                 state.editCostPopup = nil
                 guard let existingAnswer = state.myAnswer else { return .none }
+                guard state.hearts >= 1 else {
+                    state.appError = .domain(L10n.tr("home_hearts_insufficient"))
+                    return .none
+                }
+                // 옵티미스틱 차감: UI 즉시 반영 + 사용자 즉각 피드백.
+                // 실패 시 .editRollback 으로 되돌린다.
+                state.hearts -= 1
                 state.isSubmitting = true
                 state.appError = nil
 
@@ -242,6 +255,7 @@ public struct QuestionDetailFeature {
                         let result = try await answerRepository.update(updated, moodId: editMoodId)
                         await send(.submitAnswerResponse(.success(result)))
                     } catch {
+                        await send(.editRollback)
                         await send(.submitAnswerResponse(.failure(AppError.from(error))))
                     }
                 }
@@ -252,26 +266,57 @@ public struct QuestionDetailFeature {
 
             case .editCostPopup(.presented(.delegate(.watchAdRequested))):
                 state.editCostPopup = nil
+                state.isSubmitting = true   // 광고 시청 + 보상 지급 + 자동 update 한 묶음으로 락
+                state.appError = nil
                 return .run { [adClient, userRepository] send in
                     let earned = await adClient.showRewardedAd()
-                    guard earned else { return }
+                    guard earned else {
+                        // 사용자가 광고를 끝까지 안 봤거나 reward 콜백 미발화 — submitting 해제
+                        await send(.adWatchAborted)
+                        return
+                    }
                     do {
-                        let heartsRemaining = try await userRepository.grantAdHearts(amount: 1)
+                        // retry 포함 grant. 실패 시 자동 update 진행하지 않고 명시적 안내.
+                        let heartsRemaining = try await AdRewardClient.grantAdHearts(
+                            userRepository: userRepository,
+                            amount: 1
+                        )
                         await send(.adHeartGranted(heartsRemaining))
                     } catch {
-                        await send(.adHeartGranted(-1))
+                        await send(.adGrantFailed(AppError.from(error)))
                     }
                 }
 
+            case .editRollback:
+                // update API 실패 → 옵티미스틱 차감 복구
+                state.hearts += 1
+                return .none
+
+            case .adWatchAborted:
+                state.isSubmitting = false
+                return .none
+
+            case .adGrantFailed(let error):
+                // 광고는 봤지만 서버 보상 지급에 최종 실패. 자동 update 강행하지 않음.
+                // (이전엔 hearts +=1 클라 단독 증가 + 자동 update 진행 → 서버 401/하트 부족 위험)
+                state.isSubmitting = false
+                state.appError = error
+                return .none
+
             case .adHeartGranted(let hearts):
-                if hearts >= 0 {
-                    state.hearts = hearts
-                } else {
-                    state.hearts += 1
-                }
+                // 서버 응답으로만 hearts sync. 실패 분기는 .adGrantFailed 로 분리됨.
+                state.hearts = hearts
                 // 광고 시청 완료 → 수정 작업 자동 실행 (다른 광고 보상 기능과 일관)
-                guard let existingAnswer = state.myAnswer else { return .none }
-                state.isSubmitting = true
+                guard let existingAnswer = state.myAnswer else {
+                    state.isSubmitting = false
+                    return .none
+                }
+                guard state.hearts >= 1 else {
+                    state.isSubmitting = false
+                    state.appError = .domain(L10n.tr("home_hearts_insufficient"))
+                    return .none
+                }
+                state.hearts -= 1   // edit 비용 옵티미스틱 차감
                 state.appError = nil
 
                 let editAnswerText = state.answerText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -292,6 +337,7 @@ public struct QuestionDetailFeature {
                         let result = try await answerRepository.update(updated, moodId: editMoodId)
                         await send(.submitAnswerResponse(.success(result)))
                     } catch {
+                        await send(.editRollback)
                         await send(.submitAnswerResponse(.failure(AppError.from(error))))
                     }
                 }
