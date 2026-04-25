@@ -134,11 +134,11 @@ public struct HistoryCalendarView: View {
     // MARK: - Helpers
 
     private static let monthFormatter: DateFormatter = {
-        let f = DateFormatter(); f.locale = Locale(identifier: "ko_KR"); f.dateFormat = "yyyy년 M월"; return f
+        let f = DateFormatter(); f.locale = .current; f.setLocalizedDateFormatFromTemplate("yyyyMMM"); return f
     }()
 
     private static let selectedDateFormatter: DateFormatter = {
-        let f = DateFormatter(); f.locale = Locale(identifier: "ko_KR"); f.dateFormat = "M월 d일 EEEE"; return f
+        let f = DateFormatter(); f.locale = .current; f.setLocalizedDateFormatFromTemplate("MMMdEEEE"); return f
     }()
 
     private var monthTitle: String { Self.monthFormatter.string(from: store.currentMonth) }

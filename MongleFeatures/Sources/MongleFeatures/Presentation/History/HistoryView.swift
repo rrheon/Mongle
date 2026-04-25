@@ -440,15 +440,15 @@ public struct HistoryView: View {
 
     private static let dayFormatter: DateFormatter = {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "ko_KR")
-        f.dateFormat = "d"
+        f.locale = .current
+        f.dateFormat = "d"   // 일 숫자만 — locale 무관
         return f
     }()
 
     private static let selectedDateFormatter: DateFormatter = {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "ko_KR")
-        f.dateFormat = "M월 d일 EEEE"
+        f.locale = .current
+        f.setLocalizedDateFormatFromTemplate("MMMdEEEE")
         return f
     }()
 
