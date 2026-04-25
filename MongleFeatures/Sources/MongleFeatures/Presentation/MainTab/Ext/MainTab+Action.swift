@@ -49,6 +49,8 @@ extension MainTabFeature {
 
         // MARK: Answer Heart Popup
         case dismissAnswerHeartPopup
+        /// answerSubmitted 후 NavigationStack pop 완료를 기다린 뒤 popup + toast 동시 표시.
+        case showAnswerHeartAndToast
 
         // MARK: Peer Answer
         case showPeerAnswer(memberName: String, questionText: String, peerAnswer: String, myAnswer: String, monggleColor: Color, peerAnswerTime: String, myAnswerTime: String)

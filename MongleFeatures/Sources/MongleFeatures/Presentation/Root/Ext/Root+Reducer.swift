@@ -771,6 +771,9 @@ extension RootFeature {
                         let currentUser = state.mainTab?.home.currentUser
                         let familyMembers = state.mainTab?.home.familyMembers ?? []
                         let hearts = state.mainTab?.home.hearts ?? 0
+                        // 활성 sheet/popup 이 있으면 close 해 navigation push 가 sheet 뒤에
+                        // 숨는 race 를 차단. push 도착 즉시 답변 화면 진입을 위해 모달 우선 정리.
+                        state.mainTab?.modal = nil
                         state.mainTab?.path.removeAll()
                         state.mainTab?.path.append(.questionDetail(QuestionDetailFeature.State(
                             question: question,
