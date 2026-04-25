@@ -14,6 +14,9 @@ extension RootFeature {
 
     private enum CancelID: Hashable {
         case sessionExpiredObserver
+        /// scenePhase 복귀 등으로 refreshHomeData 가 빠르게 재트리거될 때 이전
+        /// in-flight 요청을 취소하기 위한 ID. cancelInFlight:true 와 함께 사용.
+        case refreshHome
     }
 
     var reducer: some ReducerOf<Self> {
@@ -157,6 +160,7 @@ extension RootFeature {
                             await send(.loadDataResponse(.failure(error)))
                         }
                     }
+                    .cancellable(id: CancelID.refreshHome, cancelInFlight: true)
 
                 case .checkAuthResponse(let user):
                     if let user = user {
@@ -336,9 +340,14 @@ extension RootFeature {
 
                 case .showLoginScreen:
                     // appState만 먼저 전환 → MainTabView가 화면에서 사라짐
-                    // mainTab/questionDetail은 다음 tick에서 정리해 in-flight 자식 액션이 안전히 처리되도록 함
+                    // mainTab/questionDetail은 다음 tick에서 정리해 in-flight 자식 액션이 안전히 처리되도록 함.
+                    // pending push/딥링크 신호는 즉시 비워야 재로그인 시 의도치 않은 자동 이행 방지.
                     state.appState = .unauthenticated
+                    state.pendingOpenQuestion = false
+                    state.pendingInviteCode = nil
                     return .run { send in
+                        // Task.yield() 2회 — in-flight 자식 effect 가 한 번 더 안전히 settle 될 시간 확보.
+                        await Task.yield()
                         await Task.yield()
                         await send(.completeLogout)
                     }
@@ -369,8 +378,11 @@ extension RootFeature {
                     state.loginProviderType = nil
                     state.login = LoginFeature.State()
                     state.groupSelect = GroupSelectFeature.State()
+                    state.pendingOpenQuestion = false
+                    state.pendingInviteCode = nil
                     return .run { [authRepository] send in
                         try? await authRepository.logout()
+                        await Task.yield()
                         await Task.yield()
                         await send(.completeLogout)
                     }
