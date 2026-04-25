@@ -19,8 +19,11 @@ class MongleAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
     weak var store: StoreOf<RootFeature>?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
-        // 앱 실행 시 아이콘 뱃지 초기화
-        UNUserNotificationCenter.current().setBadgeCount(0)
+        // 배지 카운트는 사용자가 알림함을 실제로 읽거나 비울 때만 갱신한다.
+        // (앱 실행/포그라운드 복귀 시 무조건 0으로 초기화하면 미읽음 17개여도
+        //  사용자가 한 번 앱을 열면 OS 배지가 사라져 인앱 미읽음 카운트와
+        //  완전히 분리되는 버그가 발생 — Root+Reducer.loadDataResponse 가
+        //  refreshHomeData 흐름에서 setBadgeCount(unread) 로 동기화한다.)
         return true
     }
 
@@ -84,8 +87,6 @@ struct MongleApp: App {
         ConsentManager.shared.startConsentFlowIfNeeded()
     }
 
-    @Environment(\.scenePhase) private var scenePhase
-
     var body: some Scene {
         WindowGroup {
             RootView(store: store)
@@ -101,11 +102,6 @@ struct MongleApp: App {
                     appDelegate.store = store
                     UNUserNotificationCenter.current().delegate = appDelegate
                 }
-        }
-        .onChange(of: scenePhase) { _, newPhase in
-            if newPhase == .active {
-                UNUserNotificationCenter.current().setBadgeCount(0)
-            }
         }
     }
 }

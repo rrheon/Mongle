@@ -8,6 +8,7 @@
 import Foundation
 import ComposableArchitecture
 import Domain
+import UserNotifications
 
 // Domain의 Notification과 이름 충돌 방지
 public typealias MongleNotification = Domain.Notification
@@ -197,6 +198,7 @@ public struct NotificationFeature {
                 let mode = state.mode
                 return .run { [notificationRepository] send in
                     try? await notificationRepository.delete(id: deleteId)
+                    await Self.syncAppIconBadge(notificationRepository)
                     switch mode {
                     case .grouped:
                         if let familyId = notification.familyId {
@@ -223,6 +225,7 @@ public struct NotificationFeature {
                 }
                 return .run { [notificationRepository] _ in
                     _ = try? await notificationRepository.markAsRead(id: notification.id)
+                    await Self.syncAppIconBadge(notificationRepository)
                 }
 
             case .markAllAsRead:
@@ -244,12 +247,14 @@ public struct NotificationFeature {
                 }
                 return .run { [notificationRepository] _ in
                     _ = try? await notificationRepository.markAllAsRead(familyId: scopeFamilyId)
+                    await Self.syncAppIconBadge(notificationRepository)
                 }
 
             case .deleteNotification(let notification):
                 state.notifications = state.notifications.filter { $0.id != notification.id }
                 return .run { [notificationRepository] _ in
                     _ = try? await notificationRepository.delete(id: notification.id)
+                    await Self.syncAppIconBadge(notificationRepository)
                 }
 
             case .deleteAll:
@@ -262,6 +267,7 @@ public struct NotificationFeature {
                 return .run { [notificationRepository] _ in
                     _ = try? await notificationRepository.markAllAsRead(familyId: scopeFamilyId)
                     _ = try? await notificationRepository.deleteAll(familyId: scopeFamilyId)
+                    await Self.syncAppIconBadge(notificationRepository)
                 }
 
             case .dismissError:
@@ -296,5 +302,16 @@ public struct NotificationFeature {
                 return .none
             }
         }
+    }
+
+    /// 인앱 알림 mutation(읽음/삭제) 직후 OS 앱 아이콘 배지를 전체 그룹 합산
+    /// 미읽음 수로 동기화한다. NotificationFeature.state.notifications 는
+    /// .filtered 모드에서는 단일 그룹 데이터만 들고 있어 자체 계산이 부정확하므로,
+    /// `familyId: nil` 로 전체 그룹을 다시 한 번 조회한다.
+    /// (limit 50 cap — 50건 초과 누적은 follow-up 으로 서버 unread-count 라우트 노출)
+    private static func syncAppIconBadge(_ repository: NotificationRepositoryProtocol) async {
+        let all = (try? await repository.getNotifications(limit: 50, familyId: nil)) ?? []
+        let unread = all.filter { !$0.isRead }.count
+        try? await UNUserNotificationCenter.current().setBadgeCount(unread)
     }
 }

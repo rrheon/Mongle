@@ -23,6 +23,9 @@ extension RootFeature {
         public let streakDays: Int
         public let allFamilies: [MongleGroup]
         public let hasUnreadNotifications: Bool
+        /// OS 앱 아이콘 배지 동기화용 — 전체 그룹 합산 미읽음 수.
+        /// `getNotifications(limit: 50)` 결과 기반이므로 50건 초과 누적 시 50으로 캡됨.
+        public let unreadCountAllGroups: Int
 
         public init(
             user: User?,
@@ -37,7 +40,8 @@ extension RootFeature {
             memberSkippedStatus: [UUID: Bool] = [:],
             streakDays: Int = 0,
             allFamilies: [MongleGroup] = [],
-            hasUnreadNotifications: Bool = false
+            hasUnreadNotifications: Bool = false,
+            unreadCountAllGroups: Int = 0
         ) {
             self.user = user
             self.question = question
@@ -52,6 +56,7 @@ extension RootFeature {
             self.streakDays = streakDays
             self.allFamilies = allFamilies
             self.hasUnreadNotifications = hasUnreadNotifications
+            self.unreadCountAllGroups = unreadCountAllGroups
         }
     }
 
