@@ -90,6 +90,8 @@ public struct QuestionDetailFeature {
         case loadDataResponse(Result<LoadedData, AppError>)
         case submitAnswerResponse(Result<Answer, AppError>)
         case setAppError(AppError?)
+        /// 다중 디바이스에서 hearts 가 변경됐을 수 있으므로 onAppear 마다 최신 값으로 갱신.
+        case heartsRefreshed(Int)
 
         // MARK: - Presentation Actions
         case editCostPopup(PresentationAction<HeartCostPopupFeature.Action>)
@@ -122,6 +124,7 @@ public struct QuestionDetailFeature {
     }
 
     @Dependency(\.answerRepository) var answerRepository
+    @Dependency(\.authRepository) var authRepository
     @Dependency(\.userRepository) var userRepository
     @Dependency(\.adClient) var adClient
     @Dependency(\.errorHandler) var errorHandler
@@ -143,23 +146,38 @@ public struct QuestionDetailFeature {
                 let questionId = state.question.id
                 let currentUserId = state.currentUser?.id
                 let members = state.familyMembers
-                return .run { [answerRepository] send in
-                    do {
-                        let answers = try await answerRepository.getByDailyQuestion(dailyQuestionId: questionId)
-                        let myAnswer = answers.first(where: { $0.userId == currentUserId })
-                        let familyAnswers: [State.FamilyAnswer] = answers
-                            .filter { $0.userId != currentUserId }
-                            .map { answer in
-                                let user = members.first(where: { $0.id == answer.userId })
-                                    ?? User(id: answer.userId, email: "", name: "멤버",
-                                            profileImageURL: nil, role: .other, createdAt: Date())
-                                return State.FamilyAnswer(user: user, answer: answer)
-                            }
-                        await send(.loadDataResponse(.success(LoadedData(myAnswer: myAnswer, familyAnswers: familyAnswers))))
-                    } catch {
-                        await send(.loadDataResponse(.failure(AppError.from(error))))
+                return .merge(
+                    .run { [answerRepository] send in
+                        do {
+                            let answers = try await answerRepository.getByDailyQuestion(dailyQuestionId: questionId)
+                            let myAnswer = answers.first(where: { $0.userId == currentUserId })
+                            let familyAnswers: [State.FamilyAnswer] = answers
+                                .filter { $0.userId != currentUserId }
+                                .map { answer in
+                                    let user = members.first(where: { $0.id == answer.userId })
+                                        ?? User(id: answer.userId, email: "", name: "멤버",
+                                                profileImageURL: nil, role: .other, createdAt: Date())
+                                    return State.FamilyAnswer(user: user, answer: answer)
+                                }
+                            await send(.loadDataResponse(.success(LoadedData(myAnswer: myAnswer, familyAnswers: familyAnswers))))
+                        } catch {
+                            await send(.loadDataResponse(.failure(AppError.from(error))))
+                        }
+                    },
+                    // 다중 디바이스 hearts sync — 다른 기기에서 답변/스킵/위시 등으로 hearts 가
+                    // 바뀌었을 수 있으므로 questionDetail 진입 시 서버 최신 값을 가져온다.
+                    // 이전엔 부모 화면에서 캡처한 stale hearts 로 editCostPopup/adReward 가 동작해
+                    // 서버 검증과 어긋나는 경우가 있었음.
+                    .run { [authRepository] send in
+                        if let user = try? await authRepository.getCurrentUser() {
+                            await send(.heartsRefreshed(user.hearts))
+                        }
                     }
-                }
+                )
+
+            case .heartsRefreshed(let hearts):
+                state.hearts = hearts
+                return .none
 
             case .answerTextChanged(let text):
                 guard !state.isSubmitting else { return .none }
