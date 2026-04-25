@@ -632,6 +632,8 @@ enum MoodEndpoint: APIEndpoint {
 enum NotificationEndpoint: APIEndpoint {
     /// GET /notifications?limit=N&group_id=ID
     case getAll(limit: Int, familyId: String?)
+    /// GET /notifications/unread-count — OS 배지 동기화용 (50건 캡 우회, MG-54)
+    case unreadCount
     /// PATCH /notifications/{id}/read
     case markAsRead(id: String)
     /// PATCH /notifications/read-all?group_id=ID
@@ -644,6 +646,7 @@ enum NotificationEndpoint: APIEndpoint {
     var path: String {
         switch self {
         case .getAll: return "/notifications"
+        case .unreadCount: return "/notifications/unread-count"
         case .markAsRead(let id): return "/notifications/\(id)/read"
         case .markAllAsRead: return "/notifications/read-all"
         case .delete(let id): return "/notifications/\(id)"
@@ -653,7 +656,7 @@ enum NotificationEndpoint: APIEndpoint {
 
     var method: HTTPMethod {
         switch self {
-        case .getAll: return .get
+        case .getAll, .unreadCount: return .get
         case .markAsRead, .markAllAsRead: return .patch
         case .delete, .deleteAll: return .delete
         }

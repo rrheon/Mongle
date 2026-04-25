@@ -2,6 +2,7 @@ import Foundation
 
 public protocol NotificationRepositoryProtocol: Sendable {
     func getNotifications(limit: Int, familyId: UUID?) async throws -> [Notification]
+    func getUnreadCount() async throws -> Int
     func markAsRead(id: UUID) async throws -> Notification
     func markAllAsRead(familyId: UUID?) async throws -> Int
     func delete(id: UUID) async throws

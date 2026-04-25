@@ -16,6 +16,12 @@ public typealias MongleNotification = Domain.Notification
 @Reducer
 public struct NotificationFeature {
 
+    private enum CancelID: Hashable {
+        /// markRead/delete 등이 빠르게 연쇄될 때 syncAppIconBadge 가 N개 동시 in-flight 가
+        /// 되며 마지막 응답이 stale 한 카운트로 OS 배지를 덮어쓰는 race 방지.
+        case badgeSync
+    }
+
     // MARK: - Mode
 
     public enum Mode: Equatable, Sendable {
@@ -208,6 +214,7 @@ public struct NotificationFeature {
                         await send(.delegate(.navigateToQuestion(markAsReadId: nil)))
                     }
                 }
+                .cancellable(id: CancelID.badgeSync, cancelInFlight: true)
 
             case .markAsRead(let notification):
                 // Optimistic update
@@ -227,6 +234,7 @@ public struct NotificationFeature {
                     _ = try? await notificationRepository.markAsRead(id: notification.id)
                     await Self.syncAppIconBadge(notificationRepository)
                 }
+                .cancellable(id: CancelID.badgeSync, cancelInFlight: true)
 
             case .markAllAsRead:
                 let scopeFamilyId = state.mode.scopeFamilyId
@@ -249,6 +257,7 @@ public struct NotificationFeature {
                     _ = try? await notificationRepository.markAllAsRead(familyId: scopeFamilyId)
                     await Self.syncAppIconBadge(notificationRepository)
                 }
+                .cancellable(id: CancelID.badgeSync, cancelInFlight: true)
 
             case .deleteNotification(let notification):
                 state.notifications = state.notifications.filter { $0.id != notification.id }
@@ -256,6 +265,7 @@ public struct NotificationFeature {
                     _ = try? await notificationRepository.delete(id: notification.id)
                     await Self.syncAppIconBadge(notificationRepository)
                 }
+                .cancellable(id: CancelID.badgeSync, cancelInFlight: true)
 
             case .deleteAll:
                 let scopeFamilyId = state.mode.scopeFamilyId
@@ -269,6 +279,7 @@ public struct NotificationFeature {
                     _ = try? await notificationRepository.deleteAll(familyId: scopeFamilyId)
                     await Self.syncAppIconBadge(notificationRepository)
                 }
+                .cancellable(id: CancelID.badgeSync, cancelInFlight: true)
 
             case .dismissError:
                 state.errorMessage = nil
@@ -307,9 +318,13 @@ public struct NotificationFeature {
     /// 인앱 알림 mutation(읽음/삭제) 직후 OS 앱 아이콘 배지를 전체 그룹 합산
     /// 미읽음 수로 동기화한다. NotificationFeature.state.notifications 는
     /// .filtered 모드에서는 단일 그룹 데이터만 들고 있어 자체 계산이 부정확하므로,
-    /// `familyId: nil` 로 전체 그룹을 다시 한 번 조회한다.
-    /// (limit 50 cap — 50건 초과 누적은 follow-up 으로 서버 unread-count 라우트 노출)
+    /// 서버의 unread-count 라우트(MG-54)를 사용해 정확한 수치 조회 (50건 캡 제거).
+    /// 서버 호출 실패 시 기존 getNotifications limit 50 fallback 으로 점진 동작.
     private static func syncAppIconBadge(_ repository: NotificationRepositoryProtocol) async {
+        if let unread = try? await repository.getUnreadCount() {
+            try? await UNUserNotificationCenter.current().setBadgeCount(unread)
+            return
+        }
         let all = (try? await repository.getNotifications(limit: 50, familyId: nil)) ?? []
         let unread = all.filter { !$0.isRead }.count
         try? await UNUserNotificationCenter.current().setBadgeCount(unread)

@@ -499,6 +499,10 @@ extension RootFeature {
                 case .login(.delegate(.loggedIn(let user, let providerType, let needsConsent, let requiredConsents, let legalVersions))):
                     state.loginProviderType = providerType
                     state.currentUser = user
+                    // 새 계정 로그인 시 unauthenticated 상태에서 도착한 푸시 tap 으로
+                    // 설정된 pendingOpenQuestion 이 잔존하면 사용자 B 의 첫 로딩에서
+                    // 의도치 않은 질문 화면 자동 진입이 발생. 명시 cleanup.
+                    state.pendingOpenQuestion = false
                     if needsConsent {
                         // 동의 화면으로 라우팅 — 동의 완료 후 .consent(.delegate(.completed))
                         // 에서 checkAuthResponse 로 이어진다.
