@@ -88,7 +88,26 @@ public struct RootView: View {
                 .transition(.identity)
             }
         }
+        .overlay {
+            // 토큰 만료로 강제 로그아웃된 사용자에게 LoginView 위에 안내 팝업 표시.
+            // appState 가 unauthenticated 일 때만 노출 — 다른 화면 전환 중 popup 잔존 방지.
+            if store.showSessionExpiredPopup && store.appState == .unauthenticated {
+                MonglePopupView(
+                    icon: MonglePopupView.Icon(
+                        systemName: "exclamationmark.triangle.fill",
+                        foregroundColor: .orange,
+                        backgroundColor: Color.orange.opacity(0.12)
+                    ),
+                    title: L10n.tr("error_session_expired_title"),
+                    description: L10n.tr("error_session_expired_desc"),
+                    primaryLabel: L10n.tr("common_confirm"),
+                    onPrimary: { store.send(.dismissSessionExpiredPopup) }
+                )
+                .transition(.identity)
+            }
+        }
         .animation(.none, value: store.showHeartGrantedPopup)
+        .animation(.none, value: store.showSessionExpiredPopup)
         .onOpenURL { url in
             if let code = Self.extractInviteCode(from: url) {
                 store.send(.pendingInviteCode(code))

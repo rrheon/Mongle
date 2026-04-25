@@ -79,6 +79,10 @@ extension RootFeature {
         // MARK: Heart Popup
         public var showHeartGrantedPopup: Bool = false
 
+        // MARK: Session Expired Popup
+        /// 토큰 만료(refresh 실패)로 강제 로그아웃됐을 때 LoginView 위에 띄울 안내 팝업.
+        public var showSessionExpiredPopup: Bool = false
+
         // MARK: Push Navigation
         public var pendingOpenQuestion: Bool = false
 

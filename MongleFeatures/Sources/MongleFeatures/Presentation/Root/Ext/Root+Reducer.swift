@@ -6,10 +6,15 @@
 import Foundation
 import ComposableArchitecture
 import Domain
+import MongleData
 import UserNotifications
 import UIKit
 
 extension RootFeature {
+
+    private enum CancelID: Hashable {
+        case sessionExpiredObserver
+    }
 
     var reducer: some ReducerOf<Self> {
 
@@ -25,10 +30,32 @@ extension RootFeature {
                 // MARK: Lifecycle
                 case .onAppear:
                     state.appState = .loading
-                    return .run { send in
-                        let user = try? await authRepository.getCurrentUser()
-                        await send(.checkAuthResponse(user))
-                    }
+                    return .merge(
+                        .run { send in
+                            let user = try? await authRepository.getCurrentUser()
+                            await send(.checkAuthResponse(user))
+                        },
+                        .run { send in
+                            // APIClient.attemptTokenRefresh 실패 시 post 되는 신호를 구독.
+                            // cancelInFlight 로 onAppear 재호출 시 중복 옵저버 방지.
+                            let stream = AsyncStream<Void> { continuation in
+                                let observer = NotificationCenter.default.addObserver(
+                                    forName: .mongleSessionExpired,
+                                    object: nil,
+                                    queue: .main
+                                ) { _ in
+                                    continuation.yield(())
+                                }
+                                continuation.onTermination = { _ in
+                                    NotificationCenter.default.removeObserver(observer)
+                                }
+                            }
+                            for await _ in stream {
+                                await send(.sessionExpired)
+                            }
+                        }
+                        .cancellable(id: CancelID.sessionExpiredObserver, cancelInFlight: true)
+                    )
 
                 case .refreshHomeData:
                     return .run { [authRepository, familyRepository, questionRepository, answerRepository, userRepository, notificationRepository] send in
@@ -315,6 +342,24 @@ extension RootFeature {
                         await Task.yield()
                         await send(.completeLogout)
                     }
+
+                case .sessionExpired:
+                    // APIClient 가 이미 토큰을 폐기했으므로 authRepository.logout() 호출 불필요.
+                    // .logout cleanup 패턴 재사용 + 안내 팝업 플래그 set.
+                    state.showSessionExpiredPopup = true
+                    state.appState = .unauthenticated
+                    state.currentUser = nil
+                    state.loginProviderType = nil
+                    state.login = LoginFeature.State()
+                    state.groupSelect = GroupSelectFeature.State()
+                    return .run { send in
+                        await Task.yield()
+                        await send(.completeLogout)
+                    }
+
+                case .dismissSessionExpiredPopup:
+                    state.showSessionExpiredPopup = false
+                    return .none
 
                 case .logout:
                     // appState만 먼저 전환 → MainTabView가 LoginView로 교체되며 ProfileView 등의 onAppear가 더 이상 dispatch되지 않음

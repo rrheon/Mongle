@@ -376,6 +376,8 @@
 "heart_popup_ad" = "Watch ad for hearts";
 "heart_granted_title" = "Heart +1";
 "heart_granted_desc" = "Welcome back today!\nYou received 1 heart.";
+"error_session_expired_title" = "Please sign in again";
+"error_session_expired_desc" = "Your session has expired for security.\nPlease sign in again.";
 "heart_cost" = "%d hearts";
 "heart_earned" = "You earned %d heart!";
 
