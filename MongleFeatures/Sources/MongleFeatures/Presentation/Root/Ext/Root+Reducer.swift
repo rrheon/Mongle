@@ -17,6 +17,8 @@ extension RootFeature {
         /// scenePhase 복귀 등으로 refreshHomeData 가 빠르게 재트리거될 때 이전
         /// in-flight 요청을 취소하기 위한 ID. cancelInFlight:true 와 함께 사용.
         case refreshHome
+        /// 그룹 빠른 연속 전환 시 이전 in-flight 요청 취소.
+        case switchFamily
     }
 
     var reducer: some ReducerOf<Self> {
@@ -405,7 +407,13 @@ extension RootFeature {
                     state.mainTab = nil
                     state.questionDetail = nil
                     state.selectedQuestion = nil
-                    return .none
+                    // 로그아웃 직전에 in-flight 였던 refreshHome/switchFamily 효과들이
+                    // 뒤늦게 settle 되며 nil 이 된 mainTab 에 액션을 dispatch 하지 않도록
+                    // 명시 취소. sessionExpiredObserver 는 다음 onAppear 에서 재구독되도록 유지.
+                    return .merge(
+                        .cancel(id: CancelID.refreshHome),
+                        .cancel(id: CancelID.switchFamily)
+                    )
 
                 // MARK: MainTab Delegate
                 case .mainTab(.delegate(.navigateToQuestionDetail)):
@@ -447,6 +455,10 @@ extension RootFeature {
                             await send(.loadDataResponse(.failure(error)))
                         }
                     }
+                    // 빠른 연속 전환 시 이전 selectFamily/refreshHomeData chain 을 취소.
+                    // 이전엔 두 in-flight 가 임의 순서로 settle 되며 서버/클라 활성 가족이
+                    // 어긋나는 케이스가 있었음.
+                    .cancellable(id: CancelID.switchFamily, cancelInFlight: true)
 
                 case .switchFamilyResponse:
                     return .none
