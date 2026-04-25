@@ -4,7 +4,7 @@ import Domain
 final class NotificationRepository: NotificationRepositoryProtocol {
     private let apiClient: APIClientProtocol
 
-    init(apiClient: APIClientProtocol = APIClient()) {
+    init(apiClient: APIClientProtocol = APIClient.shared) {
         self.apiClient = apiClient
     }
 

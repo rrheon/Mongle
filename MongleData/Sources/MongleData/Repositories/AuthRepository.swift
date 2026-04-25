@@ -14,7 +14,7 @@ final class AuthRepository: AuthRepositoryInterface {
     private let tokenStorage: TokenStorageProtocol
 
     init(
-        apiClient: APIClientProtocol = APIClient(),
+        apiClient: APIClientProtocol = APIClient.shared,
         tokenStorage: TokenStorageProtocol = KeychainTokenStorage()
     ) {
         self.apiClient = apiClient

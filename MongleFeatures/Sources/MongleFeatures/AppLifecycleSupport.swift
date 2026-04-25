@@ -9,6 +9,7 @@
 import Foundation
 import KakaoSDKCommon
 import KakaoSDKAuth
+import KakaoSDKUser
 import GoogleSignIn
 
 public enum SocialSDK {
@@ -25,5 +26,17 @@ public enum SocialSDK {
             return AuthController.handleOpenUrl(url: url)
         }
         return GIDSignIn.sharedInstance.handle(url)
+    }
+
+    /// 모든 소셜 SDK 의 로컬 세션 토큰을 비웁니다 (logout). unlink/disconnect 와는 별개.
+    /// 동일 디바이스에서 다른 계정 로그인 시 SDK 캐시로 인한 자동 로그인 방지용.
+    /// 로그아웃 / 세션 만료 / 회원 탈퇴 후 일관 호출.
+    public static func clearAllSessions() async {
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            UserApi.shared.logout { _ in
+                continuation.resume()
+            }
+        }
+        GIDSignIn.sharedInstance.signOut()
     }
 }

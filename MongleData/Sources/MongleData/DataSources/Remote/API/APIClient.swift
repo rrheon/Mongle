@@ -43,6 +43,13 @@ private actor TokenRefreshCoordinator {
 // MARK: - APIClient
 
 final class APIClient: APIClientProtocol, @unchecked Sendable {
+    /// 모든 Repository 가 공유해야 하는 단일 인스턴스.
+    /// 각 Repository 가 자체 APIClient() 를 생성하면 refreshCoordinator 가 분리되어
+    /// cold start + scenePhase active + push 동시 401 발생 시 refresh 가 N회 동시 호출되며
+    /// MG-42 의 refresh token rotation 이 replay 로 감지해 강제 로그아웃이 발생한다.
+    /// Repository 의 default 인자에서도 이 shared 인스턴스를 사용해 Coordinator 일원화.
+    static let shared = APIClient()
+
     private let session: URLSession
     private let decoder: JSONDecoder
     private let tokenStorage: TokenStorageProtocol

@@ -418,12 +418,18 @@ extension RootFeature {
                     state.mainTab = nil
                     state.questionDetail = nil
                     state.selectedQuestion = nil
+                    // 사용자 단위 UserDefaults 키 일괄 정리 — 다음 계정 로그인 시 이전 사용자의
+                    // 그룹별 알림 설정 / 리마인더 시간 / 팝업 노출 마커 등이 잘못 적용되는 것을
+                    // 방지. mongle.hasSeenOnboarding / mongle.installSentinel 은 보존.
+                    clearUserScopedDefaults()
                     // 로그아웃 직전에 in-flight 였던 refreshHome/switchFamily 효과들이
                     // 뒤늦게 settle 되며 nil 이 된 mainTab 에 액션을 dispatch 하지 않도록
-                    // 명시 취소. sessionExpiredObserver 는 다음 onAppear 에서 재구독되도록 유지.
+                    // 명시 취소 + 소셜 SDK 캐시 토큰 정리 (Kakao logout / Google signOut) 도
+                    // best-effort 로 수행. sessionExpiredObserver 는 다음 onAppear 에서 재구독.
                     return .merge(
                         .cancel(id: CancelID.refreshHome),
-                        .cancel(id: CancelID.switchFamily)
+                        .cancel(id: CancelID.switchFamily),
+                        .run { _ in await SocialSDK.clearAllSessions() }
                     )
 
                 // MARK: MainTab Delegate

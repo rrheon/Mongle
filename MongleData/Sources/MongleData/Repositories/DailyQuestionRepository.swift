@@ -11,7 +11,7 @@ import Domain
 final class DailyQuestionRepository: DailyQuestionRepositoryInterface {
     private let apiClient: APIClientProtocol
 
-    init(apiClient: APIClientProtocol = APIClient()) {
+    init(apiClient: APIClientProtocol = APIClient.shared) {
         self.apiClient = apiClient
     }
 

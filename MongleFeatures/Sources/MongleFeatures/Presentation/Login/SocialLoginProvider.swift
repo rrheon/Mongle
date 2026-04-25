@@ -28,6 +28,18 @@ public protocol SocialLoginProvider {
     /// - Kakao: unlink (앱 연결 해제)
     /// - Google: disconnect (앱 접근 권한 해제)
     func revokeClientAccess() async throws
+
+    /// 클라이언트 측 SDK 토큰만 정리 (logout — unlink 와 별개).
+    /// 동일 디바이스에서 다른 계정 로그인 시 SDK 가 캐시된 토큰으로 자동 로그인되어
+    /// 이전 계정 컨텍스트가 노출되는 것을 방어한다.
+    /// - Apple: no-op (Apple SDK 가 자체 캐시 미보관)
+    /// - Kakao: UserApi.shared.logout
+    /// - Google: GIDSignIn.sharedInstance.signOut
+    func clearClientSession() async
+}
+
+public extension SocialLoginProvider {
+    func clearClientSession() async {}
 }
 
 // MARK: - Apple 로그인 제공자
@@ -209,6 +221,17 @@ public final class KakaoLoginProvider: SocialLoginProvider {
             }
         }
     }
+
+    /// 카카오 SDK 의 로컬 OAuthToken 만 비움 (unlink 와 별개).
+    /// 같은 기기에서 다른 카카오 계정으로 로그인 시 캐시된 토큰으로 자동 로그인되어
+    /// 이전 계정의 카카오 ID 가 그대로 사용되던 문제 방어. 실패해도 무시 (best-effort).
+    public func clearClientSession() async {
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            UserApi.shared.logout { _ in
+                continuation.resume()
+            }
+        }
+    }
 }
 
 enum KakaoLoginError: Error {
@@ -250,6 +273,12 @@ public final class GoogleLoginProvider: SocialLoginProvider {
     /// 연결 해제 후 재로그인 시 동의 화면이 다시 표시됩니다.
     public func revokeClientAccess() async throws {
         try await GIDSignIn.sharedInstance.disconnect()
+    }
+
+    /// Google SDK 의 currentUser 만 sign-out (disconnect 와 별개).
+    /// 같은 기기에서 다른 계정 로그인 시 이전 계정 자동 로그인 방어.
+    public func clearClientSession() async {
+        GIDSignIn.sharedInstance.signOut()
     }
 }
 

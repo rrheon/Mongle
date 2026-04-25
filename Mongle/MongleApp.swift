@@ -7,6 +7,7 @@
 
 import SwiftUI
 import ComposableArchitecture
+import MongleData
 import MongleFeatures
 import GoogleMobileAds
 import UIKit
@@ -99,6 +100,15 @@ struct MongleApp: App {
     }
 
     init() {
+        // Install sentinel — iOS 는 앱 uninstall 시 Keychain 항목을 자동 정리하지 않아
+        // 재설치 사용자가 이전 사용자 토큰으로 자동 로그인되는 케이스가 있다. 첫 실행
+        // 마커가 없으면 (= 새 install) 기존 토큰을 명시적으로 폐기한다.
+        let installSentinelKey = "mongle.installSentinel"
+        if !UserDefaults.standard.bool(forKey: installSentinelKey) {
+            clearTokensOnFreshInstall()
+            UserDefaults.standard.set(true, forKey: installSentinelKey)
+        }
+
         MongleFont.registerFonts()
         SocialSDK.initialize()
         // GDPR/CCPA 동의 흐름(UMP). KR·JP 는 건너뛰고 즉시 AdMob 초기화,
