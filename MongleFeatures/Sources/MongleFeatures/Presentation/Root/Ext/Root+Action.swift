@@ -17,6 +17,9 @@ extension RootFeature {
         case checkAuthResponse(User?)
         case loadDataResponse(Result<RootData, Error>)
         case showLoginScreen
+        /// APIClient refresh 실패 신호 수신 → 토큰 폐기 + 로그인 화면 + 안내 팝업
+        case sessionExpired
+        case dismissSessionExpiredPopup
         case logout
         /// 로그아웃 후 다음 runloop tick에 mainTab/questionDetail을 정리
         /// (in-flight onAppear 등 자식 액션이 nil 상태에 도달하지 않도록 분리)

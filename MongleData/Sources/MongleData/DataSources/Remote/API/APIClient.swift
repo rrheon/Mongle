@@ -1,5 +1,13 @@
 import Foundation
 
+// MARK: - Session Expired Notification
+
+public extension Notification.Name {
+    /// access/refresh 토큰이 모두 무효화돼 사용자 재로그인이 필요할 때 broadcast.
+    /// RootFeature 가 구독하여 LoginView 전환 + 안내 팝업 표시.
+    static let mongleSessionExpired = Notification.Name("mongle.sessionExpired")
+}
+
 protocol APIClientProtocol: Sendable {
     func request<T: Decodable>(_ endpoint: APIEndpoint) async throws -> T
     func request(_ endpoint: APIEndpoint) async throws
@@ -202,28 +210,38 @@ final class APIClient: APIClientProtocol, @unchecked Sendable {
 
     // MARK: - Private: Token Refresh
 
-    /// 리프레시 토큰으로 새 액세스 토큰 발급. 실패 시 `.unauthorized` throw.
+    /// 리프레시 토큰으로 새 액세스 토큰 발급. 실패 시 만료 토큰 폐기 + 세션 만료 신호 post 후 `.unauthorized` throw.
     private func attemptTokenRefresh() async throws -> String {
-        return try await refreshCoordinator.refresh {
-            guard let refreshToken = self.tokenStorage.getRefreshToken() else {
-                throw APIError.unauthorized
-            }
-            let endpoint = AuthEndpoint.refreshToken(refreshToken: refreshToken)
-            var urlRequest = try endpoint.buildURLRequest()
-            // refresh 요청은 토큰 없이 보냄 (만료 토큰 첨부 금지)
-            urlRequest.setValue(nil, forHTTPHeaderField: "Authorization")
+        do {
+            return try await refreshCoordinator.refresh {
+                guard let refreshToken = self.tokenStorage.getRefreshToken() else {
+                    throw APIError.unauthorized
+                }
+                let endpoint = AuthEndpoint.refreshToken(refreshToken: refreshToken)
+                var urlRequest = try endpoint.buildURLRequest()
+                // refresh 요청은 토큰 없이 보냄 (만료 토큰 첨부 금지)
+                urlRequest.setValue(nil, forHTTPHeaderField: "Authorization")
 
-            let (data, response) = try await self.perform(urlRequest)
-            guard response.statusCode == 200 else {
-                // refresh 자체가 401 → 완전한 로그인 필요
-                throw APIError.unauthorized
+                let (data, response) = try await self.perform(urlRequest)
+                guard response.statusCode == 200 else {
+                    // refresh 자체가 401 → 완전한 로그인 필요
+                    throw APIError.unauthorized
+                }
+                let refreshResponse = try self.decoder.decode(RefreshTokenResponseDTO.self, from: data)
+                try self.tokenStorage.saveToken(refreshResponse.token)
+                if let newRefreshToken = refreshResponse.refreshToken {
+                    try self.tokenStorage.saveRefreshToken(newRefreshToken)
+                }
+                return refreshResponse.token
             }
-            let refreshResponse = try self.decoder.decode(RefreshTokenResponseDTO.self, from: data)
-            try self.tokenStorage.saveToken(refreshResponse.token)
-            if let newRefreshToken = refreshResponse.refreshToken {
-                try self.tokenStorage.saveRefreshToken(newRefreshToken)
+        } catch {
+            // 만료된 토큰을 그대로 두면 다음 호출도 401 → 무한 루프. 즉시 폐기.
+            tokenStorage.clearToken()
+            tokenStorage.clearRefreshToken()
+            await MainActor.run {
+                NotificationCenter.default.post(name: .mongleSessionExpired, object: nil)
             }
-            return refreshResponse.token
+            throw error
         }
     }
 

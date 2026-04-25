@@ -376,6 +376,8 @@
 "heart_popup_ad" = "広告を見てハートをもらう";
 "heart_granted_title" = "ハート +1";
 "heart_granted_desc" = "今日初めてのアクセスですね！\nハートを1つプレゼントしました。";
+"error_session_expired_title" = "再ログインが必要です";
+"error_session_expired_desc" = "セキュリティのためログイン状態が切れました。\n再度ログインしてください。";
 "heart_cost" = "ハート%d個";
 "heart_earned" = "ハート%d個ゲット！";
 
