@@ -85,6 +85,13 @@ struct MongleApp: App {
         // GDPR/CCPA 동의 흐름(UMP). KR·JP 는 건너뛰고 즉시 AdMob 초기화,
         // 그 외 지역은 동의 폼 표시 후 AdMob 초기화한다.
         ConsentManager.shared.startConsentFlowIfNeeded()
+        // store / UNUserNotificationCenter delegate 를 init 시점에 즉시 연결.
+        // 이전엔 .onAppear 에서 할당했는데, cold start 직후 didFinishLaunching 보다
+        // .onAppear 가 늦게 발화하는 경우가 있어 didRegisterForRemoteNotificationsWithDeviceToken
+        // 콜백이 들어와도 store==nil 이라 deviceTokenReceived 액션이 사실상 누락되던
+        // 케이스(APNs 토큰 미등록 → 푸시 안 옴)를 방어.
+        appDelegate.store = store
+        UNUserNotificationCenter.current().delegate = appDelegate
     }
 
     var body: some Scene {
@@ -97,10 +104,6 @@ struct MongleApp: App {
                     if !isInviteLink {
                         SocialSDK.handle(url: url)
                     }
-                }
-                .onAppear {
-                    appDelegate.store = store
-                    UNUserNotificationCenter.current().delegate = appDelegate
                 }
         }
     }
