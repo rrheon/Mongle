@@ -18,6 +18,12 @@ final class NotificationRepository: NotificationRepositoryProtocol {
         return response.notifications.compactMap { $0.toDomain() }
     }
 
+    func getUnreadCount() async throws -> Int {
+        struct Response: Decodable { let count: Int }
+        let response: Response = try await apiClient.request(NotificationEndpoint.unreadCount)
+        return response.count
+    }
+
     func markAsRead(id: UUID) async throws -> Domain.Notification {
         let dto: NotificationDTO = try await apiClient.request(NotificationEndpoint.markAsRead(id: id.uuidString))
         guard let notification = dto.toDomain() else { throw APIError.decodingError("notification mapping failed") }

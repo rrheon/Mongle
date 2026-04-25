@@ -32,18 +32,32 @@ class MongleAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         store?.send(.deviceTokenReceived(deviceToken))
     }
 
+    /// APNs 토큰 등록 실패 — 디버깅 단서 + 서버 측 stale 토큰 유지 방지를 위한 로그.
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        let nsError = error as NSError
+        print("[APNs] 토큰 등록 실패: domain=\(nsError.domain) code=\(nsError.code) description=\(nsError.localizedDescription)")
+    }
+
     /// 포그라운드에서 알림 수신 시 배너 표시 + 홈 알림 배지 즉시 갱신
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
-        completionHandler([.banner, .sound, .badge])
+        // 사용자가 가입/동의/로그인 흐름 도중일 때는 푸시 배너가 흐름을 끊지 않도록
+        // 배너는 숨기고 알림 리스트에만 저장 ([.list, .badge]). authenticated/groupSelection
+        // 상태에서만 평소처럼 배너 노출.
+        let appState = store?.state.appState
+        let canShowBanner = appState == .authenticated || appState == .groupSelection
+        if canShowBanner {
+            completionHandler([.banner, .sound, .badge])
+        } else {
+            completionHandler([.list, .badge])
+        }
         // 포그라운드 push 가 도착했을 때 홈 배지 갱신은 authenticated 상태에서만 의미가 있다.
         // 그룹 선택/초대코드/로그인/동의 화면 중에는 refreshHomeData 가 loadDataResponse 를
         // 통해 appState 를 강제로 .authenticated 로 전환해 현재 화면을 덮어쓰므로 발송 금지.
-        // (RootView 의 scenePhase 핸들러 가드와 동일한 규칙)
-        if store?.state.appState == .authenticated {
+        if appState == .authenticated {
             store?.send(.refreshHomeData)
         }
     }
@@ -57,12 +71,17 @@ class MongleAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         let userInfo = response.notification.request.content.userInfo
         if let type = userInfo["type"] as? String {
             switch type {
-            case "ANSWER_REQUEST", "MEMBER_ANSWERED", "NEW_QUESTION", "REMINDER":
-                // REMINDER는 홈으로 보내 오늘의 질문 카드를 즉시 노출.
-                // (답변자는 재촉하기 버튼, 미답변자는 답변 작성 CTA로 자연스럽게 유도.)
+            // 모든 NotificationType (서버 schema 기준) 명시적 처리.
+            // 누락 시 silent fail 방지 — 신규 type 추가 시 컴파일러가 경고하지 않더라도
+            // 이 switch 가 사용자 의도를 명확히 반영하도록 보강.
+            case "NEW_QUESTION", "MEMBER_ANSWERED", "ALL_ANSWERED",
+                 "ANSWER_REQUEST", "ANSWERER_NUDGE", "REMINDER", "BADGE_EARNED":
+                // 모두 홈/오늘 질문 화면으로 보내 사용자가 자연스럽게 답변/재촉으로 이어지게 함.
+                // 세부 라우팅 차별화는 follow-up.
                 store?.send(.openQuestion)
             default:
-                break
+                // 알 수 없는 type 은 안전한 기본 동작 — 홈 진입.
+                store?.send(.openQuestion)
             }
         }
         completionHandler()
