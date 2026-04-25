@@ -194,6 +194,7 @@ struct MainTabView: View {
             ),
             showNotificationPermission: store.home.showNotificationPermission
         )
+        .equatable()
         .mongleErrorToast(
             error: store.home.appError,
             onDismiss: { store.send(.home(.dismissError)) }
