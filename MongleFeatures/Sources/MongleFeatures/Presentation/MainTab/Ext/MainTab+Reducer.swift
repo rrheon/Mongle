@@ -427,6 +427,12 @@ extension MainTabFeature {
 
                 case .modal(.presented(.answerFirstPopup(.delegate(.answerNow)))):
                     state.modal = nil
+                    // 게스트 모드에서 답변 화면 진입 차단 — 다른 경로(딥링크/직접 호출)로
+                    // 이 delegate 가 들어와도 일관되게 로그인 팝업으로 라우팅한다.
+                    if state.home.isGuest {
+                        state.home.showGuestLoginPrompt = true
+                        return .none
+                    }
                     guard let question = state.home.todayQuestion else { return .none }
                     return .run { send in
                         await send(.delegate(.navigateToQuestionDetail(question)))

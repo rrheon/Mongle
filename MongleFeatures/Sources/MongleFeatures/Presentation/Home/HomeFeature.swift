@@ -164,6 +164,10 @@ public struct HomeFeature {
                 return .send(.delegate(.showQuestionSheet(question)))
 
             case .notificationTapped:
+                if state.isGuest {
+                    state.showGuestLoginPrompt = true
+                    return .none
+                }
                 return .send(.delegate(.navigateToNotifications))
 
             case .heartsTapped:
@@ -216,6 +220,10 @@ public struct HomeFeature {
                 return .none
 
             case .nudgeUnavailableTapped(let memberName):
+                if state.isGuest {
+                    state.showGuestLoginPrompt = true
+                    return .none
+                }
                 return .send(.delegate(.showNudgeUnavailablePopup(memberName)))
 
             case .refreshData:
