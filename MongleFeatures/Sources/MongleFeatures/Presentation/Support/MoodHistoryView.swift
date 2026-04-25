@@ -149,7 +149,7 @@ public struct MoodHistoryView: View {
     // MARK: - Helpers
 
     private static let moodSummaryFormatter: DateFormatter = {
-        let f = DateFormatter(); f.locale = Locale(identifier: "ko_KR"); f.dateFormat = "M월"; return f
+        let f = DateFormatter(); f.locale = .current; f.setLocalizedDateFormatFromTemplate("MMM"); return f
     }()
 
     private var moodSummarySubtitle: String {

@@ -113,8 +113,8 @@ public struct GroupManagementFeature {
                 state.groupName = group.name
                 state.inviteCode = group.inviteCode
                 let formatter = DateFormatter()
-                formatter.locale = Locale(identifier: "ko_KR")
-                formatter.dateFormat = "yyyy년 M월"
+                formatter.locale = .current
+                formatter.setLocalizedDateFormatFromTemplate("yyyyMMM")
                 state.members = users.map { user in
                     let isOwner = user.id == state.familyCreatedById
                     let subtitle = isOwner ? "방장" : formatter.string(from: user.createdAt) + " 가입"

@@ -350,8 +350,8 @@ private extension Date {
     var displayLabel: String {
         let cal = Calendar.current
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ko_KR")
-        formatter.dateFormat = "M월 d일"
+        formatter.locale = .current
+        formatter.setLocalizedDateFormatFromTemplate("MMMd")
         let base = formatter.string(from: self)
         if cal.isDateInToday(self) {
             return "\(base) · 오늘"

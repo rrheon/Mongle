@@ -110,9 +110,11 @@ public struct HistoryFeature {
 
         // 해당 월의 이름
         public var monthTitle: String {
+            // 사용자 시스템 로케일 기준으로 "년/월" 형식을 자동 변환.
+            // ko: "2026년 4월", en: "April 2026", ja: "2026年4月"
             let formatter = DateFormatter()
-            formatter.locale = Locale(identifier: "ko_KR")
-            formatter.dateFormat = "yyyy년 M월"
+            formatter.locale = .current
+            formatter.setLocalizedDateFormatFromTemplate("yyyyMMM")
             return formatter.string(from: currentMonth)
         }
 

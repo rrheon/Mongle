@@ -268,7 +268,7 @@ private struct NotificationCard: View {
 
     private static let relativeFormatter: RelativeDateTimeFormatter = {
         let formatter = RelativeDateTimeFormatter()
-        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.locale = .current
         formatter.unitsStyle = .abbreviated
         return formatter
     }()
