@@ -135,15 +135,15 @@ public struct HistoryView: View {
                 }
             }
 
-            // 주 행
+            // 주 행 — calendarDays 는 Feature 에서 currentMonth 변경 시점에만 갱신.
             let days = store.calendarDays
             let weeks = stride(from: 0, to: days.count, by: 7)
                 .map { Array(days[$0..<min($0 + 7, days.count)]) }
 
             ForEach(Array(weeks.enumerated()), id: \.offset) { _, week in
                 HStack(spacing: 0) {
-                    ForEach(week, id: \.self) { date in
-                        dayCell(for: date)
+                    ForEach(week) { info in
+                        dayCell(for: info)
                     }
                 }
             }
@@ -151,30 +151,29 @@ public struct HistoryView: View {
     }
 
     @ViewBuilder
-    private func dayCell(for date: Date) -> some View {
-        let isCurrentMonth = cal.component(.month, from: date) == cal.component(.month, from: store.currentMonth)
-        let isToday = cal.isDateInToday(date)
-        let isSelected = cal.isDate(date, inSameDayAs: store.selectedDate)
-        let recordItem = store.historyItems[cal.startOfDay(for: date)]
+    private func dayCell(for info: CalendarDayInfo) -> some View {
+        // weekday / isCurrentMonth / isToday / dayString 은 Feature 에서 사전 계산된 값을 사용.
+        // 매 셀당 4~5회의 Calendar.component / DateFormatter 호출을 제거.
+        let isSelected = cal.isDate(info.date, inSameDayAs: store.selectedDate)
+        let recordItem = store.historyItems[info.id]
         let hasRecord = recordItem != nil
         let isSkippedOnly = recordItem?.userSkipped == true && recordItem?.userAnswered == false
-        let weekday = cal.component(.weekday, from: date)
 
         let numColor: Color = {
-            if isToday { return .white }
-            if !isCurrentMonth { return MongleColor.textHint.opacity(0.4) }
-            if weekday == 1 { return MongleColor.error }
-            if weekday == 7 { return MongleColor.calendarSunday }
+            if info.isToday { return .white }
+            if !info.isCurrentMonth { return MongleColor.textHint.opacity(0.4) }
+            if info.weekday == 1 { return MongleColor.error }
+            if info.weekday == 7 { return MongleColor.calendarSunday }
             return MongleColor.textPrimary
         }()
 
         Button {
-            guard isCurrentMonth else { return }
-            store.send(.selectDate(date))
+            guard info.isCurrentMonth else { return }
+            store.send(.selectDate(info.date))
         } label: {
             VStack(spacing: 4) {
                 ZStack {
-                    if isToday {
+                    if info.isToday {
                         Circle()
                             .fill(MongleColor.primary)
                             .frame(width: 36, height: 36)
@@ -183,13 +182,13 @@ public struct HistoryView: View {
                             .fill(MongleColor.primaryLight)
                             .frame(width: 36, height: 36)
                     }
-                    Text(dayString(date))
+                    Text(info.dayString)
                         .font(.system(size: 14, weight: hasRecord ? .medium : .regular))
                         .foregroundColor(numColor)
                 }
                 .frame(width: 36, height: 36)
 
-                if hasRecord && isCurrentMonth {
+                if hasRecord && info.isCurrentMonth {
                     Circle()
                         .fill(isSkippedOnly ? MongleColor.textHint : MongleColor.primary)
                         .frame(width: 6, height: 6)
@@ -383,7 +382,8 @@ public struct HistoryView: View {
                         ZStack(alignment: .topTrailing) {
                             MongleMonggle(color: monggleColor(for: index), size: 44)
 
-                            let count = moodFrequency14Days[index]
+                            // store.mood14DayCounts 는 historyLoaded 시점에만 계산. body 에서 O(14×n) 반복 제거.
+                            let count = store.mood14DayCounts[index]
                             if count > 0 {
                                 Text("\(count)")
                                     .font(.system(size: 10, weight: .bold))
@@ -406,20 +406,6 @@ public struct HistoryView: View {
         .monglePanel(background: Color.white, cornerRadius: 16, borderColor: MongleColor.border, shadowOpacity: 0.03)
     }
 
-    private var moodFrequency14Days: [Int] {
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        var counts = [0, 0, 0, 0, 0]
-        for dayOffset in 0..<14 {
-            guard let date = calendar.date(byAdding: .day, value: -dayOffset, to: today),
-                  let item = store.historyItems[date] else { continue }
-            for answer in item.memberAnswers {
-                counts[answer.colorIndex % 5] += 1
-            }
-        }
-        return counts
-    }
-
     private func moodLabel(for index: Int) -> String {
         let labels = [L10n.tr("mood_calm"), L10n.tr("mood_happy"), L10n.tr("mood_loved"), L10n.tr("mood_sad"), L10n.tr("mood_tired")]
         return labels[index % labels.count]
@@ -438,23 +424,12 @@ public struct HistoryView: View {
 
     // MARK: - Helpers
 
-    private static let dayFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.locale = .current
-        f.dateFormat = "d"   // 일 숫자만 — locale 무관
-        return f
-    }()
-
     private static let selectedDateFormatter: DateFormatter = {
         let f = DateFormatter()
         f.locale = .current
         f.setLocalizedDateFormatFromTemplate("MMMdEEEE")
         return f
     }()
-
-    private func dayString(_ date: Date) -> String {
-        Self.dayFormatter.string(from: date)
-    }
 
     private var selectedDateLabel: String {
         Self.selectedDateFormatter.string(from: store.selectedDate)

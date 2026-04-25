@@ -78,6 +78,16 @@ public struct HistoryItem: Equatable, Identifiable, Sendable {
     }
 }
 
+// MARK: - 달력 셀 메타정보 (View 렌더링 부담 감소용 사전 계산값)
+public struct CalendarDayInfo: Equatable, Identifiable, Sendable {
+    public let id: Date         // startOfDay → ForEach 안정 키 + historyItems 조회 키
+    public let date: Date
+    public let dayString: String
+    public let weekday: Int     // 1=Sun ~ 7=Sat
+    public let isCurrentMonth: Bool
+    public let isToday: Bool
+}
+
 @Reducer
 public struct HistoryFeature {
     @ObservableState
@@ -96,27 +106,18 @@ public struct HistoryFeature {
         /// 이미 로드한 월 목록 (캐시). 같은 월은 재요청하지 않음.
         public var loadedMonths: Set<String> = []
 
-        // 달력에 표시할 날짜들
-        public var calendarDays: [Date] {
-            generateCalendarDays(for: currentMonth)
-        }
+        // MARK: - Cached derived values
+        // computed property 였던 값들을 reducer 변경 시점에만 재계산하도록 캐시.
+        // 매 body 호출마다 DateFormatter/Calendar 연산을 수십~수백 번 반복하던 비용을 제거.
 
-        // 해당 월의 첫째 날
-        public var monthStartDate: Date {
-            let calendar = Calendar.current
-            let components = calendar.dateComponents([.year, .month], from: currentMonth)
-            return calendar.date(from: components) ?? currentMonth
-        }
-
-        // 해당 월의 이름
-        public var monthTitle: String {
-            // 사용자 시스템 로케일 기준으로 "년/월" 형식을 자동 변환.
-            // ko: "2026년 4월", en: "April 2026", ja: "2026年4月"
-            let formatter = DateFormatter()
-            formatter.locale = .current
-            formatter.setLocalizedDateFormatFromTemplate("yyyyMMM")
-            return formatter.string(from: currentMonth)
-        }
+        /// 달력 그리드용 사전 계산된 일자 정보 (요일·라벨·오늘여부 등)
+        public var calendarDays: [CalendarDayInfo] = []
+        /// 해당 월의 첫째 날 (00:00:00)
+        public var monthStartDate: Date
+        /// 로케일에 맞춘 "년/월" 문자열
+        public var monthTitle: String = ""
+        /// 최근 14일 무드별 답변 수 (인덱스 0~4)
+        public var mood14DayCounts: [Int] = [0, 0, 0, 0, 0]
 
         public init(
             selectedDate: Date = Date(),
@@ -130,53 +131,104 @@ public struct HistoryFeature {
             self.familyId = familyId
             self.familyMembers = familyMembers
             self.currentUser = currentUser
+            self.monthStartDate = Self.computeMonthStart(for: currentMonth)
+            self.calendarDays = Self.computeCalendarDays(for: currentMonth)
+            self.monthTitle = Self.computeMonthTitle(for: currentMonth)
         }
 
-        private func generateCalendarDays(for month: Date) -> [Date] {
-            let calendar = Calendar.current
+        // MARK: - Pure compute helpers (reducer 에서 호출)
 
-            // 해당 월의 첫째 날
+        static func computeMonthStart(for month: Date) -> Date {
+            let calendar = Calendar.current
+            let components = calendar.dateComponents([.year, .month], from: month)
+            return calendar.date(from: components) ?? month
+        }
+
+        static func computeMonthTitle(for month: Date) -> String {
+            // formatter 인스턴스 재사용 — 매 렌더링마다 신규 할당 제거.
+            Self.monthTitleFormatter.string(from: month)
+        }
+
+        static func computeCalendarDays(for month: Date) -> [CalendarDayInfo] {
+            let calendar = Calendar.current
             guard let monthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: month)),
                   let monthRange = calendar.range(of: .day, in: .month, for: month) else {
                 return []
             }
-
-            // 첫째 날의 요일 (일요일 = 1)
+            let monthComponent = calendar.component(.month, from: monthStart)
             let firstWeekday = calendar.component(.weekday, from: monthStart)
-
-            // 이전 달의 날짜들 (빈 공간 채우기)
-            var days: [Date] = []
             let previousDaysCount = firstWeekday - 1
+
+            var infos: [CalendarDayInfo] = []
+            infos.reserveCapacity(42)
+
+            // 이전 달
             if previousDaysCount > 0 {
                 for i in (1...previousDaysCount).reversed() {
-                    if let date = calendar.date(byAdding: .day, value: -i, to: monthStart) {
-                        days.append(date)
+                    if let d = calendar.date(byAdding: .day, value: -i, to: monthStart) {
+                        infos.append(makeInfo(for: d, monthComponent: monthComponent, calendar: calendar))
                     }
                 }
             }
-
-            // 해당 월의 날짜들
+            // 해당 월
             for day in monthRange {
-                if let date = calendar.date(byAdding: .day, value: day - 1, to: monthStart) {
-                    days.append(date)
+                if let d = calendar.date(byAdding: .day, value: day - 1, to: monthStart) {
+                    infos.append(makeInfo(for: d, monthComponent: monthComponent, calendar: calendar))
                 }
             }
-
-            // 다음 달의 날짜들 (6주 맞추기)
-            let remainingDays = 42 - days.count
-            if remainingDays > 0 {
-                guard let monthEnd = calendar.date(byAdding: .day, value: monthRange.count - 1, to: monthStart) else {
-                    return days
-                }
-                for i in 1...remainingDays {
-                    if let date = calendar.date(byAdding: .day, value: i, to: monthEnd) {
-                        days.append(date)
+            // 다음 달 (6주 = 42칸 채우기)
+            let remaining = 42 - infos.count
+            if remaining > 0,
+               let monthEnd = calendar.date(byAdding: .day, value: monthRange.count - 1, to: monthStart) {
+                for i in 1...remaining {
+                    if let d = calendar.date(byAdding: .day, value: i, to: monthEnd) {
+                        infos.append(makeInfo(for: d, monthComponent: monthComponent, calendar: calendar))
                     }
                 }
             }
-
-            return days
+            return infos
         }
+
+        private static func makeInfo(for date: Date, monthComponent: Int, calendar: Calendar) -> CalendarDayInfo {
+            CalendarDayInfo(
+                id: calendar.startOfDay(for: date),
+                date: date,
+                dayString: Self.dayNumberFormatter.string(from: date),
+                weekday: calendar.component(.weekday, from: date),
+                isCurrentMonth: calendar.component(.month, from: date) == monthComponent,
+                isToday: calendar.isDateInToday(date)
+            )
+        }
+
+        static func computeMood14Counts(items: [Date: HistoryItem]) -> [Int] {
+            let calendar = Calendar.current
+            let today = calendar.startOfDay(for: Date())
+            var counts = [0, 0, 0, 0, 0]
+            for dayOffset in 0..<14 {
+                guard let date = calendar.date(byAdding: .day, value: -dayOffset, to: today),
+                      let item = items[date] else { continue }
+                for answer in item.memberAnswers {
+                    counts[answer.colorIndex % 5] += 1
+                }
+            }
+            return counts
+        }
+
+        // MARK: - 정적 Formatter (인스턴스 재사용)
+
+        private static let monthTitleFormatter: DateFormatter = {
+            let f = DateFormatter()
+            f.locale = .current
+            f.setLocalizedDateFormatFromTemplate("yyyyMMM")
+            return f
+        }()
+
+        private static let dayNumberFormatter: DateFormatter = {
+            let f = DateFormatter()
+            f.locale = .current
+            f.dateFormat = "d"
+            return f
+        }()
     }
 
     public enum Action: Sendable, Equatable {
@@ -221,6 +273,7 @@ public struct HistoryFeature {
             case .forceReload:
                 state.historyItems = [:]
                 state.loadedMonths = []
+                state.mood14DayCounts = [0, 0, 0, 0, 0]
                 state.isLoading = true
                 guard state.familyId != nil else {
                     state.isLoading = false
@@ -234,7 +287,6 @@ public struct HistoryFeature {
                         let calendar = Calendar.current
                         var historyItems: [Date: HistoryItem] = [:]
                         for hq in historyQuestions {
-                            let isToday = calendar.isDateInToday(hq.date)
                             let canViewAnswers = hq.hasMyAnswer || hq.hasMySkipped
                             // 오늘 미답변이어도 질문은 노출하되, 가족 답변 내용은 답변/스킵 후에만 표시
                             let memberAnswers: [MemberAnswer] = canViewAnswers ? hq.answers.map { answer in
@@ -290,6 +342,7 @@ public struct HistoryFeature {
                 let calendar = Calendar.current
                 if let newMonth = calendar.date(byAdding: .month, value: -1, to: state.currentMonth) {
                     state.currentMonth = newMonth
+                    Self.recomputeMonthDerived(&state)
                 }
                 return .none
 
@@ -297,6 +350,7 @@ public struct HistoryFeature {
                 let calendar = Calendar.current
                 if let newMonth = calendar.date(byAdding: .month, value: 1, to: state.currentMonth) {
                     state.currentMonth = newMonth
+                    Self.recomputeMonthDerived(&state)
                 }
                 return .none
 
@@ -304,6 +358,7 @@ public struct HistoryFeature {
                 state.currentMonth = Date()
                 state.selectedDate = Date()
                 state.selectedItem = state.historyItems[Calendar.current.startOfDay(for: Date())]
+                Self.recomputeMonthDerived(&state)
                 return .none
 
             case .itemTapped(let item):
@@ -333,12 +388,19 @@ public struct HistoryFeature {
                 state.historyItems = items
                 state.isLoading = false
                 state.selectedItem = items[Calendar.current.startOfDay(for: state.selectedDate)]
+                state.mood14DayCounts = State.computeMood14Counts(items: items)
                 return .none
 
             case .delegate:
                 return .none
             }
         }
+    }
+
+    private static func recomputeMonthDerived(_ state: inout State) {
+        state.monthStartDate = State.computeMonthStart(for: state.currentMonth)
+        state.calendarDays = State.computeCalendarDays(for: state.currentMonth)
+        state.monthTitle = State.computeMonthTitle(for: state.currentMonth)
     }
 }
 
@@ -354,4 +416,3 @@ private func colorIndexFromMoodId(_ moodId: String?) -> Int {
     default:      return 2 // default: pink
     }
 }
-
