@@ -277,9 +277,16 @@ extension RootFeature {
                     // refreshHomeData 호출) authenticated 로 강제 전환하지 않는다.
                     // 사용자가 "홈으로" 를 눌러 step 이 .select 로 리셋된 뒤에만 전환된다.
                     let preserveInviteCodeScreen = wasOnGroupSelect && state.groupSelect.step == .groupCreated
+                    // 인증 미완료 상태(consentRequired/emailSignup) 동안 들어온 딥링크가
+                    // pendingInviteCode 에 남아있다면, 인증 완료 후 곧장 .authenticated 로
+                    // 가지 말고 .groupSelection 으로 한 단계 거쳐 join 화면을 띄운다.
+                    // 그렇지 않으면 코드가 영영 소비되지 않고 stale 상태로 남는 버그 (audit High).
+                    let hasPendingInvite = state.pendingInviteCode != nil
                     let newAppState: RootFeature.State.AppState = preserveInviteCodeScreen
                         ? .groupSelection
-                        : ((data.family == nil || isInitialLoad) ? .groupSelection : .authenticated)
+                        : (hasPendingInvite || data.family == nil || isInitialLoad
+                           ? .groupSelection
+                           : .authenticated)
                     // 그룹 선택 화면에서 인증 완료 전환 시 HomeTab으로 리셋
                     if wasOnGroupSelect && newAppState == .authenticated {
                         state.mainTab?.selectedTab = .home
@@ -375,6 +382,10 @@ extension RootFeature {
                     state.loginProviderType = nil
                     state.login = LoginFeature.State()
                     state.groupSelect = GroupSelectFeature.State()
+                    // pending push/딥링크 신호도 즉시 비워야 재로그인 시 의도치 않은 자동 이행 방지.
+                    // .logout / .showLoginScreen 과 동일한 cleanup 으로 통일.
+                    state.pendingOpenQuestion = false
+                    state.pendingInviteCode = nil
                     return .run { send in
                         await Task.yield()
                         await send(.completeLogout)
