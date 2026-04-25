@@ -138,6 +138,8 @@ extension RootFeature {
                             let hasUnreadNotifications = notifications.contains {
                                 !$0.isRead && $0.familyId == currentFamilyId
                             }
+                            // OS 앱 아이콘 배지는 사용자 단위(그룹 개념 없음)이므로 전체 그룹 합산.
+                            let unreadCountAllGroups = notifications.filter { !$0.isRead }.count
 
                             return RootData(
                                 user: currentUser,
@@ -152,7 +154,8 @@ extension RootFeature {
                                 memberSkippedStatus: memberSkippedStatus,
                                 streakDays: streakDays,
                                 allFamilies: allFamilies,
-                                hasUnreadNotifications: hasUnreadNotifications
+                                hasUnreadNotifications: hasUnreadNotifications,
+                                unreadCountAllGroups: unreadCountAllGroups
                             )
                             }
                             await send(.loadDataResponse(.success(data)))
@@ -178,6 +181,14 @@ extension RootFeature {
 
                 case .loadDataResponse(.success(let data)):
                     state.currentUser = data.user
+
+                    // OS 앱 아이콘 배지 동기화 — 전체 그룹 합산 미읽음 수.
+                    // refreshHomeData 가 호출되는 모든 경로(앱 콜드 스타트, scenePhase active,
+                    // foreground push 수신, mark-read/delete 직후 등)에서 일관되게 갱신된다.
+                    let badgeCount = data.unreadCountAllGroups
+                    let badgeSyncEffect: Effect<Action> = .run { _ in
+                        try? await UNUserNotificationCenter.current().setBadgeCount(badgeCount)
+                    }
 
                     // 하루 첫 접속 하트 팝업 체크 (그룹별)
                     if let familyId = data.family?.id, data.user != nil {
@@ -287,18 +298,21 @@ extension RootFeature {
                                 hearts: data.user?.hearts ?? 0
                             )))
                         }
-                        return .run { _ in
-                            let key = "mongle.didRequestPushPermission"
-                            if !UserDefaults.standard.bool(forKey: key) {
-                                UserDefaults.standard.set(true, forKey: key)
-                                _ = try? await UNUserNotificationCenter.current()
-                                    .requestAuthorization(options: [.alert, .badge, .sound])
-                            }
-                            // 항상 APNs 토큰 등록 갱신
-                            await MainActor.run {
-                                UIApplication.shared.registerForRemoteNotifications()
-                            }
-                        }
+                        return .merge(
+                            .run { _ in
+                                let key = "mongle.didRequestPushPermission"
+                                if !UserDefaults.standard.bool(forKey: key) {
+                                    UserDefaults.standard.set(true, forKey: key)
+                                    _ = try? await UNUserNotificationCenter.current()
+                                        .requestAuthorization(options: [.alert, .badge, .sound])
+                                }
+                                // 항상 APNs 토큰 등록 갱신
+                                await MainActor.run {
+                                    UIApplication.shared.registerForRemoteNotifications()
+                                }
+                            },
+                            badgeSyncEffect
+                        )
                     }
                     if newAppState == .groupSelection {
                         state.groupSelect.groups = data.allFamilies
@@ -310,7 +324,7 @@ extension RootFeature {
                             state.pendingInviteCode = nil
                         }
                     }
-                    return .none
+                    return badgeSyncEffect
 
                 case .loadDataResponse(.failure(let error)):
                     let appError = AppError.from(error)
