@@ -13,6 +13,14 @@ import UIKit
 
 @Reducer
 public struct HomeFeature {
+
+    private enum CancelID: Hashable {
+        /// 알림 권한 요청 effect 의 in-flight 중복 차단.
+        /// 빠른 이중 탭 시 requestAuthorization + registerForRemoteNotifications 가
+        /// 두 번 fire 되어 device token callback 이 중복 발생하는 race 를 막는다.
+        case requestNotifAuth
+    }
+
     @ObservableState
     public struct State: Equatable {
         public var todayQuestion: Question?
@@ -300,6 +308,7 @@ public struct HomeFeature {
                         UIApplication.shared.registerForRemoteNotifications()
                     }
                 }
+                .cancellable(id: CancelID.requestNotifAuth, cancelInFlight: true)
 
             case .notificationPermissionSkipped:
                 if let family = state.family {
