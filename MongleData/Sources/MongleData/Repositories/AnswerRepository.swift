@@ -11,7 +11,7 @@ import Domain
 final class AnswerRepository: AnswerRepositoryInterface {
     private let apiClient: APIClientProtocol
 
-    init(apiClient: APIClientProtocol = APIClient()) {
+    init(apiClient: APIClientProtocol = APIClient.shared) {
         self.apiClient = apiClient
     }
 
