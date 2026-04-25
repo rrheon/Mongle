@@ -3,6 +3,11 @@ import ComposableArchitecture
 
 @Reducer
 public struct PeerNudgeFeature {
+
+    private enum CancelID: Hashable {
+        case nudge
+    }
+
     @ObservableState
     public struct State: Equatable {
         public var targetUserId: String
@@ -73,6 +78,7 @@ public struct PeerNudgeFeature {
                         await send(.nudgeResponse(.failure(AppError.from(error))))
                     }
                 }
+                .cancellable(id: CancelID.nudge, cancelInFlight: true)
 
             case .watchAdTapped:
                 guard !state.isWatchingAd, !state.isSent else { return .none }
@@ -91,8 +97,11 @@ public struct PeerNudgeFeature {
                 let targetUserId = state.targetUserId
                 return .run { [nudgeRepository, userRepository] send in
                     do {
-                        // 광고 보상 하트 지급 (재촉하기 비용 1개)
-                        _ = try await userRepository.grantAdHearts(amount: 1)
+                        // 광고 보상 하트 지급 (재촉하기 비용 1개) — transient 네트워크 오류에 대비한 retry
+                        _ = try await AdRewardClient.grantAdHearts(
+                            userRepository: userRepository,
+                            amount: 1
+                        )
                         // 재촉 전송
                         let heartsRemaining = try await nudgeRepository.sendNudge(targetUserId: targetUserId)
                         await send(.nudgeResponse(.success(heartsRemaining)))
@@ -100,6 +109,7 @@ public struct PeerNudgeFeature {
                         await send(.nudgeResponse(.failure(AppError.from(error))))
                     }
                 }
+                .cancellable(id: CancelID.nudge, cancelInFlight: true)
 
             case .nudgeResponse(.success(let heartsRemaining)):
                 state.isLoading = false
