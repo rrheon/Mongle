@@ -206,7 +206,11 @@ final class APIClient: APIClientProtocol, @unchecked Sendable {
     // MARK: - Private: Token Refresh
 
     /// 리프레시 토큰으로 새 액세스 토큰 발급. 실패 시 만료 토큰 폐기 + 세션 만료 신호 post 후 `.unauthorized` throw.
+    /// 단, 처음부터 refresh 토큰이 아예 없는 케이스(첫 install / 로그아웃 직후) 는
+    /// "세션이 만료된" 게 아니라 "세션이 한 번도 없었던" 상태이므로 mongleSessionExpired
+    /// 신호를 post 하지 않는다 (불필요한 "다시 로그인 필요" 팝업 차단).
     private func attemptTokenRefresh() async throws -> String {
+        let hadRefreshTokenBefore = tokenStorage.getRefreshToken() != nil
         do {
             return try await refreshCoordinator.refresh {
                 guard let refreshToken = self.tokenStorage.getRefreshToken() else {
@@ -233,8 +237,14 @@ final class APIClient: APIClientProtocol, @unchecked Sendable {
             // 만료된 토큰을 그대로 두면 다음 호출도 401 → 무한 루프. 즉시 폐기.
             tokenStorage.clearToken()
             tokenStorage.clearRefreshToken()
-            await MainActor.run {
-                NotificationCenter.default.post(name: .mongleSessionExpired, object: nil)
+            // 처음부터 refresh 토큰이 없었으면 (첫 install / 로그아웃 직후 호출) 세션이
+            // "만료된" 게 아니라 "한 번도 없었던" 상태. 이 경우 sessionExpired 팝업을
+            // 띄우는 건 사용자에게 혼란만 준다. RootFeature 가 onAppear 에서 user=nil 을
+            // 받아 자연스럽게 LoginView 로 라우팅하면 되므로 신호를 post 하지 않는다.
+            if hadRefreshTokenBefore {
+                await MainActor.run {
+                    NotificationCenter.default.post(name: .mongleSessionExpired, object: nil)
+                }
             }
             throw error
         }
