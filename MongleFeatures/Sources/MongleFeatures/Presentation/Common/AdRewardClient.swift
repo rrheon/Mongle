@@ -17,7 +17,7 @@ enum AdRewardClient {
     ///   exponential backoff(500ms → 1s → 2s) 로 transient 오류를 흡수한다.
     /// - Note: 모든 시도가 실패하면 마지막 에러를 throw — 호출부가 명시적 안내 책임.
     static func grantAdHearts(
-        userRepository: UserRepositoryProtocol,
+        userRepository: any UserRepositoryInterface,
         amount: Int,
         maxRetries: Int = 3
     ) async throws -> Int {
