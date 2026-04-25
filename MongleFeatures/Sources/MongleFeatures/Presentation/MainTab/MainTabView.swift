@@ -148,12 +148,13 @@ struct MainTabView: View {
 
     private var homeViewSection: some View {
         let currentUserId = store.home.currentUser?.id
-        let memberData: [(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool)] = store.home.familyMembers
+        let memberData: [MongleMember] = store.home.familyMembers
             .enumerated()
             .map { index, user in
                 let isCurrentUser = user.id == currentUserId
                 let moodId = isCurrentUser ? (store.previewMoodId ?? store.currentUserMoodId ?? user.moodId) : user.moodId
-                return (
+                return MongleMember(
+                    id: user.id,
                     name: user.name,
                     color: Self.monggleColor(for: moodId, fallback: index),
                     hasAnswered: store.home.memberAnswerStatus[user.id] ?? false,

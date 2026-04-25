@@ -85,7 +85,7 @@ struct HomeView: View, Equatable {
     let topBarState: HomeTopBarState
     let hasCurrentUserAnswered: Bool
     let hasCurrentUserSkipped: Bool
-    let members: [(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool)]
+    let members: [MongleMember]
     var currentUserName: String?
     var actions: HomeViewActions
     var showNotificationPermission: Bool = false
@@ -114,7 +114,7 @@ struct HomeView: View, Equatable {
         topBarState: HomeTopBarState = .preview,
         hasCurrentUserAnswered: Bool = false,
         hasCurrentUserSkipped: Bool = false,
-        members: [(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool)] = [],
+        members: [MongleMember] = [],
         currentUserName: String? = nil,
         actions: HomeViewActions = HomeViewActions(),
         showNotificationPermission: Bool = false
