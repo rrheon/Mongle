@@ -8,39 +8,27 @@ protocol APIClientProtocol: Sendable {
 // MARK: - Token Refresh Actor (동시 갱신 방지)
 
 /// 동시에 여러 401이 발생해도 refresh를 한 번만 실행하도록 직렬화하는 actor.
+///
+/// 이전 구현은 `isRefreshing: Bool + refreshResult: Result?` 두 필드 + polling
+/// 루프 + 결과 nil 초기화 패턴이었는데, 첫 대기자가 결과를 소비(nil 로 초기화)한
+/// 직후 두 번째 대기자가 nil 을 읽고 `.unauthorized` throw 하는 race 가 있었다.
+///
+/// `Task<String, Error>` 를 in-flight 핸들로 보관하여 모든 동시 호출자가 같은
+/// Task.value 를 await 하도록 한다. Task 결과는 내부 캐시되므로 race 없이 N
+/// 명에게 동일 결과 전파. Task 완료 + 첫 호출자의 frame 종료 시점에 핸들을
+/// nil 로 비워 다음 401 주기에서 새 refresh 가 가능하도록 한다.
 private actor TokenRefreshCoordinator {
-    private var isRefreshing = false
-    private var refreshResult: Result<String, Error>?
+    private var inFlight: Task<String, Error>?
 
-    /// 리프레시가 진행 중이면 완료를 기다린 뒤 결과 반환. 아니면 직접 실행.
-    func refresh(using block: () async throws -> String) async throws -> String {
-        // 이미 갱신 완료 결과가 있으면 바로 반환 (같은 세션 내 재사용)
-        if let result = refreshResult {
-            refreshResult = nil
-            return try result.get()
+    func refresh(using block: @Sendable @escaping () async throws -> String) async throws -> String {
+        if let existing = inFlight {
+            // 다른 호출자가 시작한 refresh 를 기다림 — 같은 결과를 공유받음
+            return try await existing.value
         }
-        if isRefreshing {
-            // 이미 갱신 중: 짧게 대기 후 결과 확인 (폴링 대신 sleep)
-            while isRefreshing {
-                try? await Task.sleep(nanoseconds: 100_000_000) // 0.1s
-            }
-            if let result = refreshResult {
-                refreshResult = nil
-                return try result.get()
-            }
-            throw APIError.unauthorized
-        }
-        isRefreshing = true
-        do {
-            let newToken = try await block()
-            refreshResult = .success(newToken)
-            isRefreshing = false
-            return newToken
-        } catch {
-            refreshResult = .failure(error)
-            isRefreshing = false
-            throw error
-        }
+        let task = Task<String, Error> { try await block() }
+        inFlight = task
+        defer { inFlight = nil }
+        return try await task.value
     }
 }
 

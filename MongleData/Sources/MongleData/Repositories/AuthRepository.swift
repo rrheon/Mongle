@@ -58,23 +58,27 @@ final class AuthRepository: AuthRepositoryInterface {
     }
 
     func logout() async throws {
+        // 서버 호출 성공/실패와 무관하게 로컬 토큰을 반드시 정리.
+        // 네트워크 오류로 logout API 가 실패해도 사용자 의도는 "로그아웃" 이며,
+        // 토큰을 남겨두면 다음 실행에서 만료 토큰으로 401 → sessionExpired 무한
+        // 루프가 발생할 수 있다.
+        defer {
+            tokenStorage.clearToken()
+            tokenStorage.clearRefreshToken()
+        }
         let endpoint = AuthEndpoint.logout
         try await apiClient.request(endpoint)
-
-        // 로컬 토큰 삭제
-        tokenStorage.clearToken()
-        tokenStorage.clearRefreshToken()
     }
 
     func deleteAccount() async throws {
         // Apple 토큰 revoke는 서버(DELETE /auth/account)에서 처리
         // Kakao unlink / Google disconnect는 클라이언트(SocialLoginProvider)에서 먼저 호출 후 이 메서드 실행
+        defer {
+            tokenStorage.clearToken()
+            tokenStorage.clearRefreshToken()
+        }
         let endpoint = AuthEndpoint.deleteAccount
         try await apiClient.request(endpoint)
-
-        // 로컬 토큰 삭제
-        tokenStorage.clearToken()
-        tokenStorage.clearRefreshToken()
     }
 
     func getCurrentUser() async throws -> User? {
