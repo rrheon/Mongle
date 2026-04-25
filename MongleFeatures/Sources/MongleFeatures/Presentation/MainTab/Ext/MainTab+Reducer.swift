@@ -419,7 +419,7 @@ extension MainTabFeature {
                     state.home.hearts = heartsRemaining
                     state.showNudgeToast = true
                     return .run { send in
-                        try await Task.sleep(nanoseconds: 3_000_000_000)
+                        try await Task.sleep(nanoseconds: 4_000_000_000)
                         await send(.dismissNudgeToast)
                     }
 
@@ -459,7 +459,7 @@ extension MainTabFeature {
                     state.history.loadedMonths = []
                     state.showWriteToast = true
                     return .run { send in
-                        try await Task.sleep(nanoseconds: 3_000_000_000)
+                        try await Task.sleep(nanoseconds: 4_000_000_000)
                         await send(.dismissWriteToast)
                     }
 
@@ -531,7 +531,7 @@ extension MainTabFeature {
                             _ = try? await userRepository.update(user)
                         },
                         .run { send in
-                            try await Task.sleep(nanoseconds: 3_000_000_000)
+                            try await Task.sleep(nanoseconds: 4_000_000_000)
                             await send(.dismissAnswerSubmittedToast)
                         }
                     )
@@ -572,7 +572,7 @@ extension MainTabFeature {
                             _ = try? await userRepository.update(user)
                         },
                         .run { send in
-                            try await Task.sleep(nanoseconds: 3_000_000_000)
+                            try await Task.sleep(nanoseconds: 4_000_000_000)
                             await send(.dismissEditAnswerToast)
                         }
                     )
@@ -624,7 +624,7 @@ extension MainTabFeature {
                     return .merge(
                         .send(.history(.forceReload)),
                         .run { send in
-                            try await Task.sleep(nanoseconds: 3_000_000_000)
+                            try await Task.sleep(nanoseconds: 4_000_000_000)
                             await send(.dismissRefreshToast)
                         }
                     )
