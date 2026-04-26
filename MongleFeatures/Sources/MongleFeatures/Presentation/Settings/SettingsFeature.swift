@@ -191,7 +191,8 @@ public struct SettingsFeature {
                         try await authRepository.deleteAccount()
                         await send(.deleteAccountSucceeded)
                     } catch {
-                        await send(.deleteAccountFailed(error.localizedDescription))
+                        // raw error 메시지 → AppError 변환 후 사용자 메시지로 노출
+                        await send(.deleteAccountFailed(AppError.from(error).userMessage))
                     }
                 }
 
@@ -240,7 +241,7 @@ public struct SettingsFeature {
                 return .none
 
             case .loadUserResponse(.failure(let error)):
-                state.errorMessage = error.localizedDescription
+                state.errorMessage = AppError.from(error).userMessage
                 return .none
 
             case .delegate:

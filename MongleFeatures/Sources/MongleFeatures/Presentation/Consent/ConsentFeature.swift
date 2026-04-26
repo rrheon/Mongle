@@ -144,7 +144,7 @@ public struct ConsentFeature {
 
             case .submitResponse(.failure(let error)):
                 state.isSubmitting = false
-                state.errorMessage = error.localizedDescription
+                state.errorMessage = AppError.from(error).userMessage
                 return .none
 
             case .dismissError:

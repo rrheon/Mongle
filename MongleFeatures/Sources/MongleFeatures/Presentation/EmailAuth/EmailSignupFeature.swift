@@ -213,7 +213,8 @@ public struct EmailSignupFeature {
 
             case .sendCodeResponse(.failure(let error)):
                 state.isSendingCode = false
-                state.errorMessage = (error as? AppError)?.userMessage ?? error.localizedDescription
+                // 모든 raw error → AppError 로 변환 (LocalizedError 미준수 raw 노출 방지)
+                state.errorMessage = (error as? AppError ?? AppError.from(error)).userMessage
                 return .none
 
             case .resendTimerTick:
@@ -273,7 +274,7 @@ public struct EmailSignupFeature {
 
             case .signupResponse(.failure(let error)):
                 state.isVerifying = false
-                let message = (error as? AppError)?.userMessage ?? error.localizedDescription
+                let message = (error as? AppError ?? AppError.from(error)).userMessage
                 state.codeError = message
                 return .none
 
