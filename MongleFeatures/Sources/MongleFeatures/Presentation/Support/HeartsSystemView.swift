@@ -69,7 +69,7 @@ public struct HeartsSystemView: View {
                     sectionTitle(L10n.tr("hearts_earn_title"), subtitle: L10n.tr("hearts_earn_subtitle"))
                     HStack(spacing: MongleSpacing.sm) {
                         miniHeartCard(title: L10n.tr("hearts_earn_login"), subtitle: L10n.tr("hearts_earn_login_sub"), value: "+1", tint: MongleColor.heartPastel)
-                        miniHeartCard(title: L10n.tr("hearts_earn_answer"), subtitle: L10n.tr("hearts_earn_answer_sub"), value: "+3", tint: MongleColor.heartPastelLight)
+                        miniHeartCard(title: L10n.tr("hearts_earn_answer"), subtitle: L10n.tr("hearts_earn_answer_sub"), value: "+1", tint: MongleColor.heartPastelLight)
                     }
                 }
 
