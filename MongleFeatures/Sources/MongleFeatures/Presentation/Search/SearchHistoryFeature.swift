@@ -86,7 +86,8 @@ public struct SearchHistoryFeature {
                         let history = try await questionRepository.getHistory(page: 1, limit: 100)
                         await send(.historyLoaded(history))
                     } catch {
-                        await send(.setError(error.localizedDescription))
+                        // raw error → AppError 변환으로 일관된 한국어 메시지
+                        await send(.setError(AppError.from(error).userMessage))
                     }
                 }
                 .cancellable(id: LoadID.load, cancelInFlight: true)

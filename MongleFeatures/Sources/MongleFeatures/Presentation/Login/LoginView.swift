@@ -250,7 +250,7 @@ private extension LoginView {
                   || nsError.code != ASAuthorizationError.canceled.rawValue
           else { return }
         }
-        store.send(.socialLoginFailed(error.localizedDescription))
+        store.send(.socialLoginFailed(AppError.from(error).userMessage))
       }
     }
   }
