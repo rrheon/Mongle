@@ -209,13 +209,18 @@ public struct NotificationFeature {
                 }
 
             case .notificationTapped(let notification):
-                // 터치한 알림을 리스트에서 즉시 제거하고, 서버 삭제 완료 후 화면 이동
+                // 터치한 알림을 리스트에서 즉시 제거하고, 서버 삭제 완료 후 화면 이동.
+                // 서버 삭제 실패 시 errorMessage 로 안내 — 다음 refresh 에 알림이 다시
+                // 나타날 수 있으니 사용자가 인지하도록.
                 let deleteId = notification.id
-                // 새 배열 할당으로 @ObservableState 뷰 갱신 보장
                 state.notifications = state.notifications.filter { $0.id != notification.id }
                 let mode = state.mode
                 return .run { [notificationRepository] send in
-                    try? await notificationRepository.delete(id: deleteId)
+                    do {
+                        try await notificationRepository.delete(id: deleteId)
+                    } catch {
+                        await send(.setError(AppError.from(error).userMessage))
+                    }
                     await Self.syncAppIconBadge(notificationRepository)
                     switch mode {
                     case .grouped:
@@ -229,7 +234,9 @@ public struct NotificationFeature {
                 .cancellable(id: CancelID.badgeSync, cancelInFlight: true)
 
             case .markAsRead(let notification):
-                // Optimistic update
+                // Optimistic update — 서버 실패 시 errorMessage 만 노출하고 UI 는 유지.
+                // 다음 refresh 에 서버 상태로 자동 동기화. (rollback 으로 false 복원 시
+                // "방금 읽었던 알림이 다시 안읽음 표시" 라 오히려 혼란 큼.)
                 if let index = state.notifications.firstIndex(where: { $0.id == notification.id }) {
                     state.notifications[index] = MongleNotification(
                         id: notification.id,
@@ -242,8 +249,12 @@ public struct NotificationFeature {
                         createdAt: notification.createdAt
                     )
                 }
-                return .run { [notificationRepository] _ in
-                    _ = try? await notificationRepository.markAsRead(id: notification.id)
+                return .run { [notificationRepository] send in
+                    do {
+                        _ = try await notificationRepository.markAsRead(id: notification.id)
+                    } catch {
+                        await send(.setError(AppError.from(error).userMessage))
+                    }
                     await Self.syncAppIconBadge(notificationRepository)
                 }
                 .cancellable(id: CancelID.badgeSync, cancelInFlight: true)
@@ -265,16 +276,24 @@ public struct NotificationFeature {
                         createdAt: n.createdAt
                     )
                 }
-                return .run { [notificationRepository] _ in
-                    _ = try? await notificationRepository.markAllAsRead(familyId: scopeFamilyId)
+                return .run { [notificationRepository] send in
+                    do {
+                        _ = try await notificationRepository.markAllAsRead(familyId: scopeFamilyId)
+                    } catch {
+                        await send(.setError(AppError.from(error).userMessage))
+                    }
                     await Self.syncAppIconBadge(notificationRepository)
                 }
                 .cancellable(id: CancelID.badgeSync, cancelInFlight: true)
 
             case .deleteNotification(let notification):
                 state.notifications = state.notifications.filter { $0.id != notification.id }
-                return .run { [notificationRepository] _ in
-                    _ = try? await notificationRepository.delete(id: notification.id)
+                return .run { [notificationRepository] send in
+                    do {
+                        _ = try await notificationRepository.delete(id: notification.id)
+                    } catch {
+                        await send(.setError(AppError.from(error).userMessage))
+                    }
                     await Self.syncAppIconBadge(notificationRepository)
                 }
                 .cancellable(id: CancelID.badgeSync, cancelInFlight: true)
@@ -286,9 +305,14 @@ public struct NotificationFeature {
                 } else {
                     state.notifications = []
                 }
-                return .run { [notificationRepository] _ in
-                    _ = try? await notificationRepository.markAllAsRead(familyId: scopeFamilyId)
-                    _ = try? await notificationRepository.deleteAll(familyId: scopeFamilyId)
+                return .run { [notificationRepository] send in
+                    // markAllAsRead + deleteAll 두 단계. 어느 한쪽이라도 실패하면 안내.
+                    do {
+                        _ = try await notificationRepository.markAllAsRead(familyId: scopeFamilyId)
+                        _ = try await notificationRepository.deleteAll(familyId: scopeFamilyId)
+                    } catch {
+                        await send(.setError(AppError.from(error).userMessage))
+                    }
                     await Self.syncAppIconBadge(notificationRepository)
                 }
                 .cancellable(id: CancelID.badgeSync, cancelInFlight: true)
