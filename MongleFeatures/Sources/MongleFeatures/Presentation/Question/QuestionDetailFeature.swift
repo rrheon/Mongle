@@ -147,6 +147,9 @@ public struct QuestionDetailFeature {
                 let questionId = state.question.id
                 let currentUserId = state.currentUser?.id
                 let members = state.familyMembers
+                // 멤버 ID 인덱스를 effect 진입 시점에 1회만 구축해 답변-멤버 매칭 비용을
+                // O(F × A) nested linear search 에서 O(F + A) (인덱스 빌드 + O(1) lookup) 로 낮춘다.
+                let memberById = Dictionary(uniqueKeysWithValues: members.map { ($0.id, $0) })
                 return .merge(
                     .run { [answerRepository] send in
                         do {
@@ -155,7 +158,7 @@ public struct QuestionDetailFeature {
                             let familyAnswers: [State.FamilyAnswer] = answers
                                 .filter { $0.userId != currentUserId }
                                 .map { answer in
-                                    let user = members.first(where: { $0.id == answer.userId })
+                                    let user = memberById[answer.userId]
                                         ?? User(id: answer.userId, email: "", name: "멤버",
                                                 profileImageURL: nil, role: .other, createdAt: Date())
                                     return State.FamilyAnswer(user: user, answer: answer)
