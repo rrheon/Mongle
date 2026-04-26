@@ -37,16 +37,15 @@ struct QuestionDetailView: View {
                         .padding(.bottom, 32)
                     }
                     .scrollDismissesKeyboard(.immediately)
+                    // scrollTo 는 focus 획득 시점에만 1회 호출.
+                    // 이전엔 .onChange(of: store.answerText) 가 매 keystroke 마다 scrollTo 를
+                    // 발화시켰는데 (200자 답변 = ~200회 애니메이션), TextField 가 커지면서 키보드에
+                    // 가려질 때 사용자가 직접 스크롤로 조정하는 게 자연스럽고 hitch 도 줄어든다.
                     .onChange(of: isAnswerFocused) { _, focused in
                         if focused {
                             withAnimation(.easeOut(duration: 0.3)) {
                                 proxy.scrollTo("answerBottom", anchor: .bottom)
                             }
-                        }
-                    }
-                    .onChange(of: store.answerText) { _, _ in
-                        if isAnswerFocused {
-                            proxy.scrollTo("answerBottom", anchor: .bottom)
                         }
                     }
                 }
@@ -180,14 +179,14 @@ struct QuestionDetailView: View {
 
     private var answerInputSection: some View {
         VStack(alignment: .trailing, spacing: 6) {
-            TextField(L10n.tr("detail_answer_placeholder"), text: Binding(
-                get: { store.answerText },
-                set: { newValue in
-                    guard !store.isSubmitting, !isClosing else { return }
-                    if newValue.count > 200 { return }
-                    store.send(.answerTextChanged(newValue))
-                }
-            ), prompt: Text(L10n.tr("detail_answer_placeholder")).foregroundColor(MongleColor.textSecondary), axis: .vertical)
+            // sending(\.answerTextChanged) 패턴 — Binding identity 가 body 호출간 동일하게 유지되어
+            // SwiftUI input session 안정화. 200자 클립과 isSubmitting guard 는 이미 reducer 에서 처리.
+            TextField(
+                L10n.tr("detail_answer_placeholder"),
+                text: $store.answerText.sending(\.answerTextChanged),
+                prompt: Text(L10n.tr("detail_answer_placeholder")).foregroundColor(MongleColor.textSecondary),
+                axis: .vertical
+            )
             .font(MongleFont.body2())
             .foregroundColor(MongleColor.textPrimary)
             .lineSpacing(4)
@@ -203,9 +202,10 @@ struct QuestionDetailView: View {
             )
             .animation(.easeInOut(duration: 0.2), value: isAnswerFocused)
 
-            Text("\(store.answerText.count)/200")
-                .font(MongleFont.caption())
-                .foregroundColor(store.answerText.count >= 200 ? MongleColor.error : MongleColor.textHint)
+            // 글자수 카운터를 별도 자식 View 로 격리 — answerText 외 다른 상태 변화에 의한
+            // 무관한 재평가 차단 (focus 변경, isSubmitting 변경 등으로 부모 body 가 재평가
+            // 되더라도 AnswerCharCounter 는 입력값이 동일하면 SwiftUI 가 body 평가 skip).
+            AnswerCharCounter(count: store.answerText.count, limit: 200)
         }
     }
 
@@ -242,6 +242,21 @@ struct QuestionDetailView: View {
         .padding(.top, 12)
         .padding(.bottom, 32)
         .background(MongleColor.background)
+    }
+}
+
+// MARK: - Answer Char Counter (격리된 자식 View)
+
+/// 답변 글자수 표시. answerText 만 의존하도록 분리해 다른 상태 변경 (focus, isSubmitting,
+/// mood 선택, hearts 갱신 등) 에 의한 무관 재평가를 차단.
+private struct AnswerCharCounter: View {
+    let count: Int
+    let limit: Int
+
+    var body: some View {
+        Text("\(count)/\(limit)")
+            .font(MongleFont.caption())
+            .foregroundColor(count >= limit ? MongleColor.error : MongleColor.textHint)
     }
 }
 
