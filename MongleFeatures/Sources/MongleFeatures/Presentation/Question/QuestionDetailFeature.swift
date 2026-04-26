@@ -245,7 +245,7 @@ public struct QuestionDetailFeature {
 
             case .editCostPopup(.presented(.delegate(.confirmed))):
                 state.editCostPopup = nil
-                guard let existingAnswer = state.myAnswer else { return .none }
+                guard state.myAnswer != nil else { return .none }
                 guard state.hearts >= 1 else {
                     state.appError = .domain(L10n.tr("home_hearts_insufficient"))
                     return .none
@@ -254,30 +254,7 @@ public struct QuestionDetailFeature {
                 // 실패 시 .editRollback 으로 되돌린다.
                 state.hearts -= 1
                 state.isSubmitting = true
-                state.appError = nil
-
-                let editAnswerText = state.answerText.trimmingCharacters(in: .whitespacesAndNewlines)
-                let editUserId = state.currentUser?.id ?? UUID()
-                let editQuestionId = state.question.id
-                let editMoodId = state.selectedMoodIndex.map { MoodOption.defaults[$0].id }
-                let updated = Answer(
-                    id: existingAnswer.id,
-                    dailyQuestionId: editQuestionId,
-                    userId: editUserId,
-                    content: editAnswerText,
-                    imageURL: existingAnswer.imageURL,
-                    createdAt: existingAnswer.createdAt,
-                    updatedAt: Date()
-                )
-                return .run { [answerRepository] send in
-                    do {
-                        let result = try await answerRepository.update(updated, moodId: editMoodId)
-                        await send(.submitAnswerResponse(.success(result)))
-                    } catch {
-                        await send(.editRollback)
-                        await send(.submitAnswerResponse(.failure(AppError.from(error))))
-                    }
-                }
+                return performAnswerEdit(state: &state)
 
             case .editCostPopup(.presented(.delegate(.cancelled))):
                 state.editCostPopup = nil
@@ -326,7 +303,7 @@ public struct QuestionDetailFeature {
                 // 서버 응답으로만 hearts sync. 실패 분기는 .adGrantFailed 로 분리됨.
                 state.hearts = hearts
                 // 광고 시청 완료 → 수정 작업 자동 실행 (다른 광고 보상 기능과 일관)
-                guard let existingAnswer = state.myAnswer else {
+                guard state.myAnswer != nil else {
                     state.isSubmitting = false
                     return .none
                 }
@@ -336,30 +313,7 @@ public struct QuestionDetailFeature {
                     return .none
                 }
                 state.hearts -= 1   // edit 비용 옵티미스틱 차감
-                state.appError = nil
-
-                let editAnswerText = state.answerText.trimmingCharacters(in: .whitespacesAndNewlines)
-                let editUserId = state.currentUser?.id ?? UUID()
-                let editQuestionId = state.question.id
-                let editMoodId = state.selectedMoodIndex.map { MoodOption.defaults[$0].id }
-                let updated = Answer(
-                    id: existingAnswer.id,
-                    dailyQuestionId: editQuestionId,
-                    userId: editUserId,
-                    content: editAnswerText,
-                    imageURL: existingAnswer.imageURL,
-                    createdAt: existingAnswer.createdAt,
-                    updatedAt: Date()
-                )
-                return .run { [answerRepository] send in
-                    do {
-                        let result = try await answerRepository.update(updated, moodId: editMoodId)
-                        await send(.submitAnswerResponse(.success(result)))
-                    } catch {
-                        await send(.editRollback)
-                        await send(.submitAnswerResponse(.failure(AppError.from(error))))
-                    }
-                }
+                return performAnswerEdit(state: &state)
 
             case .editCostPopup:
                 return .none
@@ -422,6 +376,38 @@ public struct QuestionDetailFeature {
         }
         .ifLet(\.$editCostPopup, action: \.editCostPopup) {
             HeartCostPopupFeature()
+        }
+    }
+
+    /// 답변 수정 공통 시퀀스. `editCostPopup(.confirmed)` 와 `.adHeartGranted` 가
+    /// 동일한 update 로직 (locals 추출 + Answer 빌드 + repository.update + rollback)
+    /// 을 가졌던 것을 단일 진입점으로 통합.
+    /// 호출지에서 hearts 검증·옵티미스틱 차감·isSubmitting 플래그를 먼저 셋업한 뒤 호출.
+    private func performAnswerEdit(state: inout State) -> Effect<Action> {
+        guard let existingAnswer = state.myAnswer else { return .none }
+        state.appError = nil
+
+        let editAnswerText = state.answerText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let editUserId = state.currentUser?.id ?? UUID()
+        let editQuestionId = state.question.id
+        let editMoodId = state.selectedMoodIndex.map { MoodOption.defaults[$0].id }
+        let updated = Answer(
+            id: existingAnswer.id,
+            dailyQuestionId: editQuestionId,
+            userId: editUserId,
+            content: editAnswerText,
+            imageURL: existingAnswer.imageURL,
+            createdAt: existingAnswer.createdAt,
+            updatedAt: Date()
+        )
+        return .run { [answerRepository] send in
+            do {
+                let result = try await answerRepository.update(updated, moodId: editMoodId)
+                await send(.submitAnswerResponse(.success(result)))
+            } catch {
+                await send(.editRollback)
+                await send(.submitAnswerResponse(.failure(AppError.from(error))))
+            }
         }
     }
 }
