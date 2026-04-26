@@ -68,20 +68,12 @@ public struct PeerNudgeView: View {
 
     // MARK: - Empty State (몽글 + 미답변 안내)
 
-    private func monggleColor(for moodId: String?) -> Color {
-        switch moodId {
-        case "happy":  return MongleColor.monggleYellow
-        case "calm":   return MongleColor.monggleGreen
-        case "loved":  return MongleColor.mongglePink
-        case "sad":    return MongleColor.monggleBlue
-        case "tired":  return MongleColor.monggleOrange
-        default:       return MongleColor.monggleYellow
-        }
-    }
+    // 이전: 화면별 5-way switch 중복 (default fallback 도 yellow vs pink 로 화면마다 불일치)
+    // → MoodOption.color(for:) 단일 진입점 사용으로 정책 일관성 확보.
 
     private var emptyState: some View {
         VStack(spacing: 16) {
-            MongleMonggle(color: monggleColor(for: store.memberMoodId), size: 72)
+            MongleMonggle(color: MoodOption.color(for: store.memberMoodId), size: 72)
             VStack(spacing: 4) {
                 Text(L10n.tr("nudge_not_answered", store.memberName))
                     .font(MongleFont.button())
