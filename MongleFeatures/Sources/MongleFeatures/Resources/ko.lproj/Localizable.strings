@@ -91,7 +91,7 @@
 "home_heart_replace" = "질문 다시받기";
 "home_heart_write" = "나만의 질문 작성";
 "home_heart_nudge" = "재촉하기";
-"home_heart_earn_rate" = "매일 오전 +1 · 답변 완료 +3";
+"home_heart_earn_rate" = "매일 오전 +1 · 답변 완료 +1";
 "home_group_manage" = "그룹 관리";
 "home_answer_first_title" = "먼저 답변을 완료해 주세요";
 "home_answer_first_view" = "%@의 답변을 보려면\n먼저 오늘의 질문에 답변해야 해요";
