@@ -109,69 +109,51 @@ public struct SearchHistoryView: View {
                 .padding(.top, MongleSpacing.md)
                 .padding(.bottom, MongleSpacing.sm)
 
-                // Date-grouped results
-                let grouped = Dictionary(grouping: store.results) { $0.date.dayKey }
-                let sortedGroups = grouped.keys.sorted(by: >)
-                let total = store.results.count
-                let globalIndices: [String: Int] = {
-                    var idx = 0
-                    var dict: [String: Int] = [:]
-                    for dayKey in sortedGroups {
-                        for item in (grouped[dayKey] ?? []) {
-                            dict[item.id] = idx
-                            idx += 1
-                        }
-                    }
-                    return dict
-                }()
+                // 사전 그룹핑된 섹션을 그대로 소비. body 내 Dictionary(grouping:)·sorted·DateFormatter 비용 제거.
+                let sections = store.groupedResults
+                let trimmedQuery = store.query.trimmingCharacters(in: .whitespaces)
+                let adAnchors = store.adAnchorIds
 
-                ForEach(sortedGroups, id: \.self) { dayKey in
-                    let items = grouped[dayKey] ?? []
-                    if let firstItem = items.first {
-                        // Date header
-                        HStack(spacing: 6) {
-                            Image(systemName: "calendar")
-                                .font(.system(size: 11))
-                                .foregroundColor(MongleColor.textHint)
-                            Text(firstItem.date.displayLabel)
-                                .font(MongleFont.label())
-                                .fontWeight(.semibold)
-                                .foregroundColor(MongleColor.textHint)
-                            Spacer()
-                        }
+                ForEach(sections) { section in
+                    // Date header
+                    HStack(spacing: 6) {
+                        Image(systemName: "calendar")
+                            .font(.system(size: 11))
+                            .foregroundColor(MongleColor.textHint)
+                        Text(section.displayLabel)
+                            .font(MongleFont.label())
+                            .fontWeight(.semibold)
+                            .foregroundColor(MongleColor.textHint)
+                        Spacer()
+                    }
+                    .padding(.horizontal, MongleSpacing.md)
+                    .padding(.bottom, MongleSpacing.xs)
+
+                    // Cards for this date
+                    ForEach(section.items) { result in
+                        SearchResultCard(
+                            result: result,
+                            query: trimmedQuery
+                        )
                         .padding(.horizontal, MongleSpacing.md)
                         .padding(.bottom, MongleSpacing.xs)
 
-                        // Cards for this date
-                        ForEach(items) { result in
-                            SearchResultCard(
-                                result: result,
-                                query: store.query.trimmingCharacters(in: .whitespaces)
-                            )
-                            .padding(.horizontal, MongleSpacing.md)
-                            .padding(.bottom, MongleSpacing.xs)
-
-                            if shouldShowAd(after: globalIndices[result.id] ?? 0, total: total) {
-                                #if os(iOS)
-                                AdBannerSection()
-                                    .padding(.horizontal, 20)
-                                    .padding(.bottom, MongleSpacing.sm)
-                                #endif
-                            }
+                        if adAnchors.contains(result.id) {
+                            #if os(iOS)
+                            AdBannerSection()
+                                .padding(.horizontal, 20)
+                                .padding(.bottom, MongleSpacing.sm)
+                            #endif
                         }
-
-                        Spacer().frame(height: MongleSpacing.xxs)
                     }
+
+                    Spacer().frame(height: MongleSpacing.xxs)
                 }
 
                 Spacer().frame(height: MongleSpacing.xl)
             }
         }
         .scrollDismissesKeyboard(.immediately)
-    }
-
-    private func shouldShowAd(after index: Int, total: Int) -> Bool {
-        (index + 1) % 11 == 0 || index + 1 == total
     }
 
     // MARK: - Empty State
@@ -342,25 +324,7 @@ private func colorIndexFromMoodId(_ moodId: String?) -> Int {
     }
 }
 
-private extension Date {
-    var dayKey: TimeInterval {
-        Calendar.current.startOfDay(for: self).timeIntervalSince1970
-    }
-
-    var displayLabel: String {
-        let cal = Calendar.current
-        let formatter = DateFormatter()
-        formatter.locale = .current
-        formatter.setLocalizedDateFormatFromTemplate("MMMd")
-        let base = formatter.string(from: self)
-        if cal.isDateInToday(self) {
-            return "\(base) · 오늘"
-        } else if cal.isDateInYesterday(self) {
-            return "\(base) · 어제"
-        }
-        return base
-    }
-}
+// 날짜 그룹 라벨/dayKey 는 SearchHistoryFeature 에서 사전 계산 (DateFormatter 재사용 + body 부담 제거).
 
 // UIColor hex init for AttributedString
 private extension UIColor {

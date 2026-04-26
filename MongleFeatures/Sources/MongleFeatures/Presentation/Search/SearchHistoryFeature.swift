@@ -28,6 +28,16 @@ public struct SearchResultItem: Equatable, Identifiable, Sendable {
     public let totalAnswerCount: Int
 }
 
+// MARK: - Grouped Result Section
+// 검색 결과를 날짜별로 사전 그룹핑·정렬한 결과. View 가 매 body 호출마다
+// Dictionary(grouping:) + sorted 를 반복하던 비용을 제거한다. displayLabel 까지
+// Feature 단계에서 포맷해 두므로 카드 렌더링 시 DateFormatter 호출도 사라진다.
+public struct SearchResultSection: Equatable, Identifiable, Sendable {
+    public let id: TimeInterval     // 그날 0시의 timeIntervalSince1970
+    public let displayLabel: String // "4월 26일 · 오늘" 등 사전 포맷된 라벨
+    public let items: [SearchResultItem]
+}
+
 // MARK: - Feature
 
 @Reducer
@@ -37,6 +47,11 @@ public struct SearchHistoryFeature {
     public struct State: Equatable {
         public var query: String = ""
         public var results: [SearchResultItem] = []
+        /// View 가 사용할 사전 그룹핑된 결과. results 변경 시점에만 reducer 가 갱신.
+        public var groupedResults: [SearchResultSection] = []
+        /// 카드 ID → "이 카드 다음에 광고 배너를 끼워라" 인 카드 ID 집합.
+        /// 매 body 호출마다 globalIndex 를 카운트하던 비용 + Dictionary[String:Int] lookup 을 Set.contains 로 단순화.
+        public var adAnchorIds: Set<String> = []
         public var isLoading: Bool = false
         public var showMinLengthHint: Bool = false
         public var errorMessage: String? = nil
@@ -48,6 +63,47 @@ public struct SearchHistoryFeature {
         public var resultCount: Int { results.count }
 
         public init() {}
+    }
+
+    // MARK: - 정적 Formatter
+    // DateFormatter 인스턴스 생성은 비싼 작업. 카드/섹션마다 신규 할당하지 않고 재사용.
+    private static let sectionDateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = .current
+        f.setLocalizedDateFormatFromTemplate("MMMd")
+        return f
+    }()
+
+    /// 정렬된 results 를 1회 순회하며 광고 삽입 위치(매 11번째 + 마지막)를 사전 계산.
+    private static func makeAdAnchorIds(from results: [SearchResultItem]) -> Set<String> {
+        var anchors: Set<String> = []
+        let total = results.count
+        for (i, r) in results.enumerated() {
+            if (i + 1) % 11 == 0 || i + 1 == total {
+                anchors.insert(r.id)
+            }
+        }
+        return anchors
+    }
+
+    private static func makeSections(from results: [SearchResultItem]) -> [SearchResultSection] {
+        let calendar = Calendar.current
+        var grouped: [TimeInterval: [SearchResultItem]] = [:]
+        for r in results {
+            let key = calendar.startOfDay(for: r.date).timeIntervalSince1970
+            grouped[key, default: []].append(r)
+        }
+        return grouped
+            .sorted { $0.key > $1.key }
+            .map { (key, items) in
+                let date = Date(timeIntervalSince1970: key)
+                let base = sectionDateFormatter.string(from: date)
+                let label: String
+                if calendar.isDateInToday(date)       { label = "\(base) · 오늘" }
+                else if calendar.isDateInYesterday(date) { label = "\(base) · 어제" }
+                else                                  { label = base }
+                return SearchResultSection(id: key, displayLabel: label, items: items)
+            }
     }
 
     public enum Action: Equatable, Sendable {
@@ -115,6 +171,8 @@ public struct SearchHistoryFeature {
                 let trimmed = query.trimmingCharacters(in: .whitespaces)
                 guard trimmed.count >= 2 else {
                     state.results = []
+                    state.groupedResults = []
+                    state.adAnchorIds = []
                     return .none
                 }
                 // 아직 히스토리 로딩 중이라면 결과를 비우지 않고 대기 (historyLoaded 후 재검색됨)
@@ -164,6 +222,8 @@ public struct SearchHistoryFeature {
 
                 results.sort { $0.date > $1.date }
                 state.results = results
+                state.groupedResults = Self.makeSections(from: results)
+                state.adAnchorIds = Self.makeAdAnchorIds(from: results)
                 return .none
 
             case .setError(let message):
@@ -174,6 +234,8 @@ public struct SearchHistoryFeature {
             case .reset:
                 state.query = ""
                 state.results = []
+                state.groupedResults = []
+                state.adAnchorIds = []
                 state.allHistory = []
                 state.loadedFamilyId = nil
                 state.isLoading = false
@@ -189,6 +251,8 @@ public struct SearchHistoryFeature {
                 guard state.loadedFamilyId != familyId else { return .none }
                 state.allHistory = []
                 state.results = []
+                state.groupedResults = []
+                state.adAnchorIds = []
                 state.loadedFamilyId = familyId
                 guard familyId != nil else {
                     state.isLoading = false
