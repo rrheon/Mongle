@@ -1271,12 +1271,38 @@ public struct MongleView: View {
     }
 }
 
+// MARK: - Mongle Member (Home / Scene 멤버 모델)
+
+/// Home 화면 캐릭터 노드의 단일 모델.
+///
+/// 이전에는 `(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool)` tuple 배열로
+/// 주고받았으나, 이는 (1) Equatable 자동 합성이 안 되어 SwiftUI 의 view diff 에서 비효율,
+/// (2) Identifiable 미준수로 ForEach 의 id 추출 클로저가 element 마다 호출,
+/// (3) 신규 필드 추가 시 명명 충돌·초기화 누락 위험이 있었다.
+///
+/// 명명된 struct 로 끌어올려 SwiftUI / TCA 양쪽 모두 1급 시민으로 다룰 수 있게 한다.
+public struct MongleMember: Identifiable, Equatable, Sendable {
+    public let id: UUID
+    public let name: String
+    public let color: Color
+    public let hasAnswered: Bool
+    public let hasSkipped: Bool
+
+    public init(id: UUID, name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool) {
+        self.id = id
+        self.name = name
+        self.color = color
+        self.hasAnswered = hasAnswered
+        self.hasSkipped = hasSkipped
+    }
+}
+
 // MARK: - Mongle Scene (구역 내 이동 + 충돌 감지)
 
 public struct MongleSceneView: View {
     public var hasCurrentUserAnswered: Bool = false
     public var hasCurrentUserSkipped: Bool = false
-    public var members: [(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool)]
+    public var members: [MongleMember]
     public var currentUserName: String?
     public var onViewAnswer: (String) -> Void = { _ in }
     public var onNudge: (String) -> Void = { _ in }
@@ -1298,17 +1324,17 @@ public struct MongleSceneView: View {
     /// NavigationStack push 등으로 onDisappear 가 즉시 fire 되지 않는 케이스에서도 유효.
     @Environment(\.scenePhase) private var scenePhase
 
-    private static let defaultMemberData: [(String, Color, Bool, Bool)] = [
-        ("Dad", .orange, true, false),
-        ("Mom", .green, false, false),
-        ("Lily", .yellow, true, false),
-        ("Ben", .blue, false, false),
-        ("Alex", .pink, true, false)
+    private static let defaultMemberData: [MongleMember] = [
+        MongleMember(id: UUID(), name: "Dad",  color: .orange, hasAnswered: true,  hasSkipped: false),
+        MongleMember(id: UUID(), name: "Mom",  color: .green,  hasAnswered: false, hasSkipped: false),
+        MongleMember(id: UUID(), name: "Lily", color: .yellow, hasAnswered: true,  hasSkipped: false),
+        MongleMember(id: UUID(), name: "Ben",  color: .blue,   hasAnswered: false, hasSkipped: false),
+        MongleMember(id: UUID(), name: "Alex", color: .pink,   hasAnswered: true,  hasSkipped: false)
     ]
 
     public init(hasCurrentUserAnswered: Bool = false,
                 hasCurrentUserSkipped: Bool = false,
-                members: [(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool)] = [],
+                members: [MongleMember] = [],
                 currentUserName: String? = nil,
                 onViewAnswer: @escaping (String) -> Void = { _ in },
                 onNudge: @escaping (String) -> Void = { _ in },
@@ -1326,8 +1352,9 @@ public struct MongleSceneView: View {
         self.onAnswerFirstToNudge = onAnswerFirstToNudge
     }
 
-    private var effectiveMembers: [(String, Color, Bool, Bool)] {
-        members.isEmpty ? Self.defaultMemberData : members.map { ($0.name, $0.color, $0.hasAnswered, $0.hasSkipped) }
+    private var effectiveMembers: [MongleMember] {
+        // 빈 배열이면 폴백, 아니면 입력 배열 그대로 사용 (재할당 0회)
+        members.isEmpty ? Self.defaultMemberData : members
     }
 
     public var body: some View {
@@ -1375,27 +1402,32 @@ public struct MongleSceneView: View {
                     timer = nil
                 }
             }
-            .onChange(of: members.map { $0.name }) { _, _ in
+            // 멤버 배열 변화 1개의 onChange 로 통합 (이전: name/hasAnswered/hasSkipped/color
+            // 4중 onChange + 매 평가마다 members.map 임시배열 4개 생성).
+            // 핸들러 안에서는 [String: MongleMember] dict 인덱스로 O(1) 매치하여
+            // 이전의 nested O(N²) linear search 제거.
+            .onChange(of: members) { oldMembers, newMembers in
                 guard geo.size.width > 0, geo.size.height > 0 else { return }
-                initMongles(size: geo.size)
-            }
-            .onChange(of: members.map { $0.hasAnswered }) { _, _ in
+
+                // 이름 집합이 바뀌면 시뮬레이션 자체를 재초기화 (가족 구성원 변경)
+                let oldNames = Set(oldMembers.map { $0.name })
+                let newNames = Set(newMembers.map { $0.name })
+                if oldNames != newNames {
+                    initMongles(size: geo.size)
+                    return
+                }
+
+                // 동일 멤버라면 상태(answer/skip/color) 만 업데이트
+                let lookup = Dictionary(uniqueKeysWithValues: newMembers.map { ($0.name, $0) })
                 for i in mongles.indices {
-                    if let member = members.first(where: { $0.name == mongles[i].name }) {
+                    guard let member = lookup[mongles[i].name] else { continue }
+                    if mongles[i].hasAnswered != member.hasAnswered {
                         mongles[i].hasAnswered = member.hasAnswered
                     }
-                }
-            }
-            .onChange(of: members.map { $0.hasSkipped }) { _, _ in
-                for i in mongles.indices {
-                    if let member = members.first(where: { $0.name == mongles[i].name }) {
+                    if mongles[i].hasSkipped != member.hasSkipped {
                         mongles[i].hasSkipped = member.hasSkipped
                     }
-                }
-            }
-            .onChange(of: members.map { $0.color }) { _, _ in
-                for i in mongles.indices {
-                    if let member = members.first(where: { $0.name == mongles[i].name }) {
+                    if mongles[i].color != member.color {
                         mongles[i].color = member.color
                     }
                 }
@@ -1411,7 +1443,7 @@ public struct MongleSceneView: View {
     private func initMongles(size: CGSize) {
         guard size.width > 0, size.height > 0 else { return }
         var placed: [CGPoint] = []
-        mongles = effectiveMembers.map { name, color, hasAnswered, hasSkipped in
+        mongles = effectiveMembers.map { member in
             var pos = randomPos(size: size)
             for _ in 0..<30 {
                 let overlaps = placed.contains { hypot(pos.x - $0.x, pos.y - $0.y) < collisionRadius }
@@ -1420,10 +1452,10 @@ public struct MongleSceneView: View {
             }
             placed.append(pos)
             return MongleCharacter(
-                name: name,
-                color: color,
-                hasAnswered: hasAnswered,
-                hasSkipped: hasSkipped,
+                name: member.name,
+                color: member.color,
+                hasAnswered: member.hasAnswered,
+                hasSkipped: member.hasSkipped,
                 position: pos,
                 targetPosition: randomPos(size: size)
             )
