@@ -62,6 +62,7 @@ public struct GroupManagementFeature {
     public enum Action: Sendable, Equatable {
         case onAppear
         case groupDataLoaded(MongleGroup, [User])
+        case loadFailed(String)
         case inviteCodeCopyTapped
         case copiedToastDismissed
         case leaveGroupTapped
@@ -100,9 +101,18 @@ public struct GroupManagementFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                state.errorMessage = nil
+                // try? silent fallback → do-catch. 실패 시 사용자가 그룹 정보를
+                // 못 본 이유를 인지할 수 있도록 errorMessage 노출.
+                // getMyFamily() 는 Optional 반환 (가족 미가입 케이스) — nil 은 정상 흐름,
+                // throw 만 에러로 분류.
                 return .run { [familyRepository] send in
-                    if let result = try? await familyRepository.getMyFamily() {
-                        await send(.groupDataLoaded(result.0, result.1))
+                    do {
+                        if let result = try await familyRepository.getMyFamily() {
+                            await send(.groupDataLoaded(result.0, result.1))
+                        }
+                    } catch {
+                        await send(.loadFailed(AppError.from(error).userMessage))
                     }
                 }
 
@@ -120,6 +130,10 @@ public struct GroupManagementFeature {
                     let subtitle = isOwner ? "방장" : formatter.string(from: user.createdAt) + " 가입"
                     return State.GroupMember(id: user.id, name: user.name, subtitle: subtitle, moodId: user.moodId, isOwner: isOwner)
                 }
+                return .none
+
+            case .loadFailed(let message):
+                state.errorMessage = message
                 return .none
 
             case .inviteCodeCopyTapped:

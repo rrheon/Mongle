@@ -179,10 +179,17 @@ public struct NotificationFeature {
             case .onAppear:
                 guard state.notifications.isEmpty else { return .none }
                 state.isLoading = true
+                state.errorMessage = nil
                 let scopeFamilyId = state.mode.scopeFamilyId
                 return .run { [notificationRepository] send in
-                    let items = (try? await notificationRepository.getNotifications(limit: 50, familyId: scopeFamilyId)) ?? []
-                    await send(.notificationsLoaded(items))
+                    // try? 로 silent fallback 하던 것을 do-catch 로 변경 — 실패 시
+                    // 사용자가 "알림 없음" 으로 오해하지 않도록 errorMessage 노출.
+                    do {
+                        let items = try await notificationRepository.getNotifications(limit: 50, familyId: scopeFamilyId)
+                        await send(.notificationsLoaded(items))
+                    } catch {
+                        await send(.setError(AppError.from(error).userMessage))
+                    }
                 }
 
             case .backTapped:
@@ -190,10 +197,15 @@ public struct NotificationFeature {
 
             case .refresh:
                 state.isLoading = true
+                state.errorMessage = nil
                 let scopeFamilyId = state.mode.scopeFamilyId
                 return .run { [notificationRepository] send in
-                    let items = (try? await notificationRepository.getNotifications(limit: 50, familyId: scopeFamilyId)) ?? []
-                    await send(.notificationsLoaded(items))
+                    do {
+                        let items = try await notificationRepository.getNotifications(limit: 50, familyId: scopeFamilyId)
+                        await send(.notificationsLoaded(items))
+                    } catch {
+                        await send(.setError(AppError.from(error).userMessage))
+                    }
                 }
 
             case .notificationTapped(let notification):
