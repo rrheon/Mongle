@@ -31,6 +31,8 @@
 "email_auth_login_title" = "Log in with email";
 "email_auth_login_subtitle" = "Enter your registered email and password.";
 "email_auth_login_submit" = "Log in";
+"email_login_invalid_title" = "Please check your login info";
+"email_login_invalid_desc" = "The email or password is incorrect.\nPlease check it again.";
 "email_auth_signup_title" = "Sign up with email";
 "email_auth_signup_subtitle" = "Enter your email and password.\nWe'll send a verification code to your email.";
 "email_auth_email_label" = "Email";

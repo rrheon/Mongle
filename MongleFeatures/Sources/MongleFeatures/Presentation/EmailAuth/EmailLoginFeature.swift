@@ -21,6 +21,10 @@ public struct EmailLoginFeature {
         public var passwordError: String?
         public var isSubmitting: Bool = false
         public var errorMessage: String?
+        /// 잘못된 이메일/비밀번호 입력 시 사용자에게 안내하는 팝업 상태.
+        /// 기존엔 alert 에 "MongleData.APIError 오류 7" 같은 raw 문자열이 노출되던 것을
+        /// 사용자 친화 팝업으로 분리.
+        public var showInvalidCredentialsAlert: Bool = false
 
         public var isEmailValid: Bool {
             guard email.contains("@"), email.contains(".") else { return false }
@@ -46,6 +50,7 @@ public struct EmailLoginFeature {
         case loginResponse(Result<SocialLoginResult, Error>)
 
         case dismissError
+        case dismissInvalidCredentialsAlert
         case backTapped
 
         case delegate(Delegate)
@@ -106,11 +111,25 @@ public struct EmailLoginFeature {
 
             case .loginResponse(.failure(let error)):
                 state.isSubmitting = false
-                state.errorMessage = (error as? AppError)?.userMessage ?? error.localizedDescription
+                // 모든 raw error → AppError 로 변환해 사용자 노출 메시지를 일관화.
+                // (이전엔 raw APIError 가 cast 실패해 localizedDescription 으로 넘어가
+                // "MongleData.APIError 오류 7" 같은 Foundation 자동 메시지 노출됐음)
+                let appError = error as? AppError ?? AppError.from(error)
+                // 이메일 로그인 컨텍스트의 401 = 잘못된 자격증명. 다른 화면의 "세션 만료"
+                // 의미와 분리해 명시적인 안내 팝업으로 처리.
+                if appError == .unauthorized {
+                    state.showInvalidCredentialsAlert = true
+                } else {
+                    state.errorMessage = appError.userMessage
+                }
                 return .none
 
             case .dismissError:
                 state.errorMessage = nil
+                return .none
+
+            case .dismissInvalidCredentialsAlert:
+                state.showInvalidCredentialsAlert = false
                 return .none
 
             case .backTapped:

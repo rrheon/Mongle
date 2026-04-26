@@ -31,6 +31,8 @@
 "email_auth_login_title" = "이메일로 로그인";
 "email_auth_login_subtitle" = "가입하신 이메일과 비밀번호를 입력해주세요.";
 "email_auth_login_submit" = "로그인";
+"email_login_invalid_title" = "로그인 정보를 확인해주세요";
+"email_login_invalid_desc" = "이메일 또는 비밀번호가 올바르지 않아요.\n다시 한 번 확인해주세요.";
 "email_auth_signup_title" = "이메일로 가입하기";
 "email_auth_signup_subtitle" = "이메일과 비밀번호를 입력해주세요.\n입력하신 이메일로 인증 코드를 보내드려요.";
 "email_auth_email_label" = "이메일";

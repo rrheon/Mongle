@@ -91,6 +91,23 @@ struct EmailLoginView: View {
             },
             message: { Text(store.errorMessage ?? "") }
         )
+        .overlay {
+            if store.showInvalidCredentialsAlert {
+                MonglePopupView(
+                    icon: .init(
+                        systemName: "exclamationmark.lock.fill",
+                        foregroundColor: MongleColor.error,
+                        backgroundColor: MongleColor.bgErrorLight
+                    ),
+                    title: L10n.tr("email_login_invalid_title"),
+                    description: L10n.tr("email_login_invalid_desc"),
+                    primaryLabel: L10n.tr("common_confirm"),
+                    onPrimary: { store.send(.dismissInvalidCredentialsAlert) }
+                )
+                .transition(.opacity)
+                .animation(.easeInOut(duration: 0.2), value: store.showInvalidCredentialsAlert)
+            }
+        }
     }
 
     // MARK: - Helpers
