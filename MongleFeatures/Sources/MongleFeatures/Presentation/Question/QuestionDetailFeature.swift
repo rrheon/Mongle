@@ -64,9 +64,10 @@ public struct QuestionDetailFeature {
             self.answerText = myAnswer?.content ?? answerText
             self.hearts = hearts
             // 수정 모드: 사용자의 현재 moodId로 초기 선택
+            // (이전: defaults.firstIndex(where:) linear scan → MoodOption.indexById dict O(1))
             if myAnswer != nil,
                let moodId = currentUser?.moodId,
-               let index = MoodOption.defaults.firstIndex(where: { $0.id == moodId }) {
+               let index = MoodOption.indexById[moodId] {
                 self.selectedMoodIndex = index
             } else {
                 self.selectedMoodIndex = selectedMoodIndex
@@ -383,8 +384,9 @@ public struct QuestionDetailFeature {
                 if let myAnswer = data.myAnswer {
                     state.answerText = myAnswer.content
                     // 수정 모드: 사용자의 현재 moodId로 기분 선택 복원
+                    // (이전: defaults.firstIndex(where:) → MoodOption.indexById dict O(1))
                     if let moodId = state.currentUser?.moodId,
-                       let index = MoodOption.defaults.firstIndex(where: { $0.id == moodId }) {
+                       let index = MoodOption.indexById[moodId] {
                         state.selectedMoodIndex = index
                     }
                 }

@@ -812,6 +812,28 @@ public struct MoodOption: Identifiable, Equatable {
         MoodOption(id: "sad",     emoji: "😢", label: L10n.tr("mood_sad"),     color: MongleColor.monggleBlue),
         MoodOption(id: "tired",   emoji: "😴", label: L10n.tr("mood_tired"),   color: MongleColor.monggleOrange),
     ]
+
+    /// moodId → defaults 인덱스 역매핑 캐시.
+    /// 호출지마다 `defaults.firstIndex(where:)` linear scan 을 O(1) lookup 으로 대체.
+    public static let indexById: [String: Int] = Dictionary(
+        uniqueKeysWithValues: defaults.enumerated().map { ($1.id, $0) }
+    )
+
+    /// moodId → Color 매핑 캐시. 화면 내 정의된 5-way switch (PeerNudgeView,
+    /// MainTab+Reducer, MainTabView, NotificationView 등) 를 단일 진입점으로 통합.
+    public static let colorById: [String: Color] = Dictionary(
+        uniqueKeysWithValues: defaults.map { ($0.id, $0.color) }
+    )
+
+    /// moodId 가 nil 이거나 매핑이 없을 때 사용되는 fallback. 기존 화면들이
+    /// monggleYellow / mongglePink 으로 분기되어 일관성이 깨져있던 것을 통일.
+    public static let defaultColor: Color = MongleColor.mongglePink
+
+    /// 단일 진입점 — 모든 moodId → Color 변환은 이 함수를 사용.
+    public static func color(for moodId: String?) -> Color {
+        guard let moodId, let color = colorById[moodId] else { return defaultColor }
+        return color
+    }
 }
 
 /// component/MoodSelector — glass card with row of mood balls
