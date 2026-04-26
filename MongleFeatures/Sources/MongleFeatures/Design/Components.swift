@@ -1107,6 +1107,9 @@ public struct MongleCharacter: Identifiable {
     public var overlapCounter: Int = 0  // 충돌 지속 프레임 수
     public var stepCount: Int = 0       // 이동 누적 스텝 수 (hop 위상 계산용)
     public var restFramesLeft: Int = 0  // 휴식 남은 프레임 수 (> 0 이면 정지)
+    /// 캐릭터 hop 오프셋 캐시. body 호출마다 sin/abs 를 반복 계산하던 것을
+    /// step() 1회 갱신으로 옮겨 ZStack 재평가 비용을 낮춘다.
+    public var hopY: CGFloat = 0
 
     public init(name: String, color: Color, hasAnswered: Bool, hasSkipped: Bool = false, position: CGPoint, targetPosition: CGPoint) {
         self.name = name
@@ -1260,7 +1263,8 @@ public struct MongleSceneView: View {
     public var onAnswerFirstToNudge: (String) -> Void = { _ in }
 
     private let stepSize: CGFloat = 2.0
-    private let interval: TimeInterval = 0.12
+    /// 0.16s = 6.25Hz. 이전 0.12s(8.3Hz) 대비 부하 약 25% 감소하면서 시각적 자연스러움 유지.
+    private let interval: TimeInterval = 0.16
     private let collisionRadius: CGFloat = 76
     private let targetThreshold: CGFloat = 12
     private let wallPadding: CGFloat = 50
@@ -1268,6 +1272,9 @@ public struct MongleSceneView: View {
 
     @State private var mongles: [MongleCharacter] = []
     @State private var timer: Timer?
+    /// scenePhase 가 .active 가 아니면 Timer 를 invalidate 하여 백그라운드 CPU 점유를 막는다.
+    /// NavigationStack push 등으로 onDisappear 가 즉시 fire 되지 않는 케이스에서도 유효.
+    @Environment(\.scenePhase) private var scenePhase
 
     private static let defaultMemberData: [(String, Color, Bool, Bool)] = [
         ("Dad", .orange, true, false),
@@ -1305,7 +1312,7 @@ public struct MongleSceneView: View {
         GeometryReader { geo in
             ZStack {
                 ForEach(mongles) { h in
-                    let hopY = -abs(sin(CGFloat(h.stepCount) * .pi / 5.0)) * 12
+                    // hopY 는 step() 시점에 캐시됨 (body 재평가 시 sin/abs 반복 호출 제거)
                     MongleView(
                         name: h.name,
                         color: h.color,
@@ -1320,7 +1327,7 @@ public struct MongleSceneView: View {
                         onAnswerFirstToView: onAnswerFirstToView,
                         onAnswerFirstToNudge: onAnswerFirstToNudge
                     )
-                    .position(CGPoint(x: h.position.x, y: h.position.y + hopY))
+                    .position(CGPoint(x: h.position.x, y: h.position.y + h.hopY))
                     .animation(.linear(duration: interval), value: h.stepCount)
                 }
             }
@@ -1334,6 +1341,17 @@ public struct MongleSceneView: View {
                 guard newSize.width > 0, newSize.height > 0 else { return }
                 if mongles.isEmpty { initMongles(size: newSize) }
                 if timer == nil { startTimer(size: newSize) }
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                // 백그라운드/비활성 진입 시 Timer 정지, 복귀 시 재시작
+                if newPhase == .active {
+                    if geo.size.width > 0, geo.size.height > 0, timer == nil {
+                        startTimer(size: geo.size)
+                    }
+                } else {
+                    timer?.invalidate()
+                    timer = nil
+                }
             }
             .onChange(of: members.map { $0.name }) { _, _ in
                 guard geo.size.width > 0, geo.size.height > 0 else { return }
@@ -1456,6 +1474,8 @@ public struct MongleSceneView: View {
             mongles[i].overlapCounter = 0
             mongles[i].stepCount += 1
             mongles[i].position = pos
+            // hopY 캐싱: body 재평가마다 sin/abs 반복 호출하던 것을 step 시점으로 이동
+            mongles[i].hopY = -abs(sin(CGFloat(mongles[i].stepCount) * .pi / 5.0)) * 12
         }
     }
 }
