@@ -31,6 +31,8 @@
 "email_auth_login_title" = "メールでログイン";
 "email_auth_login_subtitle" = "登録したメールアドレスとパスワードを入力してください。";
 "email_auth_login_submit" = "ログイン";
+"email_login_invalid_title" = "ログイン情報をご確認ください";
+"email_login_invalid_desc" = "メールアドレスまたはパスワードが正しくありません。\nもう一度ご確認ください。";
 "email_auth_signup_title" = "メールで登録";
 "email_auth_signup_subtitle" = "メールアドレスとパスワードを入力してください。\n入力いただいたメールに認証コードを送信します。";
 "email_auth_email_label" = "メールアドレス";

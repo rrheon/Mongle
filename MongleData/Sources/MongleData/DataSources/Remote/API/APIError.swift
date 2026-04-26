@@ -72,6 +72,17 @@ public enum APIError: Error, Equatable {
     }
 }
 
+// MARK: - LocalizedError Conformance
+
+/// `localizedDescription` 프로퍼티만 정의해도 `Error` 가 NSError 로 브리지될 때
+/// Foundation 이 자동 메시지 ("작업을 완료할 수 없습니다. (...오류 N)") 를
+/// 만들어 사용자에게 노출하는 문제를 막는다.
+/// `LocalizedError.errorDescription` 을 구현해야 시스템 다이얼로그/`error.localizedDescription`
+/// 모두에서 우리 한국어 메시지가 나온다.
+extension APIError: LocalizedError {
+    public var errorDescription: String? { localizedDescription }
+}
+
 // MARK: - Server Error Response Body
 
 public struct ErrorResponse: Codable {
