@@ -49,7 +49,7 @@ public struct NotificationView: View {
     /// .filtered 모드에서 현재 그룹 기준으로 결과가 비어 있는 경우에도 emptyView 를 노출하기 위해
     /// 모드 필터링이 적용된 groupedNotifications 기준으로 비어 있는지 판정한다.
     private var isEffectivelyEmpty: Bool {
-        store.groupedNotifications.allSatisfy { $0.1.isEmpty } || store.groupedNotifications.isEmpty
+        store.groupedNotifications.allSatisfy { $0.items.isEmpty } || store.groupedNotifications.isEmpty
     }
 
     private var headerView: some View {
@@ -87,23 +87,23 @@ public struct NotificationView: View {
     private var notificationList: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
-                ForEach(store.groupedNotifications, id: \.0) { section, notifications in
+                ForEach(store.groupedNotifications) { section in
                     VStack(alignment: .leading, spacing: 0) {
-                        Text(section)
+                        Text(section.title)
                             .font(MongleFont.captionBold())
                             .foregroundColor(MongleColor.textSecondary)
                             .padding(.horizontal, 20)
                             .padding(.top, 12)
                             .padding(.bottom, 6)
 
-                        ForEach(Array(notifications.enumerated()), id: \.element.id) { index, notification in
+                        ForEach(Array(section.items.enumerated()), id: \.element.id) { index, notification in
                             NotificationCard(notification: notification) {
                                 store.send(.notificationTapped(notification))
                             } onDelete: {
                                 store.send(.deleteNotification(notification))
                             }
 
-                            if index != notifications.count - 1 {
+                            if index != section.items.count - 1 {
                                 Divider()
                                     .padding(.leading, 76)
                             }

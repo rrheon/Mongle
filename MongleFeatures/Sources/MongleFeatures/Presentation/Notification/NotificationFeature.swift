@@ -13,6 +13,21 @@ import UserNotifications
 // Domain의 Notification과 이름 충돌 방지
 public typealias MongleNotification = Domain.Notification
 
+/// 알림 리스트의 섹션 단위 (날짜 또는 가족 그룹).
+/// `(String, [MongleNotification])` 튜플 대신 명명 구조체로 노출하여 State Equatable 자동합성과
+/// View 의 ForEach Identifiable 매칭을 동시에 만족.
+public struct NotificationSection: Equatable, Identifiable, Sendable {
+    public let id: String           // 섹션 라벨 (오늘/이번 주/그룹명 등)을 안정 키로 사용
+    public let title: String
+    public let items: [MongleNotification]
+
+    public init(title: String, items: [MongleNotification]) {
+        self.id = title
+        self.title = title
+        self.items = items
+    }
+}
+
 @Reducer
 public struct NotificationFeature {
 
@@ -50,82 +65,19 @@ public struct NotificationFeature {
         public var isLoading = false
         public var errorMessage: String?
 
-        public var unreadCount: Int {
-            notifications.filter { !$0.isRead }.count
-        }
+        /// notifications/mode 변경 시점에만 reducer 가 갱신하는 캐시.
+        /// 매 SwiftUI body 호출마다 filter/sort/grouping 을 반복하던 비용을 제거.
+        public var groupedNotifications: [NotificationSection] = []
+        /// 미읽음 개수 — notifications 가 바뀔 때만 reducer 가 재계산.
+        public var unreadCount: Int = 0
 
-        public var hasUnread: Bool {
-            unreadCount > 0
-        }
+        public var hasUnread: Bool { unreadCount > 0 }
 
         /// 특정 가족 그룹에 한정된 미읽음 여부.
         /// Home 화면 닫을 때처럼 "현재 그룹 한정" 으로 다시 계산해야 할 때 사용.
         public func hasUnread(forFamily familyId: UUID?) -> Bool {
             guard let familyId else { return hasUnread }
             return notifications.contains { !$0.isRead && $0.familyId == familyId }
-        }
-
-        /// 모드에 따라 다른 방식으로 그룹화된 알림 반환
-        public var groupedNotifications: [(String, [MongleNotification])] {
-            switch mode {
-            case .filtered(let familyId, _):
-                let filtered = notifications.filter { $0.familyId == familyId }
-                return dateGrouped(filtered)
-
-            case .grouped:
-                var byFamily: [UUID: [MongleNotification]] = [:]
-                var noFamily: [MongleNotification] = []
-                for n in notifications {
-                    if let fid = n.familyId {
-                        byFamily[fid, default: []].append(n)
-                    } else {
-                        noFamily.append(n)
-                    }
-                }
-                var result: [(String, [MongleNotification])] = []
-                // 최신 알림 기준으로 그룹 정렬
-                let sortedFamilies = byFamily.sorted {
-                    ($0.value.first?.createdAt ?? .distantPast) > ($1.value.first?.createdAt ?? .distantPast)
-                }
-                for (familyId, items) in sortedFamilies {
-                    let name = groupNameMap[familyId] ?? L10n.tr("notif_date_older")
-                    result.append((name, items.sorted { $0.createdAt > $1.createdAt }))
-                }
-                if !noFamily.isEmpty {
-                    result.append((L10n.tr("notif_date_older"), noFamily.sorted { $0.createdAt > $1.createdAt }))
-                }
-                return result
-
-            case .all:
-                return dateGrouped(notifications)
-            }
-        }
-
-        private func dateGrouped(_ items: [MongleNotification]) -> [(String, [MongleNotification])] {
-            let calendar = Calendar.current
-            let today = calendar.startOfDay(for: Date())
-            let weekAgo = calendar.date(byAdding: .day, value: -7, to: today) ?? today
-
-            var todayItems: [MongleNotification] = []
-            var thisWeekItems: [MongleNotification] = []
-            var olderItems: [MongleNotification] = []
-
-            for n in items {
-                let day = calendar.startOfDay(for: n.createdAt)
-                if day == today {
-                    todayItems.append(n)
-                } else if day > weekAgo {
-                    thisWeekItems.append(n)
-                } else {
-                    olderItems.append(n)
-                }
-            }
-
-            var result: [(String, [MongleNotification])] = []
-            if !todayItems.isEmpty { result.append((L10n.tr("notif_date_today"), todayItems)) }
-            if !thisWeekItems.isEmpty { result.append((L10n.tr("notif_date_this_week"), thisWeekItems)) }
-            if !olderItems.isEmpty { result.append((L10n.tr("notif_date_older"), olderItems)) }
-            return result
         }
 
         public init(
@@ -136,7 +88,98 @@ public struct NotificationFeature {
             self.notifications = notifications
             self.mode = mode
             self.groupNameMap = groupNameMap
+            self.unreadCount = notifications.reduce(0) { $0 + ($1.isRead ? 0 : 1) }
+            self.groupedNotifications = NotificationFeature.makeGrouped(
+                notifications: notifications,
+                mode: mode,
+                groupNameMap: groupNameMap
+            )
         }
+    }
+
+    // MARK: - Grouping (reducer 단일 진입점)
+
+    /// notifications 가 이미 createdAt 내림차순 정렬되어 있다고 가정.
+    /// (notificationsLoaded 에서 한 번 정렬한 뒤 변경 작업은 순서를 보존)
+    fileprivate static func makeGrouped(
+        notifications: [MongleNotification],
+        mode: Mode,
+        groupNameMap: [UUID: String]
+    ) -> [NotificationSection] {
+        switch mode {
+        case .filtered(let familyId, _):
+            let filtered = notifications.filter { $0.familyId == familyId }
+            return dateGrouped(filtered)
+
+        case .grouped:
+            // 단일 패스: 가족별 버킷에 append (이미 정렬되어 있으므로 내부 재정렬 불필요).
+            // 출력 순서는 "각 가족의 첫 알림 등장 순" → 사실상 최신 알림이 있는 가족이 위로.
+            var byFamily: [(familyId: UUID, items: [MongleNotification])] = []
+            var familyIndex: [UUID: Int] = [:]
+            var noFamily: [MongleNotification] = []
+            for n in notifications {
+                if let fid = n.familyId {
+                    if let idx = familyIndex[fid] {
+                        byFamily[idx].items.append(n)
+                    } else {
+                        familyIndex[fid] = byFamily.count
+                        byFamily.append((fid, [n]))
+                    }
+                } else {
+                    noFamily.append(n)
+                }
+            }
+            var result: [NotificationSection] = []
+            result.reserveCapacity(byFamily.count + 1)
+            let olderLabel = L10n.tr("notif_date_older")
+            for entry in byFamily {
+                let name = groupNameMap[entry.familyId] ?? olderLabel
+                result.append(NotificationSection(title: name, items: entry.items))
+            }
+            if !noFamily.isEmpty {
+                result.append(NotificationSection(title: olderLabel, items: noFamily))
+            }
+            return result
+
+        case .all:
+            return dateGrouped(notifications)
+        }
+    }
+
+    fileprivate static func dateGrouped(_ items: [MongleNotification]) -> [NotificationSection] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let weekAgo = calendar.date(byAdding: .day, value: -7, to: today) ?? today
+
+        var todayItems: [MongleNotification] = []
+        var thisWeekItems: [MongleNotification] = []
+        var olderItems: [MongleNotification] = []
+
+        for n in items {
+            let day = calendar.startOfDay(for: n.createdAt)
+            if day == today {
+                todayItems.append(n)
+            } else if day > weekAgo {
+                thisWeekItems.append(n)
+            } else {
+                olderItems.append(n)
+            }
+        }
+
+        var result: [NotificationSection] = []
+        if !todayItems.isEmpty { result.append(NotificationSection(title: L10n.tr("notif_date_today"), items: todayItems)) }
+        if !thisWeekItems.isEmpty { result.append(NotificationSection(title: L10n.tr("notif_date_this_week"), items: thisWeekItems)) }
+        if !olderItems.isEmpty { result.append(NotificationSection(title: L10n.tr("notif_date_older"), items: olderItems)) }
+        return result
+    }
+
+    fileprivate static func refreshDerived(_ state: inout State) {
+        state.unreadCount = state.notifications.reduce(0) { $0 + ($1.isRead ? 0 : 1) }
+        state.groupedNotifications = makeGrouped(
+            notifications: state.notifications,
+            mode: state.mode,
+            groupNameMap: state.groupNameMap
+        )
     }
 
     public enum Action: Sendable, Equatable {
@@ -214,6 +257,7 @@ public struct NotificationFeature {
                 // 나타날 수 있으니 사용자가 인지하도록.
                 let deleteId = notification.id
                 state.notifications = state.notifications.filter { $0.id != notification.id }
+                Self.refreshDerived(&state)
                 let mode = state.mode
                 return .run { [notificationRepository] send in
                     do {
@@ -248,6 +292,7 @@ public struct NotificationFeature {
                         isRead: true,
                         createdAt: notification.createdAt
                     )
+                    Self.refreshDerived(&state)
                 }
                 return .run { [notificationRepository] send in
                     do {
@@ -276,6 +321,7 @@ public struct NotificationFeature {
                         createdAt: n.createdAt
                     )
                 }
+                Self.refreshDerived(&state)
                 return .run { [notificationRepository] send in
                     do {
                         _ = try await notificationRepository.markAllAsRead(familyId: scopeFamilyId)
@@ -288,6 +334,7 @@ public struct NotificationFeature {
 
             case .deleteNotification(let notification):
                 state.notifications = state.notifications.filter { $0.id != notification.id }
+                Self.refreshDerived(&state)
                 return .run { [notificationRepository] send in
                     do {
                         _ = try await notificationRepository.delete(id: notification.id)
@@ -305,6 +352,7 @@ public struct NotificationFeature {
                 } else {
                     state.notifications = []
                 }
+                Self.refreshDerived(&state)
                 return .run { [notificationRepository] send in
                     // markAllAsRead + deleteAll 두 단계. 어느 한쪽이라도 실패하면 안내.
                     do {
@@ -333,16 +381,19 @@ public struct NotificationFeature {
             case .notificationsLoaded(let notifications):
                 state.notifications = notifications.sorted { $0.createdAt > $1.createdAt }
                 state.isLoading = false
+                Self.refreshDerived(&state)
                 return .none
 
             case .notificationUpdated(let notification):
                 if let index = state.notifications.firstIndex(where: { $0.id == notification.id }) {
                     state.notifications[index] = notification
+                    Self.refreshDerived(&state)
                 }
                 return .none
 
             case .notificationDeleted(let id):
                 state.notifications = state.notifications.filter { $0.id != id }
+                Self.refreshDerived(&state)
                 return .none
 
             case .delegate:
