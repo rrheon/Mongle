@@ -10,7 +10,7 @@ import Domain
 
 // MARK: - TopBar State Models
 
-struct HomeTopBarState {
+struct HomeTopBarState: Equatable {
   var streakDays: Int
   var groupName: String
   var groupId: UUID?
@@ -50,7 +50,7 @@ struct HomeTopBarState {
   )
 }
 
-struct TopBarQuestion: Identifiable {
+struct TopBarQuestion: Identifiable, Equatable {
   let id: UUID
   let text: String
   let isAnswered: Bool
@@ -75,7 +75,13 @@ struct HomeViewActions {
 
 // MARK: - Main View
 
-struct HomeView: View {
+/// HomeView 가 EquatableView 로 wrapping 될 수 있도록 Equatable 채택.
+/// SwiftUI 는 Equatable View 의 == 가 true 일 때 body 평가를 skip 한다.
+/// 그 결과 부모(MainTabView) 의 무관한 상태 변화(예: TopBar dropdown 토글) 가
+/// HomeView 본문 + MongleSceneView 까지 invalidate 시키는 비용을 차단한다.
+/// 클로저 멤버(actions)는 비교에서 제외 — closure identity 가 매번 새로 생성되므로
+/// 비교에 포함하면 항상 false 가 되어 skip 효과가 사라진다.
+struct HomeView: View, Equatable {
     let topBarState: HomeTopBarState
     let hasCurrentUserAnswered: Bool
     let hasCurrentUserSkipped: Bool
@@ -85,6 +91,24 @@ struct HomeView: View {
     var showNotificationPermission: Bool = false
 
     @State private var showGroupDropdown = false
+
+    static func == (lhs: HomeView, rhs: HomeView) -> Bool {
+        guard lhs.topBarState == rhs.topBarState,
+              lhs.hasCurrentUserAnswered == rhs.hasCurrentUserAnswered,
+              lhs.hasCurrentUserSkipped == rhs.hasCurrentUserSkipped,
+              lhs.currentUserName == rhs.currentUserName,
+              lhs.showNotificationPermission == rhs.showNotificationPermission,
+              lhs.members.count == rhs.members.count
+        else { return false }
+        // 튜플 배열은 Equatable 자동 합성이 안 되므로 element-wise 비교.
+        // (Swift 의 tuple == 는 arity ≤ 6 + 모든 element Equatable 일 때 사용 가능)
+        for (l, r) in zip(lhs.members, rhs.members) {
+            if l.name != r.name || l.color != r.color || l.hasAnswered != r.hasAnswered || l.hasSkipped != r.hasSkipped {
+                return false
+            }
+        }
+        return true
+    }
 
     init(
         topBarState: HomeTopBarState = .preview,
