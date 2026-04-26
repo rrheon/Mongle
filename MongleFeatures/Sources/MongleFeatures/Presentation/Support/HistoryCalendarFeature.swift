@@ -11,6 +11,7 @@ public struct HistoryCalendarFeature {
         public var currentMonth: Date
         public var selectedDate: Date
         public var moodCalendar: [Date: String]
+        public var errorMessage: String?
 
         public init() {
             let today = Date()
@@ -20,15 +21,18 @@ public struct HistoryCalendarFeature {
             self.moodRecords = []
             self.isMoodLoading = false
             self.moodCalendar = [:]
+            self.errorMessage = nil
         }
     }
 
     public enum Action: Sendable, Equatable {
         case onAppear
         case moodLoaded([Domain.MoodRecord])
+        case loadFailed(String)
         case previousMonthTapped
         case nextMonthTapped
         case dateSelected(Date)
+        case dismissError
         case closeTapped
         case delegate(Delegate)
 
@@ -46,9 +50,16 @@ public struct HistoryCalendarFeature {
             switch action {
             case .onAppear:
                 state.isMoodLoading = true
+                state.errorMessage = nil
+                // try? silent fallback → do-catch 로 변경. 실패 시 사용자가 빈 차트로
+                // 오해하지 않도록 errorMessage 로 안내.
                 return .run { [moodRepository] send in
-                    let records = (try? await moodRepository.getRecentMoods(days: 31)) ?? []
-                    await send(.moodLoaded(records))
+                    do {
+                        let records = try await moodRepository.getRecentMoods(days: 31)
+                        await send(.moodLoaded(records))
+                    } catch {
+                        await send(.loadFailed(AppError.from(error).userMessage))
+                    }
                 }
 
             case .moodLoaded(let records):
@@ -59,6 +70,15 @@ public struct HistoryCalendarFeature {
                     cal[Calendar.current.startOfDay(for: record.date)] = record.mood
                 }
                 state.moodCalendar = cal
+                return .none
+
+            case .loadFailed(let message):
+                state.isMoodLoading = false
+                state.errorMessage = message
+                return .none
+
+            case .dismissError:
+                state.errorMessage = nil
                 return .none
 
             case .previousMonthTapped:

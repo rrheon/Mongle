@@ -35,6 +35,17 @@ public struct MoodHistoryView: View {
         }
         .navigationBarBackButtonHidden(true)
         .onAppear { store.send(.onAppear) }
+        .alert(
+            L10n.tr("error_unknown"),
+            isPresented: Binding(
+                get: { store.errorMessage != nil },
+                set: { if !$0 { store.send(.dismissError) } }
+            ),
+            actions: {
+                Button(L10n.tr("common_confirm")) { store.send(.dismissError) }
+            },
+            message: { Text(store.errorMessage ?? "") }
+        )
     }
 
     // MARK: - Summary (Pie Chart)

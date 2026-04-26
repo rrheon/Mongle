@@ -32,6 +32,18 @@ public struct NotificationView: View {
         .onAppear {
             store.send(.onAppear)
         }
+        // 데이터 로드 실패 alert — 사용자가 "알림 없음" 으로 오해하지 않도록 노출.
+        .alert(
+            L10n.tr("error_unknown"),
+            isPresented: Binding(
+                get: { store.errorMessage != nil },
+                set: { if !$0 { store.send(.dismissError) } }
+            ),
+            actions: {
+                Button(L10n.tr("common_confirm")) { store.send(.dismissError) }
+            },
+            message: { Text(store.errorMessage ?? "") }
+        )
     }
 
     /// .filtered 모드에서 현재 그룹 기준으로 결과가 비어 있는 경우에도 emptyView 를 노출하기 위해

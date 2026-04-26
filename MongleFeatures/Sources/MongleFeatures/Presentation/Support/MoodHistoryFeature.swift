@@ -9,6 +9,7 @@ public struct MoodHistoryFeature {
         public var moodRecords: [Domain.MoodRecord]
         public var isMoodLoading: Bool
         public var currentMonth: Date
+        public var errorMessage: String?
 
         public init() {
             let today = Date()
@@ -16,12 +17,15 @@ public struct MoodHistoryFeature {
             self.currentMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: today)) ?? today
             self.moodRecords = []
             self.isMoodLoading = false
+            self.errorMessage = nil
         }
     }
 
     public enum Action: Sendable, Equatable {
         case onAppear
         case moodLoaded([Domain.MoodRecord])
+        case loadFailed(String)
+        case dismissError
         case closeTapped
         case delegate(Delegate)
 
@@ -39,14 +43,29 @@ public struct MoodHistoryFeature {
             switch action {
             case .onAppear:
                 state.isMoodLoading = true
+                state.errorMessage = nil
+                // try? silent fallback → do-catch (사용자 노출)
                 return .run { [moodRepository] send in
-                    let records = (try? await moodRepository.getRecentMoods(days: 31)) ?? []
-                    await send(.moodLoaded(records))
+                    do {
+                        let records = try await moodRepository.getRecentMoods(days: 31)
+                        await send(.moodLoaded(records))
+                    } catch {
+                        await send(.loadFailed(AppError.from(error).userMessage))
+                    }
                 }
 
             case .moodLoaded(let records):
                 state.isMoodLoading = false
                 state.moodRecords = records
+                return .none
+
+            case .loadFailed(let message):
+                state.isMoodLoading = false
+                state.errorMessage = message
+                return .none
+
+            case .dismissError:
+                state.errorMessage = nil
                 return .none
 
             case .closeTapped:
