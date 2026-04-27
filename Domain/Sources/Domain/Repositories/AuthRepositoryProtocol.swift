@@ -56,6 +56,16 @@ public protocol AuthRepositoryInterface: Sendable {
     func emailLogin(email: String, password: String) async throws -> SocialLoginResult
 }
 
+/// hearts sync 등 "세션 시작이 아닌" 부수 경로용 편의 메서드.
+/// Swift 프로토콜 요구사항은 호출 사이트에 default 값을 전파하지 않으므로,
+/// 명시적 opt-in 이 필요 없는 호출처가 매번 `grantDailyHeart: false` 를 적지
+/// 않도록 무인자 오버로드를 제공한다 (QuestionDetail/ProfileEdit 등).
+public extension AuthRepositoryInterface {
+    func getCurrentUser() async throws -> User? {
+        try await getCurrentUser(grantDailyHeart: false)
+    }
+}
+
 public enum AuthError: Error, Equatable, Sendable {
     case networkError
     case userNotFound
