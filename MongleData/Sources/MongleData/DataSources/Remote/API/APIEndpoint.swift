@@ -85,7 +85,12 @@ enum AuthEndpoint: APIEndpoint {
     case logout
     /// 계정 완전 삭제 (서버에서 Apple token revoke 포함 처리)
     case deleteAccount
-    case getCurrentUser
+    /// 현재 로그인한 사용자 정보 조회.
+    /// grantDailyHeart=true 인 호출만 서버에서 그룹별 데일리 하트(+1) 지급을
+    /// 동기 시도하고 응답 heartGrantedToday 에 결과를 실어준다 (MG-77/MG-80).
+    /// onAppear / refreshHomeData 등 "세션 시작" 경로에서만 켜고, hearts sync
+    /// 같은 부수 호출은 default false 로 호출해 거짓 grant 를 방지한다.
+    case getCurrentUser(grantDailyHeart: Bool = false)
     case refreshToken(refreshToken: String)
     /// 약관/개인정보 동의 저장
     case submitConsent(termsVersion: String?, privacyVersion: String?)
@@ -95,6 +100,15 @@ enum AuthEndpoint: APIEndpoint {
     case emailSignup(email: String, password: String, code: String, name: String?, termsVersion: String, privacyVersion: String)
     /// 이메일/비밀번호 로그인 (기존 회원)
     case emailLogin(email: String, password: String)
+
+    var queryItems: [URLQueryItem]? {
+        switch self {
+        case .getCurrentUser(let grantDailyHeart):
+            return grantDailyHeart ? [URLQueryItem(name: "grantDailyHeart", value: "true")] : nil
+        default:
+            return nil
+        }
+    }
 
     var path: String {
         switch self {

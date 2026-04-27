@@ -94,4 +94,74 @@ final class RootFeatureTests: XCTestCase {
             $0.appState = .unauthenticated
         }
     }
+
+    // MARK: - MG-77: 데일리 하트 팝업은 서버 플래그로만 트리거
+
+    /// User 헬퍼 — 테스트에 필요한 최소 필드 + heartGrantedToday 플래그.
+    private func makeUser(heartGrantedToday: Bool) -> User {
+        User(
+            id: UUID(),
+            email: "test@mongle.app",
+            name: "테스터",
+            profileImageURL: nil,
+            role: .other,
+            hearts: 5,
+            moodId: "loved",
+            createdAt: Date(),
+            heartGrantedToday: heartGrantedToday
+        )
+    }
+
+    private func makeRootData(heartGrantedToday: Bool, family: MongleGroup?) -> RootFeature.RootData {
+        RootFeature.RootData(
+            user: makeUser(heartGrantedToday: heartGrantedToday),
+            question: nil,
+            family: family,
+            familyMembers: []
+        )
+    }
+
+    /// 서버가 heartGrantedToday=true 를 내리면 loadDataResponse 가 popup 을 켠다.
+    /// (scenePhase active 1차 진입 케이스 — refreshHomeData 의 /users/me 가 grant 트리거가 됨)
+    func testLoadDataSuccess_HeartGrantedToday_ShowsPopup() async {
+        let family = GroupFactory.make()
+        let initial = stateWithMainTab(family: family, appState: .authenticated)
+        let store = makeStore(initial: initial)
+        store.exhaustivity = .off
+
+        let data = makeRootData(heartGrantedToday: true, family: family)
+        await store.send(.loadDataResponse(.success(data))) {
+            $0.showHeartGrantedPopup = true
+        }
+    }
+
+    /// heartGrantedToday=false 면 popup 상태는 변하지 않는다 (set-only — 이전 값 보존).
+    /// 콜드스타트 2차 호출 시점이면 이미 checkAuthResponse 에서 set 됐을 수 있으므로
+    /// 여기서 reset 하지 않는 것이 핵심.
+    func testLoadDataSuccess_HeartNotGranted_PreservesExistingPopupState() async {
+        let family = GroupFactory.make()
+        var initial = stateWithMainTab(family: family, appState: .authenticated)
+        initial.showHeartGrantedPopup = true // 콜드스타트 1차에서 켜둔 상태 가정
+        let store = makeStore(initial: initial)
+        store.exhaustivity = .off
+
+        let data = makeRootData(heartGrantedToday: false, family: family)
+        await store.send(.loadDataResponse(.success(data)))
+        // showHeartGrantedPopup 는 true 로 보존돼야 함 (set-only)
+        XCTAssertTrue(store.state.showHeartGrantedPopup)
+    }
+
+    /// checkAuthResponse 에서 user.heartGrantedToday=true 면 popup 이 즉시 켜진다.
+    /// 콜드스타트 .onAppear → checkAuthResponse 1차 호출 시 grant 가 발동했을 때의 경로.
+    func testCheckAuthResponse_HeartGrantedToday_ShowsPopup() async {
+        let initial = RootFeature.State(appState: .loading)
+        let store = makeStore(initial: initial)
+        store.exhaustivity = .off
+
+        let user = makeUser(heartGrantedToday: true)
+        await store.send(.checkAuthResponse(user)) {
+            $0.currentUser = user
+            $0.showHeartGrantedPopup = true
+        }
+    }
 }

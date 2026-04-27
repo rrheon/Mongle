@@ -22,7 +22,13 @@ public protocol AuthRepositoryInterface: Sendable {
     /// - Kakao/Google: 클라이언트에서 unlink/disconnect 후 이 메서드 호출
     func deleteAccount() async throws
 
-    func getCurrentUser() async throws -> User?
+    /// 현재 로그인 사용자 조회.
+    /// - Parameter grantDailyHeart: true 인 호출만 서버에서 활성 그룹 데일리
+    ///   하트(+1) 지급을 동기 시도하고 응답 user.heartGrantedToday 에 결과를
+    ///   실어준다. RootFeature 의 onAppear / refreshHomeData 에서만 켜고,
+    ///   QuestionDetail/ProfileEdit 같은 hearts sync 호출은 default false 로
+    ///   호출해 거짓 grant 와 팝업 누락을 방지한다 (MG-77/MG-80).
+    func getCurrentUser(grantDailyHeart: Bool) async throws -> User?
 
     /// 약관/개인정보 동의 저장.
     /// - Parameters:
