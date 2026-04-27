@@ -423,7 +423,7 @@
 "hearts_use_replace_cost" = "ハート3個";
 "hearts_use_skip" = "強制スキップ";
 "hearts_use_skip_desc" = "未回答者がいても次の質問へ";
-"hearts_use_skip_cost" = "ハート5個";
+"hearts_use_skip_cost" = "ハート3個";
 "hearts_save_title" = "ハートは大切に使う仕組みです";
 "hearts_save_desc" = "回答を続けるほど安定的に貯めることができます。";
 
