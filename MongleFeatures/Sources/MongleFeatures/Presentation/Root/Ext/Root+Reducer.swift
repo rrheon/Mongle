@@ -37,7 +37,11 @@ extension RootFeature {
                     state.appState = .loading
                     return .merge(
                         .run { send in
-                            let user = try? await authRepository.getCurrentUser()
+                            // grantDailyHeart: true — 콜드스타트 1차 /users/me 호출이 같은 KST 일자
+                            // 첫 호출이면 서버가 활성 그룹에 +1 지급. 이후 .refreshHomeData 의 2차
+                            // 호출은 같은 트리거를 보내도 서버가 idempotent 로 false 반환.
+                            // checkAuthResponse 에서 user.heartGrantedToday 로 팝업을 set-only 로 켠다.
+                            let user = try? await authRepository.getCurrentUser(grantDailyHeart: true)
                             await send(.checkAuthResponse(user))
                         },
                         .run { send in
@@ -66,8 +70,12 @@ extension RootFeature {
                     return .run { [authRepository, familyRepository, questionRepository, answerRepository, userRepository, notificationRepository] send in
                         do {
                             let data = try await Self.withTimeout(10) { () -> RootData in
-                            // 최신 사용자 정보 조회 (닉네임 변경 등 반영)
-                            let currentUser = try? await authRepository.getCurrentUser()
+                            // 최신 사용자 정보 조회 (닉네임 변경 등 반영) +
+                            // scenePhase active 등으로 본 경로만 진입한 케이스에선 여기서 데일리
+                            // 하트 grant 가 발동. user.heartGrantedToday 가 true 면 loadDataResponse
+                            // 에서 팝업을 set-only 로 켠다. 콜드스타트 경로(.onAppear → checkAuth)
+                            // 는 그쪽에서 이미 +1 처리되므로 본 호출은 idempotent 로 false 반환.
+                            let currentUser = try? await authRepository.getCurrentUser(grantDailyHeart: true)
                             let familyResult = try await familyRepository.getMyFamily()
                             let family = familyResult?.0
                             let familyMembers = familyResult?.1 ?? []
@@ -171,6 +179,13 @@ extension RootFeature {
                     if let user = user {
                         state.currentUser = user
                         state.appState = .loading
+                        // 콜드스타트(.onAppear → checkAuthResponse → refreshHomeData) 경로에서는
+                        // 이 1차 호출이 서버 grant 트리거이므로 여기서만 true 가 되고,
+                        // 2차 호출(refreshHomeData) 은 false 로 돌아옴. set-only 로 켜둬 두 단계
+                        // 사이에 사라지지 않게 한다.
+                        if user.heartGrantedToday {
+                            state.showHeartGrantedPopup = true
+                        }
                         return .send(.refreshHomeData)
                     } else {
                         state.appState = state.hasSeenOnboarding ? .unauthenticated : .onboarding
@@ -192,16 +207,14 @@ extension RootFeature {
                         try? await UNUserNotificationCenter.current().setBadgeCount(badgeCount)
                     }
 
-                    // 하루 첫 접속 하트 팝업 체크 (그룹별)
-                    if let familyId = data.family?.id, data.user != nil {
-                        let heartPopupKey = "mongle.lastHeartPopupDate.\(familyId)"
-                        let todayStart = Calendar.current.startOfDay(for: Date())
-                        let lastPopupDate = UserDefaults.standard.object(forKey: heartPopupKey) as? Date
-                        let isFirstAccessToday = lastPopupDate.map { Calendar.current.startOfDay(for: $0) < todayStart } ?? true
-                        if isFirstAccessToday {
-                            UserDefaults.standard.set(todayStart, forKey: heartPopupKey)
-                            state.showHeartGrantedPopup = true
-                        }
+                    // 데일리 하트 팝업 트리거 — 서버 응답 플래그만 신뢰 (MG-77).
+                    // scenePhase active 로 본 경로만 진입한 경우 여기 호출이 grant 트리거가 되며
+                    // user.heartGrantedToday 가 true 로 돌아온다. 콜드스타트 경로에서는 이미
+                    // checkAuthResponse 에서 set 된 상태이므로 여기 set-only 는 idempotent.
+                    // 이전 UserDefaults `mongle.lastHeartPopupDate.<familyId>` 자체 카운터는
+                    // 다중 단말 / 그룹 전환 / 서버 grant 실패 케이스에서 거짓 팝업을 유발해 폐기.
+                    if data.user?.heartGrantedToday == true {
+                        state.showHeartGrantedPopup = true
                     }
 
                     // mainTab이 아직 없는 경우 = 자동 로그인(첫 로드)

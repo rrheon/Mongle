@@ -20,7 +20,8 @@ struct UserMapper {
             role: familyRole(from: dto.role),
             hearts: dto.hearts ?? 0,
             moodId: dto.moodId ?? "loved",
-            createdAt: parseISO8601(dto.createdAt)
+            createdAt: parseISO8601(dto.createdAt),
+            heartGrantedToday: dto.heartGrantedToday ?? false
         )
     }
 
@@ -46,7 +47,8 @@ struct UserMapper {
             familyId: nil,
             hearts: nil,
             moodId: domain.moodId,
-            createdAt: ISO8601DateFormatter().string(from: domain.createdAt)
+            createdAt: ISO8601DateFormatter().string(from: domain.createdAt),
+            heartGrantedToday: nil
         )
     }
 

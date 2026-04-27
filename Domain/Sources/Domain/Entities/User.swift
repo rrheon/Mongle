@@ -16,6 +16,11 @@ public struct User: Identifiable, Equatable, Sendable {
     public let hearts: Int
     public let moodId: String?
     public let createdAt: Date
+    /// 서버 /users/me?grantDailyHeart=true 응답에서 "이번 요청에 데일리 하트(+1)
+    /// 가 발생했는지" 플래그. RootFeature 가 이 값으로만 데일리 하트 팝업을
+    /// 띄운다 (UserDefaults 자체 카운터 제거, MG-77). opt-in 미포함 호출
+    /// (QuestionDetail/ProfileEdit hearts sync 등)에서는 항상 false.
+    public let heartGrantedToday: Bool
 
     public init(
         id: UUID,
@@ -25,7 +30,8 @@ public struct User: Identifiable, Equatable, Sendable {
         role: FamilyRole,
         hearts: Int = 0,
         moodId: String? = "loved",
-        createdAt: Date
+        createdAt: Date,
+        heartGrantedToday: Bool = false
     ) {
         self.id = id
         self.email = email
@@ -35,6 +41,7 @@ public struct User: Identifiable, Equatable, Sendable {
         self.hearts = hearts
         self.moodId = moodId
         self.createdAt = createdAt
+        self.heartGrantedToday = heartGrantedToday
     }
 }
 

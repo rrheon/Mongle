@@ -81,8 +81,8 @@ final class AuthRepository: AuthRepositoryInterface {
         try await apiClient.request(endpoint)
     }
 
-    func getCurrentUser() async throws -> User? {
-        let endpoint = AuthEndpoint.getCurrentUser
+    func getCurrentUser(grantDailyHeart: Bool) async throws -> User? {
+        let endpoint = AuthEndpoint.getCurrentUser(grantDailyHeart: grantDailyHeart)
         let userDTO: UserDTO = try await apiClient.request(endpoint)
         return UserMapper.toDomain(userDTO)
     }

@@ -2,7 +2,7 @@ import Foundation
 
 protocol AuthAPIServiceProtocol {
     func logout() async throws
-    func getCurrentUser() async throws -> UserDTO?
+    func getCurrentUser(grantDailyHeart: Bool) async throws -> UserDTO?
 }
 
 final class AuthAPIService: AuthAPIServiceProtocol {
@@ -17,8 +17,8 @@ final class AuthAPIService: AuthAPIServiceProtocol {
         try await apiClient.request(endpoint)
     }
 
-    func getCurrentUser() async throws -> UserDTO? {
-        let endpoint = AuthEndpoint.getCurrentUser
+    func getCurrentUser(grantDailyHeart: Bool) async throws -> UserDTO? {
+        let endpoint = AuthEndpoint.getCurrentUser(grantDailyHeart: grantDailyHeart)
         do {
             let user: UserDTO = try await apiClient.request(endpoint)
             return user
