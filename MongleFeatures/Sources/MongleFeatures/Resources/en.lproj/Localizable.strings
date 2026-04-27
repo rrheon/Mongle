@@ -423,7 +423,7 @@
 "hearts_use_replace_cost" = "3 hearts";
 "hearts_use_skip" = "Force skip question";
 "hearts_use_skip_desc" = "Move to next question even with unanswered members";
-"hearts_use_skip_cost" = "5 hearts";
+"hearts_use_skip_cost" = "3 hearts";
 "hearts_save_title" = "Hearts are designed to be used wisely";
 "hearts_save_desc" = "Answering consistently helps you accumulate more hearts.";
 

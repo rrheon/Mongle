@@ -423,7 +423,7 @@
 "hearts_use_replace_cost" = "하트 3개";
 "hearts_use_skip" = "강제 질문 넘기기";
 "hearts_use_skip_desc" = "미답변 인원 있어도 다음 질문으로";
-"hearts_use_skip_cost" = "하트 5개";
+"hearts_use_skip_cost" = "하트 3개";
 "hearts_save_title" = "하트는 아껴 쓰는 구조예요";
 "hearts_save_desc" = "답변을 꾸준히 남길수록 더 안정적으로 모을 수 있어요.";
 
