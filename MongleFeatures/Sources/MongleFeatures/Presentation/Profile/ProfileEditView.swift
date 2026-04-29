@@ -6,11 +6,13 @@
 //
 
 import SwiftUI
+import SafariServices
 import ComposableArchitecture
 import Domain
 
 public struct ProfileEditView: View {
     @Bindable var store: StoreOf<ProfileEditFeature>
+    @State private var legalURL: URL?
 
     public init(store: StoreOf<ProfileEditFeature>) {
         self.store = store
@@ -34,6 +36,7 @@ public struct ProfileEditView: View {
 
                         moodSection
                         groupSection
+                        legalSection
 
                         Text(L10n.tr("settings_version", "1.0.0"))
                             .font(MongleFont.caption())
@@ -94,6 +97,10 @@ public struct ProfileEditView: View {
                 item: $store.scope(state: \.accountManagement, action: \.accountManagement)
             ) { accountStore in
                 AccountManagementView(store: accountStore)
+            }
+            .sheet(item: $legalURL) { url in
+                ProfileLegalSafariSheet(url: url)
+                    .ignoresSafeArea()
             }
         }
     }
@@ -195,6 +202,32 @@ public struct ProfileEditView: View {
         )
     }
 
+    // MARK: - 약관 및 정책
+
+    private var legalSection: some View {
+        settingsSection(
+            title: L10n.tr("settings_legal"),
+            rows: [
+                ProfileSettingsRow(
+                    icon: "doc.text.fill",
+                    iconColor: MongleColor.bgMintLight,
+                    iconBackground: MongleColor.primaryLight,
+                    title: L10n.tr("settings_terms"),
+                    subtitle: "",
+                    action: { legalURL = LegalLinks.termsURL }
+                ),
+                ProfileSettingsRow(
+                    icon: "lock.shield.fill",
+                    iconColor: MongleColor.bgMintLight,
+                    iconBackground: MongleColor.primaryLight,
+                    title: L10n.tr("settings_privacy"),
+                    subtitle: "",
+                    action: { legalURL = LegalLinks.privacyURL }
+                )
+            ]
+        )
+    }
+
     // MARK: - Settings Section Builder
 
   struct SettingsRowView: View {
@@ -275,6 +308,16 @@ public struct ProfileEditView: View {
 }
 
 // MARK: - Private Models
+
+private struct ProfileLegalSafariSheet: UIViewControllerRepresentable {
+    let url: URL
+
+    func makeUIViewController(context: Context) -> SFSafariViewController {
+        SFSafariViewController(url: url)
+    }
+
+    func updateUIViewController(_ uiViewController: SFSafariViewController, context: Context) {}
+}
 
 fileprivate struct ProfileSettingsRow: Identifiable {
     let id = UUID()
