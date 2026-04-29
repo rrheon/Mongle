@@ -7,10 +7,19 @@ import Foundation
 
 enum ApsEnvironmentDetector {
 
-    /// embedded.mobileprovision 의 Entitlements.aps-environment 를 읽어
-    /// "sandbox" 또는 "production" 을 반환한다. provisioning profile 이 없는
-    /// (App Store 정식 배포) 경우 production 으로 간주.
+    /// provisioning profile 의 aps-environment entitlement 으로 환경을 판단.
+    ///
+    /// - 시뮬레이터: embedded.mobileprovision 이 존재하지 않으나 토큰은 항상 sandbox
+    ///   로 발급되므로 무조건 "sandbox" 반환.
+    /// - 실기기 (Development profile): aps-environment = "development" → "sandbox"
+    /// - 실기기 (Distribution profile, TestFlight/App Store): aps-environment =
+    ///   "production" → "production"
+    /// - 정상 경로 실패 시 fallback 은 "production" — App Store 빌드(정식 배포)에
+    ///   embedded.mobileprovision 이 stripped 되는 케이스 보호.
     static func current() -> String {
+        #if targetEnvironment(simulator)
+        return "sandbox"
+        #else
         guard
             let url = Bundle.main.url(forResource: "embedded", withExtension: "mobileprovision"),
             let data = try? Data(contentsOf: url),
@@ -37,5 +46,6 @@ enum ApsEnvironmentDetector {
         }
 
         return apsEnv == "development" ? "sandbox" : "production"
+        #endif
     }
 }
