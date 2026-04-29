@@ -11,6 +11,7 @@ import Domain
 
 public struct ProfileEditView: View {
     @Bindable var store: StoreOf<ProfileEditFeature>
+    @Environment(\.openURL) private var openURL
 
     public init(store: StoreOf<ProfileEditFeature>) {
         self.store = store
@@ -34,6 +35,7 @@ public struct ProfileEditView: View {
 
                         moodSection
                         groupSection
+                        legalSection
 
                         Text(L10n.tr("settings_version", "1.0.0"))
                             .font(MongleFont.caption())
@@ -190,6 +192,32 @@ public struct ProfileEditView: View {
                     title: L10n.tr("settings_account"),
                     subtitle: L10n.tr("settings_account_desc"),
                     action: { store.send(.accountManagementTapped) }
+                )
+            ]
+        )
+    }
+
+    // MARK: - 약관 및 정책
+
+    private var legalSection: some View {
+        settingsSection(
+            title: L10n.tr("settings_legal"),
+            rows: [
+                ProfileSettingsRow(
+                    icon: "doc.text.fill",
+                    iconColor: MongleColor.bgMintLight,
+                    iconBackground: MongleColor.primaryLight,
+                    title: L10n.tr("settings_terms"),
+                    subtitle: "",
+                    action: { openURL(LegalLinks.termsURL) }
+                ),
+                ProfileSettingsRow(
+                    icon: "lock.shield.fill",
+                    iconColor: MongleColor.bgMintLight,
+                    iconBackground: MongleColor.primaryLight,
+                    title: L10n.tr("settings_privacy"),
+                    subtitle: "",
+                    action: { openURL(LegalLinks.privacyURL) }
                 )
             ]
         )
