@@ -6,13 +6,12 @@
 //
 
 import SwiftUI
-import SafariServices
 import ComposableArchitecture
 import Domain
 
 public struct ProfileEditView: View {
     @Bindable var store: StoreOf<ProfileEditFeature>
-    @State private var legalURL: URL?
+    @Environment(\.openURL) private var openURL
 
     public init(store: StoreOf<ProfileEditFeature>) {
         self.store = store
@@ -97,10 +96,6 @@ public struct ProfileEditView: View {
                 item: $store.scope(state: \.accountManagement, action: \.accountManagement)
             ) { accountStore in
                 AccountManagementView(store: accountStore)
-            }
-            .sheet(item: $legalURL) { url in
-                ProfileLegalSafariSheet(url: url)
-                    .ignoresSafeArea()
             }
         }
     }
@@ -214,7 +209,7 @@ public struct ProfileEditView: View {
                     iconBackground: MongleColor.primaryLight,
                     title: L10n.tr("settings_terms"),
                     subtitle: "",
-                    action: { legalURL = LegalLinks.termsURL }
+                    action: { openURL(LegalLinks.termsURL) }
                 ),
                 ProfileSettingsRow(
                     icon: "lock.shield.fill",
@@ -222,7 +217,7 @@ public struct ProfileEditView: View {
                     iconBackground: MongleColor.primaryLight,
                     title: L10n.tr("settings_privacy"),
                     subtitle: "",
-                    action: { legalURL = LegalLinks.privacyURL }
+                    action: { openURL(LegalLinks.privacyURL) }
                 )
             ]
         )
@@ -308,16 +303,6 @@ public struct ProfileEditView: View {
 }
 
 // MARK: - Private Models
-
-private struct ProfileLegalSafariSheet: UIViewControllerRepresentable {
-    let url: URL
-
-    func makeUIViewController(context: Context) -> SFSafariViewController {
-        SFSafariViewController(url: url)
-    }
-
-    func updateUIViewController(_ uiViewController: SFSafariViewController, context: Context) {}
-}
 
 fileprivate struct ProfileSettingsRow: Identifiable {
     let id = UUID()
