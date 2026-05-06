@@ -45,7 +45,10 @@ extension RootFeature {
         case dismissQuestionDetail
 
         // MARK: Push Notification
-        case deviceTokenReceived(Data)
+        // environment 는 호스트 앱(Mongle 타겟)의 #if DEBUG 분기로 결정되어 전달.
+        // SPM 패키지 안에서는 swiftSettings.define + Xcode SPM 캐시 조합이 신뢰 불가
+        // 했음을 실측 확인 — sandbox/production 결정을 호스트 앱으로 이관. (MG-114)
+        case deviceTokenReceived(Data, environment: String)
         case openQuestion
         // MG-116 — 알림 탭 시 그룹 home 으로 진입. ANSWER_REQUEST/REMINDER_UNANSWERED 가 아닌
         // 모든 type 이 이 action 을 통해 mainTab.path 를 비우고 home 노출.

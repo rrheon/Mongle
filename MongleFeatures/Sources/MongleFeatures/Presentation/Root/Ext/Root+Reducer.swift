@@ -779,16 +779,12 @@ extension RootFeature {
 
                 // MARK: Push Notification
 
-                case .deviceTokenReceived(let data):
+                case .deviceTokenReceived(let data, let environment):
                     let token = data.map { String(format: "%02x", $0) }.joined()
-                    // aps-environment entitlement은 Xcode Run에서 항상 development로 고정되고,
-                    // Archive/Distribute 단계에서만 production으로 치환된다. 서버가 토큰별로
-                    // 올바른 APNs 호스트(sandbox / production)를 선택하도록 빌드 환경을 전송.
-                    #if DEBUG
-                    let environment = "sandbox"
-                    #else
-                    let environment = "production"
-                    #endif
+                    // environment 는 MongleApp.swift (호스트 앱 타겟) 의 #if DEBUG 분기로
+                    // 결정되어 전달된 값. SPM 패키지의 swiftSettings.define 만으로는
+                    // Xcode SPM 캐시 영향으로 항상 production 으로 컴파일되는 케이스 발생.
+                    // 결정 로직을 호스트 앱으로 이관. (MG-114)
                     return .run { [userRepository] _ in
                         try? await userRepository.registerDeviceToken(token: token, environment: environment)
                     }
