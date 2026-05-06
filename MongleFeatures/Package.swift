@@ -64,6 +64,14 @@ let package = Package(
                 .process("Assets.xcassets"),
                 .process("Fonts"),
                 .process("Resources")
+            ],
+            // SPM 패키지는 메인 앱 타겟의 SWIFT_ACTIVE_COMPILATION_CONDITIONS 를 상속하지
+            // 않아서, 명시 정의가 없으면 #if DEBUG 가 항상 false 로 컴파일된다. 그 결과
+            // Root+Reducer 의 deviceTokenReceived 가 DEBUG 빌드에서도 environment="production"
+            // 으로 등록 → BadDeviceToken → 서버 자동 invalidate → 푸시 미수신 무한 루프.
+            // .when(configuration: .debug) 가드로 Debug 에서만 매크로 정의. (MG-114)
+            swiftSettings: [
+                .define("DEBUG", .when(configuration: .debug))
             ]
         ),
         .testTarget(
