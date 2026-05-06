@@ -41,6 +41,9 @@ extension GroupSelectView {
             .textCase(.uppercase)
             .autocorrectionDisabled()
             .focused($joinGroupFocus, equals: .joinCode)
+            // MG-124 — "다음" 키보드 버튼으로 닉네임 필드 자동 포커스 이동 (AOS 패리티)
+            .submitLabel(.next)
+            .onSubmit { joinGroupFocus = .nickname }
         }
         .padding(MongleSpacing.md)
         .background(Color.white)
@@ -84,6 +87,9 @@ extension GroupSelectView {
             .font(MongleFont.body2())
             .foregroundColor(MongleColor.textPrimary)
             .focused($joinGroupFocus, equals: .nickname)
+            // MG-124 — 마지막 필드는 "완료" 로 키보드 dismiss. .joinTapped 자동 트리거는 하지 않음 (실수 입력 방지).
+            .submitLabel(.done)
+            .onSubmit { joinGroupFocus = nil }
         }
         .padding(MongleSpacing.md)
         .background(Color.white)
