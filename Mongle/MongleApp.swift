@@ -30,7 +30,17 @@ class MongleAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 
     /// APNs 토큰 등록 성공
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        store?.send(.deviceTokenReceived(deviceToken))
+        // aps-environment entitlement 은 Xcode Run 빌드에서 development 로 고정되고
+        // Archive/Distribute 시 production 으로 치환된다. 서버가 올바른 APNs 호스트
+        // (sandbox / production) 를 선택하도록 빌드 환경을 전송.
+        // 호스트 앱 타겟의 #if DEBUG 는 SWIFT_ACTIVE_COMPILATION_CONDITIONS 로 보장되어
+        // SPM 캐시 영향 없이 신뢰 가능. SPM 안에서 결정하던 옛 방식의 회귀 차단. (MG-114)
+        #if DEBUG
+        let environment = "sandbox"
+        #else
+        let environment = "production"
+        #endif
+        store?.send(.deviceTokenReceived(deviceToken, environment: environment))
     }
 
     /// APNs 토큰 등록 실패 — 디버깅 단서 + 서버 측 stale 토큰 유지 방지를 위한 로그.
