@@ -47,5 +47,8 @@ extension RootFeature {
         // MARK: Push Notification
         case deviceTokenReceived(Data)
         case openQuestion
+        // MG-116 — 알림 탭 시 그룹 home 으로 진입. ANSWER_REQUEST/REMINDER_UNANSWERED 가 아닌
+        // 모든 type 이 이 action 을 통해 mainTab.path 를 비우고 home 노출.
+        case openHome
     }
 }

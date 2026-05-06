@@ -89,17 +89,25 @@ class MongleAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 
         if let type = userInfo["type"] as? String {
             switch type {
-            // 모든 NotificationType (서버 schema 기준) 명시적 처리.
-            // 누락 시 silent fail 방지 — 신규 type 추가 시 컴파일러가 경고하지 않더라도
-            // 이 switch 가 사용자 의도를 명확히 반영하도록 보강.
-            case "NEW_QUESTION", "MEMBER_ANSWERED", "ALL_ANSWERED",
-                 "ANSWER_REQUEST", "ANSWERER_NUDGE", "REMINDER", "BADGE_EARNED":
-                // 모두 홈/오늘 질문 화면으로 보내 사용자가 자연스럽게 답변/재촉으로 이어지게 함.
-                // 세부 라우팅 차별화는 follow-up.
+            // MG-116 — 본인이 즉시 답변해야 하는 알림은 답변 화면(.openQuestion), 그 외
+            // 그룹 컨텍스트 정보성 알림은 그룹 홈(.openHome) 으로 분기.
+            // - ANSWER_REQUEST: 다른 멤버가 본인을 재촉
+            // - REMINDER_UNANSWERED: 서버 reminderScheduler 가 본인 미답변 케이스로 발송
+            //   (DB Notification.type 은 'REMINDER' 그대로, push payload type 만 suffix 부여)
+            case "ANSWER_REQUEST", "REMINDER_UNANSWERED":
                 store?.send(.openQuestion)
+
+            // - NEW_QUESTION: 새 일일 질문 도착 (11시)
+            // - REMINDER_ANSWERED: 본인은 답변 완료. 그룹 미답변자 안내
+            // - REMINDER: legacy/구버전 페이로드 (suffix 미포함) — 안전 측 home
+            // - MEMBER_ANSWERED / ALL_ANSWERED / BADGE_EARNED / ANSWERER_NUDGE: 정보성
+            case "NEW_QUESTION", "REMINDER_ANSWERED", "REMINDER",
+                 "MEMBER_ANSWERED", "ALL_ANSWERED", "BADGE_EARNED", "ANSWERER_NUDGE":
+                store?.send(.openHome)
+
             default:
-                // 알 수 없는 type 은 안전한 기본 동작 — 홈 진입.
-                store?.send(.openQuestion)
+                // 알 수 없는 type — 안전한 기본 동작으로 그룹 홈 진입.
+                store?.send(.openHome)
             }
         }
         completionHandler()
