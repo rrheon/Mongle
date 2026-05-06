@@ -83,6 +83,8 @@
 
 /* Home */
 "home_default_group" = "Mongle";
+/* Suffix appended to own character name on group home (MG-120) */
+"home_member_me_suffix" = "(me)";
 "home_today_question" = "Today's Question";
 "home_question_placeholder" = "A new question arrives at 11 AM";
 "home_answer_complete" = "Answered";

@@ -83,6 +83,8 @@
 
 /* Home */
 "home_default_group" = "몽글";
+/* 본인 캐릭터 이름 옆에 붙는 마커 (MG-120) */
+"home_member_me_suffix" = "(나)";
 "home_today_question" = "오늘의 질문";
 "home_question_placeholder" = "오전 11시에 새로운 질문이 도착해요";
 "home_answer_complete" = "답변 완료";
