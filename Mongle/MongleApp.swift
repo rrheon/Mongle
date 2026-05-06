@@ -70,6 +70,23 @@ class MongleAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
         let userInfo = response.notification.request.content.userInfo
+
+        // 푸시 페이로드의 notificationId 로 서버 알림을 즉시 읽음 처리 + OS 배지 동기화 (MG-111).
+        // 서버 측 AnswerService/NudgeService/QuestionService/reminderScheduler 가 페이로드에
+        // notificationId 를 실어 보내며, 클라가 알림을 탭한 시점에 in-app 알림함에 진입하지 않아도
+        // 미읽음 카운트가 누적되지 않도록 한다. Root+Reducer.loadDataResponse 의 setBadgeCount
+        // 동기화는 홈 진입 후에야 실행되므로 여기서 한 번 더 즉시 갱신해 사용자 체감 지연 방지.
+        if let notificationIdString = userInfo["notificationId"] as? String,
+           let notificationId = UUID(uuidString: notificationIdString) {
+            Task.detached {
+                let repository = makeNotificationRepository()
+                _ = try? await repository.markAsRead(id: notificationId)
+                if let unread = try? await repository.getUnreadCount() {
+                    try? await UNUserNotificationCenter.current().setBadgeCount(unread)
+                }
+            }
+        }
+
         if let type = userInfo["type"] as? String {
             switch type {
             // 모든 NotificationType (서버 schema 기준) 명시적 처리.
