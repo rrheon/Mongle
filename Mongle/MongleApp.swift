@@ -45,15 +45,19 @@ class MongleAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
-        // 사용자가 가입/동의/로그인 흐름 도중일 때는 푸시 배너가 흐름을 끊지 않도록
-        // 배너는 숨기고 알림 리스트에만 저장 ([.list, .badge]). authenticated/groupSelection
-        // 상태에서만 평소처럼 배너 노출.
+        // 기본은 배너+알림센터+사운드+배지 — 콜드스타트 직후 store 가 weak nil 이거나
+        // appState 가 아직 .unknown 인 경우에도 알림이 보이도록 한다. 가입/약관/로그인
+        // 흐름 도중에만 명시적으로 배너를 숨겨 흐름을 보호. (MG-113)
+        // 이전엔 [.list] 도 배너 분기에서 누락돼 사용자가 배너를 위로 스와이프하면
+        // 알림 센터에도 안 남던 결함 동반 수정.
         let appState = store?.state.appState
-        let canShowBanner = appState == .authenticated || appState == .groupSelection
-        if canShowBanner {
-            completionHandler([.banner, .sound, .badge])
-        } else {
+        let isInAuthFlow = appState != nil
+            && appState != .authenticated
+            && appState != .groupSelection
+        if isInAuthFlow {
             completionHandler([.list, .badge])
+        } else {
+            completionHandler([.banner, .list, .sound, .badge])
         }
         // 포그라운드 push 가 도착했을 때 홈 배지 갱신은 authenticated 상태에서만 의미가 있다.
         // 그룹 선택/초대코드/로그인/동의 화면 중에는 refreshHomeData 가 loadDataResponse 를
