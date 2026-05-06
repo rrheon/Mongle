@@ -54,9 +54,10 @@ extension GroupSelectView {
             codeCopied = true
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) { codeCopied = false }
           } label: {
+            // MG-125 — primary 그린 텍스트 + primaryLight 그린 배경 contrast 부족. 검정으로 가독성 확보.
             Label(codeCopied ? L10n.tr("common_copied") : L10n.tr("common_copy"), systemImage: codeCopied ? "checkmark" : "doc.on.doc")
               .font(MongleFont.captionBold())
-              .foregroundColor(codeCopied ? MongleColor.success : MongleColor.primary)
+              .foregroundColor(.black)
               .padding(.horizontal, MongleSpacing.sm)
               .padding(.vertical, MongleSpacing.xxs)
               .background(codeCopied ? MongleColor.success.opacity(0.12) : MongleColor.primaryLight)
@@ -90,9 +91,10 @@ extension GroupSelectView {
             linkCopied = true
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) { linkCopied = false }
           } label: {
+            // MG-125 — primary 그린 텍스트 + primaryLight 그린 배경 contrast 부족. 검정으로 가독성 확보.
             Label(linkCopied ? L10n.tr("common_copied") : L10n.tr("common_copy"), systemImage: linkCopied ? "checkmark" : "doc.on.doc")
               .font(MongleFont.captionBold())
-              .foregroundColor(linkCopied ? MongleColor.success : MongleColor.primary)
+              .foregroundColor(.black)
               .padding(.horizontal, MongleSpacing.sm)
               .padding(.vertical, MongleSpacing.xxs)
               .background(linkCopied ? MongleColor.success.opacity(0.12) : MongleColor.primaryLight)
