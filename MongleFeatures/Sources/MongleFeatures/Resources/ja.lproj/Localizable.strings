@@ -83,6 +83,8 @@
 
 /* Home */
 "home_default_group" = "モングル";
+/* 自分のキャラクター名の横に付くマーカー (MG-120) */
+"home_member_me_suffix" = "(私)";
 "home_today_question" = "今日の質問";
 "home_question_placeholder" = "午前11時に新しい質問が届きます";
 "home_answer_complete" = "回答済み";

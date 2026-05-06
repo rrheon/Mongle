@@ -1220,7 +1220,11 @@ public struct MongleView: View {
         Button(action: handleTap) {
             VStack(spacing: 4) {
                 statusBadge
-                MongleMonggle(color: color, name: name)
+                // MG-120 — 본인 캐릭터는 이름 옆에 "(나)" suffix 를 붙여 status badge 색상에
+                // 더해 즉시 식별 가능하게 한다. MongleMonggle 자체는 다른 곳에서도 재사용되므로
+                // 호출 site 인 MongleView 에서만 처리.
+                let displayName = isCurrentUser ? "\(name) \(L10n.tr("home_member_me_suffix"))" : name
+                MongleMonggle(color: color, name: displayName)
             }
         }
         .buttonStyle(.plain)
