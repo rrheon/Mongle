@@ -477,6 +477,12 @@ extension RootFeature {
 
                 case .switchFamily(let family):
                     state.mainTab?.home.isLoading = true
+                    // MG-116 — 그룹 전환은 무조건 해당 그룹의 home 으로 진입한다.
+                    // 이전 그룹의 sub-screen (QuestionDetail, History 상세, ProfileEdit 모달 등)
+                    // 이 활성 상태에서 그룹 전환하면 새 그룹 데이터 위로 이전 그룹 화면이
+                    // 그대로 남는 혼란 방지.
+                    state.mainTab?.modal = nil
+                    state.mainTab?.path.removeAll()
                     return .run { [familyRepository] send in
                         do {
                             _ = try await familyRepository.selectFamily(familyId: family.id)
@@ -807,6 +813,16 @@ extension RootFeature {
                     } else {
                         // 아직 데이터 로딩 중 → 로딩 완료 후 이동
                         state.pendingOpenQuestion = true
+                    }
+                    return .none
+
+                case .openHome:
+                    // MG-116 — 알림 탭 등 외부 트리거로 그룹 home 으로 진입. mainTab.path 와 modal 을
+                    // 비워 어떤 sub-screen 에 있었든 home 으로 복귀하게 한다. 미인증 상태 / 데이터 미로드
+                    // 케이스는 자연스럽게 부팅 흐름이 home 까지 데려가므로 별도 pending 플래그 불필요.
+                    if state.appState == .authenticated {
+                        state.mainTab?.modal = nil
+                        state.mainTab?.path.removeAll()
                     }
                     return .none
                 }
