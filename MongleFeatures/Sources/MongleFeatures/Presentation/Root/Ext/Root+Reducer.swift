@@ -148,8 +148,10 @@ extension RootFeature {
                             let hasUnreadNotifications = notifications.contains {
                                 !$0.isRead && $0.familyId == currentFamilyId
                             }
-                            // OS 앱 아이콘 배지는 사용자 단위(그룹 개념 없음)이므로 전체 그룹 합산.
-                            let unreadCountAllGroups = notifications.filter { !$0.isRead }.count
+                            // OS 앱 아이콘 배지는 서버 unread-count API 결과만 사용 (MG-126).
+                            // 이전: notifications.filter { !$0.isRead }.count — list 응답(limit:50,
+                            // 그룹 필터 없음) 합산이라 cap/필터 누락으로 과다 계상 발생.
+                            let unreadCountAllGroups = (try? await notificationRepository.getUnreadCount()) ?? 0
 
                             return RootData(
                                 user: currentUser,
