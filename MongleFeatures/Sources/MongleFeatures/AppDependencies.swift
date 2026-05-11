@@ -126,5 +126,18 @@ extension DependencyValues {
     }
 }
 
+// MARK: - ConfigRepository
+
+private enum ConfigRepositoryKey: DependencyKey {
+    static let liveValue: any ConfigRepositoryProtocol = makeConfigRepository()
+}
+
+extension DependencyValues {
+    public var configRepository: any ConfigRepositoryProtocol {
+        get { self[ConfigRepositoryKey.self] }
+        set { self[ConfigRepositoryKey.self] = newValue }
+    }
+}
+
 // NOTE: ErrorHandler는 ErrorHandlerDependency.swift에서 DependencyKey를 직접 구현합니다.
 // @Dependency(\.errorHandler) 로 사용하세요.

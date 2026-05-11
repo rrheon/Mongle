@@ -150,6 +150,19 @@ struct MongleApp: App {
 
         MongleFont.registerFonts()
         SocialSDK.initialize()
+        // 서버 /config (MG-132) — 광고 토글 캐시 갱신. 동의 흐름보다 먼저 시작해
+        // 다음 부팅부터 ConsentManager / AdBannerSection 분기에 최신값이 반영된다.
+        // 실패는 silent — AdConfigStore 의 기본값(true) 또는 직전 캐시 유지.
+        Task.detached(priority: .utility) {
+            do {
+                let config = try await makeConfigRepository().fetch()
+                AdConfigStore.set(config.isAdEnabled)
+            } catch {
+                #if DEBUG
+                print("[Config] /config fetch 실패 — 기존 캐시 유지: \(error.localizedDescription)")
+                #endif
+            }
+        }
         // GDPR/CCPA 동의 흐름(UMP). KR·JP 는 건너뛰고 즉시 AdMob 초기화,
         // 그 외 지역은 동의 폼 표시 후 AdMob 초기화한다.
         ConsentManager.shared.startConsentFlowIfNeeded()

@@ -27,12 +27,16 @@ public struct AdBannerSection: View {
     public init() {}
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            AdBannerView()
-                .frame(height: 50)
-                .frame(maxWidth: .infinity)
-                .background(Color(hex: "#F5F5F5"))
-                .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
+        // 서버 /config (MG-132) — 비활성 시 layout 공간도 차지하지 않도록 EmptyView 반환.
+        // 호출자 (Settings/Home/History 등) 의 분기 코드는 불필요.
+        if AdConfigStore.isAdEnabled {
+            VStack(alignment: .leading, spacing: 8) {
+                AdBannerView()
+                    .frame(height: 50)
+                    .frame(maxWidth: .infinity)
+                    .background(Color(hex: "#F5F5F5"))
+                    .clipShape(RoundedRectangle(cornerRadius: MongleRadius.large))
+            }
         }
     }
 }
