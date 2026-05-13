@@ -185,7 +185,10 @@ public struct QuestionDetailFeature {
 
             case .answerTextChanged(let text):
                 guard !state.isSubmitting else { return .none }
-                state.answerText = String(text.prefix(200))
+                // (MG-134) 200자 이하는 원본 그대로 — String(prefix:) 가 새 인스턴스를 생성해
+                // SwiftUI binding setter 가 호출되면 한글 IME 조합 중 markedTextRange 가
+                // invalidate 되어 입력 중 글자가 누락/투명으로 보이는 회생을 차단.
+                state.answerText = text.count <= 200 ? text : String(text.prefix(200))
                 state.appError = nil
                 return .none
 
