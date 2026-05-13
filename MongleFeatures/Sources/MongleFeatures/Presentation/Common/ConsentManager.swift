@@ -60,6 +60,14 @@ public final class ConsentManager {
     /// - 그 외 지역이면 최상위 ViewController 가 준비된 뒤 UMP 동의 폼을 노출하고,
     ///   동의 결과와 무관하게(거부 시 비개인화 광고) AdMob 을 초기화한다.
     public func startConsentFlowIfNeeded() {
+        // 서버 /config (MG-132) — 광고 OFF 일 때 UMP / ATT / AdMob 초기화 모두 건너뛴다.
+        // SDK 가 로드되지 않으므로 메모리·네트워크·광고 ID 풋프린트도 함께 절약.
+        guard AdConfigStore.isAdEnabled else {
+            #if DEBUG
+            print("[ConsentManager] 광고 비활성 (서버 설정) — UMP / ATT / AdMob 초기화 건너뜀")
+            #endif
+            return
+        }
         // DEBUG 빌드에서 디버그 모드가 활성화된 경우에는 KR/JP 판정도 UMP 가 수행하도록 하여
         // 테스트 지역을 강제로 시뮬레이션할 수 있게 한다.
         #if !DEBUG

@@ -641,6 +641,17 @@ enum MoodEndpoint: APIEndpoint {
     }
 }
 
+// MARK: - Config Endpoints
+
+enum ConfigEndpoint: APIEndpoint {
+    /// GET /config — 클라이언트 설정 (광고 토글 등). 인증 불필요. (MG-132)
+    case get
+
+    var path: String { "/config" }
+    var method: HTTPMethod { .get }
+    var queryItems: [URLQueryItem]? { nil }
+}
+
 // MARK: - Notification Endpoints
 
 enum NotificationEndpoint: APIEndpoint {
