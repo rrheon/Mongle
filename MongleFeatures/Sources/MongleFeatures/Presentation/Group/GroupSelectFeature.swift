@@ -204,12 +204,16 @@ public struct GroupSelectFeature {
                 return .none
 
             case .groupNameChanged(let name):
-                state.groupName = String(name.prefix(10))
+                // (MG-134) 10자 이하는 원본 그대로 — String(prefix:) 가 새 인스턴스를 생성해
+                // 한글 IME 조합 중 markedTextRange 를 invalidate 시키는 회생 차단. (joinCode 는
+                // 영문/숫자 전용이라 IME 영향 없으므로 기존 패턴 유지.)
+                state.groupName = name.count <= 10 ? name : String(name.prefix(10))
                 state.groupNameError = false
                 return .none
 
             case .nicknameChanged(let name):
-                state.nickname = String(name.prefix(10))
+                // (MG-134) 같은 IME 회생 차단.
+                state.nickname = name.count <= 10 ? name : String(name.prefix(10))
                 state.nicknameError = false
                 return .none
 
