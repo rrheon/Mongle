@@ -818,9 +818,13 @@ extension RootFeature {
                     // MG-116 — 알림 탭 등 외부 트리거로 그룹 home 으로 진입. mainTab.path 와 modal 을
                     // 비워 어떤 sub-screen 에 있었든 home 으로 복귀하게 한다. 미인증 상태 / 데이터 미로드
                     // 케이스는 자연스럽게 부팅 흐름이 home 까지 데려가므로 별도 pending 플래그 불필요.
+                    // MG-132 — path/modal 만 비울 뿐 데이터는 캐시 그대로라 다른 멤버의 답변 ✓ 가 반영되지
+                    // 않는 회귀가 있었다. 인증·데이터 로드 완료 상태일 때만 refreshHomeData 까지 함께
+                    // 트리거해 백그라운드 push 진입 시 즉시 최신화한다.
                     if state.appState == .authenticated {
                         state.mainTab?.modal = nil
                         state.mainTab?.path.removeAll()
+                        return .send(.refreshHomeData)
                     }
                     return .none
                 }
