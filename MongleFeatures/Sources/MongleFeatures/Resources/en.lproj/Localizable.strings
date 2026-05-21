@@ -458,3 +458,9 @@
 "error_ad_load_failed" = "Couldn't load the ad. Please try again.";
 "error_already_answered_skip" = "You can't skip a question you've already answered";
 "error_already_skipped" = "You've already skipped this question";
+
+/* Main Tab (MG-134) */
+"tab_home" = "Home";
+"tab_history" = "History";
+"tab_search" = "Search";
+"tab_my" = "My";

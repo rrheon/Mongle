@@ -81,16 +81,16 @@ struct MainTabView: View {
         TabView(selection: $store.selectedTab.sending(\.selectTab)) {
             homeTab
             HistoryView(store: store.scope(state: \.history, action: \.history))
-                .tabItem { Label("HISTORY", systemImage: "book") }
+                .tabItem { Label(L10n.tr("tab_history"), systemImage: "book") }
                 .tag(MainTabFeature.State.Tab.history)
             SearchHistoryView(store: store.scope(state: \.search, action: \.search))
-                .tabItem { Label("SEARCH", systemImage: "magnifyingglass") }
+                .tabItem { Label(L10n.tr("tab_search"), systemImage: "magnifyingglass") }
                 .tag(MainTabFeature.State.Tab.search)
 //            NotificationView(store: store.scope(state: \.notification, action: \.notification))
 //                .tabItem { Label("NOTICE", systemImage: "bell") }
 //                .tag(MainTabFeature.State.Tab.notification)
             ProfileEditView(store: store.scope(state: \.profile, action: \.profile))
-                .tabItem { Label("MY", systemImage: "person") }
+                .tabItem { Label(L10n.tr("tab_my"), systemImage: "person") }
                 .tag(MainTabFeature.State.Tab.settings)
         }
         .accentColor(MongleColor.primaryDeep)
@@ -121,7 +121,7 @@ struct MainTabView: View {
         }
         .toolbarBackground(Color.white, for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
-        .tabItem { Label("HOME", systemImage: "house") }
+        .tabItem { Label(L10n.tr("tab_home"), systemImage: "house") }
         .tag(MainTabFeature.State.Tab.home)
     }
 
