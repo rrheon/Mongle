@@ -458,3 +458,9 @@
 "error_ad_load_failed" = "광고를 불러올 수 없어요. 다시 시도해주세요.";
 "error_already_answered_skip" = "이미 답변한 질문은 넘길 수 없어요";
 "error_already_skipped" = "이미 질문을 넘겼어요";
+
+/* Main Tab (MG-134) */
+"tab_home" = "홈";
+"tab_history" = "기록";
+"tab_search" = "검색";
+"tab_my" = "내 정보";

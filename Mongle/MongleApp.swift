@@ -149,6 +149,10 @@ struct MongleApp: App {
         }
 
         MongleFont.registerFonts()
+        // MG-134 — 탭바 라벨 폰트 사이즈를 명시 고정. SwiftUI `.dynamicTypeSize` modifier
+        // 가 tabItem 의 UITabBarItem 텍스트에는 적용되지 않아 UIKit appearance 로 직접
+        // 폰트를 박는다. 시스템 글자 크기를 키워도 탭바 라벨이 늘어나 레이아웃이 깨지지 않게.
+        Self.installTabBarAppearance()
         SocialSDK.initialize()
         // 서버 /config (MG-132) — 광고 토글 캐시 갱신. 동의 흐름보다 먼저 시작해
         // 다음 부팅부터 ConsentManager / AdBannerSection 분기에 최신값이 반영된다.
@@ -187,5 +191,28 @@ struct MongleApp: App {
                     }
                 }
         }
+    }
+}
+
+private extension MongleApp {
+    /// MG-134 — UITabBarItem 텍스트 폰트를 명시 고정.
+    /// SwiftUI `.dynamicTypeSize` modifier 가 `.tabItem` 라벨에는 적용되지 않아 UIKit
+    /// appearance 로 처리. 시스템 글자 크기를 키워도 탭바 라벨이 늘어나 레이아웃이
+    /// 깨지지 않도록 한다. 배경/색상은 SwiftUI `.toolbarBackground` 가 덮으므로 폰트만 지정.
+    static func installTabBarAppearance() {
+        let appearance = UITabBarAppearance()
+        let titleFont = UIFont.systemFont(ofSize: 10, weight: .medium)
+        let attrs: [NSAttributedString.Key: Any] = [.font: titleFont]
+        let layouts = [
+            appearance.stackedLayoutAppearance,
+            appearance.inlineLayoutAppearance,
+            appearance.compactInlineLayoutAppearance
+        ]
+        layouts.forEach { layout in
+            layout.normal.titleTextAttributes = attrs
+            layout.selected.titleTextAttributes = attrs
+        }
+        UITabBar.appearance().standardAppearance = appearance
+        UITabBar.appearance().scrollEdgeAppearance = appearance
     }
 }
