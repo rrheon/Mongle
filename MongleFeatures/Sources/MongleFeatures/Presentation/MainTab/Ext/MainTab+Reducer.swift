@@ -10,15 +10,10 @@ import ComposableArchitecture
 import Domain
 import SwiftUI
 
+// MG-150 — mood → 색 단일 매핑 진실은 V2Palette.mood. Home/Peer 답변 표시 시
+// Home 캐릭터 색과 어긋나지 않도록 통일.
 private func monggleColor(for moodId: String?) -> Color {
-    switch moodId {
-    case "happy":  return MongleColor.monggleYellow
-    case "calm":   return MongleColor.monggleGreen
-    case "loved":  return MongleColor.mongglePink
-    case "sad":    return MongleColor.monggleBlue
-    case "tired":  return MongleColor.monggleOrange
-    default:       return MongleColor.mongglePink
-    }
+    V2Palette.mood(moodId)
 }
 
 // MARK: - Current User 상태 동기화 헬퍼
