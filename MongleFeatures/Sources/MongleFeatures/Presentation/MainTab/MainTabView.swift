@@ -96,6 +96,18 @@ struct MainTabView: View {
         .accentColor(MongleColor.primaryDeep)
         .toolbarBackground(Color.white, for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
+        // MG-150 — Home 탭의 root(NavigationStack path 가 비어있을 때)에서만 v2 탭바를
+        // 띄운다. push 된 detail 화면(QuestionDetail/Notification/PeerNudge/WriteQuestion)
+        // 에서는 탭바가 떠 있으면 컨텐츠와 겹치므로 숨김. 다른 탭은 v2 디자인이 아직
+        // 적용되지 않아 시각 일관성 차원에서 시스템 탭바를 유지.
+        .overlay(alignment: .bottom) {
+            if store.selectedTab == .home && store.path.isEmpty {
+                MainTabBarV2(
+                    active: store.selectedTab,
+                    onSelect: { store.send(.selectTab($0)) }
+                )
+            }
+        }
     }
 
     // MARK: - Home Tab
@@ -103,6 +115,10 @@ struct MainTabView: View {
     private var homeTab: some View {
         NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
             homeViewSection
+                // MG-150 — Home 화면에서 시스템 탭바를 숨기고 V2 탭바를 overlay
+                // 로 띄운다. NavigationStack 의 root 콘텐츠에 적용해야 iOS 17
+                // 에서도 hidden 이 안정적으로 먹는다.
+                .toolbar(.hidden, for: .tabBar)
         } destination: { store in
             switch store.case {
             case let .questionDetail(detailStore):
@@ -127,23 +143,14 @@ struct MainTabView: View {
 
     // MARK: - Subviews
 
-    private static let monggleColors: [Color] = [
-        MongleColor.monggleYellow,
-        MongleColor.monggleGreen,
-        MongleColor.mongglePink,
-        MongleColor.monggleBlue,
-        MongleColor.monggleOrange
-    ]
+    // MG-150 — mood → V2Palette 단일 매핑 진실(V2Palette.mood) 사용.
+    private static let monggleColors: [Color] = V2Palette.family
 
     private static func monggleColor(for moodId: String?, fallback index: Int) -> Color {
-        switch moodId {
-        case "happy":  return MongleColor.monggleYellow
-        case "calm":   return MongleColor.monggleGreen
-        case "loved":  return MongleColor.mongglePink
-        case "sad":    return MongleColor.monggleBlue
-        case "tired":  return MongleColor.monggleOrange
-        default:       return MongleColor.mongglePink
+        if let moodId, ["happy","calm","loved","sad","tired"].contains(moodId) {
+            return V2Palette.mood(moodId)
         }
+        return V2Palette.family[index % V2Palette.family.count]
     }
 
     private var homeViewSection: some View {
@@ -161,7 +168,7 @@ struct MainTabView: View {
                     hasSkipped: store.home.memberSkippedStatus[user.id] ?? false
                 )
             }
-        return HomeView(
+        return HomeViewV2(
             topBarState: HomeTopBarState(
                 streakDays: store.home.streakDays,
                 groupName: store.home.family?.name ?? L10n.tr("home_default_group"),
