@@ -28,9 +28,7 @@ public struct ProfileEditView: View {
                         
                       // 광고 배너
                         #if os(iOS)
-                        AdBannerSection()
-                            .padding(.horizontal, 20)
-                            .padding(.bottom, 4)
+                        AdBannerSection(bottom: 4, horizontal: 20)
                         #endif
 
                         moodSection
