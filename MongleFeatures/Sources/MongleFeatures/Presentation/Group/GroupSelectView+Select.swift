@@ -15,23 +15,11 @@ struct ActionSheetContentHeightKey: PreferenceKey {
 
 extension GroupSelectView {
 
-  static let monggleColors: [Color] = [
-    MongleColor.monggleGreen,
-    MongleColor.monggleYellow,
-    MongleColor.monggleBlue,
-    MongleColor.mongglePink,
-    MongleColor.monggleOrange
-  ]
+  // MG-150 — V2Palette 로 통일.
+  static let monggleColors: [Color] = V2Palette.family
 
   static func monggleColor(for moodId: String) -> Color {
-    switch moodId {
-    case "happy":  return MongleColor.monggleYellow
-    case "calm":   return MongleColor.monggleGreen
-    case "loved":  return MongleColor.mongglePink
-    case "sad":    return MongleColor.monggleBlue
-    case "tired":  return MongleColor.monggleOrange
-    default:       return MongleColor.mongglePink
-    }
+    V2Palette.mood(moodId)
   }
 
   func memberColors(for group: MongleGroup) -> [Color] {

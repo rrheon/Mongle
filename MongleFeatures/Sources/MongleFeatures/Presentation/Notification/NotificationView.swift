@@ -216,15 +216,9 @@ private struct NotificationCard: View {
         }
     }
 
+    // MG-150 — mood 색 단일 매핑 진실은 V2Palette.mood.
     private static func monggleColor(for moodId: String) -> Color {
-        switch moodId {
-        case "calm":  return MongleColor.monggleGreen
-        case "happy": return MongleColor.monggleYellow
-        case "loved": return MongleColor.mongglePink
-        case "sad":   return MongleColor.monggleBlue
-        case "tired": return MongleColor.monggleOrange
-        default:      return MongleColor.mongglePink
-        }
+        V2Palette.mood(moodId)
     }
 
     private var iconName: String {

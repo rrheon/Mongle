@@ -342,20 +342,12 @@ public struct GroupManagementView: View {
   
   // MARK: - Helpers
   
+  // MG-150 — mood 색 단일 매핑 진실은 V2Palette.mood.
   private func monggleColor(for moodId: String?, fallbackIndex: Int) -> Color {
-    switch moodId {
-    case "happy": return MongleColor.monggleYellow
-    case "calm":  return MongleColor.monggleGreen
-    case "loved": return MongleColor.mongglePink
-    case "sad":   return MongleColor.monggleBlue
-    case "tired": return MongleColor.monggleOrange
-    default:
-      let colors: [Color] = [
-        MongleColor.monggleYellow, MongleColor.monggleGreen,
-        MongleColor.mongglePink, MongleColor.monggleBlue, MongleColor.monggleOrange
-      ]
-      return colors[fallbackIndex % colors.count]
+    if let moodId, ["happy","calm","loved","sad","tired"].contains(moodId) {
+      return V2Palette.mood(moodId)
     }
+    return V2Palette.family[fallbackIndex % V2Palette.family.count]
   }
   
   private func sectionTitle(_ title: String, subtitle: String) -> some View {

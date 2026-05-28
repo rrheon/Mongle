@@ -82,128 +82,6 @@ public struct MongleButtonSecondary: View {
     }
 }
 
-/// component/Button/Ghost — no background, gray text
-public struct MongleButtonGhost: View {
-    let label: String
-    var icon: String? = nil
-    var action: () -> Void
-
-    public init(_ label: String, icon: String? = nil, action: @escaping () -> Void) {
-        self.label = label
-        self.icon = icon
-        self.action = action
-    }
-
-    public var body: some View {
-        Button(action: action) {
-            HStack(spacing: 8) {
-                if let icon {
-                    Image(systemName: icon)
-                        .font(.system(size: 18))
-                        .foregroundColor(MongleColor.textSecondary)
-                }
-                Text(label)
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(MongleColor.textSecondary)
-            }
-            .frame(maxWidth: .infinity)
-            .frame(height: 48)
-        }
-    }
-}
-
-/// component/Button/SmallPill — compact gradient pill
-public struct MongleButtonSmallPill: View {
-    let label: String
-    var action: () -> Void
-
-    public init(_ label: String, action: @escaping () -> Void) {
-        self.label = label
-        self.action = action
-    }
-
-    public var body: some View {
-        Button(action: action) {
-            Text(label)
-                .font(MongleFont.captionBold())
-                .foregroundColor(.white)
-                .padding(.horizontal, 16)
-                .frame(height: 32)
-                .background(
-                    LinearGradient(
-                        colors: [MongleColor.primaryGradientStart, MongleColor.primaryGradientEnd],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .clipShape(Capsule())
-        }
-    }
-}
-
-/// component/Button/SmallOutline — compact outline pill
-public struct MongleButtonSmallOutline: View {
-    let label: String
-    var action: () -> Void
-
-    public init(_ label: String, action: @escaping () -> Void) {
-        self.label = label
-        self.action = action
-    }
-
-    public var body: some View {
-        Button(action: action) {
-            Text(label)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundColor(MongleColor.textSecondary)
-                .padding(.horizontal, 16)
-                .frame(height: 32)
-                .background(Color.white.opacity(0.8))
-                .clipShape(Capsule())
-                .overlay(Capsule().stroke(MongleColor.border, lineWidth: 1))
-        }
-    }
-}
-
-/// component/Button/CTA — large full-width gradient pill with icon
-public struct MongleButtonCTA: View {
-    let label: String
-    var icon: String? = "book.fill"
-    var action: () -> Void
-
-    public init(_ label: String, icon: String? = "book.fill", action: @escaping () -> Void) {
-        self.label = label
-        self.icon = icon
-        self.action = action
-    }
-
-    public var body: some View {
-        Button(action: action) {
-            HStack(spacing: 10) {
-                if let icon {
-                    Image(systemName: icon)
-                        .font(.system(size: 20))
-                        .foregroundColor(.white)
-                }
-                Text(label)
-                    .font(MongleFont.button())
-                    .foregroundColor(.white)
-            }
-            .frame(maxWidth: .infinity)
-            .frame(height: 56)
-            .background(
-                LinearGradient(
-                    colors: [MongleColor.primaryGradientStart, MongleColor.primaryGradientEnd],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .clipShape(Capsule())
-            .shadow(color: MongleColor.primaryGradientStart.opacity(0.25), radius: 16, x: 0, y: 6)
-        }
-    }
-}
-
 // MARK: - Inputs
 
 /// component/Input/Text — single-line text field with icon
@@ -233,157 +111,6 @@ public struct MongleInputText: View {
         .cornerRadius(MongleRadius.medium)
         .overlay(RoundedRectangle(cornerRadius: MongleRadius.medium).stroke(MongleColor.border, lineWidth: 1))
         .shadow(color: MongleColor.shadowBase.opacity(0.08), radius: 6, x: 0, y: 2)
-    }
-}
-
-/// component/Input/TextArea — multi-line text area
-public struct MongleInputTextArea: View {
-    let placeholder: String
-    @Binding var text: String
-
-    public init(placeholder: String, text: Binding<String>) {
-        self.placeholder = placeholder
-        self._text = text
-    }
-
-    public var body: some View {
-        ZStack(alignment: .topLeading) {
-            if text.isEmpty {
-                Text(placeholder)
-                    .font(MongleFont.body2())
-                    .foregroundColor(MongleColor.textHint)
-                    .padding(16)
-            }
-            TextEditor(text: $text)
-                .font(MongleFont.body2())
-                .foregroundColor(MongleColor.textPrimary)
-                .scrollContentBackground(.hidden)
-                .padding(12)
-        }
-        .frame(minHeight: 120)
-        .background(Color.white)
-        .cornerRadius(MongleRadius.medium)
-        .overlay(RoundedRectangle(cornerRadius: MongleRadius.medium).stroke(MongleColor.border, lineWidth: 1))
-        .shadow(color: MongleColor.shadowBase.opacity(0.08), radius: 6, x: 0, y: 2)
-    }
-}
-
-// MARK: - Badges
-
-/// component/Badge/Level — peach pill "Lv.N Name"
-public struct MongleBadgeLevel: View {
-    let level: Int
-    let name: String
-
-    public init(level: Int, name: String) {
-        self.level = level
-        self.name = name
-    }
-
-    public var body: some View {
-        HStack(spacing: 4) {
-            Text("Lv.\(level)")
-                .font(MongleFont.captionBold())
-                .foregroundColor(MongleColor.moodLoved)
-            Text(name)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundColor(MongleColor.moodLoved)
-        }
-        .padding(.horizontal, 12)
-        .frame(height: 28)
-        .background(MongleColor.bgPeach)
-        .clipShape(Capsule())
-    }
-}
-
-/// component/Badge/Streak — gradient pill "🔥 N Days Streak"
-public struct MongleBadgeStreak: View {
-    let days: Int
-
-    public init(days: Int) {
-        self.days = days
-    }
-
-    public var body: some View {
-        HStack(spacing: 6) {
-            Text("🔥")
-                .font(.system(size: 14))
-            Text("\(days) Days")
-                .font(.system(size: 12, weight: .bold))
-                .foregroundColor(.white)
-            Text("Streak")
-                .font(.system(size: 10, weight: .medium))
-                .foregroundColor(.white.opacity(0.8))
-        }
-        .padding(.horizontal, 12)
-        .frame(height: 32)
-        .background(
-            LinearGradient(
-                colors: [MongleColor.moodLoved, MongleColor.accentPeach],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
-        .clipShape(Capsule())
-        .shadow(color: MongleColor.moodLoved.opacity(0.2), radius: 8, x: 0, y: 2)
-    }
-}
-
-/// component/Badge/Answered — green pill "✓ 답변하기"
-public struct MongleBadgeAnswered: View {
-    public init() {}
-
-    public var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: "checkmark")
-                .font(.system(size: 10, weight: .bold))
-                .foregroundColor(.white)
-            Text(L10n.tr("home_answer_complete"))
-                .font(.system(size: 10, weight: .semibold))
-                .foregroundColor(.white)
-        }
-        .padding(.horizontal, 10)
-        .frame(height: 24)
-        .background(
-            LinearGradient(
-                colors: [MongleColor.primaryGradientStart, MongleColor.primaryGradientEnd],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        )
-        .clipShape(Capsule())
-    }
-}
-
-/// component/Badge/Pending — gray outline pill "미답변"
-public struct MongleBadgePending: View {
-    public init() {}
-
-    public var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: "timer")
-                .font(.system(size: 10))
-                .foregroundColor(MongleColor.textHint)
-            Text("미답변")
-                .font(.system(size: 10, weight: .medium))
-                .foregroundColor(MongleColor.textHint)
-        }
-        .padding(.horizontal, 10)
-        .frame(height: 24)
-        .background(Color.white.opacity(0.8))
-        .clipShape(Capsule())
-        .overlay(Capsule().stroke(MongleColor.border, lineWidth: 1))
-    }
-}
-
-/// component/NotificationDot — red circle indicator
-public struct MongleNotificationDot: View {
-    public init() {}
-
-    public var body: some View {
-        Circle()
-            .fill(MongleColor.notificationDot)
-            .frame(width: 10, height: 10)
     }
 }
 
@@ -452,69 +179,12 @@ public extension MongleMonggle {
     static func orange(name: String? = nil, size: CGFloat = 56) -> MongleMonggle {
         MongleMonggle(color: MongleColor.monggleOrange, name: name, size: size)
     }
+    // MG-150 — mood 색 단일 매핑 진실은 V2Palette.mood.
     static func forMood(_ moodId: String?, size: CGFloat = 56) -> MongleMonggle {
-        switch moodId {
-        case "happy":  return MongleMonggle(color: MongleColor.monggleYellow, size: size)
-        case "calm":   return MongleMonggle(color: MongleColor.monggleGreen, size: size)
-        case "loved":  return MongleMonggle(color: MongleColor.mongglePink, size: size)
-        case "sad":    return MongleMonggle(color: MongleColor.monggleBlue, size: size)
-        case "tired":  return MongleMonggle(color: MongleColor.monggleOrange, size: size)
-        default:       return MongleMonggle(color: MongleColor.mongglePink, size: size)
-        }
+        MongleMonggle(color: V2Palette.mood(moodId), size: size)
     }
 }
 
-// MARK: - XP Bar
-
-/// component/XPBar — level badge + "current/total XP" + progress track
-public struct MongleXPBar: View {
-    let level: Int
-    let levelName: String
-    let current: Int
-    let total: Int
-
-    public init(level: Int, levelName: String, current: Int, total: Int) {
-        self.level = level
-        self.levelName = levelName
-        self.current = current
-        self.total = total
-    }
-
-    private var progress: CGFloat {
-        guard total > 0 else { return 0 }
-        return min(CGFloat(current) / CGFloat(total), 1.0)
-    }
-
-    public var body: some View {
-        VStack(spacing: 6) {
-            HStack {
-                MongleBadgeLevel(level: level, name: levelName)
-                Spacer()
-                Text("\(current) / \(total) XP")
-                    .font(MongleFont.caption())
-                    .foregroundColor(MongleColor.textSecondary)
-            }
-
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule()
-                        .fill(MongleColor.primaryXLight)
-                        .frame(height: 8)
-                    Capsule()
-                        .fill(
-                            LinearGradient(
-                                colors: [MongleColor.primaryMuted, MongleColor.primaryGradientEnd],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .frame(width: geo.size.width * progress, height: 8)
-                }
-            }
-            .frame(height: 8)
-        }
-    }
-}
 
 // MARK: - Cards
 
@@ -568,42 +238,6 @@ public struct MongleCardQuestion: View {
     }
 }
 
-// MARK: component/Card/Glass — generic glass container card
-
-public struct MongleCardGlass<Content: View>: View {
-    let title: String
-    var description: String? = nil
-    @ViewBuilder let content: Content
-
-    public init(title: String, description: String? = nil, @ViewBuilder content: () -> Content) {
-        self.title = title
-        self.description = description
-        self.content = content()
-    }
-
-    public var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(MongleColor.textPrimary)
-                    .kerning(-0.2)
-                if let description {
-                    Text(description)
-                        .font(MongleFont.body2())
-                        .foregroundColor(MongleColor.textSecondary)
-                        .lineSpacing(4)
-                }
-            }
-            content
-        }
-        .padding(24)
-        .background(.ultraThinMaterial)
-        .cornerRadius(MongleRadius.xl)
-        .overlay(RoundedRectangle(cornerRadius: MongleRadius.xl).stroke(Color.white.opacity(0.2), lineWidth: 1))
-        .shadow(color: MongleColor.shadowBase.opacity(0.12), radius: 20, x: 0, y: 4)
-    }
-}
 // MARK: MongleCardGroup
 
 public struct MongleCardGroup: View {
@@ -662,134 +296,6 @@ public struct MongleCardGroup: View {
     }
 }
 
-/// component/Card/Emotion — compact emotion history card
-public struct MongleCardEmotion: View {
-    let date: String
-    let mood: String
-    var gradientColors: [Color] = [MongleColor.accentPeach, MongleColor.primaryXLight]
-
-    public init(date: String, mood: String, gradientColors: [Color] = [MongleColor.accentPeach, MongleColor.primaryXLight]) {
-        self.date = date
-        self.mood = mood
-        self.gradientColors = gradientColors
-    }
-
-    public var body: some View {
-        VStack(alignment: .center, spacing: 12) {
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: gradientColors,
-                        center: .center,
-                        startRadius: 0,
-                        endRadius: 24
-                    )
-                )
-                .frame(width: 48, height: 48)
-                .blur(radius: 6)
-
-            VStack(spacing: 2) {
-                Text(date)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(MongleColor.textPrimary)
-                Text(mood)
-                    .font(.system(size: 11))
-                    .foregroundColor(MongleColor.textSecondary)
-            }
-        }
-        .padding(16)
-        .frame(width: 160)
-        .background(.ultraThinMaterial)
-        .cornerRadius(MongleRadius.xl)
-        .overlay(RoundedRectangle(cornerRadius: MongleRadius.xl).stroke(Color.white.opacity(0.2), lineWidth: 1))
-        .shadow(color: MongleColor.shadowBase.opacity(0.12), radius: 16, x: 0, y: 4)
-    }
-}
-
-// MARK: - Settings List Item
-
-/// component/ListItem/Settings — icon + title/desc + chevron
-public struct MongleListItemSettings: View {
-    public enum Trailing {
-        case chevron
-        case toggle(Binding<Bool>)
-        case none
-    }
-
-    let iconName: String
-    let iconColor: Color
-    let iconBg: Color
-    let title: String
-    var description: String? = nil
-    var trailing: Trailing = .chevron
-    var action: (() -> Void)? = nil
-
-    public init(
-        iconName: String,
-        iconColor: Color,
-        iconBg: Color,
-        title: String,
-        description: String? = nil,
-        trailing: Trailing = .chevron,
-        action: (() -> Void)? = nil
-    ) {
-        self.iconName = iconName
-        self.iconColor = iconColor
-        self.iconBg = iconBg
-        self.title = title
-        self.description = description
-        self.trailing = trailing
-        self.action = action
-    }
-
-    public var body: some View {
-        Button { action?() } label: {
-            HStack(spacing: 12) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: MongleRadius.medium)
-                        .fill(iconBg)
-                        .frame(width: 36, height: 36)
-                    Image(systemName: iconName)
-                        .font(.system(size: 18))
-                        .foregroundColor(iconColor)
-                }
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(MongleColor.textPrimary)
-                    if let description {
-                        Text(description)
-                            .font(MongleFont.caption())
-                            .foregroundColor(MongleColor.textHint)
-                    }
-                }
-
-                Spacer()
-
-                switch trailing {
-                case .chevron:
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 18))
-                        .foregroundColor(MongleColor.textHint)
-                case .toggle(let binding):
-                    Toggle("", isOn: binding)
-                        .tint(MongleColor.primary)
-                        .labelsHidden()
-                case .none:
-                    EmptyView()
-                }
-            }
-            .padding(.horizontal, 16)
-            .frame(height: 56)
-            .background(Color.white)
-            .cornerRadius(MongleRadius.large)
-        }
-        .buttonStyle(.plain)
-        .disabled(action == nil && { if case .toggle = trailing { return false }; return true }())
-    }
-}
-
 // MARK: - Mood Selector
 
 public struct MoodOption: Identifiable, Equatable {
@@ -833,163 +339,6 @@ public struct MoodOption: Identifiable, Equatable {
     public static func color(for moodId: String?) -> Color {
         guard let moodId, let color = colorById[moodId] else { return defaultColor }
         return color
-    }
-}
-
-/// component/MoodSelector — glass card with row of mood balls
-public struct MongleMoodSelector: View {
-    let moods: [MoodOption]
-    @Binding var selected: MoodOption?
-
-    public init(moods: [MoodOption] = MoodOption.defaults, selected: Binding<MoodOption?>) {
-        self.moods = moods
-        self._selected = selected
-    }
-
-    public var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("오늘의 기분은?")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(MongleColor.textPrimary)
-                Text("기분에 따라 몽글의 색이 변해요")
-                    .font(MongleFont.caption())
-                    .foregroundColor(MongleColor.textHint)
-            }
-
-            HStack {
-                ForEach(moods) { mood in
-                    Spacer()
-                    VStack(spacing: 6) {
-                        MongleMonggle.forMood(mood.id, size: 44)
-                            .scaleEffect(selected == mood ? 1.18 : 1.0)
-                            .animation(.spring(response: 0.25, dampingFraction: 0.6), value: selected)
-
-                        Text(mood.label)
-                            .font(.system(size: 10, weight: selected == mood ? .semibold : .medium))
-                            .foregroundColor(selected == mood ? MongleColor.textPrimary : MongleColor.textSecondary)
-                    }
-                    .frame(width: 56)
-                    .onTapGesture { selected = mood }
-                    Spacer()
-                }
-            }
-        }
-        .padding(20)
-        .background(.ultraThinMaterial)
-        .cornerRadius(MongleRadius.xl)
-        .overlay(RoundedRectangle(cornerRadius: MongleRadius.xl).stroke(Color.white.opacity(0.2), lineWidth: 1))
-        .shadow(color: MongleColor.shadowBase.opacity(0.12), radius: 16, x: 0, y: 4)
-    }
-
-}
-
-// MARK: - Header/Home
-
-/// component/Header/Home — streak badge | family name | bell+dot
-public struct MongleHeaderHome: View {
-    let familyName: String
-    let streakDays: Int
-    var hasNotification: Bool = false
-    var onBellTapped: (() -> Void)? = nil
-
-    public init(familyName: String, streakDays: Int, hasNotification: Bool = false, onBellTapped: (() -> Void)? = nil) {
-        self.familyName = familyName
-        self.streakDays = streakDays
-        self.hasNotification = hasNotification
-        self.onBellTapped = onBellTapped
-    }
-
-    public var body: some View {
-        HStack {
-            MongleBadgeStreak(days: streakDays)
-
-            Spacer()
-
-            Text(familyName)
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundColor(MongleColor.textPrimary)
-
-            Spacer()
-
-            Button { onBellTapped?() } label: {
-                ZStack(alignment: .topTrailing) {
-                    Image(systemName: "bell")
-                        .font(.system(size: 24))
-                        .foregroundColor(MongleColor.textPrimary)
-                        .frame(width: 24, height: 24)
-
-                    if hasNotification {
-                        MongleNotificationDot()
-                            .offset(x: 4, y: -4)
-                    }
-                }
-                .frame(width: 28, height: 28)
-            }
-        }
-        .padding(.horizontal, 20)
-        .frame(height: 56)
-    }
-}
-
-// MARK: - Answer Sheet
-
-/// component/Sheet/Answer — bottom sheet with question + textarea + CTA
-public struct MongleSheetAnswer: View {
-    let question: String
-    @Binding var answerText: String
-    var onSubmit: () -> Void
-
-    public init(question: String, answerText: Binding<String>, onSubmit: @escaping () -> Void) {
-        self.question = question
-        self._answerText = answerText
-        self.onSubmit = onSubmit
-    }
-
-    public var body: some View {
-        VStack(spacing: 20) {
-            // Handle bar
-            RoundedRectangle(cornerRadius: 100)
-                .fill(MongleColor.border)
-                .frame(width: 40, height: 4)
-
-            // Question
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Today's Question")
-                    .font(MongleFont.captionBold())
-                    .foregroundColor(MongleColor.primaryMuted)
-
-                Text(question)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(MongleColor.textPrimary)
-                    .kerning(-0.2)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            // Input
-            MongleInputTextArea(
-                placeholder: "오늘의 감정을 자유롭게 적어보세요.\n어떤 이야기든 좋아요.",
-                text: $answerText
-            )
-            .frame(height: 140)
-
-            // Submit
-            MongleButtonCTA("답변 남기기", icon: "heart.fill", action: onSubmit)
-        }
-        .padding(.top, 24)
-        .padding(.horizontal, 20)
-        .padding(.bottom, 32)
-        .background(Color.white)
-        .clipShape(
-            .rect(
-                topLeadingRadius: 24,
-                bottomLeadingRadius: 0,
-                bottomTrailingRadius: 0,
-                topTrailingRadius: 24
-            )
-        )
-        .shadow(color: MongleColor.textPrimary.opacity(0.1), radius: 20, x: 0, y: -4)
     }
 }
 
@@ -1040,29 +389,9 @@ struct MongleRowButtonStyle: ButtonStyle {
         VStack(spacing: 16) {
             MongleButtonPrimary("시작하기", icon: "plus", action: {})
             MongleButtonSecondary("답변하기", action: {})
-            MongleButtonGhost("더보기", icon: "chevron.right", action: {})
-            HStack {
-                MongleButtonSmallPill("답변하기", action: {})
-                MongleButtonSmallOutline("미답변", action: {})
-            }
-            MongleButtonCTA("오늘의 감정 보기", action: {})
         }
         .padding()
     }
-    .background(MongleColor.bgNeutral)
-}
-
-#Preview("Badges") {
-    VStack(spacing: 16) {
-        MongleBadgeStreak(days: 5)
-        MongleBadgeLevel(level: 3, name: "Cozy Forest")
-        HStack(spacing: 8) {
-            MongleBadgeAnswered()
-            MongleBadgePending()
-            MongleNotificationDot()
-        }
-    }
-    .padding()
     .background(MongleColor.bgNeutral)
 }
 
@@ -1089,32 +418,12 @@ struct MongleRowButtonStyle: ButtonStyle {
                 groupName: "Kim Family",
                 memberColors: [MongleColor.monggleGreen, MongleColor.monggleYellow, MongleColor.monggleBlue, MongleColor.mongglePink, MongleColor.monggleOrange]
             )
-            HStack {
-                MongleCardEmotion(date: "3월 4일", mood: "따뜻한 하루")
-                MongleCardEmotion(date: "3월 3일", mood: "설레는 하루")
-            }
         }
         .padding()
     }
     .background(MongleColor.bgNeutral)
 }
 
-#Preview("MoodSelector") {
-    struct PreviewWrapper: View {
-        @State var selected: MoodOption? = MoodOption.defaults[2]
-        var body: some View {
-            MongleMoodSelector(selected: $selected)
-                .padding()
-        }
-    }
-    return PreviewWrapper()
-        .background(MongleColor.bgNeutral)
-}
-
-#Preview("Header") {
-    MongleHeaderHome(familyName: "Kim Family", streakDays: 5, hasNotification: true)
-        .background(MongleColor.bgNeutral)
-}
 
 // MARK: - Mongle Character Movement Model
 
@@ -1221,13 +530,53 @@ public struct MongleView: View {
             VStack(spacing: 4) {
                 statusBadge
                 // MG-120 — 본인 캐릭터는 이름 옆에 "(나)" suffix 를 붙여 status badge 색상에
-                // 더해 즉시 식별 가능하게 한다. MongleMonggle 자체는 다른 곳에서도 재사용되므로
-                // 호출 site 인 MongleView 에서만 처리.
+                // 더해 즉시 식별 가능하게 한다.
                 let displayName = isCurrentUser ? "\(name) \(L10n.tr("home_member_me_suffix"))" : name
-                MongleMonggle(color: color, name: displayName)
+                // MG-150 — V2 톤(둥근 몸체 + 흰테 눈 + dropshadow + 본인 ring) 을 인라인으로
+                // 그린다. V2Mongle 컨테이너를 직접 쓰면 내부 절대 offset 때문에 frame 강제
+                // 축소 시 본체가 frame 위쪽을 가득 채워 상단 statusBadge 와 겹친다.
+                // 정확한 70x70 frame 안에 본체를 center 정렬해 layout 을 안정시킨다.
+                v2CharacterBody
+                Text(displayName)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(MongleColor.textPrimary)
             }
         }
         .buttonStyle(.plain)
+    }
+
+    /// 캐릭터 본체 + 눈 + (본인일 때) ring. 컨테이너 70x70 (ring 포함).
+    private var v2CharacterBody: some View {
+        let bodySize: CGFloat = 56
+        let eyeSize: CGFloat = bodySize * 0.18
+        // 기존 MongleMonggle 의 눈 위치(body 중심 + size*0.04 만큼 아래) 그대로.
+        let eyeOffset: CGFloat = bodySize * 0.04
+        return ZStack {
+            if isCurrentUser {
+                Circle()
+                    .strokeBorder(V2Palette.mint, lineWidth: 2)
+                    .frame(width: bodySize + 14, height: bodySize + 14)
+            }
+            Circle()
+                .fill(color)
+                .frame(width: bodySize, height: bodySize)
+                .overlay(Circle().strokeBorder(V2Palette.inkSoft, lineWidth: 1.5))
+                .shadow(color: Color.black.opacity(0.32), radius: 7, x: 0, y: 4)
+
+            HStack(spacing: eyeSize * 0.6) {
+                eye(size: eyeSize)
+                eye(size: eyeSize)
+            }
+            .offset(y: eyeOffset)
+        }
+        .frame(width: bodySize + 14, height: bodySize + 14)
+    }
+
+    private func eye(size: CGFloat) -> some View {
+        Circle()
+            .fill(V2Palette.ink)
+            .frame(width: size, height: size)
+            .overlay(Circle().strokeBorder(.white, lineWidth: 1.5))
     }
 
     @ViewBuilder
