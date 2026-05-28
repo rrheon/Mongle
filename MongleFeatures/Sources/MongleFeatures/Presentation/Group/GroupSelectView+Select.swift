@@ -81,8 +81,7 @@ extension GroupSelectView {
 
       #if os(iOS)
       if !store.groups.isEmpty {
-        AdBannerSection()
-          .padding(.top, MongleSpacing.sm)
+        AdBannerSection(top: MongleSpacing.sm)
       }
       #endif
     }

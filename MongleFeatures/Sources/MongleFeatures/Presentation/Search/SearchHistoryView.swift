@@ -140,9 +140,7 @@ public struct SearchHistoryView: View {
 
                         if adAnchors.contains(result.id) {
                             #if os(iOS)
-                            AdBannerSection()
-                                .padding(.horizontal, 20)
-                                .padding(.bottom, MongleSpacing.sm)
+                            AdBannerSection(bottom: MongleSpacing.sm, horizontal: 20)
                             #endif
                         }
                     }
