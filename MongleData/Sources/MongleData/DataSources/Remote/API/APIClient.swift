@@ -11,6 +11,10 @@ public extension Notification.Name {
 protocol APIClientProtocol: Sendable {
     func request<T: Decodable>(_ endpoint: APIEndpoint) async throws -> T
     func request(_ endpoint: APIEndpoint) async throws
+    /// (MG-141) sessionExpired 강제 로그아웃 신호를 억제하는 변형.
+    /// 디바이스 토큰 등록처럼 백그라운드/비핵심 요청이 일시적 401→refresh 실패로
+    /// 사용자를 의도치 않게 로그아웃시키지 않도록 한다. 핵심 요청은 기본(escalate=true) 사용.
+    func request<T: Decodable>(_ endpoint: APIEndpoint, escalateSessionExpired: Bool) async throws -> T
 }
 
 // MARK: - Token Refresh Actor (동시 갱신 방지)
@@ -88,6 +92,10 @@ final class APIClient: APIClientProtocol, @unchecked Sendable {
     // MARK: - Request with Response
 
     func request<T: Decodable>(_ endpoint: APIEndpoint) async throws -> T {
+        try await request(endpoint, escalateSessionExpired: true)
+    }
+
+    func request<T: Decodable>(_ endpoint: APIEndpoint, escalateSessionExpired: Bool) async throws -> T {
         try checkConnectivity()
         return try await withRetry(label: "\(type(of: endpoint))") {
             var urlRequest = try endpoint.buildURLRequest()
@@ -96,7 +104,7 @@ final class APIClient: APIClientProtocol, @unchecked Sendable {
 
             // 401 → 리프레시 토큰으로 갱신 후 1회 재시도
             if response.statusCode == 401 {
-                let newToken = try await self.attemptTokenRefresh()
+                let newToken = try await self.attemptTokenRefresh(escalateSessionExpired: escalateSessionExpired)
                 var retryRequest = try endpoint.buildURLRequest()
                 retryRequest.setValue("Bearer \(newToken)", forHTTPHeaderField: "Authorization")
                 let (retryData, retryResponse) = try await self.perform(retryRequest)
@@ -209,7 +217,7 @@ final class APIClient: APIClientProtocol, @unchecked Sendable {
     /// 단, 처음부터 refresh 토큰이 아예 없는 케이스(첫 install / 로그아웃 직후) 는
     /// "세션이 만료된" 게 아니라 "세션이 한 번도 없었던" 상태이므로 mongleSessionExpired
     /// 신호를 post 하지 않는다 (불필요한 "다시 로그인 필요" 팝업 차단).
-    private func attemptTokenRefresh() async throws -> String {
+    private func attemptTokenRefresh(escalateSessionExpired: Bool = true) async throws -> String {
         let hadRefreshTokenBefore = tokenStorage.getRefreshToken() != nil
         do {
             return try await refreshCoordinator.refresh {
@@ -241,7 +249,9 @@ final class APIClient: APIClientProtocol, @unchecked Sendable {
             // "만료된" 게 아니라 "한 번도 없었던" 상태. 이 경우 sessionExpired 팝업을
             // 띄우는 건 사용자에게 혼란만 준다. RootFeature 가 onAppear 에서 user=nil 을
             // 받아 자연스럽게 LoginView 로 라우팅하면 되므로 신호를 post 하지 않는다.
-            if hadRefreshTokenBefore {
+            // (MG-141) escalateSessionExpired=false 인 백그라운드 요청(디바이스 토큰 등록 등)도
+            // 강제 로그아웃을 일으키지 않는다 — 토큰 등록 실패로 가족 연결이 끊기는 것을 방지.
+            if hadRefreshTokenBefore && escalateSessionExpired {
                 await MainActor.run {
                     NotificationCenter.default.post(name: .mongleSessionExpired, object: nil)
                 }
@@ -287,6 +297,10 @@ final class MockAPIClient: APIClientProtocol, @unchecked Sendable {
             throw APIError.decodingError("Mock response type mismatch")
         }
         return response
+    }
+
+    func request<T: Decodable>(_ endpoint: APIEndpoint, escalateSessionExpired: Bool) async throws -> T {
+        try await request(endpoint)
     }
 
     func request(_ endpoint: APIEndpoint) async throws {

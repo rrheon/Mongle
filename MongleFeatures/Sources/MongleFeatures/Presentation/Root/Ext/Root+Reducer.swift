@@ -393,6 +393,10 @@ extension RootFeature {
                 case .sessionExpired:
                     // APIClient 가 이미 토큰을 폐기했으므로 authRepository.logout() 호출 불필요.
                     // .logout cleanup 패턴 재사용 + 안내 팝업 플래그 set.
+                    // (MG-141) 의도적으로 authRepository.logout() 을 호출하지 않는다 — 서버 /auth/logout 은
+                    // 디바이스 토큰을 보존(soft logout)하지만, 세션만료는 그 호출조차 없이 서버가 refresh 실패
+                    // 시점에 sessionState='expired' 로만 내려 토큰을 남긴다. 이 토큰으로 "다시 로그인" 재참여
+                    // 푸시가 발송되어 가족 연결이 유지된다. 여기서 logout 을 부르면 그 경로가 끊기니 추가 금지.
                     state.showSessionExpiredPopup = true
                     state.appState = .unauthenticated
                     state.currentUser = nil
