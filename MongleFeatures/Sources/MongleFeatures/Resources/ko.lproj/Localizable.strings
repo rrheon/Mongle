@@ -45,7 +45,7 @@
 "shop_apply_bg_confirm" = "이 배경 적용하기";
 "shop_preview_badge_home" = "적용 미리보기 · 우리집 홈";
 "shop_preview_badge_slot" = "적용 미리보기 · %@ 슬롯";
-"shop_bg_detail_sub" = "그룹 공유 · 구매 시 가족 전원에게 개방";
+"shop_bg_detail_sub" = "개인 소유 · 구매 후 가족 홈 배경으로 적용";
 "shop_deco_detail_sub" = "개인 소유 · 내 몽글만 장착 · 구매 후 자동 장착";
 "shop_compare_before" = "전";
 "shop_compare_after" = "후";

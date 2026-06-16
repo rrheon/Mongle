@@ -45,7 +45,7 @@
 "shop_apply_bg_confirm" = "この背景を適用";
 "shop_preview_badge_home" = "プレビュー · ホーム";
 "shop_preview_badge_slot" = "プレビュー · %@ スロット";
-"shop_bg_detail_sub" = "グループ共有 · 購入で家族全員に開放";
+"shop_bg_detail_sub" = "個人所有 · 購入後に家族のホーム背景へ適用";
 "shop_deco_detail_sub" = "個人所有 · 自分のモングルのみ装着 · 購入後自動装着";
 "shop_compare_before" = "前";
 "shop_compare_after" = "後";
