@@ -89,7 +89,7 @@ enum DecorationCatalog {
         // 56×56 슬롯을 세로로 넘쳐(다른 셀보다 커 보임/셀 침범) 버린다. 여기선 자산을 양쪽 모두
         // 제약된 정사각 박스에 scaledToFit 시켜 절대 넘치지 않고 다른 장식과 크기를 맞춘다.
         case satinRibbon:
-            Image("V2Ribbon", bundle: .module).resizable().scaledToFit().frame(width: 50, height: 50)
+            Image("V2Ribbon", bundle: .module).resizable().scaledToFit().frame(width: 44, height: 44)
         case balloonBunch: V2BalloonBunch()
         case santaHat:     V2SantaHat()
         case angelWings:   V2AngelWings(size: 56)
