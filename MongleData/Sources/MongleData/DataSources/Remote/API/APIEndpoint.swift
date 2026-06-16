@@ -539,7 +539,7 @@ enum NudgeEndpoint: APIEndpoint {
 // MARK: - Answer Endpoints
 
 enum AnswerEndpoint: APIEndpoint {
-    case create(questionId: String, content: String, imageUrl: String?, moodId: String?)
+    case create(questionId: String, dailyQuestionId: String?, content: String, imageUrl: String?, moodId: String?)
     case get(id: String)
     /// GET /answers/family/{questionId} — 가족 전체 답변 + myAnswer
     case getFamilyAnswers(questionId: String)
@@ -575,11 +575,14 @@ enum AnswerEndpoint: APIEndpoint {
 
     var body: Data? {
         switch self {
-        case .create(let questionId, let content, let imageUrl, let moodId):
+        case .create(let questionId, let dailyQuestionId, let content, let imageUrl, let moodId):
             var params: [String: Any] = [
                 "questionId": questionId,
                 "content": content
             ]
+            if let dailyQuestionId = dailyQuestionId {
+                params["dailyQuestionId"] = dailyQuestionId
+            }
             if let imageUrl = imageUrl {
                 params["imageUrl"] = imageUrl
             }
@@ -650,6 +653,56 @@ enum ConfigEndpoint: APIEndpoint {
     var path: String { "/config" }
     var method: HTTPMethod { .get }
     var queryItems: [URLQueryItem]? { nil }
+}
+
+// MARK: - Shop Endpoints
+
+// TODO(server): /shop/* 엔드포인트 미구현 — 라이브 동작은 서버 작업 필요.
+enum ShopEndpoint: APIEndpoint {
+    /// GET /shop/catalog — 판매 중인 전체 아이템.
+    case getCatalog
+    /// GET /shop/inventory — 현재 사용자의 보유/장착 현황.
+    case getInventory
+    /// POST /shop/purchase — 아이템 구매 (서버가 하트 차감 후 잔액 반환).
+    case purchase(itemId: String)
+    /// POST /shop/decoration/equip — 슬롯에 장식 장착/해제.
+    case equipDecoration(slot: String, itemId: String?)
+    /// POST /shop/background/apply — 가족 공유 홈 배경 적용.
+    case applyBackground(itemId: String)
+
+    var path: String {
+        switch self {
+        case .getCatalog:        return "/shop/catalog"
+        case .getInventory:      return "/shop/inventory"
+        case .purchase:          return "/shop/purchase"
+        case .equipDecoration:   return "/shop/decoration/equip"
+        case .applyBackground:   return "/shop/background/apply"
+        }
+    }
+
+    var method: HTTPMethod {
+        switch self {
+        case .getCatalog, .getInventory:
+            return .get
+        case .purchase, .equipDecoration, .applyBackground:
+            return .post
+        }
+    }
+
+    var body: Data? {
+        switch self {
+        case .purchase(let itemId):
+            return try? JSONSerialization.data(withJSONObject: ["itemId": itemId])
+        case .equipDecoration(let slot, let itemId):
+            var params: [String: Any] = ["slot": slot]
+            if let itemId { params["itemId"] = itemId }
+            return try? JSONSerialization.data(withJSONObject: params)
+        case .applyBackground(let itemId):
+            return try? JSONSerialization.data(withJSONObject: ["itemId": itemId])
+        default:
+            return nil
+        }
+    }
 }
 
 // MARK: - Notification Endpoints

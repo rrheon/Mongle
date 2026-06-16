@@ -28,7 +28,11 @@ public struct NotificationView: View {
                 notificationList
             }
         }
-        .background(MongleColor.background)
+        // MG-140 — v2 cream 톤 통일. 상단 safeArea(navigationBar 영역) 까지 cream 으로
+        // 덮어 흰 띠 방지.
+        .background(V2Palette.cream.ignoresSafeArea())
+        .toolbar(.hidden, for: .navigationBar)
+        .toolbarBackground(.hidden, for: .navigationBar)
         .onAppear {
             store.send(.onAppear)
         }
@@ -54,7 +58,8 @@ public struct NotificationView: View {
 
     private var headerView: some View {
         VStack(spacing: 0) {
-            MongleNavigationHeader(title: L10n.tr("notif_title")) {
+            // MG-140 — v2 cream 톤에 맞춰 헤더 배경도 cream.
+            MongleNavigationHeader(title: L10n.tr("notif_title"), backgroundColor: V2Palette.cream) {
                 MongleBackButton { store.send(.backTapped) }
             } right: {
                 EmptyView()
@@ -197,13 +202,10 @@ private struct NotificationCard: View {
             if isSenderNotification, let colorId = notification.colorId {
                 MongleMonggle(color: Self.monggleColor(for: colorId), size: 44)
             } else {
-                Circle()
-                    .fill(iconBackground)
-                    .overlay(
-                        Image(systemName: iconName)
-                            .font(.system(size: 20, weight: .medium))
-                            .foregroundColor(iconTint)
-                    )
+                // 시스템에서 오는 알림(질문 도착 / 미답변 리마인더 / 전체 답변 / 배지 등) 은
+                // 발신자가 없으므로 크림색 몽글 캐릭터로 통일한다. (흰 카드 위에서 크림 본체가
+                // 묻히지 않도록 inkSoft 얇은 테두리 — MongleMonggle 기본값.)
+                MongleMonggle(color: V2Palette.cream, size: 44)
             }
         }
         .frame(width: 44, height: 44)
@@ -219,57 +221,6 @@ private struct NotificationCard: View {
     // MG-150 — mood 색 단일 매핑 진실은 V2Palette.mood.
     private static func monggleColor(for moodId: String) -> Color {
         V2Palette.mood(moodId)
-    }
-
-    private var iconName: String {
-        switch notification.type {
-        case .newQuestion:
-            return "questionmark.bubble.fill"
-        case .memberAnswered:
-            return "bubble.left.and.text.bubble.right.fill"
-        case .allAnswered:
-            return "checkmark.circle.fill"
-        case .answerRequest:
-            return "bell.badge.fill"
-        case .badgeEarned:
-            return "gift.fill"
-        case .reminder:
-            return "clock.badge.fill"
-        }
-    }
-
-    private var iconTint: Color {
-        switch notification.type {
-        case .newQuestion:
-            return MongleColor.info
-        case .memberAnswered:
-            return MongleColor.primary
-        case .allAnswered:
-            return MongleColor.success
-        case .answerRequest:
-            return MongleColor.accentOrange
-        case .badgeEarned:
-            return MongleColor.moodLoved
-        case .reminder:
-            return MongleColor.accentOrange
-        }
-    }
-
-    private var iconBackground: Color {
-        switch notification.type {
-        case .newQuestion:
-            return MongleColor.bgInfoLight
-        case .memberAnswered:
-            return MongleColor.primaryLight
-        case .allAnswered:
-            return MongleColor.bgSuccessLight
-        case .answerRequest:
-            return MongleColor.bgWarmLight
-        case .badgeEarned:
-            return MongleColor.bgErrorLight
-        case .reminder:
-            return MongleColor.bgWarmLight
-        }
     }
 
     private static let relativeFormatter: RelativeDateTimeFormatter = {

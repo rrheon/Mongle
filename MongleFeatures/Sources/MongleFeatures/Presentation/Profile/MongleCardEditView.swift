@@ -19,7 +19,7 @@ public struct MongleCardEditView: View {
             header
             scrollContent
         }
-        .background(MongleColor.background.ignoresSafeArea())
+        .background(V2Palette.cream.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .overlay {
             if let error = store.saveError {
@@ -43,7 +43,7 @@ public struct MongleCardEditView: View {
     // MARK: - Header
 
     private var header: some View {
-        MongleNavigationHeader(title: L10n.tr("settings_profile_edit")) {
+        MongleNavigationHeader(title: L10n.tr("settings_profile_edit"), backgroundColor: V2Palette.cream) {
             MongleBackButton { store.send(.backTapped) }
         } right: {
             Button { store.send(.saveTapped) } label: {

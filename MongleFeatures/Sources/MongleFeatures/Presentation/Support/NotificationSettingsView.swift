@@ -10,7 +10,7 @@ public struct NotificationSettingsView: View {
 
     public var body: some View {
         VStack(spacing: 0) {
-            MongleNavigationHeader(title: L10n.tr("notif_settings_title")) {
+            MongleNavigationHeader(title: L10n.tr("notif_settings_title"), backgroundColor: V2Palette.cream) {
                 MongleBackButton { store.send(.closeTapped) }
             } right: {
                 EmptyView()
@@ -53,14 +53,14 @@ public struct NotificationSettingsView: View {
                 .padding(MongleSpacing.md)
                 .padding(.bottom, MongleSpacing.xl)
             }
-            .background(MongleColor.background)
+            .background(V2Palette.cream)
         }
         .toolbar(.hidden, for: .navigationBar)
-        .overlay(alignment: .bottom) {
+        .overlay(alignment: .top) {
             if store.showSaveError {
                 MongleToastView(type: .appError(.domain(L10n.tr("toast_notif_save_error"))))
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-                    .padding(.bottom, MongleSpacing.xl)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .padding(.top, MongleSpacing.xl)
             }
         }
         .animation(.easeInOut(duration: 0.3), value: store.showSaveError)

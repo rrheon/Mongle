@@ -20,8 +20,13 @@ struct HomeViewV2: View, Equatable {
     let hasCurrentUserSkipped: Bool
     let members: [MongleMember]
     var currentUserName: String?
+    /// 바텀시트 dismiss 시 parent가 증가시키는 시그널 → MongleSceneView 이동 재개(MG-18).
+    /// EquatableView 라 == 비교에 반드시 포함해야 값 변경이 body 로 전파된다.
+    var resumeSignal: Int = 0
     var actions: HomeViewActions
     var showNotificationPermission: Bool = false
+    /// 가족 공유 홈 배경 id (상점). nil 이면 기본(따뜻한 집) 배경.
+    var appliedBackgroundId: String? = nil
 
     @State private var showGroupDropdown = false
 
@@ -31,11 +36,16 @@ struct HomeViewV2: View, Equatable {
               lhs.hasCurrentUserAnswered == rhs.hasCurrentUserAnswered,
               lhs.hasCurrentUserSkipped == rhs.hasCurrentUserSkipped,
               lhs.currentUserName == rhs.currentUserName,
+              lhs.resumeSignal == rhs.resumeSignal,
               lhs.showNotificationPermission == rhs.showNotificationPermission,
+              lhs.appliedBackgroundId == rhs.appliedBackgroundId,
               lhs.members.count == rhs.members.count
         else { return false }
         for (l, r) in zip(lhs.members, rhs.members) {
-            if l.name != r.name || l.color != r.color || l.hasAnswered != r.hasAnswered || l.hasSkipped != r.hasSkipped {
+            if l.name != r.name || l.color != r.color || l.hasAnswered != r.hasAnswered || l.hasSkipped != r.hasSkipped
+                || l.headDecorationId != r.headDecorationId
+                || l.backDecorationId != r.backDecorationId
+                || l.feetDecorationId != r.feetDecorationId {
                 return false
             }
         }
@@ -48,28 +58,34 @@ struct HomeViewV2: View, Equatable {
         hasCurrentUserSkipped: Bool = false,
         members: [MongleMember] = [],
         currentUserName: String? = nil,
+        resumeSignal: Int = 0,
         actions: HomeViewActions = HomeViewActions(),
-        showNotificationPermission: Bool = false
+        showNotificationPermission: Bool = false,
+        appliedBackgroundId: String? = nil
     ) {
         self.topBarState = topBarState
         self.hasCurrentUserAnswered = hasCurrentUserAnswered
         self.hasCurrentUserSkipped = hasCurrentUserSkipped
         self.members = members
         self.currentUserName = currentUserName
+        self.resumeSignal = resumeSignal
         self.actions = actions
         self.showNotificationPermission = showNotificationPermission
+        self.appliedBackgroundId = appliedBackgroundId
     }
 
     var body: some View {
         ZStack(alignment: .top) {
-            V2CozyHomeBackground()
+            // 가족 공유 홈 배경. 미적용/기본이면 cozy home 으로 폴백 (BackgroundCatalog 매핑).
+            BackgroundCatalog.homeBackground(for: appliedBackgroundId)
 
             VStack(spacing: 0) {
                 HomeTopBarV2(
                     state: topBarState,
                     showGroupDropdown: $showGroupDropdown,
                     onNotificationTap: actions.onNotificationTap,
-                    onHeartsTap: actions.onHeartsTap
+                    onHeartsTap: actions.onHeartsTap,
+                    onShopTap: actions.onShopTap
                 )
 
                 MongleSceneView(
@@ -77,6 +93,7 @@ struct HomeViewV2: View, Equatable {
                     hasCurrentUserSkipped: hasCurrentUserSkipped,
                     members: members,
                     currentUserName: currentUserName,
+                    resumeSignal: resumeSignal,
                     onViewAnswer: actions.onPeerAnswerTap,
                     onNudge: actions.onPeerNudgeTap,
                     onSelfTap: actions.onMyMonggleTap,
@@ -159,6 +176,9 @@ private struct HomeTopBarV2: View {
     @Binding var showGroupDropdown: Bool
     var onNotificationTap: () -> Void
     var onHeartsTap: () -> Void
+    var onShopTap: () -> Void
+
+    @State private var showHeartsCallout = false
 
     private var ink: Color { V2Palette.ink }
     private var chipBg: Color { V2Palette.ink.opacity(0.08) }
@@ -172,6 +192,10 @@ private struct HomeTopBarV2: View {
                     Text(state.groupName)
                         .font(V2Font.suit(16, .bold))
                         .foregroundStyle(ink)
+                        // 긴 그룹명이 우측 칩들의 폭을 밀어내며 세로로 줄바꿈되지 않도록
+                        // 한 줄+말줄임으로 고정하고, 폭이 부족하면 그룹명이 먼저 줄어들게 우선순위를 낮춤.
+                        .lineLimit(1)
+                        .truncationMode(.tail)
                     Image(systemName: "chevron.down")
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(ink)
@@ -180,23 +204,39 @@ private struct HomeTopBarV2: View {
                 }
             }
             .buttonStyle(.plain)
+            // 폭이 부족하면 우측 칩(하트/알림/상점)이 아니라 그룹명이 먼저 줄어들도록 우선순위를 낮춤.
+            .layoutPriority(-1)
 
             Spacer()
 
             HStack(spacing: 8) {
-                Button(action: onHeartsTap) {
+                // MG-140 — 사용자 요청으로 이전 HeartCallout popover 동작 복원.
+                // 탭 시 popover 로 하트 비용/획득 안내 미니카드. navigateToHeartsSystem 직행
+                // 동작은 제거 (필요 시 popover 안 별도 진입 버튼으로 추가 가능).
+                Button {
+                    showHeartsCallout.toggle()
+                } label: {
                     HStack(spacing: 6) {
                         Image(systemName: "heart.fill")
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundStyle(V2Palette.heartPink)
                         Text("\(state.hearts)")
                             .font(V2Font.suit(13, .bold))
+                            .monospacedDigit()
+                            .lineLimit(1)
+                            // 하트 수치가 바뀌어 자릿수가 늘어도(예: 9→10) 행 폭 압박에
+                            // 세로로 줄바꿈되지 않도록 가로 고정. (MG-150 v2 헤더)
+                            .fixedSize(horizontal: true, vertical: false)
                             .foregroundStyle(ink)
                     }
                     .padding(.horizontal, 10).padding(.vertical, 6)
                     .background(chipBg, in: Capsule())
                 }
                 .buttonStyle(MongleScaleButtonStyle())
+                .popover(isPresented: $showHeartsCallout, arrowEdge: .top) {
+                    HeartsCalloutV2(hearts: state.hearts)
+                        .presentationCompactAdaptation(.popover)
+                }
 
                 Button(action: onNotificationTap) {
                     Image(systemName: "bell.fill")
@@ -215,6 +255,24 @@ private struct HomeTopBarV2: View {
                         }
                 }
                 .buttonStyle(MongleScaleButtonStyle())
+
+                // 상점 진입 — claude 디자인(V2Chrome) 의 mint 칩 + bag.fill + "상점".
+                // 배치 순서: 하트 → 알림 → 상점.
+                Button(action: onShopTap) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "bag.fill")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(V2Palette.ink)
+                        Text(L10n.tr("shop_title"))
+                            .font(V2Font.suit(13, .bold))
+                            .lineLimit(1)
+                            .fixedSize(horizontal: true, vertical: false)
+                            .foregroundStyle(V2Palette.ink)
+                    }
+                    .padding(.horizontal, 10).padding(.vertical, 6)
+                    .background(V2Palette.mint, in: Capsule())
+                }
+                .buttonStyle(MongleScaleButtonStyle())
             }
         }
         .padding(.horizontal, 12)
@@ -222,6 +280,72 @@ private struct HomeTopBarV2: View {
         .background(V2Glass(cornerRadius: 24))
         .padding(.horizontal, 16)
         .padding(.top, 60)
+    }
+}
+
+// MARK: - V2 Hearts Callout (popover)
+
+/// MG-140 — 기존 HeartCalloutView 의 동작/콘텐츠를 v2 톤으로 복원.
+/// 하트 칩 탭 시 popover 로 표시. 4개 row(보유/교체/작성/재촉) + 획득률 안내.
+private struct HeartsCalloutV2: View {
+    let hearts: Int
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 6) {
+                Image(systemName: "heart.fill")
+                    .foregroundStyle(V2Palette.heartPink)
+                    .font(.system(size: 13))
+                Text(L10n.tr("home_heart_count", hearts))
+                    .font(V2Font.suit(12, .bold))
+                    .foregroundStyle(V2Palette.heartPink)
+            }
+
+            Divider()
+
+            heartRow(icon: "arrow.clockwise.circle.fill",
+                     color: V2Palette.mintInk,
+                     text: L10n.tr("home_heart_replace"),
+                     cost: L10n.tr("heart_cost", 3))
+            heartRow(icon: "pencil.circle.fill",
+                     color: V2Palette.streak,
+                     text: L10n.tr("home_heart_write"),
+                     cost: L10n.tr("heart_cost", 3))
+            heartRow(icon: "megaphone.fill",
+                     color: V2Palette.heartPink,
+                     text: L10n.tr("home_heart_nudge"),
+                     cost: L10n.tr("heart_cost", 1))
+
+            Divider()
+
+            HStack(spacing: 4) {
+                Image(systemName: "sun.min.fill")
+                    .foregroundStyle(V2Palette.coral)
+                    .font(.system(size: 11))
+                Text(L10n.tr("home_heart_earn_rate"))
+                    .font(V2Font.suit(11, .regular))
+                    .foregroundStyle(V2Palette.muted)
+            }
+        }
+        .padding(14)
+        .frame(width: 220)
+        .background(V2Palette.paperWhite)
+    }
+
+    private func heartRow(icon: String, color: Color, text: String, cost: String) -> some View {
+        HStack {
+            Image(systemName: icon)
+                .foregroundStyle(color)
+                .font(.system(size: 12))
+                .frame(width: 18)
+            Text(text)
+                .font(V2Font.suit(11, .regular))
+                .foregroundStyle(V2Palette.ink)
+            Spacer()
+            Text(cost)
+                .font(V2Font.suit(11, .regular))
+                .foregroundStyle(V2Palette.heartPink)
+        }
     }
 }
 
@@ -304,9 +428,10 @@ private struct HomeQuestionCardV2: View {
         }
         .buttonStyle(MongleScaleButtonStyle())
         // MG-150 — v2 탭바(높이 64 + bottom padding 8) 위로 카드를 띄운다.
-        // 시스템 탭바가 hidden 이라도 NavigationStack 의 safeArea bottom 처리에
-        // 따라 정확한 inset 이 달라질 수 있어 여유 있게 잡는다.
-        .padding(.bottom, 96)
+        // 시스템 탭바가 hidden 이면 NavigationStack 의 bottom safeArea inset 이 0 이 되어
+        // 카드가 떠 있는 탭바와 겹치는 케이스가 있어, 탭바(72) + 홈인디케이터(~34) 위로
+        // 확실히 띄우도록 여유를 더 둔다.
+        .padding(.bottom, 116)
     }
 }
 

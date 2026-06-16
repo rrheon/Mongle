@@ -13,6 +13,9 @@ struct MainTabView: View {
     @Bindable var store: StoreOf<MainTabFeature>
     @State private var peerAnswerSheetHeight: CGFloat = 400
     @State private var questionSheetHeight: CGFloat = 480
+    /// 바텀시트 dismiss 시마다 증가 — MongleSceneView가 감지해 모든 캐릭터 이동을 강제
+    /// 재개시킨다(MG-18). 시트 present 동안 timer/state가 꼬여 캐릭터가 고정되는 현상 회피.
+    @State private var mongleResumeSignal: Int = 0
 
     // 시트 디텐트 안전 범위. 0/음수/NaN 또는 비정상적으로 큰 값이 .presentationDetents(.height:)에
     // 전달되면 iOS 18에서 런타임 에러가 발생할 수 있어 반드시 클램핑한다.
@@ -26,10 +29,16 @@ struct MainTabView: View {
 
     var body: some View {
         tabContent
-            .sheet(item: $store.scope(state: \.modal?.peerAnswer, action: \.modal.peerAnswer)) { peerAnswerStore in
+            .sheet(
+                item: $store.scope(state: \.modal?.peerAnswer, action: \.modal.peerAnswer),
+                onDismiss: { mongleResumeSignal += 1 }
+            ) { peerAnswerStore in
                 peerAnswerSheet(store: peerAnswerStore)
             }
-            .sheet(item: $store.scope(state: \.modal?.questionSheet, action: \.modal.questionSheet)) { sheetStore in
+            .sheet(
+                item: $store.scope(state: \.modal?.questionSheet, action: \.modal.questionSheet),
+                onDismiss: { mongleResumeSignal += 1 }
+            ) { sheetStore in
                 questionSheetView(store: sheetStore)
             }
             .overlay {
@@ -53,7 +62,7 @@ struct MainTabView: View {
                 }
             }
             .animation(.none, value: store.modal?.heartInfoPopup != nil)
-            .overlay(alignment: .bottom) {
+            .overlay(alignment: .top) {
                 toastOverlay
             }
             .overlay {
@@ -80,12 +89,22 @@ struct MainTabView: View {
     private var tabContent: some View {
         TabView(selection: $store.selectedTab.sending(\.selectTab)) {
             homeTab
-            HistoryView(store: store.scope(state: \.history, action: \.history))
-                .tabItem { Label(L10n.tr("tab_history"), systemImage: "book") }
-                .tag(MainTabFeature.State.Tab.history)
-            SearchHistoryView(store: store.scope(state: \.search, action: \.search))
-                .tabItem { Label(L10n.tr("tab_search"), systemImage: "magnifyingglass") }
-                .tag(MainTabFeature.State.Tab.search)
+            // MG-140 — History 도 v2 탭바를 사용하도록 NavigationStack 으로 감싸
+            // .toolbar(.hidden, for: .tabBar) 가 안정적으로 먹게 한다.
+            NavigationStack {
+                HistoryView(store: store.scope(state: \.history, action: \.history))
+                    .toolbar(.hidden, for: .tabBar)
+            }
+            .tabItem { Label(L10n.tr("tab_history"), systemImage: "book") }
+            .tag(MainTabFeature.State.Tab.history)
+            // MG-140 — Search 도 v2 탭바를 사용하도록 NavigationStack 으로 감싸 시스템
+            // 탭바를 hidden.
+            NavigationStack {
+                SearchHistoryView(store: store.scope(state: \.search, action: \.search))
+                    .toolbar(.hidden, for: .tabBar)
+            }
+            .tabItem { Label(L10n.tr("tab_search"), systemImage: "magnifyingglass") }
+            .tag(MainTabFeature.State.Tab.search)
 //            NotificationView(store: store.scope(state: \.notification, action: \.notification))
 //                .tabItem { Label("NOTICE", systemImage: "bell") }
 //                .tag(MainTabFeature.State.Tab.notification)
@@ -96,12 +115,21 @@ struct MainTabView: View {
         .accentColor(MongleColor.primaryDeep)
         .toolbarBackground(Color.white, for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
-        // MG-150 — Home 탭의 root(NavigationStack path 가 비어있을 때)에서만 v2 탭바를
-        // 띄운다. push 된 detail 화면(QuestionDetail/Notification/PeerNudge/WriteQuestion)
-        // 에서는 탭바가 떠 있으면 컨텐츠와 겹치므로 숨김. 다른 탭은 v2 디자인이 아직
-        // 적용되지 않아 시각 일관성 차원에서 시스템 탭바를 유지.
+        // MG-150/MG-140 — v2 디자인이 적용된 탭(현재 Home·History)에서만 v2 탭바를 띄운다.
+        // Home 은 NavigationStack push (QuestionDetail/Notification/PeerNudge/WriteQuestion)
+        // 시 컨텐츠와 겹치므로 path 가 비어있을 때만. History 는 push 화면이 없어 조건 단순.
+        // search/settings 는 v2 미적용이라 시각 일관성 차원에서 시스템 탭바 유지.
         .overlay(alignment: .bottom) {
-            if store.selectedTab == .home && store.path.isEmpty {
+            let showV2TabBar: Bool = {
+                switch store.selectedTab {
+                case .home:     return store.path.isEmpty
+                case .history:  return true
+                case .search:   return true
+                case .settings: return true
+                default:        return false
+                }
+            }()
+            if showV2TabBar {
                 MainTabBarV2(
                     active: store.selectedTab,
                     onSelect: { store.send(.selectTab($0)) }
@@ -132,6 +160,9 @@ struct MainTabView: View {
                     .navigationBarBackButtonHidden(true)
             case let .writeQuestion(writeStore):
                 WriteQuestionView(store: writeStore)
+                    .navigationBarBackButtonHidden(true)
+            case let .shop(shopStore):
+                ShopView(store: shopStore)
                     .navigationBarBackButtonHidden(true)
             }
         }
@@ -164,8 +195,14 @@ struct MainTabView: View {
                     id: user.id,
                     name: user.name,
                     color: Self.monggleColor(for: moodId, fallback: index),
+                    moodId: moodId,
                     hasAnswered: store.home.memberAnswerStatus[user.id] ?? false,
-                    hasSkipped: store.home.memberSkippedStatus[user.id] ?? false
+                    hasSkipped: store.home.memberSkippedStatus[user.id] ?? false,
+                    // 본인 멤버만 머리/등/발밑 장식 주입 (타인 장식 동기화는 후속). 상점에서
+                    // 장착 시 decorationsChanged delegate 가 currentUser 를 갱신해 즉시 반영된다.
+                    headDecorationId: isCurrentUser ? store.home.currentUser?.equippedDecorations.head : nil,
+                    backDecorationId: isCurrentUser ? store.home.currentUser?.equippedDecorations.back : nil,
+                    feetDecorationId: isCurrentUser ? store.home.currentUser?.equippedDecorations.feet : nil
                 )
             }
         return HomeViewV2(
@@ -186,10 +223,12 @@ struct MainTabView: View {
             hasCurrentUserSkipped: store.home.hasSkippedToday,
             members: memberData,
             currentUserName: store.home.currentUser?.name,
+            resumeSignal: mongleResumeSignal,
             actions: HomeViewActions(
                 onQuestionTap: { store.send(.home(.questionTapped)) },
                 onNotificationTap: { store.send(.home(.notificationTapped)) },
                 onHeartsTap: { store.send(.home(.heartsTapped)) },
+                onShopTap: { store.send(.home(.shopTapped)) },
                 onPeerAnswerTap: { store.send(.home(.peerAnswerTapped($0))) },
                 onPeerNudgeTap: { store.send(.home(.peerNudgeTapped($0))) },
                 onMyMonggleTap: { store.send(.home(.myMonggleTapped)) },
@@ -200,7 +239,8 @@ struct MainTabView: View {
                 onAnswerRequiredTap: { store.send(.home(.answerRequiredTapped($0))) },
                 onNudgeUnavailableTap: { store.send(.home(.nudgeUnavailableTapped($0))) }
             ),
-            showNotificationPermission: store.home.showNotificationPermission
+            showNotificationPermission: store.home.showNotificationPermission,
+            appliedBackgroundId: store.home.family?.appliedBackgroundId
         )
         .equatable()
         .mongleErrorToast(
@@ -241,7 +281,8 @@ struct MainTabView: View {
             .presentationDetents([.height(Self.clampedSheetHeight(questionSheetHeight))])
             .presentationDragIndicator(.hidden)
             .presentationCornerRadius(MongleRadius.xl)
-            .presentationBackground(MongleColor.cardBackgroundSolid)
+            // 시트 콘텐츠가 v2 cream 톤이므로 presentation 배경도 cream 으로 맞춰 모서리 이음새 제거.
+            .presentationBackground(V2Palette.cream)
     }
 
     // MARK: - Toast Overlay
@@ -251,30 +292,30 @@ struct MainTabView: View {
         VStack(spacing: 8) {
             if store.showRefreshToast {
                 MongleToastView(type: .refreshQuestion)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .transition(.move(edge: .top).combined(with: .opacity))
             }
             if store.showWriteToast {
                 MongleToastView(type: .writeQuestion)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .transition(.move(edge: .top).combined(with: .opacity))
             }
             if store.showNudgeToast {
                 MongleToastView(type: .nudge)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .transition(.move(edge: .top).combined(with: .opacity))
             }
             if store.showEditAnswerToast {
                 MongleToastView(type: .editAnswer)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .transition(.move(edge: .top).combined(with: .opacity))
             }
             if store.showAnswerSubmittedToast {
                 MongleToastView(type: .answerSubmitted)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .transition(.move(edge: .top).combined(with: .opacity))
             }
             if store.showCustomQuestionExistsToast {
                 MongleToastView(type: .customQuestionExists)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .transition(.move(edge: .top).combined(with: .opacity))
             }
         }
-        .padding(.bottom, 90)
+        .padding(.top, 60)
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: store.showRefreshToast)
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: store.showWriteToast)
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: store.showNudgeToast)

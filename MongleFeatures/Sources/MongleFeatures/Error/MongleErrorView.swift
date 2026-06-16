@@ -8,11 +8,11 @@ private struct MongleErrorToastModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .overlay(alignment: .bottom) {
+            .overlay(alignment: .top) {
                 if let error {
                     MongleToastView(type: .appError(error))
-                        .padding(.bottom, MongleSpacing.lg)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .padding(.top, MongleSpacing.lg)
+                        .transition(.move(edge: .top).combined(with: .opacity))
                 }
             }
             .animation(.spring(response: 0.4, dampingFraction: 0.8), value: error)

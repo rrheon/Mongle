@@ -231,6 +231,7 @@ public struct QuestionDetailFeature {
                 let userId = state.currentUser?.id ?? UUID()
                 let questionId = state.question.id
                 let selectedMoodId = state.selectedMoodIndex.map { MoodOption.defaults[$0].id }
+                let dailyQuestionId = state.question.dailyQuestionId
 
                 return .run { [answerRepository] send in
                     do {
@@ -242,7 +243,7 @@ public struct QuestionDetailFeature {
                             imageURL: nil,
                             createdAt: Date()
                         )
-                        let result = try await answerRepository.create(newAnswer, moodId: selectedMoodId)
+                        let result = try await answerRepository.create(newAnswer, dailyQuestionId: dailyQuestionId, moodId: selectedMoodId)
                         await send(.submitAnswerResponse(.success(result)))
                     } catch {
                         await send(.submitAnswerResponse(.failure(AppError.from(error))))

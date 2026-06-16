@@ -21,6 +21,9 @@ public struct User: Identifiable, Equatable, Sendable {
     /// 띄운다 (UserDefaults 자체 카운터 제거, MG-77). opt-in 미포함 호출
     /// (QuestionDetail/ProfileEdit hearts sync 등)에서는 항상 false.
     public let heartGrantedToday: Bool
+    /// 사용자가 현재 슬롯별로 장착한 장식. 상점(Shop) 기능에서 사용한다.
+    /// 후행 파라미터 + 기본값으로 두어 기존 호출부에는 영향이 없다.
+    public let equippedDecorations: EquippedDecorations
 
     public init(
         id: UUID,
@@ -31,7 +34,8 @@ public struct User: Identifiable, Equatable, Sendable {
         hearts: Int = 0,
         moodId: String? = "loved",
         createdAt: Date,
-        heartGrantedToday: Bool = false
+        heartGrantedToday: Bool = false,
+        equippedDecorations: EquippedDecorations = EquippedDecorations()
     ) {
         self.id = id
         self.email = email
@@ -42,6 +46,7 @@ public struct User: Identifiable, Equatable, Sendable {
         self.moodId = moodId
         self.createdAt = createdAt
         self.heartGrantedToday = heartGrantedToday
+        self.equippedDecorations = equippedDecorations
     }
 }
 

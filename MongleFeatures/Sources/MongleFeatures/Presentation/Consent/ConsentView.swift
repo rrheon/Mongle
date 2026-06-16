@@ -105,7 +105,7 @@ struct ConsentView: View {
             .padding(.horizontal, MongleSpacing.xl)
             .padding(.bottom, MongleSpacing.xl)
         }
-        .background(MongleColor.background)
+        .background(V2Palette.cream)
         .alert(
             "",
             isPresented: Binding(

@@ -26,7 +26,7 @@ public struct WriteQuestionView: View {
             }
             submitButton
         }
-        .background(MongleColor.background)
+        .background(V2Palette.cream)
         .onTapGesture {
             isTextEditorFocused = false
         }

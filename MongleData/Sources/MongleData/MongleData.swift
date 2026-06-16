@@ -46,6 +46,10 @@ public func makeConfigRepository() -> any ConfigRepositoryProtocol {
     ConfigRepository()
 }
 
+public func makeShopRepository() -> any ShopRepositoryInterface {
+    ShopRepository()
+}
+
 // MARK: - 첫 실행 / 로그아웃 시 정리 헬퍼
 
 /// iOS 는 앱 uninstall 후 재설치 시 Keychain 항목을 자동으로 지우지 않는다.

@@ -56,7 +56,7 @@ struct LoginView: View {
           .tint(MongleColor.primary)
       }
     }
-    .background(MongleColor.background)
+    .background(V2Palette.cream)
     .mongleErrorToast(
       error: store.appError,
       onDismiss: { store.send(.dismissError) }
@@ -70,7 +70,7 @@ struct LoginView: View {
       emailChoiceSheet
         .presentationDetents([.height(260)])
         .presentationDragIndicator(.hidden)
-        .presentationBackground(MongleColor.background)
+        .presentationBackground(V2Palette.cream)
     }
   }
 
@@ -126,7 +126,7 @@ struct LoginView: View {
       .padding(.bottom, MongleSpacing.lg)
     }
     .frame(maxWidth: .infinity, alignment: .top)
-    .background(MongleColor.background)
+    .background(V2Palette.cream)
   }
 
   private func emailChoiceRow(

@@ -8,7 +8,7 @@
 import Foundation
 
 public protocol AnswerRepositoryInterface: Sendable {
-    func create(_ answer: Answer, moodId: String?) async throws -> Answer
+    func create(_ answer: Answer, dailyQuestionId: String?, moodId: String?) async throws -> Answer
     func get(id: UUID) async throws -> Answer
     func getByDailyQuestion(dailyQuestionId: UUID) async throws -> [Answer]
     func getByUserAndDailyQuestion(dailyQuestionId: UUID, userId: UUID) async throws -> Answer?
@@ -20,7 +20,10 @@ public protocol AnswerRepositoryInterface: Sendable {
 
 public extension AnswerRepositoryInterface {
     func create(_ answer: Answer) async throws -> Answer {
-        try await create(answer, moodId: nil)
+        try await create(answer, dailyQuestionId: nil, moodId: nil)
+    }
+    func create(_ answer: Answer, moodId: String?) async throws -> Answer {
+        try await create(answer, dailyQuestionId: nil, moodId: moodId)
     }
     func update(_ answer: Answer) async throws -> Answer {
         try await update(answer, moodId: nil)
