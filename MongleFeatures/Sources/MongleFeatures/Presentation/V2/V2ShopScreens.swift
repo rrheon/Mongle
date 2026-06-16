@@ -211,6 +211,7 @@ struct V2DecoTile<Preview: View>: View {
     var name: String
     var price: String? = nil
     var equipped: Bool = false
+    var owned: Bool = false
     @ViewBuilder var preview: () -> Preview
 
     var body: some View {
@@ -231,12 +232,18 @@ struct V2DecoTile<Preview: View>: View {
         .shadow(color: .black.opacity(0.06), radius: 5, y: 2)
     }
 
-    // 상태 라벨 — 장착중(민트 배지) / 가격(하트+숫자) / 없음(빈 영역). 고정 높이 컨테이너 안에 둔다.
+    // 상태 라벨 — 장착중(민트) / 보유중(중립 회색) / 가격(하트+숫자) / 없음(빈 영역).
+    // 보유중을 가격보다 우선해, 이미 산 장식은 가격 대신 "보유중"을 보여준다(배경 타일과 동일 정책).
+    // 고정 높이 컨테이너 안에 둔다.
     @ViewBuilder private var statusLabel: some View {
         if equipped {
             Text("장착중").font(V2Font.suit(10, .heavy)).foregroundStyle(V2Palette.ink)
                 .padding(.horizontal, 10).padding(.vertical, 3)
                 .background(V2Palette.mint, in: Capsule())
+        } else if owned {
+            Text("보유중").font(V2Font.suit(10, .heavy)).foregroundStyle(V2Palette.muted)
+                .padding(.horizontal, 10).padding(.vertical, 3)
+                .background(V2Palette.ink.opacity(0.06), in: Capsule())
         } else if let price {
             HStack(spacing: 4) {
                 Image(systemName: "heart.fill").font(.system(size: 12)).foregroundStyle(V2Palette.heartPink)

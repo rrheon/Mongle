@@ -252,7 +252,8 @@ struct ShopView: View {
                     V2DecoTile(
                         name: item.name,
                         price: owned ? nil : "\(item.price)",
-                        equipped: equipped
+                        equipped: equipped,
+                        owned: owned
                     ) {
                         DecorationCatalog.preview(for: item.id)
                     }
