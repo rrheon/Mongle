@@ -665,8 +665,8 @@ enum ShopEndpoint: APIEndpoint {
     case getInventory
     /// POST /shop/purchase — 아이템 구매 (서버가 하트 차감 후 잔액 반환).
     case purchase(itemId: String)
-    /// POST /shop/decoration/equip — 슬롯에 장식 장착/해제.
-    case equipDecoration(slot: String, itemId: String?)
+    /// POST /shop/decoration/equip — 꾸미기 장착(itemId)/해제(nil).
+    case equipDecoration(itemId: String?)
     /// POST /shop/background/apply — 가족 공유 홈 배경 적용.
     case applyBackground(itemId: String)
 
@@ -693,8 +693,8 @@ enum ShopEndpoint: APIEndpoint {
         switch self {
         case .purchase(let itemId):
             return try? JSONSerialization.data(withJSONObject: ["itemId": itemId])
-        case .equipDecoration(let slot, let itemId):
-            var params: [String: Any] = ["slot": slot]
+        case .equipDecoration(let itemId):
+            var params: [String: Any] = [:]
             if let itemId { params["itemId"] = itemId }
             return try? JSONSerialization.data(withJSONObject: params)
         case .applyBackground(let itemId):

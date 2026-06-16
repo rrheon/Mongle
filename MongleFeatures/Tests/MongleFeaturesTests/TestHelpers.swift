@@ -49,8 +49,8 @@ final class MockShopRepository: ShopRepositoryInterface, @unchecked Sendable {
     /// purchase 후 반환할 잔여 하트.
     var purchaseHeartsRemaining: Int = 0
     var purchaseError: Error?
-    /// equipDecoration 이 반환할 장착 현황. nil 이면 (slot,itemId) 로 즉석 구성.
-    var equipResult: EquippedDecorations?
+    /// equipDecoration 이 반환할 장착 id. nil 이면 요청 itemId 를 그대로 반환.
+    var equipResult: String?
     var equipError: Error?
 
     func getCatalog() async throws -> [ShopItem] {
@@ -68,16 +68,10 @@ final class MockShopRepository: ShopRepositoryInterface, @unchecked Sendable {
         return purchaseHeartsRemaining
     }
 
-    func equipDecoration(slot: DecorationSlot, itemId: String?) async throws -> EquippedDecorations {
+    func equipDecoration(itemId: String?) async throws -> String? {
         if let equipError { throw equipError }
         if let equipResult { return equipResult }
-        var eq = EquippedDecorations()
-        switch slot {
-        case .head: eq.head = itemId
-        case .back: eq.back = itemId
-        case .feet: eq.feet = itemId
-        }
-        return eq
+        return itemId
     }
 
     /// applyBackground 가 반환할 인벤토리. nil 이면 inventoryResult 에 itemId 를 적용해 반환.

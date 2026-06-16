@@ -224,7 +224,7 @@ extension MainTabFeature {
                         hearts: state.home.hearts,
                         inventory: state.home.currentUser.map {
                             ShopInventory(
-                                equippedDecorations: $0.equippedDecorations,
+                                equippedDecorationId: $0.equippedDecorationId,
                                 ownedBackgroundIds: appliedBg.map { [$0] } ?? [],
                                 appliedBackgroundId: appliedBg
                             )
@@ -443,7 +443,7 @@ extension MainTabFeature {
                     state.home.hearts = hearts
                     return .none
 
-                case .path(.element(id: _, action: .shop(.delegate(.decorationsChanged(let decorations))))):
+                case .path(.element(id: _, action: .shop(.delegate(.decorationsChanged(let decorationId))))):
                     // 본인 currentUser 의 장착 장식을 갱신해 홈 캐릭터에 즉시 반영.
                     if let current = state.home.currentUser {
                         let updated = User(
@@ -456,7 +456,7 @@ extension MainTabFeature {
                             moodId: current.moodId,
                             createdAt: current.createdAt,
                             heartGrantedToday: current.heartGrantedToday,
-                            equippedDecorations: decorations
+                            equippedDecorationId: decorationId
                         )
                         state.home.currentUser = updated
                         if let idx = state.home.familyMembers.firstIndex(where: { $0.id == updated.id }) {
@@ -568,7 +568,7 @@ extension MainTabFeature {
                             moodId: moodId,
                             createdAt: current.createdAt,
                             // 수동 재구성 시 신규 필드 누락(silent drop) 방지 — 기존 값 보존.
-                            equippedDecorations: current.equippedDecorations
+                            equippedDecorationId: current.equippedDecorationId
                         )
                     }()
                     if let updated = updatedUser {
@@ -622,7 +622,7 @@ extension MainTabFeature {
                             moodId: moodId,
                             createdAt: current.createdAt,
                             // 수동 재구성 시 신규 필드 누락(silent drop) 방지 — 기존 값 보존.
-                            equippedDecorations: current.equippedDecorations
+                            equippedDecorationId: current.equippedDecorationId
                         )
                     }()
                     if let updated = editUpdatedUser {

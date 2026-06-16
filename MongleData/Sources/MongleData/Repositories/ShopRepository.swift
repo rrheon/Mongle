@@ -32,11 +32,11 @@ final class ShopRepository: ShopRepositoryInterface {
         return response.heartsRemaining
     }
 
-    func equipDecoration(slot: DecorationSlot, itemId: String?) async throws -> EquippedDecorations {
+    func equipDecoration(itemId: String?) async throws -> String? {
         let response: EquipResponseDTO = try await apiClient.request(
-            ShopEndpoint.equipDecoration(slot: slot.rawValue, itemId: itemId)
+            ShopEndpoint.equipDecoration(itemId: itemId)
         )
-        return ShopMapper.toDomain(response.equippedDecorations)
+        return response.equippedDecorationId
     }
 
     // TODO(server): /shop/background/apply 미구현 — 응답은 갱신된 ShopInventory 를 가정한다.

@@ -20,17 +20,10 @@ struct ShopItemDTO: Decodable {
     let sortOrder: Int?
 }
 
-/// 슬롯별 장착 장식 id.
-struct EquippedDecorationsDTO: Decodable {
-    let head: String?
-    let back: String?
-    let feet: String?
-}
-
 /// 사용자 보유/장착 현황.
 struct ShopInventoryDTO: Decodable {
     let ownedDecorationIds: [String]?
-    let equippedDecorations: EquippedDecorationsDTO?
+    let equippedDecorationId: String?
     let ownedBackgroundIds: [String]?
     let appliedBackgroundId: String?
 }
@@ -40,7 +33,7 @@ struct PurchaseResponseDTO: Decodable {
     let heartsRemaining: Int
 }
 
-/// 장착 응답. 갱신된 장착 현황을 반환한다.
+/// 장착 응답. 갱신된 장착 id(미착용 시 키 생략)를 반환한다.
 struct EquipResponseDTO: Decodable {
-    let equippedDecorations: EquippedDecorationsDTO?
+    let equippedDecorationId: String?
 }

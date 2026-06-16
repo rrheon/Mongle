@@ -191,6 +191,8 @@ struct MainTabView: View {
             .map { index, user in
                 let isCurrentUser = user.id == currentUserId
                 let moodId = isCurrentUser ? (store.previewMoodId ?? store.currentUserMoodId ?? user.moodId) : user.moodId
+                let eqId = isCurrentUser ? store.home.currentUser?.equippedDecorationId : nil
+                let eqSlot = DecorationCatalog.slotForItem(eqId)
                 return MongleMember(
                     id: user.id,
                     name: user.name,
@@ -198,11 +200,11 @@ struct MainTabView: View {
                     moodId: moodId,
                     hasAnswered: store.home.memberAnswerStatus[user.id] ?? false,
                     hasSkipped: store.home.memberSkippedStatus[user.id] ?? false,
-                    // 본인 멤버만 머리/등/발밑 장식 주입 (타인 장식 동기화는 후속). 상점에서
-                    // 장착 시 decorationsChanged delegate 가 currentUser 를 갱신해 즉시 반영된다.
-                    headDecorationId: isCurrentUser ? store.home.currentUser?.equippedDecorations.head : nil,
-                    backDecorationId: isCurrentUser ? store.home.currentUser?.equippedDecorations.back : nil,
-                    feetDecorationId: isCurrentUser ? store.home.currentUser?.equippedDecorations.feet : nil
+                    // 본인 멤버만 전역 단일 착용 1개를 그 장식의 슬롯 자리에 주입 (타인 동기화는 후속).
+                    // 상점 장착 시 decorationsChanged delegate 가 currentUser 를 갱신해 즉시 반영된다.
+                    headDecorationId: eqSlot == .head ? eqId : nil,
+                    backDecorationId: eqSlot == .back ? eqId : nil,
+                    feetDecorationId: eqSlot == .feet ? eqId : nil
                 )
             }
         return HomeViewV2(

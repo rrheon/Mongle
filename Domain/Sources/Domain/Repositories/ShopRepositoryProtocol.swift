@@ -16,8 +16,8 @@ public protocol ShopRepositoryInterface: Sendable {
     func getInventory() async throws -> ShopInventory
     /// 아이템 구매. 서버가 하트 차감 후 남은 하트 수를 반환한다.
     func purchase(itemId: String) async throws -> Int
-    /// 슬롯에 장식을 장착(itemId)하거나 해제(nil)한다. 갱신된 장착 현황을 반환.
-    func equipDecoration(slot: DecorationSlot, itemId: String?) async throws -> EquippedDecorations
+    /// 꾸미기를 장착(itemId)하거나 해제(nil)한다. 갱신된 장착 id(미착용 nil)를 반환.
+    func equipDecoration(itemId: String?) async throws -> String?
     /// 가족 공유 홈 배경을 적용한다. 갱신된 보유/적용 현황을 반환.
     /// 구매는 기존 purchase(서버 권위) 를 재사용하고, 적용만 이 메서드가 담당한다.
     func applyBackground(itemId: String) async throws -> ShopInventory

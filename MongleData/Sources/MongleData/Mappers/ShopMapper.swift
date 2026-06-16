@@ -22,14 +22,10 @@ struct ShopMapper {
         )
     }
 
-    static func toDomain(_ dto: EquippedDecorationsDTO?) -> EquippedDecorations {
-        EquippedDecorations(head: dto?.head, back: dto?.back, feet: dto?.feet)
-    }
-
     static func toDomain(_ dto: ShopInventoryDTO) -> ShopInventory {
         ShopInventory(
             ownedDecorationIds: Set(dto.ownedDecorationIds ?? []),
-            equippedDecorations: toDomain(dto.equippedDecorations),
+            equippedDecorationId: dto.equippedDecorationId,
             ownedBackgroundIds: Set(dto.ownedBackgroundIds ?? []),
             appliedBackgroundId: dto.appliedBackgroundId
         )
