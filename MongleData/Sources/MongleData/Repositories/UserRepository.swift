@@ -41,7 +41,12 @@ final class UserRepository: UserRepositoryInterface {
 
     func registerDeviceToken(token: String, environment: String) async throws {
         struct OkResponse: Decodable { let ok: Bool }
-        let _: OkResponse = try await apiClient.request(UserEndpoint.registerDeviceToken(token: token, environment: environment))
+        // (MG-141) 디바이스 토큰 등록은 백그라운드/비핵심 요청 — 401→refresh 실패해도 강제 로그아웃(sessionExpired)
+        // 신호를 내지 않는다. 토큰 등록 실패가 "의도치 않은 로그아웃 → 재촉 푸시 누락"으로 번지는 것을 차단.
+        let _: OkResponse = try await apiClient.request(
+            UserEndpoint.registerDeviceToken(token: token, environment: environment),
+            escalateSessionExpired: false
+        )
     }
 
     func grantAdHearts(amount: Int) async throws -> Int {
