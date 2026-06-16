@@ -25,7 +25,7 @@ public struct ProfileEditView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: MongleSpacing.lg) {
                         profileCard
-                        
+
                       // 광고 배너
                         #if os(iOS)
                         AdBannerSection(bottom: 4, horizontal: 20)
@@ -43,11 +43,19 @@ public struct ProfileEditView: View {
                     }
                     .padding(.horizontal, MongleSpacing.md)
                     .padding(.top, MongleSpacing.md)
-                    .padding(.bottom, MongleSpacing.xl)
+                    // MG-140 — v2 탭바 영역만큼 bottom inset 확보.
+                    .padding(.bottom, 110)
                 }
-                .background(MongleColor.background)
+                // MG-140 — Home/History/Search 와 동일 cream 배경.
+                .background(V2Palette.cream)
             }
+            // MG-140 — 상단 safeArea(시스템 navigationBar 영역) 까지 cream 으로 덮어
+            // 흰색 띠가 남는 것을 방지. .toolbarBackground(.hidden, for: .navigationBar)
+            // 도 함께 적용해 NavigationStack 의 기본 흰 toolbar 배경을 끈다.
+            .background(V2Palette.cream.ignoresSafeArea())
             .navigationBarHidden(true)
+            .toolbarBackground(.hidden, for: .navigationBar)
+            .toolbar(.hidden, for: .tabBar)
             .toolbarBackground(Color.white, for: .tabBar)
             .toolbarBackground(.visible, for: .tabBar)
             .onAppear { store.send(.onAppear) }
@@ -110,7 +118,7 @@ public struct ProfileEditView: View {
         }
         .frame(height: 56)
         .padding(.horizontal, 20)
-        .background(Color.white)
+        // MG-140 — v2 톤에 맞춰 헤더는 cream 위에 투명.
     }
 
     // MARK: - Profile Card
@@ -255,13 +263,15 @@ public struct ProfileEditView: View {
       }
       
       private var iconView: some View {
+          // MG-140 — V2 시안(V2SettingRow) 의 톤으로 통일. row 별로 다르던
+          // iconBackground / iconColor 는 무시하고 v2 cream2 chip + mutedSoft 아이콘.
           RoundedRectangle(cornerRadius: MongleRadius.medium)
-              .fill(row.iconBackground)
+              .fill(Color(hex: "F7F0E5"))
               .frame(width: 36, height: 36)
               .overlay(
                   Image(systemName: row.icon)
                       .font(.system(size: 18, weight: .medium))
-                      .foregroundColor(row.iconColor)
+                      .foregroundColor(V2Palette.mutedSoft)
               )
       }
   }

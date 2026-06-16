@@ -139,5 +139,18 @@ extension DependencyValues {
     }
 }
 
+// MARK: - ShopRepository
+
+private enum ShopRepositoryKey: DependencyKey {
+    static let liveValue: any ShopRepositoryInterface = makeShopRepository()
+}
+
+extension DependencyValues {
+    public var shopRepository: any ShopRepositoryInterface {
+        get { self[ShopRepositoryKey.self] }
+        set { self[ShopRepositoryKey.self] = newValue }
+    }
+}
+
 // NOTE: ErrorHandler는 ErrorHandlerDependency.swift에서 DependencyKey를 직접 구현합니다.
 // @Dependency(\.errorHandler) 로 사용하세요.

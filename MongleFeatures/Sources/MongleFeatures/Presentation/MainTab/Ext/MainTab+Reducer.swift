@@ -216,6 +216,22 @@ extension MainTabFeature {
                     state.modal = .heartInfoPopup(HeartInfoPopupFeature.State(hearts: state.home.hearts))
                     return .none
 
+                case .home(.delegate(.navigateToShop)):
+                    // 홈 헤더 상점 칩 탭 → 상점(꾸미기) push 진입. (peerNudge push 패턴)
+                    // 가족 공유 배경 id 도 초기 인벤토리에 실어 "적용중" 표시가 맞도록 한다.
+                    let appliedBg = state.home.family?.appliedBackgroundId
+                    state.path.append(.shop(ShopFeature.State(
+                        hearts: state.home.hearts,
+                        inventory: state.home.currentUser.map {
+                            ShopInventory(
+                                equippedDecorations: $0.equippedDecorations,
+                                ownedBackgroundIds: appliedBg.map { [$0] } ?? [],
+                                appliedBackgroundId: appliedBg
+                            )
+                        }
+                    )))
+                    return .none
+
                 case .home(.delegate(.requestRefresh)):
                     return .send(.delegate(.requestRefresh))
 
@@ -416,6 +432,57 @@ extension MainTabFeature {
                         await send(.dismissNudgeToast)
                     }
 
+                // MARK: - Shop Delegate
+
+                case .path(.element(id: _, action: .shop(.delegate(.close)))):
+                    state.path.removeLast()
+                    return .none
+
+                case .path(.element(id: _, action: .shop(.delegate(.heartsChanged(let hearts))))):
+                    // 하트 잔액은 home.hearts 단일 소스만 갱신 (서버상 그룹별 잔액이지만 클라는 단일).
+                    state.home.hearts = hearts
+                    return .none
+
+                case .path(.element(id: _, action: .shop(.delegate(.decorationsChanged(let decorations))))):
+                    // 본인 currentUser 의 장착 장식을 갱신해 홈 캐릭터에 즉시 반영.
+                    if let current = state.home.currentUser {
+                        let updated = User(
+                            id: current.id,
+                            email: current.email,
+                            name: current.name,
+                            profileImageURL: current.profileImageURL,
+                            role: current.role,
+                            hearts: current.hearts,
+                            moodId: current.moodId,
+                            createdAt: current.createdAt,
+                            heartGrantedToday: current.heartGrantedToday,
+                            equippedDecorations: decorations
+                        )
+                        state.home.currentUser = updated
+                        if let idx = state.home.familyMembers.firstIndex(where: { $0.id == updated.id }) {
+                            state.home.familyMembers[idx] = updated
+                        }
+                    }
+                    return .none
+
+                case .path(.element(id: _, action: .shop(.delegate(.backgroundApplied(let backgroundId))))):
+                    // 가족 공유 홈 배경 적용 — home.family 의 배경 id 를 갱신해 홈에 즉시 반영.
+                    // 정책 가정: 가족원 누구나 적용 가능. (서버 권한 정책 미정)
+                    if let family = state.home.family {
+                        state.home.family = MongleGroup(
+                            id: family.id,
+                            name: family.name,
+                            memberIds: family.memberIds,
+                            createdBy: family.createdBy,
+                            createdAt: family.createdAt,
+                            inviteCode: family.inviteCode,
+                            memberMoodIds: family.memberMoodIds,
+                            streakDays: family.streakDays,
+                            appliedBackgroundId: backgroundId
+                        )
+                    }
+                    return .none
+
                 // MARK: - AnswerFirstPopup Delegate
 
                 case .modal(.presented(.answerFirstPopup(.delegate(.answerNow)))):
@@ -499,7 +566,9 @@ extension MainTabFeature {
                             role: current.role,
                             hearts: current.hearts,
                             moodId: moodId,
-                            createdAt: current.createdAt
+                            createdAt: current.createdAt,
+                            // 수동 재구성 시 신규 필드 누락(silent drop) 방지 — 기존 값 보존.
+                            equippedDecorations: current.equippedDecorations
                         )
                     }()
                     if let updated = updatedUser {
@@ -551,7 +620,9 @@ extension MainTabFeature {
                             role: current.role,
                             hearts: current.hearts,
                             moodId: moodId,
-                            createdAt: current.createdAt
+                            createdAt: current.createdAt,
+                            // 수동 재구성 시 신규 필드 누락(silent drop) 방지 — 기존 값 보존.
+                            equippedDecorations: current.equippedDecorations
                         )
                     }()
                     if let updated = editUpdatedUser {

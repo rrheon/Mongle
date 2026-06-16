@@ -20,7 +20,7 @@ public struct AccountManagementView: View {
                 .padding(.top, MongleSpacing.md)
                 .padding(.bottom, MongleSpacing.xl)
             }
-            .background(MongleColor.background)
+            .background(V2Palette.cream)
         }
         .toolbar(.hidden, for: .navigationBar)
         .mongleErrorToast(
@@ -72,7 +72,7 @@ public struct AccountManagementView: View {
     // MARK: - Header
 
     private var header: some View {
-        MongleNavigationHeader(title: L10n.tr("settings_account")) {
+        MongleNavigationHeader(title: L10n.tr("settings_account"), backgroundColor: V2Palette.cream) {
             MongleBackButton { store.send(.backTapped) }
         } right: {
             EmptyView()
@@ -91,8 +91,8 @@ public struct AccountManagementView: View {
             VStack(spacing: 0) {
                 accountRow(
                     icon: "arrow.right.square.fill",
-                    iconColor: MongleColor.bgMintLight,
-                    iconBackground: MongleColor.primaryLight,
+                    iconColor: V2Palette.mutedSoft,
+                    iconBackground: Color(hex: "F7F0E5"),
                     title: L10n.tr("settings_logout"),
                     subtitle: L10n.tr("settings_logout_desc")
                 ) {
@@ -101,8 +101,8 @@ public struct AccountManagementView: View {
               
               accountRow(
                   icon: "trash.fill",
-                  iconColor: MongleColor.bgMintLight,
-                  iconBackground: MongleColor.primaryLight,
+                  iconColor: V2Palette.mutedSoft,
+                  iconBackground: Color(hex: "F7F0E5"),
                   title: L10n.tr("settings_delete_account"),
                   subtitle: L10n.tr("settings_delete_account_desc")
               ) {

@@ -10,17 +10,22 @@ public struct MongleNavigationHeader<Left: View, Right: View>: View {
   private let title: String
   private let leftContent: Left
   private let rightContent: Right
-  
+  private let backgroundColor: Color
+
   public init(
     title: String = "",
+    // MG-140 — v2 cream 톤 화면에서 헤더 배경을 cream 으로 통일할 수 있도록 파라미터화.
+    // default 는 기존 동작 보존(Color.white).
+    backgroundColor: Color = .white,
     @ViewBuilder left: () -> Left,
     @ViewBuilder right: () -> Right
   ) {
     self.title = title
+    self.backgroundColor = backgroundColor
     self.leftContent = left()
     self.rightContent = right()
   }
-  
+
   public var body: some View {
     ZStack {
       // 타이틀: 좌우 버튼 크기와 무관하게 정중앙 배치
@@ -40,7 +45,7 @@ public struct MongleNavigationHeader<Left: View, Right: View>: View {
     }
     .frame(height: 56)
     .padding(.horizontal, MongleSpacing.xs)
-    .background(Color.white)
+    .background(backgroundColor)
   }
 }
 

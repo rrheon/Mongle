@@ -100,6 +100,7 @@ public struct HomeFeature {
         case questionTapped
         case notificationTapped
         case heartsTapped
+        case shopTapped
         case peerAnswerTapped(String)
         case answerRequiredTapped(String)
         case peerNudgeTapped(String)
@@ -128,6 +129,7 @@ public struct HomeFeature {
             case showQuestionSheet(Question)
             case navigateToNotifications
             case navigateToHeartsSystem
+            case navigateToShop
             case navigateToPeerAnswerSelfAnswered(String)
             case navigateToMyAnswer
             case showAnswerFirstPopup(String)
@@ -184,6 +186,13 @@ public struct HomeFeature {
                     return .none
                 }
                 return .send(.delegate(.navigateToHeartsSystem))
+
+            case .shopTapped:
+                if state.isGuest {
+                    state.showGuestLoginPrompt = true
+                    return .none
+                }
+                return .send(.delegate(.navigateToShop))
 
             case .myMonggleTapped:
                 if state.isGuest {

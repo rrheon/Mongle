@@ -53,8 +53,11 @@ struct QuestionDetailView: View {
                 ctaButton
             }
         }
-        .background(MongleColor.background)
+        // MG-140 — 답변/답변수정 화면도 v2 cream 톤. 상단 safeArea(시스템 navigationBar
+        // 자리) 까지 cream 으로 덮어 흰 띠 방지.
+        .background(V2Palette.cream.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
+        .toolbarBackground(.hidden, for: .navigationBar)
         .onAppear { store.send(.onAppear) }
         .mongleErrorToast(
             error: store.appError,
@@ -89,7 +92,8 @@ struct QuestionDetailView: View {
     // MARK: - Header
 
     private var customHeader: some View {
-        MongleNavigationHeader(title: L10n.tr("detail_title")) {
+        // MG-140 — v2 cream 톤에 맞춰 헤더 배경도 cream.
+        MongleNavigationHeader(title: L10n.tr("detail_title"), backgroundColor: V2Palette.cream) {
             MongleBackButton {
                 isClosing = true
                 store.send(.closeTapped)
@@ -241,7 +245,8 @@ struct QuestionDetailView: View {
         .padding(.horizontal, 20)
         .padding(.top, 12)
         .padding(.bottom, 32)
-        .background(MongleColor.background)
+        // MG-140 — CTA 버튼 영역도 cream 톤 통일.
+        .background(V2Palette.cream)
     }
 }
 

@@ -15,9 +15,10 @@ final class AnswerRepository: AnswerRepositoryInterface {
         self.apiClient = apiClient
     }
 
-    func create(_ answer: Answer, moodId: String?) async throws -> Answer {
+    func create(_ answer: Answer, dailyQuestionId: String?, moodId: String?) async throws -> Answer {
         let endpoint = AnswerEndpoint.create(
             questionId: answer.dailyQuestionId.uuidString,
+            dailyQuestionId: dailyQuestionId,
             content: answer.content,
             imageUrl: answer.imageURL,
             moodId: moodId

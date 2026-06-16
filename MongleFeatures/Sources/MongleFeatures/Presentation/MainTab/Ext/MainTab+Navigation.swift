@@ -17,6 +17,7 @@ extension MainTabFeature {
         case notification(NotificationFeature)
         case peerNudge(PeerNudgeFeature)
         case writeQuestion(WriteQuestionFeature)
+        case shop(ShopFeature)
 
     }
 }

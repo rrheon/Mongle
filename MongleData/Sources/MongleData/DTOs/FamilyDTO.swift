@@ -35,6 +35,8 @@ struct FamilyResponseDTO: Codable {
     let members: [UserDTO]
     let createdAt: String
     let streakDays: Int?
+    /// 가족 공유 홈 배경 id (상점). 서버 미반영/미적용이면 nil → 기본 배경. 홈 배경 영속화에 사용.
+    let appliedBackgroundId: String?
 }
 
 /// GET /families/all 래퍼 응답 DTO

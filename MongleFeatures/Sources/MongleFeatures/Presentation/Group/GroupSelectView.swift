@@ -60,7 +60,7 @@ public struct GroupSelectView: View {
 
         bottomButtonBar
       }
-      .background(MongleColor.background)
+      .background(V2Palette.cream)
       .toolbar(.hidden, for: .navigationBar)
       .onAppear {
         // 화면 진입 시 알림 미읽음 상태를 갱신해 우상단 배지를 정확히 표시
@@ -92,13 +92,13 @@ public struct GroupSelectView: View {
         }
         .presentationDetents([.height(actionSheetHeight)])
         .presentationDragIndicator(.hidden)
-        .presentationBackground(MongleColor.background)
+        .presentationBackground(V2Palette.cream)
     }
-    .overlay(alignment: .bottom) {
+    .overlay(alignment: .top) {
       if store.showGroupLeftToast {
         MongleToastView(type: .groupLeft)
-          .transition(.move(edge: .bottom).combined(with: .opacity))
-          .padding(.bottom, MongleSpacing.lg)
+          .transition(.move(edge: .top).combined(with: .opacity))
+          .padding(.top, MongleSpacing.lg)
       }
     }
     .animation(.easeInOut(duration: 0.3), value: store.showGroupLeftToast)
@@ -107,11 +107,11 @@ public struct GroupSelectView: View {
       try? await Task.sleep(for: .seconds(2))
       store.send(.groupLeftToastDismissed)
     }
-    .overlay(alignment: .bottom) {
+    .overlay(alignment: .top) {
       if store.showAlreadyMemberToast {
         MongleToastView(type: .alreadyMember)
-          .transition(.move(edge: .bottom).combined(with: .opacity))
-          .padding(.bottom, MongleSpacing.lg)
+          .transition(.move(edge: .top).combined(with: .opacity))
+          .padding(.top, MongleSpacing.lg)
       }
     }
     .animation(.easeInOut(duration: 0.3), value: store.showAlreadyMemberToast)
@@ -120,11 +120,11 @@ public struct GroupSelectView: View {
       try? await Task.sleep(for: .seconds(2))
       store.send(.alreadyMemberToastDismissed)
     }
-    .overlay(alignment: .bottom) {
+    .overlay(alignment: .top) {
       if store.showInvalidCodeToast {
         MongleToastView(type: .invalidInviteCode)
-          .transition(.move(edge: .bottom).combined(with: .opacity))
-          .padding(.bottom, MongleSpacing.lg)
+          .transition(.move(edge: .top).combined(with: .opacity))
+          .padding(.top, MongleSpacing.lg)
       }
     }
     .animation(.easeInOut(duration: 0.3), value: store.showInvalidCodeToast)
@@ -133,11 +133,11 @@ public struct GroupSelectView: View {
       try? await Task.sleep(for: .seconds(2))
       store.send(.invalidCodeToastDismissed)
     }
-    .overlay(alignment: .bottom) {
+    .overlay(alignment: .top) {
       if store.showMaxGroupsToast {
         MongleToastView(type: .maxGroupsReached)
-          .transition(.move(edge: .bottom).combined(with: .opacity))
-          .padding(.bottom, MongleSpacing.lg)
+          .transition(.move(edge: .top).combined(with: .opacity))
+          .padding(.top, MongleSpacing.lg)
       }
     }
     .animation(.easeInOut(duration: 0.3), value: store.showMaxGroupsToast)
@@ -146,11 +146,11 @@ public struct GroupSelectView: View {
       try? await Task.sleep(for: .seconds(2))
       store.send(.maxGroupsToastDismissed)
     }
-    .overlay(alignment: .bottom) {
+    .overlay(alignment: .top) {
       if store.showLeaveTooSoonToast {
         MongleToastView(type: .leaveTooSoon(store.leaveTooSoonMessage))
-          .transition(.move(edge: .bottom).combined(with: .opacity))
-          .padding(.bottom, MongleSpacing.lg)
+          .transition(.move(edge: .top).combined(with: .opacity))
+          .padding(.top, MongleSpacing.lg)
       }
     }
     .animation(.easeInOut(duration: 0.3), value: store.showLeaveTooSoonToast)
@@ -189,7 +189,7 @@ public struct GroupSelectView: View {
       .padding(.horizontal, MongleSpacing.md)
       .padding(.top, MongleSpacing.sm)
       .padding(.bottom, MongleSpacing.lg)
-      .background(MongleColor.background)
+      .background(V2Palette.cream)
 
     case .notificationPermission:
       VStack(spacing: MongleSpacing.sm) {
@@ -206,7 +206,7 @@ public struct GroupSelectView: View {
       .padding(.horizontal, MongleSpacing.md)
       .padding(.top, MongleSpacing.sm)
       .padding(.bottom, MongleSpacing.lg)
-      .background(MongleColor.background)
+      .background(V2Palette.cream)
 
     case .quietHoursPermission:
       VStack(spacing: MongleSpacing.sm) {
@@ -223,7 +223,7 @@ public struct GroupSelectView: View {
       .padding(.horizontal, MongleSpacing.md)
       .padding(.top, MongleSpacing.sm)
       .padding(.bottom, MongleSpacing.lg)
-      .background(MongleColor.background)
+      .background(V2Palette.cream)
 
     case .groupCreated:
       VStack(spacing: MongleSpacing.sm) {
@@ -251,7 +251,7 @@ public struct GroupSelectView: View {
       .padding(.horizontal, MongleSpacing.md)
       .padding(.top, MongleSpacing.sm)
       .padding(.bottom, MongleSpacing.lg)
-      .background(MongleColor.background)
+      .background(V2Palette.cream)
 
     case .joinWithCode:
       MongleButtonPrimary(L10n.tr("group_join_btn")) {
@@ -260,7 +260,7 @@ public struct GroupSelectView: View {
       .padding(.horizontal, MongleSpacing.md)
       .padding(.top, MongleSpacing.sm)
       .padding(.bottom, MongleSpacing.lg)
-      .background(MongleColor.background)
+      .background(V2Palette.cream)
 
     case .select:
       EmptyView()
@@ -288,14 +288,14 @@ public struct GroupSelectView: View {
       )
 
     case .createGroup:
-      MongleNavigationHeader(title: L10n.tr("group_create_title")) {
+      MongleNavigationHeader(title: L10n.tr("group_create_title"), backgroundColor: V2Palette.cream) {
         MongleBackButton { store.send(.createBackTapped) }
       } right: {
         EmptyView()
       }
 
     case .joinWithCode:
-      MongleNavigationHeader(title: L10n.tr("group_join_title")) {
+      MongleNavigationHeader(title: L10n.tr("group_join_title"), backgroundColor: V2Palette.cream) {
         MongleBackButton { store.send(.joinBackTapped) }
       } right: {
         EmptyView()

@@ -18,9 +18,12 @@ public struct MoodHistoryView: View {
             .padding(MongleSpacing.md)
             .padding(.bottom, MongleSpacing.xl)
         }
-        .background(MongleColor.background)
+        .background(V2Palette.cream)
         .navigationTitle(L10n.tr("settings_mood_history"))
         .navigationBarTitleDisplayMode(.inline)
+        // 설정 컨셉(cream)에 맞춰 시스템 navigationBar 배경도 cream 으로 — 스크롤 시 흰 띠 방지.
+        .toolbarBackground(V2Palette.cream, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {

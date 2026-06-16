@@ -17,6 +17,10 @@ final class MockNotificationRepository: NotificationRepositoryProtocol, @uncheck
         return getNotificationsResult
     }
 
+    func getUnreadCount() async throws -> Int {
+        getNotificationsResult.filter { !$0.isRead }.count
+    }
+
     func markAsRead(id: UUID) async throws -> Domain.Notification {
         if let error = markAsReadError { throw error }
         return markAsReadResult!
@@ -32,6 +36,61 @@ final class MockNotificationRepository: NotificationRepositoryProtocol, @uncheck
 
     func deleteAll(familyId: UUID?) async throws -> Int {
         deleteAllResult
+    }
+}
+
+// MARK: - Mock ShopRepository
+
+final class MockShopRepository: ShopRepositoryInterface, @unchecked Sendable {
+    var catalogResult: [ShopItem] = []
+    var catalogError: Error?
+    var inventoryResult: ShopInventory = ShopInventory()
+    var inventoryError: Error?
+    /// purchase 후 반환할 잔여 하트.
+    var purchaseHeartsRemaining: Int = 0
+    var purchaseError: Error?
+    /// equipDecoration 이 반환할 장착 현황. nil 이면 (slot,itemId) 로 즉석 구성.
+    var equipResult: EquippedDecorations?
+    var equipError: Error?
+
+    func getCatalog() async throws -> [ShopItem] {
+        if let catalogError { throw catalogError }
+        return catalogResult
+    }
+
+    func getInventory() async throws -> ShopInventory {
+        if let inventoryError { throw inventoryError }
+        return inventoryResult
+    }
+
+    func purchase(itemId: String) async throws -> Int {
+        if let purchaseError { throw purchaseError }
+        return purchaseHeartsRemaining
+    }
+
+    func equipDecoration(slot: DecorationSlot, itemId: String?) async throws -> EquippedDecorations {
+        if let equipError { throw equipError }
+        if let equipResult { return equipResult }
+        var eq = EquippedDecorations()
+        switch slot {
+        case .head: eq.head = itemId
+        case .back: eq.back = itemId
+        case .feet: eq.feet = itemId
+        }
+        return eq
+    }
+
+    /// applyBackground 가 반환할 인벤토리. nil 이면 inventoryResult 에 itemId 를 적용해 반환.
+    var applyBackgroundResult: ShopInventory?
+    var applyBackgroundError: Error?
+
+    func applyBackground(itemId: String) async throws -> ShopInventory {
+        if let applyBackgroundError { throw applyBackgroundError }
+        if let applyBackgroundResult { return applyBackgroundResult }
+        var inv = inventoryResult
+        inv.ownedBackgroundIds.insert(itemId)
+        inv.appliedBackgroundId = itemId
+        return inv
     }
 }
 

@@ -62,6 +62,7 @@ struct HomeViewActions {
     var onQuestionTap: () -> Void = {}
     var onNotificationTap: () -> Void = {}
     var onHeartsTap: () -> Void = {}
+    var onShopTap: () -> Void = {}
     var onPeerAnswerTap: (String) -> Void = { _ in }
     var onPeerNudgeTap: (String) -> Void = { _ in }
     var onMyMonggleTap: () -> Void = {}

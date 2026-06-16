@@ -10,7 +10,7 @@ public struct GroupManagementView: View {
   
   public var body: some View {
     VStack(spacing: 0) {
-      MongleNavigationHeader(title: L10n.tr("mgmt_title")) {
+      MongleNavigationHeader(title: L10n.tr("mgmt_title"), backgroundColor: V2Palette.cream) {
         MongleBackButton { store.send(.closeTapped) }
       } right: {
         EmptyView()
@@ -28,7 +28,7 @@ public struct GroupManagementView: View {
         .padding(MongleSpacing.md)
         .padding(.bottom, MongleSpacing.xl)
       }
-      .background(MongleColor.background)
+      .background(V2Palette.cream)
     }
     .toolbar(.hidden, for: .navigationBar)
     .overlay {
@@ -102,19 +102,19 @@ public struct GroupManagementView: View {
     )) {
       transferCreatorView
     }
-    .overlay(alignment: .bottom) {
+    .overlay(alignment: .top) {
       if store.showCopiedToast {
         MongleToastView(type: .inviteCodeCopied)
-          .transition(.move(edge: .bottom).combined(with: .opacity))
-          .padding(.bottom, MongleSpacing.lg)
+          .transition(.move(edge: .top).combined(with: .opacity))
+          .padding(.top, MongleSpacing.lg)
       }
     }
     .animation(.easeInOut(duration: 0.3), value: store.showCopiedToast)
-    .overlay(alignment: .bottom) {
+    .overlay(alignment: .top) {
       if store.showLeaveTooSoonToast {
         MongleToastView(type: .leaveTooSoon(store.leaveTooSoonMessage))
-          .transition(.move(edge: .bottom).combined(with: .opacity))
-          .padding(.bottom, MongleSpacing.lg)
+          .transition(.move(edge: .top).combined(with: .opacity))
+          .padding(.top, MongleSpacing.lg)
       }
     }
     .animation(.easeInOut(duration: 0.3), value: store.showLeaveTooSoonToast)
@@ -274,7 +274,7 @@ public struct GroupManagementView: View {
 
   private var transferCreatorView: some View {
     VStack(spacing: 0) {
-      MongleNavigationHeader(title: L10n.tr("mgmt_transfer_title")) {
+      MongleNavigationHeader(title: L10n.tr("mgmt_transfer_title"), backgroundColor: V2Palette.cream) {
         MongleBackButton { store.send(.dismissTransferSheet) }
       } right: {
         EmptyView()
@@ -333,10 +333,12 @@ public struct GroupManagementView: View {
         }
         .disabled(store.selectedTransferMemberId == nil)
         .padding(.horizontal, MongleSpacing.md)
-        .padding(.bottom, MongleSpacing.md)
+        // 설정 탭에서 푸시되는 화면이라 하단에 v2 탭바가 떠 있어 버튼이 가려진다.
+        // 탭바(높이 64+여백 8) + 홈인디케이터 위로 확실히 띄운다.
+        .padding(.bottom, 96)
       }
     }
-    .background(MongleColor.background)
+    .background(V2Palette.cream)
     .toolbar(.hidden, for: .navigationBar)
   }
   

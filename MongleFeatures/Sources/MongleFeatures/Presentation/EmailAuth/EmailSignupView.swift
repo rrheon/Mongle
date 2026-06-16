@@ -27,7 +27,7 @@ struct EmailSignupView: View {
                 verifyCodeView
             }
         }
-        .background(MongleColor.background)
+        .background(V2Palette.cream)
         .alert(
             "",
             isPresented: Binding(

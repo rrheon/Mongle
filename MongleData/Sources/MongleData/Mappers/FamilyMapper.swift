@@ -21,7 +21,8 @@ struct FamilyMapper {
             createdAt: parseISO8601(dto.createdAt),
             inviteCode: dto.inviteCode,
             memberMoodIds: dto.members.map { $0.moodId ?? "loved" },
-            streakDays: dto.streakDays ?? 0
+            streakDays: dto.streakDays ?? 0,
+            appliedBackgroundId: dto.appliedBackgroundId
         )
         return (family, members)
     }

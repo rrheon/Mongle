@@ -65,11 +65,16 @@ public struct HistoryView: View {
                                 .padding(.top, 12)
                         }
                     }
-                    .padding(.bottom, 24)
+                    // MG-140 — v2 탭바 영역(높이 64 + 하단 padding 8 + safeArea bottom)에
+                    // 가려져 마지막 답변 카드가 안 보이는 문제를 해결하려 bottom inset 을
+                    // 충분히 확보. Home 의 질문카드 padding 96 보다 약간 크게 잡아
+                    // 카드와 탭바 사이 여유를 둔다.
+                    .padding(.bottom, 110)
                 }
             }
         }
-        .background(MongleColor.background)
+        // MG-140 — V2 디자인의 History 시안에 맞춰 cream 단색 배경 적용.
+        .background(V2Palette.cream.ignoresSafeArea())
         .toolbarBackground(Color.white, for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
         .onAppear { store.send(.onAppear) }
@@ -113,7 +118,7 @@ public struct HistoryView: View {
         }
         .frame(height: 56)
         .padding(.horizontal, 20)
-        .background(Color.white)
+        // MG-140 — v2 톤에 맞춰 헤더는 cream 배경 위에 투명으로 둔다.
     }
 
     // MARK: - Calendar Grid
@@ -340,17 +345,10 @@ public struct HistoryView: View {
         .monglePanel(background: Color.white, cornerRadius: 16, borderColor: MongleColor.border, shadowOpacity: 0.03)
     }
 
-    /// 현재 로그인 사용자의 선택된 무드 → MongleMonggle 색상.
-    /// moodId 가 없으면 기본 pink 로 폴백.
+    /// 현재 로그인 사용자의 선택된 무드 → 캐릭터 색상.
+    /// MG-140 — Home 캐릭터 색과 일치하도록 V2Palette.mood() 단일 매핑 사용.
     private func monggleColorForCurrentUser() -> Color {
-        switch store.currentUser?.moodId {
-        case "calm":  return MongleColor.monggleGreen
-        case "happy": return MongleColor.monggleYellow
-        case "loved": return MongleColor.mongglePink
-        case "sad":   return MongleColor.monggleBlue
-        case "tired": return MongleColor.monggleOrange
-        default:      return MongleColor.mongglePink
-        }
+        V2Palette.mood(store.currentUser?.moodId)
     }
 
     private var emptyAnswersCard: some View {
@@ -411,15 +409,13 @@ public struct HistoryView: View {
         return labels[index % labels.count]
     }
 
+    // MG-140 — HistoryFeature.colorIndexFromMoodId 의 역배열.
+    // calm=0, happy=1, loved=2, sad=3, tired=4 순서를 그대로 보존.
+    private static let indexToMoodId: [String] = ["calm", "happy", "loved", "sad", "tired"]
+
+    /// MG-140 — Home 캐릭터 색과 일치하도록 V2Palette.mood() 단일 매핑 사용.
     private func monggleColor(for index: Int) -> Color {
-        let colors: [Color] = [
-            MongleColor.monggleGreen,
-            MongleColor.monggleYellow,
-            MongleColor.mongglePink,
-            MongleColor.monggleBlue,
-            MongleColor.monggleOrange
-        ]
-        return colors[index % colors.count]
+        V2Palette.mood(Self.indexToMoodId[index % Self.indexToMoodId.count])
     }
 
     // MARK: - Helpers

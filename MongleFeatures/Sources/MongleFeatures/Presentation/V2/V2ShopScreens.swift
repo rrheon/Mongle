@@ -26,8 +26,6 @@ struct V2ShopHeader: View {
                 HStack(spacing: 6) {
                     Image(systemName: "heart.fill").font(.system(size: 16)).foregroundStyle(V2Palette.heartPink)
                     Text("5").font(V2Font.suit(14, .bold)).foregroundStyle(V2Palette.ink)
-                    Rectangle().fill(V2Palette.hairline).frame(width: 1, height: 14).padding(.horizontal, 4)
-                    Image(systemName: "plus").font(.system(size: 16, weight: .semibold)).foregroundStyle(V2Palette.mintInk)
                 }
                 .padding(.horizontal, 12).padding(.vertical, 8)
                 .background(.white, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
@@ -67,7 +65,7 @@ struct V2ShopHeader: View {
 // MARK: - Background tile
 
 struct V2BgTile: View {
-    enum Badge { case price(String), applied(String), seasonal(String) }
+    enum Badge { case price(String), applied(String), seasonal(String), owned(String) }
     var name: String
     var sub: String? = nil
     var image: String? = nil
@@ -75,27 +73,37 @@ struct V2BgTile: View {
     var badge: Badge? = nil
 
     var body: some View {
-        ZStack(alignment: .bottomLeading) {
-            if let image {
-                Image(image, bundle: .module).resizable().interpolation(.none).scaledToFill()
-            } else if let swatch {
-                swatch
-            }
-            LinearGradient(colors: [.clear, .black.opacity(0.45)], startPoint: .center, endPoint: .bottom)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(name).font(V2Font.suit(15, .heavy)).foregroundStyle(.white)
-                    .shadow(color: .black.opacity(0.5), radius: 1, y: 1)
-                if let sub {
-                    Text(sub).font(V2Font.suit(11, .medium)).foregroundStyle(.white.opacity(0.85))
-                        .shadow(color: .black.opacity(0.5), radius: 1, y: 1)
+        // Color.clear 를 사이즈 기준으로 두면 (flexible) 그리드 셀 폭에 맞춰 정확한 정사각형이
+        // 되어, 이미지/스와치 종류와 무관하게 모든 타일이 동일 크기로 보인다. 실제 콘텐츠는
+        // overlay 로 얹어 셀 크기를 그대로 따른다. (이전: 콘텐츠 자체에 aspectRatio 를 걸어
+        // scaledToFill 이미지의 ideal size 가 새어 타일마다 크기가 달라졌다.)
+        Color.clear
+            .aspectRatio(1, contentMode: .fit)
+            .overlay {
+                ZStack(alignment: .bottomLeading) {
+                    if let image {
+                        Image(image, bundle: .module).resizable().interpolation(.none).scaledToFill()
+                    } else if let swatch {
+                        swatch
+                    }
+                    // 밝은 픽셀아트 배경에서도 이름이 또렷이 보이도록 하단 스크림을 진하게.
+                    LinearGradient(colors: [.clear, .black.opacity(0.20), .black.opacity(0.62)],
+                                   startPoint: .center, endPoint: .bottom)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(name).font(V2Font.suit(15, .heavy)).foregroundStyle(.white)
+                            .shadow(color: .black.opacity(0.75), radius: 3, y: 1)
+                        if let sub {
+                            Text(sub).font(V2Font.suit(11, .medium)).foregroundStyle(.white.opacity(0.85))
+                                .shadow(color: .black.opacity(0.5), radius: 1, y: 1)
+                        }
+                    }
+                    .padding(12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
-            .padding(12)
-        }
-        .aspectRatio(1, contentMode: .fit)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(alignment: .topTrailing) { badgeView.padding(10) }
-        .shadow(color: .black.opacity(0.08), radius: 5, y: 2)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay(alignment: .topTrailing) { badgeView.padding(10) }
+            .shadow(color: .black.opacity(0.08), radius: 5, y: 2)
     }
 
     @ViewBuilder private var badgeView: some View {
@@ -111,10 +119,19 @@ struct V2BgTile: View {
             Text(t).font(V2Font.suit(12, .heavy)).foregroundStyle(V2Palette.ink)
                 .padding(.horizontal, 10).padding(.vertical, 4)
                 .background(V2Palette.mint, in: Capsule())
-        case .seasonal(let t):
-            Text(t).font(V2Font.suit(9, .heavy)).foregroundStyle(V2Palette.ink).tracking(0.5)
-                .padding(.horizontal, 8).padding(.vertical, 4)
-                .background(V2Palette.coral, in: Capsule())
+        case .owned(let t):
+            // 보유중 — 적용중(민트)과 구분되는 중립 흰색 칩.
+            Text(t).font(V2Font.suit(12, .heavy)).foregroundStyle(V2Palette.ink)
+                .padding(.horizontal, 10).padding(.vertical, 4)
+                .background(.white.opacity(0.92), in: Capsule())
+        case .seasonal(let p):
+            // 시즌 한정도 하트+가격을 함께 표기(가격만 보이던 문제 수정). coral 배경으로 시즌 구분 유지.
+            HStack(spacing: 4) {
+                Image(systemName: "heart.fill").font(.system(size: 12)).foregroundStyle(V2Palette.heartPink)
+                Text(p).font(V2Font.suit(12, .heavy)).foregroundStyle(V2Palette.ink)
+            }
+            .padding(.horizontal, 10).padding(.vertical, 4)
+            .background(V2Palette.coral, in: Capsule())
         case .none:
             EmptyView()
         }
@@ -130,20 +147,17 @@ struct V2Screen03ShopBackgrounds: View {
         V2ScreenContainer(background: V2Palette.cream) {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 14) {
-                    Text("가족이 함께 보는 홈 배경 · 7종")
-                        .font(V2Font.suit(13, .semibold)).foregroundStyle(V2Palette.muted)
+                    Text("가족이 함께 보는 홈 배경")
+                        .font(V2Font.suit(13, .medium)).foregroundStyle(V2Palette.muted)
                     LazyVGrid(columns: cols, spacing: 12) {
                         V2BgTile(name: "따뜻한 집", sub: "기본 배경",
                                  swatch: LinearGradient(colors: [Color(hex: "FFE5C2"), Color(hex: "F1C18A"), Color(hex: "C9885A")], startPoint: .topLeading, endPoint: .bottomTrailing),
                                  badge: .applied("적용중"))
-                        V2BgTile(name: "봄 들판", image: "V2BgSpringField", badge: .price("20"))
-                        V2BgTile(name: "바닷가", image: "V2BgBeach", badge: .price("35"))
+                        V2BgTile(name: "봄 들판", image: "V2BgSpringField", badge: .price("50"))
+                        V2BgTile(name: "바닷가", image: "V2BgBeach", badge: .price("50"))
                         V2BgTile(name: "우주", image: "V2BgSpace", badge: .price("50"))
-                        V2BgTile(name: "숲속",
-                                 swatch: LinearGradient(colors: [Color(hex: "15120F"), Color(hex: "1F2A1E"), Color(hex: "233326"), Color(hex: "1A2418")], startPoint: .top, endPoint: .bottom),
-                                 badge: .price("45"))
-                        V2BgTile(name: "눈오는 마을", image: "V2BgSnowVillage", badge: .seasonal("60"))
-                        V2BgTile(name: "벚꽃길", image: "V2BgCherryBlossom", badge: .price("60"))
+                        V2BgTile(name: "눈오는 마을", image: "V2BgSnowVillage", badge: .price("50"))
+                        V2BgTile(name: "벚꽃길", image: "V2BgCherryBlossom", badge: .price("50"))
                         comingSoon
                     }
                 }
@@ -193,20 +207,14 @@ struct V2DecoTile<Preview: View>: View {
     @ViewBuilder var preview: () -> Preview
 
     var body: some View {
+        // 미리보기/이름/상태 영역의 높이를 고정해 콘텐츠(장착중 배지·가격·없음)에 상관없이
+        // 모든 타일이 동일한 셀 크기를 갖게 한다 (이전엔 행마다 높이가 달라 셀 크기가 들쭉날쭉했음).
         VStack(spacing: 6) {
-            preview().frame(height: 56)
+            preview().frame(width: 56, height: 56)
             Text(name).font(V2Font.suit(12, .bold)).foregroundStyle(V2Palette.ink)
-                .multilineTextAlignment(.center)
-            if equipped {
-                Text("장착중").font(V2Font.suit(10, .heavy)).foregroundStyle(V2Palette.ink)
-                    .padding(.horizontal, 10).padding(.vertical, 3)
-                    .background(V2Palette.mint, in: Capsule())
-            } else if let price {
-                HStack(spacing: 4) {
-                    Image(systemName: "heart.fill").font(.system(size: 12)).foregroundStyle(V2Palette.heartPink)
-                    Text(price).font(V2Font.suit(11, .heavy)).foregroundStyle(V2Palette.ink)
-                }
-            }
+                .lineLimit(1).minimumScaleFactor(0.8)
+                .frame(height: 16)
+            statusLabel.frame(height: 20)
         }
         .padding(12)
         .frame(maxWidth: .infinity).aspectRatio(1 / 1.05, contentMode: .fit)
@@ -214,6 +222,20 @@ struct V2DecoTile<Preview: View>: View {
         .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
             .strokeBorder(equipped ? V2Palette.mint : V2Palette.hairline, lineWidth: equipped ? 2 : 1))
         .shadow(color: .black.opacity(0.06), radius: 5, y: 2)
+    }
+
+    // 상태 라벨 — 장착중(민트 배지) / 가격(하트+숫자) / 없음(빈 영역). 고정 높이 컨테이너 안에 둔다.
+    @ViewBuilder private var statusLabel: some View {
+        if equipped {
+            Text("장착중").font(V2Font.suit(10, .heavy)).foregroundStyle(V2Palette.ink)
+                .padding(.horizontal, 10).padding(.vertical, 3)
+                .background(V2Palette.mint, in: Capsule())
+        } else if let price {
+            HStack(spacing: 4) {
+                Image(systemName: "heart.fill").font(.system(size: 12)).foregroundStyle(V2Palette.heartPink)
+                Text(price).font(V2Font.suit(11, .heavy)).foregroundStyle(V2Palette.ink)
+            }
+        }
     }
 }
 
@@ -234,11 +256,11 @@ struct V2Screen04ShopDecorations: View {
                     .padding(4)
                     .background(V2Palette.ink.opacity(0.06), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
 
-                    V2Mongle(color: V2Palette.alex, size: 86, eyeSize: 14, hideName: true) { V2FlowerCrown() }
+                    V2Mongle(color: V2Palette.alex, size: 86, hideName: true) { V2FlowerCrown() }
                         .padding(.top, 16)
 
-                    Text("세그먼트 전환 시 슬롯별 5종이 노출됩니다 (머리 슬롯)")
-                        .font(V2Font.suit(12, .medium)).foregroundStyle(V2Palette.muted)
+                    Text("머리·등·발밑을 바꿔가며 꾸며보세요")
+                        .font(V2Font.suit(13, .medium)).foregroundStyle(V2Palette.muted)
                         .padding(.top, 8)
 
                     LazyVGrid(columns: cols, spacing: 10) {

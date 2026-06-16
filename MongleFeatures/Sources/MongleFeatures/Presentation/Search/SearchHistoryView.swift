@@ -22,7 +22,8 @@ public struct SearchHistoryView: View {
             searchHeader
             bodyContent
         }
-        .background(MongleColor.background)
+        // MG-140 — Home/History 와 동일하게 v2 cream 배경 적용.
+        .background(V2Palette.cream.ignoresSafeArea())
         .toolbarBackground(Color.white, for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
         .onTapGesture {
@@ -65,13 +66,14 @@ public struct SearchHistoryView: View {
             }
             .padding(.horizontal, 14)
             .frame(height: 40)
-            .background(Color(hex: "F0F0F0"))
+            // MG-140 — 입력 필드는 v2 톤(V2HeaderTopBar 의 chipBg 와 동일한 ink 0.08).
+            .background(V2Palette.ink.opacity(0.08))
             .clipShape(RoundedRectangle(cornerRadius: MongleRadius.medium))
         }
         .padding(.horizontal, MongleSpacing.md)
         .padding(.vertical, 10)
-        .background(Color.white)
-        .shadow(color: Color.black.opacity(0.04), radius: 2, x: 0, y: 1)
+        // MG-140 — 서치바 영역도 cream 으로 통일. 흰색 + shadow 분리 효과 제거.
+        .background(V2Palette.cream)
     }
 
     // MARK: - Body Content
@@ -85,7 +87,8 @@ public struct SearchHistoryView: View {
         } else if store.showMinLengthHint {
             emptyStateView(icon: nil, message: L10n.tr("search_min_length"))
         } else if store.query.trimmingCharacters(in: .whitespaces).count >= 2 && store.results.isEmpty {
-            emptyStateView(icon: "🔍", message: L10n.tr("search_no_results", store.query.trimmingCharacters(in: .whitespaces)))
+            // MG-140 — 결과 0 건일 때도 검색 전(line 87/93) 과 동일하게 MongleLogo 노출.
+            emptyStateView(icon: nil, message: L10n.tr("search_no_results", store.query.trimmingCharacters(in: .whitespaces)))
         } else if !store.results.isEmpty {
             resultsList
         } else {
@@ -150,6 +153,9 @@ public struct SearchHistoryView: View {
 
                 Spacer().frame(height: MongleSpacing.xl)
             }
+            // MG-140 — v2 탭바(높이 64 + 하단 padding 8 + safeArea)에 마지막 카드가
+            // 가려지지 않도록 bottom inset 확보.
+            .padding(.bottom, 110)
         }
         .scrollDismissesKeyboard(.immediately)
     }
@@ -157,7 +163,7 @@ public struct SearchHistoryView: View {
     // MARK: - Empty State
 
     private func emptyStateView(icon: String?, message: String) -> some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 20) {
             if let icon {
                 Text(icon).font(.system(size: 40))
             } else{
@@ -167,6 +173,8 @@ public struct SearchHistoryView: View {
                 .font(MongleFont.body2())
                 .foregroundColor(MongleColor.textHint)
                 .multilineTextAlignment(.center)
+                // 로고와 안내 문구가 붙지 않도록 위쪽 여백을 더 준다.
+                .padding(.top, 4)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -229,16 +237,12 @@ private struct AnswerRow: View {
 private struct MiniMongleAvatar: View {
     let colorIndex: Int
 
-    private static let colors: [Color] = [
-        MongleColor.monggleGreen,
-        MongleColor.monggleYellow,
-        MongleColor.mongglePink,
-        MongleColor.monggleBlue,
-        MongleColor.monggleOrange
-    ]
+    // MG-140 — colorIndexFromMoodId 의 역배열. Home / History 와 동일한 V2Palette.mood()
+    // 단일 진실을 통해 검색결과 캐릭터 색이 mood 와 일관되게 맞춰진다.
+    private static let indexToMoodId: [String] = ["calm", "happy", "loved", "sad", "tired"]
 
     var body: some View {
-        let color = Self.colors[colorIndex % Self.colors.count]
+        let color = V2Palette.mood(Self.indexToMoodId[colorIndex % Self.indexToMoodId.count])
         MongleMonggle(color: color, size: 32)
     }
 }

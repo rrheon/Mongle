@@ -16,18 +16,26 @@ struct V2Mongle<Decoration: View>: View {
     var badgeIcon: String? = nil          // SF Symbol; nil = no badge
     var badgeColor: Color = V2Palette.mint
     var size: CGFloat = 70
-    var eyeSize: CGFloat = 13
+    /// nil 이면 size 비례(0.18). 명시값을 넘기면 그 값을 그대로 쓴다.
+    /// (MongleMonggle 의 눈 비율 0.18 과 통일 — 미리보기 size:86 처럼 커져도 눈이 작아 보이지 않게.)
+    var eyeSize: CGFloat? = nil
     var hideName: Bool = false
     var dogEars: Bool = false
     var ringColor: Color? = nil
     var shadow: Bool = true
+    /// 등(back) 슬롯 장식 id. 본체 뒤(zIndex 본체보다 뒤)에 깐다. id→뷰는 DecorationCatalog 공유.
+    var backDecorationId: String? = nil
+    /// 발밑(feet) 슬롯 장식 id. 본체 하단에 깐다.
+    var feetDecorationId: String? = nil
+    /// 머리(head) 슬롯 장식 — 본체 앞에 얹는 closure (기존 호출부 호환).
     var decoration: () -> Decoration
 
+    private var resolvedEye: CGFloat { eyeSize ?? size * 0.18 }
     private var containerW: CGFloat { size + 20 }
     private var containerH: CGFloat { size + 40 }
     private var eyeY: CGFloat { size * 0.44 }
-    private var eyeLX: CGFloat { size * 0.35 - eyeSize / 2 }
-    private var eyeRX: CGFloat { size * 0.65 - eyeSize / 2 }
+    private var eyeLX: CGFloat { size * 0.35 - resolvedEye / 2 }
+    private var eyeRX: CGFloat { size * 0.65 - resolvedEye / 2 }
 
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -46,6 +54,15 @@ struct V2Mongle<Decoration: View>: View {
                     .frame(width: 8, height: 10)
                     .clipShape(Capsule())
                     .offset(x: size * 0.18, y: size * 0.85)
+            }
+
+            // back decoration — drawn before the body so it sits behind it. 본체보다 크게
+            // (bodySize 비례) 그려 본체 실루엣 밖으로 보이게 한다(안 그러면 뒤에 가려 안 보임).
+            if backDecorationId != nil {
+                DecorationCatalog.backView(for: backDecorationId, bodySize: size)
+                    .frame(width: containerW, alignment: .center)
+                    .offset(y: size * 0.12)
+                    .allowsHitTesting(false)
             }
 
             // body
@@ -90,6 +107,14 @@ struct V2Mongle<Decoration: View>: View {
                     .offset(y: size + 8)
             }
 
+            // feet decoration — drawn under the body (본체 하단).
+            if feetDecorationId != nil {
+                DecorationCatalog.feetView(for: feetDecorationId)
+                    .frame(width: containerW, alignment: .center)
+                    .offset(y: size * 0.84)
+                    .allowsHitTesting(false)
+            }
+
             // head decoration — drawn last so it sits in front of the body
             decoration()
                 .frame(width: containerW, alignment: .center)
@@ -102,7 +127,7 @@ struct V2Mongle<Decoration: View>: View {
     private var eye: some View {
         Circle()
             .fill(V2Palette.ink)
-            .frame(width: eyeSize, height: eyeSize)
+            .frame(width: resolvedEye, height: resolvedEye)
             .overlay(Circle().strokeBorder(.white, lineWidth: 1.5))
     }
 }
@@ -116,11 +141,13 @@ extension V2Mongle where Decoration == EmptyView {
         badgeIcon: String? = nil,
         badgeColor: Color = V2Palette.mint,
         size: CGFloat = 70,
-        eyeSize: CGFloat = 13,
+        eyeSize: CGFloat? = nil,
         hideName: Bool = false,
         dogEars: Bool = false,
         ringColor: Color? = nil,
-        shadow: Bool = true
+        shadow: Bool = true,
+        backDecorationId: String? = nil,
+        feetDecorationId: String? = nil
     ) {
         self.color = color
         self.name = name
@@ -133,6 +160,8 @@ extension V2Mongle where Decoration == EmptyView {
         self.dogEars = dogEars
         self.ringColor = ringColor
         self.shadow = shadow
+        self.backDecorationId = backDecorationId
+        self.feetDecorationId = feetDecorationId
         self.decoration = { EmptyView() }
     }
 }
