@@ -85,7 +85,9 @@ enum DecorationCatalog {
         switch id {
         case flowerCrown:  V2FlowerCrown(small: true)
         case starHalo:     V2StarHalo()
-        case satinRibbon:  V2SatinRibbon(size: 46)
+        // 새틴 리본 자산은 가로형(863×673)이라 폭만 지정하면 레이아웃 박스가 비정사각이 되어
+        // 다른 장식 셀과 footprint·센터링이 어긋난다. 정사각 박스에 fit 시켜 그리드 셀과 통일한다.
+        case satinRibbon:  V2SatinRibbon(size: 52).frame(width: 56, height: 56)
         case balloonBunch: V2BalloonBunch()
         case santaHat:     V2SantaHat()
         case angelWings:   V2AngelWings(size: 56)
