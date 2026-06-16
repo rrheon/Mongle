@@ -79,27 +79,34 @@ struct V2BgTile: View {
         // scaledToFill 이미지의 ideal size 가 새어 타일마다 크기가 달라졌다.)
         Color.clear
             .aspectRatio(1, contentMode: .fit)
-            .overlay {
-                ZStack(alignment: .bottomLeading) {
-                    if let image {
-                        Image(image, bundle: .module).resizable().interpolation(.none).scaledToFill()
-                    } else if let swatch {
-                        swatch
-                    }
-                    // 밝은 픽셀아트 배경에서도 이름이 또렷이 보이도록 하단 스크림을 진하게.
-                    LinearGradient(colors: [.clear, .black.opacity(0.20), .black.opacity(0.62)],
-                                   startPoint: .center, endPoint: .bottom)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(name).font(V2Font.suit(15, .heavy)).foregroundStyle(.white)
-                            .shadow(color: .black.opacity(0.75), radius: 3, y: 1)
-                        if let sub {
-                            Text(sub).font(V2Font.suit(11, .medium)).foregroundStyle(.white.opacity(0.85))
-                                .shadow(color: .black.opacity(0.5), radius: 1, y: 1)
-                        }
-                    }
-                    .padding(12)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+            // 이미지/스와치를 셀(정사각)에 채우고 클립한다. scaledToFill 이미지는 프레임 제약이 없으면
+            // 뷰가 셀보다 커지는데, 그걸 ZStack 형제로 두면 ZStack 을 늘려 .bottomLeading 이름이
+            // 보이는 영역 밖으로 밀려 잘렸다(이미지 셀에서만 이름이 안 보이던 버그). 배경은 셀 크기를
+            // 따르는 background 로 깔고, 스크림·이름·배지는 셀 기준 overlay 로 얹어 위치를 고정한다.
+            .background {
+                if let image {
+                    Image(image, bundle: .module).resizable().interpolation(.none).scaledToFill()
+                } else if let swatch {
+                    swatch
                 }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            // 밝은 픽셀아트 배경에서도 이름이 또렷이 보이도록 하단 스크림을 진하게.
+            .overlay {
+                LinearGradient(colors: [.clear, .black.opacity(0.20), .black.opacity(0.62)],
+                               startPoint: .center, endPoint: .bottom)
+            }
+            .overlay(alignment: .bottomLeading) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(name).font(V2Font.suit(15, .heavy)).foregroundStyle(.white)
+                        .shadow(color: .black.opacity(0.75), radius: 3, y: 1)
+                    if let sub {
+                        Text(sub).font(V2Font.suit(11, .medium)).foregroundStyle(.white.opacity(0.85))
+                            .shadow(color: .black.opacity(0.5), radius: 1, y: 1)
+                    }
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             .overlay(alignment: .topTrailing) { badgeView.padding(10) }
