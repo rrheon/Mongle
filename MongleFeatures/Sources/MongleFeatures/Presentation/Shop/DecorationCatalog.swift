@@ -47,31 +47,31 @@ enum DecorationCatalog {
     /// 디자인 기준 머리 슬롯 장식 카탈로그.
     static let headItems: [ShopItem] = [
         ShopItem(id: flowerCrown, kind: .decoration, name: L10n.tr("shop_item_flower_crown"),
-                 price: 35, assetName: flowerCrown, slot: .head, sortOrder: 1),
+                 price: 50, assetName: flowerCrown, slot: .head, sortOrder: 1),
         ShopItem(id: starHalo, kind: .decoration, name: L10n.tr("shop_item_star_halo"),
-                 price: 40, assetName: starHalo, slot: .head, sortOrder: 2),
+                 price: 50, assetName: starHalo, slot: .head, sortOrder: 2),
         ShopItem(id: satinRibbon, kind: .decoration, name: L10n.tr("shop_item_satin_ribbon"),
-                 price: 25, assetName: satinRibbon, slot: .head, sortOrder: 3),
+                 price: 50, assetName: satinRibbon, slot: .head, sortOrder: 3),
         ShopItem(id: balloonBunch, kind: .decoration, name: L10n.tr("shop_item_balloon_bunch"),
                  price: 50, assetName: balloonBunch, slot: .head, sortOrder: 4),
         ShopItem(id: santaHat, kind: .decoration, name: L10n.tr("shop_item_santa_hat"),
-                 price: 60, assetName: santaHat, slot: .head, isSeasonal: true, sortOrder: 5)
+                 price: 50, assetName: santaHat, slot: .head, isSeasonal: true, sortOrder: 5)
     ]
 
     /// 등(back) 슬롯 장식 카탈로그.
     static let backItems: [ShopItem] = [
         ShopItem(id: angelWings, kind: .decoration, name: L10n.tr("shop_item_angel_wings"),
-                 price: 45, assetName: angelWings, slot: .back, sortOrder: 1),
+                 price: 50, assetName: angelWings, slot: .back, sortOrder: 1),
         ShopItem(id: cape, kind: .decoration, name: L10n.tr("shop_item_cape"),
-                 price: 40, assetName: cape, slot: .back, sortOrder: 2)
+                 price: 50, assetName: cape, slot: .back, sortOrder: 2)
     ]
 
     /// 발밑(feet) 슬롯 장식 카탈로그.
     static let feetItems: [ShopItem] = [
         ShopItem(id: sneakers, kind: .decoration, name: L10n.tr("shop_item_sneakers"),
-                 price: 30, assetName: sneakers, slot: .feet, sortOrder: 1),
+                 price: 50, assetName: sneakers, slot: .feet, sortOrder: 1),
         ShopItem(id: cloudPad, kind: .decoration, name: L10n.tr("shop_item_cloud_pad"),
-                 price: 35, assetName: cloudPad, slot: .feet, sortOrder: 2)
+                 price: 50, assetName: cloudPad, slot: .feet, sortOrder: 2)
     ]
 
     /// 전체 장식 카탈로그 (모든 슬롯 합본 — 서버 미구현 동안 Mock/프리뷰 기본값).
@@ -85,9 +85,11 @@ enum DecorationCatalog {
         switch id {
         case flowerCrown:  V2FlowerCrown(small: true)
         case starHalo:     V2StarHalo()
-        // 새틴 리본 자산은 가로형(863×673)이라 폭만 지정하면 레이아웃 박스가 비정사각이 되어
-        // 다른 장식 셀과 footprint·센터링이 어긋난다. 정사각 박스에 fit 시켜 그리드 셀과 통일한다.
-        case satinRibbon:  V2SatinRibbon(size: 52).frame(width: 56, height: 56)
+        // 새틴 리본: V2SatinRibbon 은 .frame(width:)로 폭만 제약해 높이가 부모 제안만큼 새어
+        // 56×56 슬롯을 세로로 넘쳐(다른 셀보다 커 보임/셀 침범) 버린다. 여기선 자산을 양쪽 모두
+        // 제약된 정사각 박스에 scaledToFit 시켜 절대 넘치지 않고 다른 장식과 크기를 맞춘다.
+        case satinRibbon:
+            Image("V2Ribbon", bundle: .module).resizable().scaledToFit().frame(width: 50, height: 50)
         case balloonBunch: V2BalloonBunch()
         case santaHat:     V2SantaHat()
         case angelWings:   V2AngelWings(size: 56)
