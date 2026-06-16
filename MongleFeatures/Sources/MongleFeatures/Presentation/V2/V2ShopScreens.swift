@@ -110,6 +110,9 @@ struct V2BgTile: View {
             }
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             .overlay(alignment: .topTrailing) { badgeView.padding(10) }
+            // 탭 영역을 셀 사각형으로 한정한다. 이게 없으면 배경/오버레이가 셀 밖으로 조금이라도
+            // 넘칠 때 그 영역이 탭 가능해져, 셀 하단을 누르면 아래 행 셀이 선택되는 문제가 생긴다.
+            .contentShape(Rectangle())
             .shadow(color: .black.opacity(0.08), radius: 5, y: 2)
     }
 
