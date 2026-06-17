@@ -78,9 +78,9 @@ public struct ShopFeature {
                 .sorted { $0.sortOrder < $1.sortOrder }
         }
 
-        /// 현재 활성 슬롯에 장착된 장식 id.
-        public var equippedSlotId: String? {
-            inventory?.equippedDecorations.id(for: activeSlot)
+        /// 현재 장착 중인 장식 id (전역 단일).
+        public var equippedDecorationId: String? {
+            inventory?.equippedDecorationId
         }
 
         public var appliedBackgroundId: String? {
@@ -105,7 +105,7 @@ public struct ShopFeature {
         case slotSelected(DecorationSlot)
         /// 그리드 타일 탭 (꾸미기). nil 이면 "장식 없음"(해제).
         case decorationTapped(itemId: String?)
-        case equipResponse(Result<EquippedDecorations, AppError>)
+        case equipResponse(Result<String?, AppError>)
         case purchaseConfirmed(itemId: String)
         case purchaseResponse(Result<PurchaseResult, AppError>)
         /// 배경 타일 탭 — 보유면 적용, 미보유면 View 의 구매 확인을 거쳐 purchaseBackgroundConfirmed.
@@ -119,7 +119,7 @@ public struct ShopFeature {
         public enum Delegate: Equatable {
             case close
             case heartsChanged(Int)
-            case decorationsChanged(EquippedDecorations)
+            case decorationsChanged(String?)
             /// 가족 공유 배경이 적용됨 — MainTab 이 home.family 의 배경 id 를 갱신한다.
             case backgroundApplied(String?)
         }
@@ -134,8 +134,7 @@ public struct ShopFeature {
     /// 구매 성공 후 자동 장착까지 묶은 결과 (꾸미기).
     public struct PurchaseResult: Equatable, Sendable {
         public let heartsRemaining: Int
-        public let slot: DecorationSlot
-        public let equipped: EquippedDecorations
+        public let equippedDecorationId: String?
     }
 
     /// 배경 구매/적용 결과. heartsRemaining 이 nil 이면 구매 없이 적용만 한 경우.
@@ -191,15 +190,15 @@ public struct ShopFeature {
                 guard !state.isLoading else { return .none }
 
                 // "장식 없음" 또는 이미 장착된 아이템 재탭 → 해제.
-                if itemId == nil || itemId == state.equippedSlotId {
-                    return equip(&state, slot: state.activeSlot, itemId: nil)
+                if itemId == nil || itemId == state.equippedDecorationId {
+                    return equip(&state, itemId: nil)
                 }
 
                 guard let itemId else { return .none }
 
-                // 이미 보유 → 바로 장착.
+                // 이미 보유 → 바로 장착(전역 단일이라 기존 착용분은 서버가 덮어쓴다).
                 if state.isOwned(itemId) {
-                    return equip(&state, slot: state.activeSlot, itemId: itemId)
+                    return equip(&state, itemId: itemId)
                 }
 
                 // 미보유 → 가격 확인 후 구매 흐름.
@@ -221,14 +220,13 @@ public struct ShopFeature {
                 guard state.hearts >= item.price else { return .none }
                 state.isLoading = true
                 state.appError = nil
-                let slot = state.activeSlot
                 return .run { [shopRepository] send in
                     do {
-                        // 서버 권위 구매 → 잔액 수신, 이어서 해당 슬롯에 장착.
+                        // 서버 권위 구매 → 잔액 수신, 이어서 장착(서버 purchase 는 equip 안 함).
                         let heartsRemaining = try await shopRepository.purchase(itemId: itemId)
-                        let equipped = try await shopRepository.equipDecoration(slot: slot, itemId: itemId)
+                        let equippedId = try await shopRepository.equipDecoration(itemId: itemId)
                         await send(.purchaseResponse(.success(
-                            PurchaseResult(heartsRemaining: heartsRemaining, slot: slot, equipped: equipped)
+                            PurchaseResult(heartsRemaining: heartsRemaining, equippedDecorationId: equippedId)
                         )))
                     } catch {
                         await send(.purchaseResponse(.failure(AppError.from(error))))
@@ -240,16 +238,16 @@ public struct ShopFeature {
                 state.isLoading = false
                 state.hearts = result.heartsRemaining
                 if var inv = state.inventory {
-                    inv.equippedDecorations = result.equipped
-                    // 구매한 아이템을 보유 목록에 반영 (장착된 슬롯 id 기준).
-                    if let equippedId = result.equipped.id(for: result.slot) {
+                    inv.equippedDecorationId = result.equippedDecorationId
+                    // 구매한 아이템을 보유 목록에 반영.
+                    if let equippedId = result.equippedDecorationId {
                         inv.ownedDecorationIds.insert(equippedId)
                     }
                     state.inventory = inv
                 }
                 return .merge(
                     .send(.delegate(.heartsChanged(result.heartsRemaining))),
-                    .send(.delegate(.decorationsChanged(result.equipped)))
+                    .send(.delegate(.decorationsChanged(result.equippedDecorationId)))
                 )
 
             case .purchaseResponse(.failure(let error)):
@@ -257,13 +255,13 @@ public struct ShopFeature {
                 state.appError = error
                 return .none
 
-            case .equipResponse(.success(let equipped)):
+            case .equipResponse(.success(let equippedId)):
                 state.isLoading = false
                 if var inv = state.inventory {
-                    inv.equippedDecorations = equipped
+                    inv.equippedDecorationId = equippedId
                     state.inventory = inv
                 }
-                return .send(.delegate(.decorationsChanged(equipped)))
+                return .send(.delegate(.decorationsChanged(equippedId)))
 
             case .equipResponse(.failure(let error)):
                 state.isLoading = false
@@ -324,14 +322,14 @@ public struct ShopFeature {
         }
     }
 
-    /// 슬롯 장착/해제 effect 생성 (중복 제거용).
-    private func equip(_ state: inout State, slot: DecorationSlot, itemId: String?) -> Effect<Action> {
+    /// 장착/해제 effect 생성 (중복 제거용). 전역 단일 — itemId nil 이면 해제.
+    private func equip(_ state: inout State, itemId: String?) -> Effect<Action> {
         state.isLoading = true
         state.appError = nil
         return .run { [shopRepository] send in
             do {
-                let equipped = try await shopRepository.equipDecoration(slot: slot, itemId: itemId)
-                await send(.equipResponse(.success(equipped)))
+                let equippedId = try await shopRepository.equipDecoration(itemId: itemId)
+                await send(.equipResponse(.success(equippedId)))
             } catch {
                 await send(.equipResponse(.failure(AppError.from(error))))
             }

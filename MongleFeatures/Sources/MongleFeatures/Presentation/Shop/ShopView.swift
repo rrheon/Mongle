@@ -195,21 +195,19 @@ struct ShopView: View {
         }
     }
 
-    // 미리보기 캐릭터 — 3슬롯 장착 동시 반영 + 탭한 장식(활성 슬롯)을 구매 전 미리 얹어 보여준다.
+    // 미리보기 캐릭터 — 전역 단일 착용 1개를 그 장식의 슬롯 자리에 반영.
+    // 탭한 장식(decoPreviewId)이 있으면 구매 전에도 미리 얹어 보여준다.
     private var preview: some View {
-        let equipped = store.inventory?.equippedDecorations ?? EquippedDecorations()
-        // 활성 슬롯은 미리보기(decoPreviewId)가 있으면 우선, 없으면 장착값.
-        let head = store.activeSlot == .head ? (decoPreviewId ?? equipped.head) : equipped.head
-        let back = store.activeSlot == .back ? (decoPreviewId ?? equipped.back) : equipped.back
-        let feet = store.activeSlot == .feet ? (decoPreviewId ?? equipped.feet) : equipped.feet
+        let shownId = decoPreviewId ?? store.equippedDecorationId
+        let slot = DecorationCatalog.slotForItem(shownId)
         return V2Mongle(
             color: V2Palette.alex,
             size: 96,
             hideName: true,
-            backDecorationId: back,
-            feetDecorationId: feet
+            backDecorationId: slot == .back ? shownId : nil,
+            feetDecorationId: slot == .feet ? shownId : nil
         ) {
-            DecorationCatalog.headView(for: head)
+            DecorationCatalog.headView(for: slot == .head ? shownId : nil)
         }
         // 머리/등/발밑 세그먼트 바로 아래라 살짝 답답하지 않도록 캐릭터를 카드 안에서 조금 내린다.
         .offset(y: 14)
@@ -238,7 +236,7 @@ struct ShopView: View {
                 decoPreviewId = nil
                 store.send(.decorationTapped(itemId: nil))
             } label: {
-                V2DecoTile(name: L10n.tr("shop_deco_none"), equipped: store.equippedSlotId == nil) {
+                V2DecoTile(name: L10n.tr("shop_deco_none"), equipped: store.equippedDecorationId == nil) {
                     Circle().strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [4]))
                         .foregroundStyle(V2Palette.muted).frame(width: 40, height: 40)
                 }
@@ -247,7 +245,7 @@ struct ShopView: View {
 
             ForEach(store.slotDecorations) { item in
                 let owned = store.state.isOwned(item.id)
-                let equipped = store.equippedSlotId == item.id
+                let equipped = store.equippedDecorationId == item.id
                 Button { onDecoTileTapped(item) } label: {
                     V2DecoTile(
                         name: item.name,
@@ -384,7 +382,7 @@ struct ShopView: View {
                 catalog: DecorationCatalog.allItems + BackgroundCatalog.items,
                 inventory: ShopInventory(
                     ownedDecorationIds: [DecorationCatalog.flowerCrown],
-                    equippedDecorations: EquippedDecorations(head: DecorationCatalog.flowerCrown)
+                    equippedDecorationId: DecorationCatalog.flowerCrown
                 )
             )
         ) {
@@ -421,19 +419,11 @@ private struct PreviewShopRepository: ShopRepositoryInterface {
     func getInventory() async throws -> ShopInventory {
         ShopInventory(
             ownedDecorationIds: [DecorationCatalog.flowerCrown],
-            equippedDecorations: EquippedDecorations(head: DecorationCatalog.flowerCrown)
+            equippedDecorationId: DecorationCatalog.flowerCrown
         )
     }
     func purchase(itemId: String) async throws -> Int { 80 }
-    func equipDecoration(slot: DecorationSlot, itemId: String?) async throws -> EquippedDecorations {
-        var eq = EquippedDecorations()
-        switch slot {
-        case .head: eq.head = itemId
-        case .back: eq.back = itemId
-        case .feet: eq.feet = itemId
-        }
-        return eq
-    }
+    func equipDecoration(itemId: String?) async throws -> String? { itemId }
     func applyBackground(itemId: String) async throws -> ShopInventory {
         ShopInventory(ownedBackgroundIds: [itemId], appliedBackgroundId: itemId)
     }

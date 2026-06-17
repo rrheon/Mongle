@@ -134,6 +134,12 @@ enum DecorationCatalog {
         }
     }
 
+    /// 단일 장착 id → 그 장식의 슬롯 역산 (렌더 어댑터용). nil/미상이면 nil.
+    static func slotForItem(_ id: String?) -> DecorationSlot? {
+        guard let id else { return nil }
+        return allItems.first(where: { $0.id == id })?.slot
+    }
+
     /// 슬롯별 카탈로그 아이템 헬퍼.
     static func items(for slot: DecorationSlot) -> [ShopItem] {
         switch slot {

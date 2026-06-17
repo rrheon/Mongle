@@ -84,7 +84,7 @@ public struct MongleCardEditFeature {
                     moodId: moodId,
                     createdAt: user.createdAt,
                     // 수동 재구성 시 신규 필드 누락(silent drop) 방지 — 기존 값 보존.
-                    equippedDecorations: user.equippedDecorations
+                    equippedDecorationId: user.equippedDecorationId
                 )
                 return .run { send in
                     do {

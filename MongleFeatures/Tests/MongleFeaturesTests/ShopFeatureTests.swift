@@ -20,7 +20,7 @@ final class ShopFeatureTests: XCTestCase {
         let catalog = [item(flower, price: 35), item(star, price: 40)]
         let inventory = ShopInventory(
             ownedDecorationIds: [flower],
-            equippedDecorations: EquippedDecorations(head: flower)
+            equippedDecorationId: flower
         )
         repo.catalogResult = catalog
         repo.inventoryResult = inventory
@@ -71,15 +71,14 @@ final class ShopFeatureTests: XCTestCase {
             $0.shopRepository = repo
         }
 
-        let equipped = EquippedDecorations(head: flower)
         await store.send(.decorationTapped(itemId: flower)) {
             $0.isLoading = true
         }
-        await store.receive(.equipResponse(.success(equipped))) {
+        await store.receive(.equipResponse(.success(flower))) {
             $0.isLoading = false
-            $0.inventory?.equippedDecorations = equipped
+            $0.inventory?.equippedDecorationId = self.flower
         }
-        await store.receive(.delegate(.decorationsChanged(equipped)))
+        await store.receive(.delegate(.decorationsChanged(flower)))
     }
 
     // MARK: - decorationTapped: 미소유 + 하트 충분 → purchase → heartsChanged
@@ -104,15 +103,14 @@ final class ShopFeatureTests: XCTestCase {
         await store.receive(.purchaseConfirmed(itemId: flower)) {
             $0.isLoading = true
         }
-        let equipped = EquippedDecorations(head: flower)
-        await store.receive(.purchaseResponse(.success(.init(heartsRemaining: 15, slot: .head, equipped: equipped)))) {
+        await store.receive(.purchaseResponse(.success(.init(heartsRemaining: 15, equippedDecorationId: flower)))) {
             $0.isLoading = false
             $0.hearts = 15
-            $0.inventory?.equippedDecorations = equipped
+            $0.inventory?.equippedDecorationId = self.flower
             $0.inventory?.ownedDecorationIds = [self.flower]
         }
         await store.receive(.delegate(.heartsChanged(15)))
-        await store.receive(.delegate(.decorationsChanged(equipped)))
+        await store.receive(.delegate(.decorationsChanged(flower)))
     }
 
     // MARK: - decorationTapped: 미소유 + 하트 부족 → no-op (View 가 안내 팝업만, 충전 흐름 제거됨)
@@ -177,7 +175,7 @@ final class ShopFeatureTests: XCTestCase {
                 catalog: [item(flower, price: 35)],
                 inventory: ShopInventory(
                     ownedDecorationIds: [flower],
-                    equippedDecorations: EquippedDecorations(head: flower)
+                    equippedDecorationId: flower
                 )
             )
         ) {
@@ -186,14 +184,14 @@ final class ShopFeatureTests: XCTestCase {
             $0.shopRepository = repo
         }
 
-        let unequipped = EquippedDecorations(head: nil)
+        // 장착중 재탭 → 해제(itemId nil). Mock 은 요청 itemId(nil) 를 그대로 반환.
         await store.send(.decorationTapped(itemId: flower)) {
             $0.isLoading = true
         }
-        await store.receive(.equipResponse(.success(unequipped))) {
+        await store.receive(.equipResponse(.success(nil))) {
             $0.isLoading = false
-            $0.inventory?.equippedDecorations = unequipped
+            $0.inventory?.equippedDecorationId = nil
         }
-        await store.receive(.delegate(.decorationsChanged(unequipped)))
+        await store.receive(.delegate(.decorationsChanged(nil)))
     }
 }

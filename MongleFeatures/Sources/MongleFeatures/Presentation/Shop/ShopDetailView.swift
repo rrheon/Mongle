@@ -294,8 +294,8 @@ struct ShopDecoDetailView: View {
 
     private func content(slot: DecorationSlot) -> some View {
         let isOwned = store.state.isOwned(item.id)
-        // 적용 판정은 reducer 의 activeSlot 의존(equippedSlotId) 을 쓰지 않고 슬롯 직접 판정.
-        let isApplied = store.inventory?.equippedDecorations.id(for: slot) == item.id
+        // 전역 단일 착용 — 이 아이템이 현재 착용 id 와 같은지로 판정.
+        let isApplied = store.inventory?.equippedDecorationId == item.id
 
         return ZStack(alignment: .top) {
             // 라디얼 그라데이션 배경.
@@ -399,13 +399,11 @@ struct ShopDecoDetailView: View {
             if store.hearts < item.price {
                 onInsufficient()
             } else {
-                // reducer 의 구매/장착은 activeSlot 기준 → 해당 슬롯 선전송 후 구매.
-                store.send(.slotSelected(slot))
+                // 전역 단일 — 구매/장착이 activeSlot 에 의존하지 않으므로 itemId 만 전송.
                 store.send(.purchaseConfirmed(itemId: item.id))
                 onClose()
             }
         } else if !isApplied {
-            store.send(.slotSelected(slot))
             store.send(.decorationTapped(itemId: item.id))
             onClose()
         }

@@ -58,43 +58,22 @@ public struct ShopItem: Identifiable, Equatable, Hashable, Sendable {
     }
 }
 
-/// 슬롯별 현재 장착된 장식 id. nil 이면 해당 슬롯에 아무것도 장착하지 않음(장식 없음).
-public struct EquippedDecorations: Equatable, Sendable {
-    public var head: String?
-    public var back: String?
-    public var feet: String?
-
-    public init(head: String? = nil, back: String? = nil, feet: String? = nil) {
-        self.head = head
-        self.back = back
-        self.feet = feet
-    }
-
-    /// 슬롯 단위 접근 헬퍼.
-    public func id(for slot: DecorationSlot) -> String? {
-        switch slot {
-        case .head: return head
-        case .back: return back
-        case .feet: return feet
-        }
-    }
-}
-
 /// 사용자의 상점 보유/장착 현황.
 public struct ShopInventory: Equatable, Sendable {
     public var ownedDecorationIds: Set<String>
-    public var equippedDecorations: EquippedDecorations
+    /// 현재 장착 중인 꾸미기 1개(전역 단일). nil = 미착용. slot 은 카탈로그 item.slot 에서 조회.
+    public var equippedDecorationId: String?
     public var ownedBackgroundIds: Set<String>
     public var appliedBackgroundId: String?
 
     public init(
         ownedDecorationIds: Set<String> = [],
-        equippedDecorations: EquippedDecorations = EquippedDecorations(),
+        equippedDecorationId: String? = nil,
         ownedBackgroundIds: Set<String> = [],
         appliedBackgroundId: String? = nil
     ) {
         self.ownedDecorationIds = ownedDecorationIds
-        self.equippedDecorations = equippedDecorations
+        self.equippedDecorationId = equippedDecorationId
         self.ownedBackgroundIds = ownedBackgroundIds
         self.appliedBackgroundId = appliedBackgroundId
     }
