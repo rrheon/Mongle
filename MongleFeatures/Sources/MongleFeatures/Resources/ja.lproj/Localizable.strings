@@ -25,6 +25,8 @@
 "shop_apply_title" = "適用しますか？";
 "shop_apply_desc" = "'%@'を適用します。";
 "shop_apply_confirm" = "適用する";
+"shop_remove_deco_title" = "飾りを外しますか？";
+"shop_remove_deco_desc" = "着けている飾りを外して、もとの姿に戻します。";
 "shop_insufficient_title" = "ハートが足りません";
 "shop_insufficient_desc" = "ハートが足りません。回答するとハートを集められます。";
 "shop_insufficient_confirm" = "ハートを補充";
