@@ -42,6 +42,7 @@ struct ShopMapper {
         guard let raw else { return nil }
         switch raw.lowercased() {
         case "head": return .head
+        case "hand": return .hand
         case "back": return .back
         case "feet": return .feet
         default:     return nil

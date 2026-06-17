@@ -14,6 +14,7 @@
 "shop_tab_background" = "Background";
 "shop_tab_decoration" = "Decorate";
 "shop_slot_head" = "Head";
+"shop_slot_hand" = "Hand";
 "shop_slot_back" = "Back";
 "shop_slot_feet" = "Feet";
 "shop_slot_hint" = "Switch between head, back, and feet to decorate";
