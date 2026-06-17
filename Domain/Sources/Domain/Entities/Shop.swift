@@ -15,9 +15,11 @@ public enum ShopItemKind: String, Sendable, Equatable {
     case decoration
 }
 
-/// 장식이 얹히는 캐릭터 슬롯. MVP 에서는 head 만 활성, back/feet 는 노출만 하고 비활성.
+/// 장식이 얹히는 캐릭터 슬롯(브라우징/분류용). 착용은 전역 단일 1개라 슬롯은 카탈로그 분류에만 쓰인다.
+/// 선언 순서 = 세그먼트 노출 순서(머리·손·등·발밑). allCases 가 선언순을 따른다.
 public enum DecorationSlot: String, Sendable, Equatable, CaseIterable {
     case head
+    case hand
     case back
     case feet
 }

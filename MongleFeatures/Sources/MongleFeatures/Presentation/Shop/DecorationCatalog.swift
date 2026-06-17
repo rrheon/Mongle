@@ -6,23 +6,46 @@
 //  모두 이 매핑을 공유한다 (단일 진실). 카탈로그 기본값(디자인 값)도 여기서 제공해
 //  서버 미구현 동안 Mock/프리뷰가 동일한 데이터로 동작하도록 한다.
 //
-//  슬롯별 카탈로그 id ↔ 디자인 뷰:
+//  슬롯별 카탈로그 id ↔ 디자인 뷰 (유료 전부 price 50):
 //    [머리 head]
-//    deco_flower_crown  들꽃 화관  35  V2FlowerCrown
-//    deco_star_halo     별 후광    40  V2StarHalo
-//    deco_satin_ribbon  새틴 리본  25  V2SatinRibbon
-//    deco_balloon_bunch 풍선 다발  50  V2BalloonBunch
-//    deco_santa_hat     산타 모자  60  V2SantaHat (시즌)
+//    deco_flower_crown  들꽃 화관  V2FlowerCrown
+//    deco_star_halo     별 후광    V2StarHalo (anchor=.aboveHead)
+//    deco_satin_ribbon  새틴 리본  V2SatinRibbon
+//    deco_santa_hat     산타 모자  V2SantaHat (시즌)
+//    [손 hand]
+//    deco_balloon_bunch 풍선 다발  V2BalloonBunch (anchor=.hand)
 //    [등 back]
-//    deco_angel_wings   천사 날개  45  V2AngelWings (PNG)
-//    deco_cape          망토       40  V2Cape
+//    deco_angel_wings   천사 날개  V2AngelWings (PNG)
+//    deco_cape          망토       V2Cape
 //    [발밑 feet]
-//    deco_sneakers      운동화     30  V2Sneakers
-//    deco_cloud_pad     구름 받침  35  V2CloudPad
+//    deco_sneakers      운동화     V2Sneakers
+//    deco_cloud_pad     구름 받침  V2CloudPad
 //
 
 import SwiftUI
 import Domain
+
+// MARK: - 부착 위치(placement) 모델
+
+/// 장식이 캐릭터의 어디에 붙는지(렌더 좌표 기준점). 슬롯(enum)과 별개로
+/// 렌더 레이어가 위치를 분기하는 단일 소스다. slot=head 라도 anchor=.hand 처럼
+/// 슬롯과 부착위치가 갈릴 수 있다(예: 풍선 다발은 head 슬롯이지만 손에 든다).
+enum DecorationAnchor {
+    case onHead     // 머리에 씀 (화관·리본·모자)
+    case aboveHead  // 머리 위로 더 띄움 (후광)
+    case hand       // 손(측면·하단)에 듦 (풍선)
+    case back       // 등 (날개·망토)
+    case feet       // 발밑 (운동화·구름)
+}
+
+/// 부착 위치 + 추가 nudge 오프셋 + 스케일.
+/// `offset` 은 bodySize 비례 단위로 해석한다 — 실제 적용 = offset.width*bodySize, offset.height*bodySize.
+/// 레이어별 앵커 baseline 에 이 offset 을 더해 최종 위치를 정한다.
+struct DecorationPlacement {
+    var anchor: DecorationAnchor
+    var offset: CGSize = .zero
+    var scale: CGFloat = 1.0
+}
 
 enum DecorationCatalog {
 
@@ -52,10 +75,14 @@ enum DecorationCatalog {
                  price: 50, assetName: starHalo, slot: .head, sortOrder: 2),
         ShopItem(id: satinRibbon, kind: .decoration, name: L10n.tr("shop_item_satin_ribbon"),
                  price: 50, assetName: satinRibbon, slot: .head, sortOrder: 3),
-        ShopItem(id: balloonBunch, kind: .decoration, name: L10n.tr("shop_item_balloon_bunch"),
-                 price: 50, assetName: balloonBunch, slot: .head, sortOrder: 4),
         ShopItem(id: santaHat, kind: .decoration, name: L10n.tr("shop_item_santa_hat"),
                  price: 50, assetName: santaHat, slot: .head, isSeasonal: true, sortOrder: 5)
+    ]
+
+    /// 손(hand) 슬롯 장식 카탈로그. 풍선 다발은 손에 들고 다닌다(anchor=.hand).
+    static let handItems: [ShopItem] = [
+        ShopItem(id: balloonBunch, kind: .decoration, name: L10n.tr("shop_item_balloon_bunch"),
+                 price: 50, assetName: balloonBunch, slot: .hand, sortOrder: 1)
     ]
 
     /// 등(back) 슬롯 장식 카탈로그.
@@ -75,7 +102,7 @@ enum DecorationCatalog {
     ]
 
     /// 전체 장식 카탈로그 (모든 슬롯 합본 — 서버 미구현 동안 Mock/프리뷰 기본값).
-    static let allItems: [ShopItem] = headItems + backItems + feetItems
+    static let allItems: [ShopItem] = headItems + handItems + backItems + feetItems
 
     // MARK: - id → 뷰 (슬롯 무관 매핑)
 
@@ -134,6 +161,28 @@ enum DecorationCatalog {
         }
     }
 
+    // MARK: - id → 부착 위치(placement)
+
+    /// 장식 id → 부착 위치. anchor 분류의 단일 소스. 두 렌더 레이어가 모두 이걸 참조한다.
+    /// offset 은 bodySize 비례 nudge(레이어 baseline 에 가산), scale 은 배율.
+    static func placement(for id: String?) -> DecorationPlacement {
+        switch id {
+        case flowerCrown, satinRibbon, santaHat:
+            return DecorationPlacement(anchor: .onHead, offset: .zero, scale: 1.0)
+        case starHalo:
+            return DecorationPlacement(anchor: .aboveHead, offset: .zero, scale: 1.0)
+        case balloonBunch:
+            return DecorationPlacement(anchor: .hand, offset: .zero, scale: 1.0)
+        case angelWings, cape:
+            return DecorationPlacement(anchor: .back, offset: .zero, scale: 1.0)
+        case sneakers, cloudPad:
+            return DecorationPlacement(anchor: .feet, offset: .zero, scale: 1.0)
+        default:
+            // 미상/nil — 무해 기본 (머리에 씀).
+            return DecorationPlacement(anchor: .onHead, offset: .zero, scale: 1.0)
+        }
+    }
+
     /// 단일 장착 id → 그 장식의 슬롯 역산 (렌더 어댑터용). nil/미상이면 nil.
     static func slotForItem(_ id: String?) -> DecorationSlot? {
         guard let id else { return nil }
@@ -144,6 +193,7 @@ enum DecorationCatalog {
     static func items(for slot: DecorationSlot) -> [ShopItem] {
         switch slot {
         case .head: return headItems
+        case .hand: return handItems
         case .back: return backItems
         case .feet: return feetItems
         }

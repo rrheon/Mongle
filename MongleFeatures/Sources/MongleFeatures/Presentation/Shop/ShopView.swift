@@ -193,6 +193,7 @@ struct ShopView: View {
     private func slotTitle(_ slot: DecorationSlot) -> String {
         switch slot {
         case .head: return L10n.tr("shop_slot_head")
+        case .hand: return L10n.tr("shop_slot_hand")
         case .back: return L10n.tr("shop_slot_back")
         case .feet: return L10n.tr("shop_slot_feet")
         }
@@ -202,16 +203,16 @@ struct ShopView: View {
     // 탭한 장식(decoPreviewId)이 있으면 구매 전에도 미리 얹어 보여준다.
     private var preview: some View {
         let shownId = decoPreviewId ?? store.equippedDecorationId
-        let slot = DecorationCatalog.slotForItem(shownId)
+        // 부착 위치(anchor) 로 분기: back→back, feet→feet, 그 외(onHead/aboveHead/hand)→head.
+        let anchor = DecorationCatalog.placement(for: shownId).anchor
         return V2Mongle(
             color: V2Palette.alex,
             size: 96,
             hideName: true,
-            backDecorationId: slot == .back ? shownId : nil,
-            feetDecorationId: slot == .feet ? shownId : nil
-        ) {
-            DecorationCatalog.headView(for: slot == .head ? shownId : nil)
-        }
+            backDecorationId: anchor == .back ? shownId : nil,
+            feetDecorationId: anchor == .feet ? shownId : nil,
+            headDecorationId: (anchor == .back || anchor == .feet) ? nil : shownId
+        )
         // 머리/등/발밑 세그먼트 바로 아래라 살짝 답답하지 않도록 캐릭터를 카드 안에서 조금 내린다.
         .offset(y: 14)
         .frame(maxWidth: .infinity)
