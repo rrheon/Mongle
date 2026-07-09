@@ -23,6 +23,7 @@ import Domain
 func shopSlotTitle(_ slot: DecorationSlot) -> String {
     switch slot {
     case .head: return L10n.tr("shop_slot_head")
+    case .hand: return L10n.tr("shop_slot_hand")
     case .back: return L10n.tr("shop_slot_back")
     case .feet: return L10n.tr("shop_slot_feet")
     }
@@ -30,22 +31,25 @@ func shopSlotTitle(_ slot: DecorationSlot) -> String {
 
 // MARK: - 슬롯별 장식 착용 몽글 빌더
 
-/// V2Mongle 의 슬롯별 init 분기를 한 곳으로 모은다.
-/// - head: 제네릭 trailing closure(decoration:) 로 head 뷰를 얹는다.
-/// - back/feet: EmptyView convenience init 의 backDecorationId/feetDecorationId 파라미터.
+/// V2Mongle 의 부착위치별 init 분기를 한 곳으로 모은다.
+/// 슬롯(enum)이 아니라 placement.anchor 로 분기한다 — 같은 head 슬롯이라도
+/// 후광(aboveHead)·풍선(hand)은 머리계열(headDecorationId) 경로로 렌더된다.
+/// - back/feet: backDecorationId/feetDecorationId 파라미터.
+/// - 그 외(onHead/aboveHead/hand): headDecorationId 파라미터(placement 기반 위치).
+/// slot 파라미터는 호출부 시그니처 호환을 위해 유지하되 분기에는 쓰지 않는다.
 @ViewBuilder
 func decoratedMongle(slot: DecorationSlot, itemId: String, size: CGFloat, eyeSize: CGFloat) -> some View {
-    switch slot {
-    case .head:
-        V2Mongle(color: V2Palette.alex, size: size, eyeSize: eyeSize, hideName: true) {
-            DecorationCatalog.headView(for: itemId)
-        }
+    let anchor = DecorationCatalog.placement(for: itemId).anchor
+    switch anchor {
     case .back:
         V2Mongle(color: V2Palette.alex, size: size, eyeSize: eyeSize, hideName: true,
                  backDecorationId: itemId)
     case .feet:
         V2Mongle(color: V2Palette.alex, size: size, eyeSize: eyeSize, hideName: true,
                  feetDecorationId: itemId)
+    case .onHead, .aboveHead, .hand:
+        V2Mongle(color: V2Palette.alex, size: size, eyeSize: eyeSize, hideName: true,
+                 headDecorationId: itemId)
     }
 }
 

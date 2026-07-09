@@ -788,7 +788,10 @@ public struct MongleView: View {
         let container: CGFloat = bodySize + 14   // 70 (본인 ring 포함 본체 footprint)
         // 장착 시에만 위/아래 여유를 둔다(미장착=컴팩트). 머리 장식이 상단 "답변" 배지와
         // 겹치지 않도록 headRoom 만큼 본체를 아래로 내려 배지와 분리한다.
-        let headRoom: CGFloat = headDecorationId != nil ? 24 : 0
+        // aboveHead(후광)는 머리 위로 더 띄우므로 여유를 더 준다. hand(풍선)는 좌우로 나가지만
+        // 위쪽 여유는 head 와 비슷하게.
+        let headAnchor: DecorationAnchor? = headDecorationId.map { DecorationCatalog.placement(for: $0).anchor }
+        let headRoom: CGFloat = headDecorationId == nil ? 0 : (headAnchor == .aboveHead ? 34 : 24)
         let feetRoom: CGFloat = feetDecorationId != nil ? 14 : 0
         return ZStack {
             // 등(back) 장식 — 본체 뒤에 먼저 그려 zIndex 가 본체보다 뒤. 본체보다 크게 그려
@@ -810,17 +813,31 @@ public struct MongleView: View {
                     .offset(y: bodySize * 0.5)
                     .allowsHitTesting(false)
             }
-            // 머리(head) 장식 — 머리 위에 얹되 본체 상단과 살짝 겹치게(머리에 쓴 모양).
+            // 머리계열(head/aboveHead/hand) 장식 — placement.anchor 로 위치 분기.
             // 같은 ZStack 이라 걷기/hop 시 함께 이동. id→뷰는 DecorationCatalog(headView) 공유.
             if let headDecorationId {
+                let placement = DecorationCatalog.placement(for: headDecorationId)
+                let base = homeHeadBaseline(placement.anchor, bodySize: bodySize)
                 DecorationCatalog.headView(for: headDecorationId)
-                    .offset(y: -bodySize * 0.5)
+                    .scaleEffect(placement.scale)
+                    .offset(x: base.width + placement.offset.width * bodySize,
+                            y: base.height + placement.offset.height * bodySize)
                     .allowsHitTesting(false)
             }
         }
         .frame(width: container, height: container)
         .padding(.top, headRoom)
         .padding(.bottom, feetRoom)
+    }
+
+    /// 앵커별 head 계열 baseline 오프셋 (home 좌표 기준, bodySize 비례).
+    private func homeHeadBaseline(_ anchor: DecorationAnchor, bodySize: CGFloat) -> CGSize {
+        switch anchor {
+        case .onHead:    return CGSize(width: 0, height: -bodySize * 0.5)    // 현행
+        case .aboveHead: return CGSize(width: 0, height: -bodySize * 0.62)   // 머리 위로 살짝 띄움(onHead -0.5 대비)
+        case .hand:      return CGSize(width: bodySize * 0.42, height: bodySize * 0.12) // 측면·하단 손
+        case .back, .feet: return CGSize(width: 0, height: -bodySize * 0.5)  // 안전 기본
+        }
     }
 
     @ViewBuilder

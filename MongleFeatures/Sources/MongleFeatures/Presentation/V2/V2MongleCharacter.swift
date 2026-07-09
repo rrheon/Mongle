@@ -27,7 +27,11 @@ struct V2Mongle<Decoration: View>: View {
     var backDecorationId: String? = nil
     /// 발밑(feet) 슬롯 장식 id. 본체 하단에 깐다.
     var feetDecorationId: String? = nil
-    /// 머리(head) 슬롯 장식 — 본체 앞에 얹는 closure (기존 호출부 호환).
+    /// 머리계열(head/aboveHead/hand) 장식 id. 있으면 placement 기반으로 렌더하고
+    /// 아래 `decoration` 클로저 대신 쓴다. id→뷰는 DecorationCatalog.headView 공유.
+    var headDecorationId: String? = nil
+    /// 머리(head) 슬롯 장식 — 본체 앞에 얹는 closure (레거시/정적 호출부 호환).
+    /// headDecorationId 가 nil 일 때만 이 클로저 경로가 -size*0.28 로 렌더된다.
     var decoration: () -> Decoration
 
     private var resolvedEye: CGFloat { eyeSize ?? size * 0.18 }
@@ -115,13 +119,37 @@ struct V2Mongle<Decoration: View>: View {
                     .allowsHitTesting(false)
             }
 
-            // head decoration — drawn last so it sits in front of the body
-            decoration()
-                .frame(width: containerW, alignment: .center)
-                .offset(y: -size * 0.28)
-                .allowsHitTesting(false)
+            // head 계열 decoration — drawn last so it sits in front of the body.
+            // headDecorationId 가 있으면 placement(anchor) 기반으로 위치/스케일을 정하고,
+            // 없으면 레거시 클로저를 기존 -size*0.28 로 렌더한다(정적 호출부 호환).
+            if let headDecorationId {
+                let placement = DecorationCatalog.placement(for: headDecorationId)
+                let base = headBaseline(placement.anchor)
+                DecorationCatalog.headView(for: headDecorationId)
+                    .scaleEffect(placement.scale)
+                    .frame(width: containerW, alignment: .center)
+                    .offset(x: base.width + placement.offset.width * size,
+                            y: base.height + placement.offset.height * size)
+                    .allowsHitTesting(false)
+            } else {
+                decoration()
+                    .frame(width: containerW, alignment: .center)
+                    .offset(y: -size * 0.28)
+                    .allowsHitTesting(false)
+            }
         }
         .frame(width: containerW, height: containerH, alignment: .topLeading)
+    }
+
+    /// 앵커별 head 계열 baseline 오프셋 (size 비례, V2Mongle 좌표 원점 기준).
+    private func headBaseline(_ anchor: DecorationAnchor) -> CGSize {
+        switch anchor {
+        case .onHead:    return CGSize(width: 0, height: -size * 0.28)   // 현행
+        case .aboveHead: return CGSize(width: 0, height: -size * 0.40)   // 머리 위로 살짝 띄움(onHead -0.28 대비)
+        case .hand:      return CGSize(width: size * 0.40, height: size * 0.30) // 측면·하단 손
+        // back/feet 가 head 경로로 들어올 일은 없지만 안전 기본(현행 onHead).
+        case .back, .feet: return CGSize(width: 0, height: -size * 0.28)
+        }
     }
 
     private var eye: some View {
@@ -147,7 +175,8 @@ extension V2Mongle where Decoration == EmptyView {
         ringColor: Color? = nil,
         shadow: Bool = true,
         backDecorationId: String? = nil,
-        feetDecorationId: String? = nil
+        feetDecorationId: String? = nil,
+        headDecorationId: String? = nil
     ) {
         self.color = color
         self.name = name
@@ -162,6 +191,7 @@ extension V2Mongle where Decoration == EmptyView {
         self.shadow = shadow
         self.backDecorationId = backDecorationId
         self.feetDecorationId = feetDecorationId
+        self.headDecorationId = headDecorationId
         self.decoration = { EmptyView() }
     }
 }

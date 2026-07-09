@@ -14,6 +14,7 @@
 "shop_tab_background" = "背景";
 "shop_tab_decoration" = "かざり";
 "shop_slot_head" = "あたま";
+"shop_slot_hand" = "手";
 "shop_slot_back" = "せなか";
 "shop_slot_feet" = "あしもと";
 "shop_slot_hint" = "あたま・せなか・あしもとを切り替えて飾ろう";
