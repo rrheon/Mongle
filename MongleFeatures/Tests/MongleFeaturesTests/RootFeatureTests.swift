@@ -18,6 +18,13 @@ final class RootFeatureTests: XCTestCase {
             RootFeature()
         } withDependencies: {
             $0.notificationRepository = MockNotificationRepository()
+            // refreshHomeData 이펙트가 접근하는 리포지토리 전부 스텁 주입 —
+            // 상태 전이 검증 테스트라 네트워크 결과는 실패(throw)로 충분.
+            $0.authRepository = StubAuthRepository()
+            $0.familyRepository = StubFamilyRepository()
+            $0.questionRepository = StubQuestionRepository()
+            $0.answerRepository = StubAnswerRepository()
+            $0.userRepository = StubUserRepository()
         }
     }
 

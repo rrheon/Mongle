@@ -28,6 +28,7 @@ final class NotificationFeatureTests: XCTestCase {
         await store.receive(.notificationsLoaded([notif])) {
             $0.notifications = [notif]
             $0.isLoading = false
+            NotificationFeature.refreshDerived(&$0)
         }
     }
 
@@ -69,6 +70,7 @@ final class NotificationFeatureTests: XCTestCase {
         await store.receive(.notificationsLoaded([fresh])) {
             $0.notifications = [fresh]
             $0.isLoading = false
+            NotificationFeature.refreshDerived(&$0)
         }
     }
 
@@ -100,6 +102,7 @@ final class NotificationFeatureTests: XCTestCase {
                 isRead: true,
                 createdAt: unread.createdAt
             )
+            NotificationFeature.refreshDerived(&$0)
         }
     }
 
@@ -132,6 +135,7 @@ final class NotificationFeatureTests: XCTestCase {
                     createdAt: n.createdAt
                 )
             }
+            NotificationFeature.refreshDerived(&$0)
         }
     }
 
@@ -151,6 +155,7 @@ final class NotificationFeatureTests: XCTestCase {
 
         await store.send(.deleteNotification(notif)) {
             $0.notifications = []
+            NotificationFeature.refreshDerived(&$0)
         }
     }
 
@@ -171,6 +176,7 @@ final class NotificationFeatureTests: XCTestCase {
 
         await store.send(.deleteAll) {
             $0.notifications = []
+            NotificationFeature.refreshDerived(&$0)
         }
     }
 
@@ -247,8 +253,8 @@ final class NotificationFeatureTests: XCTestCase {
 
         // 오늘 항목과 이전 항목이 별도 섹션으로 분리됨
         XCTAssertEqual(grouped.count, 2)
-        XCTAssertEqual(grouped[0].0, "오늘")
-        XCTAssertEqual(grouped[1].0, "이전")
+        XCTAssertEqual(grouped[0].title, "오늘")
+        XCTAssertEqual(grouped[1].title, "이전")
     }
 
     func testGroupedNotifications_FilteredMode_FiltersByFamilyId() {
@@ -263,7 +269,7 @@ final class NotificationFeatureTests: XCTestCase {
             mode: .filtered(familyId: targetFamilyId, familyName: "우리 가족")
         )
         let grouped = state.groupedNotifications
-        let allNotifs = grouped.flatMap { $0.1 }
+        let allNotifs = grouped.flatMap { $0.items }
 
         XCTAssertEqual(allNotifs.count, 1)
         XCTAssertEqual(allNotifs[0].familyId, targetFamilyId)

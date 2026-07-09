@@ -8,6 +8,7 @@
 import ComposableArchitecture
 import Domain
 import MongleData
+import UserNotifications
 
 // MARK: - AuthRepository
 
@@ -149,6 +150,25 @@ extension DependencyValues {
     public var shopRepository: any ShopRepositoryInterface {
         get { self[ShopRepositoryKey.self] }
         set { self[ShopRepositoryKey.self] = newValue }
+    }
+}
+
+// MARK: - AppIconBadge
+
+/// OS 앱 아이콘 배지 세터. 리듀서가 UNUserNotificationCenter 를 직접 호출하면
+/// 호스트 앱 없는 테스트 러너에서 크래시(bundleProxyForCurrentProcess nil)하므로
+/// 의존성으로 분리 — 테스트는 no-op testValue 를 쓴다.
+private enum AppIconBadgeKey: DependencyKey {
+    static let liveValue: @Sendable (Int) async -> Void = { count in
+        try? await UNUserNotificationCenter.current().setBadgeCount(count)
+    }
+    static let testValue: @Sendable (Int) async -> Void = { _ in }
+}
+
+extension DependencyValues {
+    public var setAppIconBadge: @Sendable (Int) async -> Void {
+        get { self[AppIconBadgeKey.self] }
+        set { self[AppIconBadgeKey.self] = newValue }
     }
 }
 

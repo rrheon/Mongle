@@ -21,9 +21,8 @@ final class GroupSelectFeatureTests: XCTestCase {
             $0.notificationRepository = repo
         }
 
-        await store.send(.onAppear) {
-            $0.isLoadingGroups = true
-        }
+        // onAppear 는 그룹 로딩을 건드리지 않는다(Root 가 담당 — isLoadingGroups 레이스 수정).
+        await store.send(.onAppear)
         await store.receive(\.unreadNotificationsLoaded) {
             $0.hasUnreadNotifications = true
         }
@@ -42,9 +41,8 @@ final class GroupSelectFeatureTests: XCTestCase {
             $0.notificationRepository = repo
         }
 
-        await store.send(.onAppear) {
-            $0.isLoadingGroups = true
-        }
+        // onAppear 는 그룹 로딩을 건드리지 않는다(Root 가 담당 — isLoadingGroups 레이스 수정).
+        await store.send(.onAppear)
         // hasUnreadNotifications는 이미 false이므로 상태 변화 없음
         await store.receive(\.unreadNotificationsLoaded)
     }
