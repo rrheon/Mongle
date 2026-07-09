@@ -17,7 +17,7 @@
 "shop_slot_hand" = "Hand";
 "shop_slot_back" = "Back";
 "shop_slot_feet" = "Feet";
-"shop_slot_hint" = "Switch between head, back, and feet to decorate";
+"shop_slot_hint" = "Switch between head, hand, back, and feet to decorate";
 "shop_deco_none" = "None";
 "shop_equipped" = "Equipped";
 "shop_purchase_title" = "Buy this decoration?";

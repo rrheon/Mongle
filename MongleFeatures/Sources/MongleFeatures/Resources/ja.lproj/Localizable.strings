@@ -17,7 +17,7 @@
 "shop_slot_hand" = "手";
 "shop_slot_back" = "せなか";
 "shop_slot_feet" = "あしもと";
-"shop_slot_hint" = "あたま・せなか・あしもとを切り替えて飾ろう";
+"shop_slot_hint" = "あたま・て・せなか・あしもとを切り替えて飾ろう";
 "shop_deco_none" = "なし";
 "shop_equipped" = "装着中";
 "shop_purchase_title" = "このかざりを購入しますか？";
