@@ -146,7 +146,7 @@ enum DecorationCatalog {
     static func backView(for id: String?, bodySize: CGFloat = 56) -> some View {
         switch id {
         case angelWings:   V2AngelWings(size: bodySize * 1.55)   // 본체보다 넓은 날개 → 양옆으로 보임
-        case cape:         V2Cape().scaleEffect(bodySize / 40)   // 본체보다 크게 → 아래/옆으로 보임
+        case cape:         V2Cape().scaleEffect(bodySize / 52)   // 본체보다 약간 크게 → 아래/옆으로 삐져나옴(과대 방지)
         default:           EmptyView()
         }
     }
@@ -167,7 +167,10 @@ enum DecorationCatalog {
     /// offset 은 bodySize 비례 nudge(레이어 baseline 에 가산), scale 은 배율.
     static func placement(for id: String?) -> DecorationPlacement {
         switch id {
-        case flowerCrown, satinRibbon, santaHat:
+        case flowerCrown:
+            // 화관 아트(64pt 링)가 커서 기본 onHead 로는 얼굴을 감싼다 → 위로 올리고 살짝 축소.
+            return DecorationPlacement(anchor: .onHead, offset: CGSize(width: 0, height: -0.05), scale: 0.82)
+        case satinRibbon, santaHat:
             return DecorationPlacement(anchor: .onHead, offset: .zero, scale: 1.0)
         case starHalo:
             return DecorationPlacement(anchor: .aboveHead, offset: .zero, scale: 1.0)

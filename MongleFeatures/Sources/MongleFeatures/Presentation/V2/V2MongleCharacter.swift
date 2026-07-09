@@ -114,6 +114,7 @@ struct V2Mongle<Decoration: View>: View {
             // feet decoration — drawn under the body (본체 하단).
             if feetDecorationId != nil {
                 DecorationCatalog.feetView(for: feetDecorationId)
+                    .scaleEffect(decoScale)
                     .frame(width: containerW, alignment: .center)
                     .offset(y: size * 0.84)
                     .allowsHitTesting(false)
@@ -126,7 +127,7 @@ struct V2Mongle<Decoration: View>: View {
                 let placement = DecorationCatalog.placement(for: headDecorationId)
                 let base = headBaseline(placement.anchor)
                 DecorationCatalog.headView(for: headDecorationId)
-                    .scaleEffect(placement.scale)
+                    .scaleEffect(placement.scale * decoScale)
                     .frame(width: containerW, alignment: .center)
                     .offset(x: base.width + placement.offset.width * size,
                             y: base.height + placement.offset.height * size)
@@ -141,12 +142,18 @@ struct V2Mongle<Decoration: View>: View {
         .frame(width: containerW, height: containerH, alignment: .topLeading)
     }
 
+    /// 장식 아트워크 비례 스케일. 장식 뷰들은 고정 pt 크기(디자인 기준 size 86)로
+    /// 그려져 있어, 캐릭터가 커질수록(상세 130) 상대적으로 작아지고 baseline(size 비례)과의
+    /// 간격만 벌어진다 → size/86 으로 정규화해 어느 크기에서든 86 시점의 비율을 유지한다.
+    /// (back 은 backView 가 bodySize 를 받아 자체 비례 처리하므로 제외.)
+    private var decoScale: CGFloat { size / 86 }
+
     /// 앵커별 head 계열 baseline 오프셋 (size 비례, V2Mongle 좌표 원점 기준).
     private func headBaseline(_ anchor: DecorationAnchor) -> CGSize {
         switch anchor {
         case .onHead:    return CGSize(width: 0, height: -size * 0.28)   // 현행
-        case .aboveHead: return CGSize(width: 0, height: -size * 0.40)   // 머리 위로 살짝 띄움(onHead -0.28 대비)
-        case .hand:      return CGSize(width: size * 0.40, height: size * 0.30) // 측면·하단 손
+        case .aboveHead: return CGSize(width: 0, height: -size * 0.31)   // 머리 위로 살짝 띄움(onHead -0.28 대비)
+        case .hand:      return CGSize(width: size * 0.46, height: -size * 0.05) // 측면 손(위로 든 풍선)
         // back/feet 가 head 경로로 들어올 일은 없지만 안전 기본(현행 onHead).
         case .back, .feet: return CGSize(width: 0, height: -size * 0.28)
         }

@@ -17,7 +17,7 @@
 "shop_slot_hand" = "손";
 "shop_slot_back" = "등";
 "shop_slot_feet" = "발밑";
-"shop_slot_hint" = "머리·등·발밑을 바꿔가며 꾸며보세요";
+"shop_slot_hint" = "머리·손·등·발밑을 바꿔가며 꾸며보세요";
 "shop_deco_none" = "장식 없음";
 "shop_equipped" = "장착중";
 "shop_purchase_title" = "장식을 구매할까요?";

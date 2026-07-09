@@ -834,8 +834,8 @@ public struct MongleView: View {
     private func homeHeadBaseline(_ anchor: DecorationAnchor, bodySize: CGFloat) -> CGSize {
         switch anchor {
         case .onHead:    return CGSize(width: 0, height: -bodySize * 0.5)    // 현행
-        case .aboveHead: return CGSize(width: 0, height: -bodySize * 0.62)   // 머리 위로 살짝 띄움(onHead -0.5 대비)
-        case .hand:      return CGSize(width: bodySize * 0.42, height: bodySize * 0.12) // 측면·하단 손
+        case .aboveHead: return CGSize(width: 0, height: -bodySize * 0.56)   // 머리 위로 살짝 띄움(onHead -0.5 대비)
+        case .hand:      return CGSize(width: bodySize * 0.58, height: -bodySize * 0.18) // 측면 손(위로 든 풍선)
         case .back, .feet: return CGSize(width: 0, height: -bodySize * 0.5)  // 안전 기본
         }
     }
