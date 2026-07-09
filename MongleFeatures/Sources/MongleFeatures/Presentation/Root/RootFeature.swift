@@ -18,6 +18,7 @@ public struct RootFeature {
     @Dependency(\.answerRepository) var answerRepository
     @Dependency(\.userRepository) var userRepository
     @Dependency(\.notificationRepository) var notificationRepository
+    @Dependency(\.setAppIconBadge) var setAppIconBadge
 
     public init() {}
 

@@ -205,8 +205,8 @@ extension RootFeature {
                     // refreshHomeData 가 호출되는 모든 경로(앱 콜드 스타트, scenePhase active,
                     // foreground push 수신, mark-read/delete 직후 등)에서 일관되게 갱신된다.
                     let badgeCount = data.unreadCountAllGroups
-                    let badgeSyncEffect: Effect<Action> = .run { _ in
-                        try? await UNUserNotificationCenter.current().setBadgeCount(badgeCount)
+                    let badgeSyncEffect: Effect<Action> = .run { [setAppIconBadge] _ in
+                        await setAppIconBadge(badgeCount)
                     }
 
                     // 데일리 하트 팝업 트리거 — 서버 응답 플래그만 신뢰 (MG-77).

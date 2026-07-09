@@ -173,7 +173,8 @@ public struct NotificationFeature {
         return result
     }
 
-    fileprivate static func refreshDerived(_ state: inout State) {
+    /// 테스트에서도 기대 상태 계산에 동일 로직을 쓰도록 internal.
+    static func refreshDerived(_ state: inout State) {
         state.unreadCount = state.notifications.reduce(0) { $0 + ($1.isRead ? 0 : 1) }
         state.groupedNotifications = makeGrouped(
             notifications: state.notifications,
@@ -213,6 +214,7 @@ public struct NotificationFeature {
     }
 
     @Dependency(\.notificationRepository) var notificationRepository
+    @Dependency(\.setAppIconBadge) var setAppIconBadge
 
     public init() {}
 
@@ -259,13 +261,13 @@ public struct NotificationFeature {
                 state.notifications = state.notifications.filter { $0.id != notification.id }
                 Self.refreshDerived(&state)
                 let mode = state.mode
-                return .run { [notificationRepository] send in
+                return .run { [notificationRepository, setAppIconBadge] send in
                     do {
                         try await notificationRepository.delete(id: deleteId)
                     } catch {
                         await send(.setError(AppError.from(error).userMessage))
                     }
-                    await Self.syncAppIconBadge(notificationRepository)
+                    await Self.syncAppIconBadge(notificationRepository, setAppIconBadge)
                     switch mode {
                     case .grouped:
                         if let familyId = notification.familyId {
@@ -294,13 +296,13 @@ public struct NotificationFeature {
                     )
                     Self.refreshDerived(&state)
                 }
-                return .run { [notificationRepository] send in
+                return .run { [notificationRepository, setAppIconBadge] send in
                     do {
                         _ = try await notificationRepository.markAsRead(id: notification.id)
                     } catch {
                         await send(.setError(AppError.from(error).userMessage))
                     }
-                    await Self.syncAppIconBadge(notificationRepository)
+                    await Self.syncAppIconBadge(notificationRepository, setAppIconBadge)
                 }
                 .cancellable(id: CancelID.badgeSync, cancelInFlight: true)
 
@@ -322,26 +324,26 @@ public struct NotificationFeature {
                     )
                 }
                 Self.refreshDerived(&state)
-                return .run { [notificationRepository] send in
+                return .run { [notificationRepository, setAppIconBadge] send in
                     do {
                         _ = try await notificationRepository.markAllAsRead(familyId: scopeFamilyId)
                     } catch {
                         await send(.setError(AppError.from(error).userMessage))
                     }
-                    await Self.syncAppIconBadge(notificationRepository)
+                    await Self.syncAppIconBadge(notificationRepository, setAppIconBadge)
                 }
                 .cancellable(id: CancelID.badgeSync, cancelInFlight: true)
 
             case .deleteNotification(let notification):
                 state.notifications = state.notifications.filter { $0.id != notification.id }
                 Self.refreshDerived(&state)
-                return .run { [notificationRepository] send in
+                return .run { [notificationRepository, setAppIconBadge] send in
                     do {
                         _ = try await notificationRepository.delete(id: notification.id)
                     } catch {
                         await send(.setError(AppError.from(error).userMessage))
                     }
-                    await Self.syncAppIconBadge(notificationRepository)
+                    await Self.syncAppIconBadge(notificationRepository, setAppIconBadge)
                 }
                 .cancellable(id: CancelID.badgeSync, cancelInFlight: true)
 
@@ -353,7 +355,7 @@ public struct NotificationFeature {
                     state.notifications = []
                 }
                 Self.refreshDerived(&state)
-                return .run { [notificationRepository] send in
+                return .run { [notificationRepository, setAppIconBadge] send in
                     // markAllAsRead + deleteAll 두 단계. 어느 한쪽이라도 실패하면 안내.
                     do {
                         _ = try await notificationRepository.markAllAsRead(familyId: scopeFamilyId)
@@ -361,7 +363,7 @@ public struct NotificationFeature {
                     } catch {
                         await send(.setError(AppError.from(error).userMessage))
                     }
-                    await Self.syncAppIconBadge(notificationRepository)
+                    await Self.syncAppIconBadge(notificationRepository, setAppIconBadge)
                 }
                 .cancellable(id: CancelID.badgeSync, cancelInFlight: true)
 
@@ -407,13 +409,16 @@ public struct NotificationFeature {
     /// .filtered 모드에서는 단일 그룹 데이터만 들고 있어 자체 계산이 부정확하므로,
     /// 서버의 unread-count 라우트(MG-54)를 사용해 정확한 수치 조회 (50건 캡 제거).
     /// 서버 호출 실패 시 기존 getNotifications limit 50 fallback 으로 점진 동작.
-    private static func syncAppIconBadge(_ repository: NotificationRepositoryProtocol) async {
+    private static func syncAppIconBadge(
+        _ repository: NotificationRepositoryProtocol,
+        _ setBadge: @Sendable (Int) async -> Void
+    ) async {
         if let unread = try? await repository.getUnreadCount() {
-            try? await UNUserNotificationCenter.current().setBadgeCount(unread)
+            await setBadge(unread)
             return
         }
         let all = (try? await repository.getNotifications(limit: 50, familyId: nil)) ?? []
         let unread = all.filter { !$0.isRead }.count
-        try? await UNUserNotificationCenter.current().setBadgeCount(unread)
+        await setBadge(unread)
     }
 }
