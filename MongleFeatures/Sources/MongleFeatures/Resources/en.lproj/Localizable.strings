@@ -25,6 +25,8 @@
 "shop_apply_title" = "Apply this?";
 "shop_apply_desc" = "Apply '%@'.";
 "shop_apply_confirm" = "Apply";
+"shop_remove_deco_title" = "Remove decoration?";
+"shop_remove_deco_desc" = "Take off the equipped decoration and return to the default look.";
 "shop_insufficient_title" = "Not enough hearts";
 "shop_insufficient_desc" = "Not enough hearts. Answer questions to collect more.";
 "shop_insufficient_confirm" = "Get hearts";

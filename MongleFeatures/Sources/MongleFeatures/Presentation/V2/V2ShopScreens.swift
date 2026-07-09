@@ -222,7 +222,10 @@ struct V2DecoTile<Preview: View>: View {
             Text(name).font(V2Font.suit(12, .bold)).foregroundStyle(V2Palette.ink)
                 .lineLimit(1).minimumScaleFactor(0.8)
                 .frame(height: 16)
-            statusLabel.frame(height: 20)
+            // 상태 슬롯은 콘텐츠 유무와 무관하게 항상 동일한 폭·높이를 차지해야 한다.
+            // (이전엔 '장식 없음' 타일이 '장착중' 배지를 잃으면 상태 뷰가 nil → 폭 0 으로
+            //  접혀 VStack 의 이상폭이 달라지고, aspectRatio(.fit) 가 셀 크기를 다르게 계산했다.)
+            statusLabel.frame(maxWidth: .infinity, minHeight: 20, maxHeight: 20)
         }
         .padding(12)
         .frame(maxWidth: .infinity).aspectRatio(1 / 1.05, contentMode: .fit)
@@ -249,6 +252,9 @@ struct V2DecoTile<Preview: View>: View {
                 Image(systemName: "heart.fill").font(.system(size: 12)).foregroundStyle(V2Palette.heartPink)
                 Text(price).font(V2Font.suit(11, .heavy)).foregroundStyle(V2Palette.ink)
             }
+        } else {
+            // 표시할 상태가 없어도 빈 슬롯을 명시적으로 채워 셀 레이아웃을 흔들지 않는다.
+            Color.clear
         }
     }
 }

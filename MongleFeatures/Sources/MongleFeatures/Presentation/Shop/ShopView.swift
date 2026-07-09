@@ -19,6 +19,8 @@ struct ShopView: View {
     @State private var previewItem: ShopItem?
     /// 하트 부족 안내 팝업 표시 여부 (충전 버튼 없음).
     @State private var showInsufficient = false
+    /// '장식 없음' 탭 시 뜨는 장식 제거 확인 팝업 표시 여부.
+    @State private var showRemoveConfirm = false
     /// 꾸미기 미리보기 — 탭한 장식을 (구매 전에도) 활성 슬롯에 미리 얹어 캐릭터에 보여준다.
     /// 슬롯 전환 시 해제. nil 이면 장착 상태 그대로 표시.
     @State private var decoPreviewId: String?
@@ -50,6 +52,7 @@ struct ShopView: View {
             onDismiss: { store.send(.dismissError) }
         )
         .overlay { insufficientPopup }
+        .overlay { removeConfirmPopup }
         // 타일 탭 → 즉시 팝업 대신 미리보기(상세) 화면으로 push (부모 MainTab NavigationStack 에 얹는다).
         // fullScreenCover 모달 대신 네이티브 슬라이드 전환. 닫기/구매/적용은 상세 하단 액션바에서.
         .navigationDestination(item: $previewItem) { item in
@@ -231,10 +234,12 @@ struct ShopView: View {
 
     private var decoGrid: some View {
         LazyVGrid(columns: decoCols, spacing: 10) {
-            // "장식 없음" 타일 — 해제용.
+            // "장식 없음" 타일 — 해제용. 착용 중인 장식이 있을 때만 제거 확인 팝업을 띄운다
+            // (이미 아무것도 안 낀 상태면 탭해도 할 일이 없으므로 팝업을 띄우지 않는다).
             Button {
-                decoPreviewId = nil
-                store.send(.decorationTapped(itemId: nil))
+                if store.equippedDecorationId != nil {
+                    showRemoveConfirm = true
+                }
             } label: {
                 V2DecoTile(name: L10n.tr("shop_deco_none"), equipped: store.equippedDecorationId == nil) {
                     Circle().strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [4]))
@@ -366,6 +371,32 @@ struct ShopView: View {
                 secondaryLabel: nil,
                 onPrimary: { showInsufficient = false },
                 onSecondary: nil
+            )
+            .transition(.identity)
+        }
+    }
+
+    // 장식 제거 확인 — '장식 없음' 타일을 탭하면 띄운다. 확인 시 착용 장식을 해제한다.
+    @ViewBuilder
+    private var removeConfirmPopup: some View {
+        if showRemoveConfirm {
+            MonglePopupView(
+                icon: .init(
+                    systemName: "sparkles",
+                    foregroundColor: V2Palette.mint,
+                    backgroundColor: V2Palette.mint.opacity(0.16)
+                ),
+                title: L10n.tr("shop_remove_deco_title"),
+                description: L10n.tr("shop_remove_deco_desc"),
+                primaryLabel: L10n.tr("common_confirm"),
+                secondaryLabel: L10n.tr("common_cancel"),
+                isDestructive: true,
+                onPrimary: {
+                    decoPreviewId = nil
+                    store.send(.decorationTapped(itemId: nil))
+                    showRemoveConfirm = false
+                },
+                onSecondary: { showRemoveConfirm = false }
             )
             .transition(.identity)
         }

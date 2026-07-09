@@ -25,6 +25,8 @@
 "shop_apply_title" = "적용할까요?";
 "shop_apply_desc" = "'%@'을(를) 적용합니다.";
 "shop_apply_confirm" = "적용하기";
+"shop_remove_deco_title" = "장식을 제거할까요?";
+"shop_remove_deco_desc" = "착용 중인 장식을 벗고 기본 모습으로 돌아갑니다.";
 "shop_insufficient_title" = "하트가 부족해요";
 "shop_insufficient_desc" = "하트가 부족해요. 답변을 남기면 하트를 모을 수 있어요.";
 "shop_insufficient_confirm" = "하트 채우기";
